@@ -21,6 +21,14 @@ require the full installer (~1.8 GB). Complete downloads are cached; after resta
 checking and downloading the same version revalidates and reuses the cached file.
 Partial failed downloads may restart. Offline errors do not stop the local app.
 
+As one size estimate, comparing the 0.2.0 and 0.3.0 NSIS blockmaps found
+1,777,733,201 reusable bytes out of a 1,785,234,218-byte new installer. Changed
+blocks total 7,501,017 bytes (0.42%). This excludes blockmap downloads and HTTP
+overhead, and is not a measured end-to-end update: 0.2.0 did not have an updater.
+It does not guarantee the size of future releases. Differential transfer still
+reconstructs a complete installer locally; installation replaces program files.
+Separately versioned code/runtime packages would be a distinct future design.
+
 An updater IPC caller must be a trusted top-level local window. The main Easel
 window can read status and open the update window. Only that bundled update window
 can check/download/install. The remote AitoEarn view has no updater preload or local
