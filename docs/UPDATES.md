@@ -48,7 +48,11 @@ inside the app. Uninstall defaults to keeping data.
 ## Publish a version
 
 1. Bump package.json and package-lock.json together. Build and verify on Windows.
-2. Run `npm run dist`, then `python scripts/source-bundle.py` using the build Python.
+2. Use `scripts/build.ps1`, which sets `ELECTRON_BUILDER_COMPRESSION_LEVEL=1`.
+   For an already prepared build, set that same environment variable before
+   `npm run dist` or the prepackaged NSIS command. Keeping compression consistent
+   prevents unchanged runtime files from producing different compressed blocks.
+   Then run `python scripts/source-bundle.py` using the build Python.
 3. Commit and push the tested source. Create a matching tag such as `v0.3.0`.
 4. Create a **draft** GitHub Release and upload all of:
    - `MediaSail-VERSION-win-x64-Setup.exe`

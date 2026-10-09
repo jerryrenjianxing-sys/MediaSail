@@ -16,6 +16,11 @@ unchanged from 0.3.0. No real model credentials or social-platform publication.
   busy-task installation cancellation and real local-service recovery after a
   simulated installer-launch failure. Fixture target 0.4.0 is not a real release.
 - The settings screenshot was inspected; it follows the existing settings layout.
+- Compared runtime file inventories/checksums inside the two actual installers:
+  all 82,746 runtime files are present, with no additions/removals; the only changed
+  runtime file was Chromium's diagnostic log. The build was repeated with the same
+  compression level (`ELECTRON_BUILDER_COMPRESSION_LEVEL=1`) as the original build
+  script, so compression-setting changes do not distort the update measurement.
 
 ## Publication and real upgrade measurement
 
