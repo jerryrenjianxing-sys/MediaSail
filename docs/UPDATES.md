@@ -32,6 +32,11 @@ It does not guarantee the size of future releases. Differential transfer still
 reconstructs a complete installer locally; installation replaces program files.
 Separately versioned code/runtime packages would be a distinct future design.
 
+The real 0.3.0 -> 0.3.1 test transferred 6,857,098 response-body bytes including
+metadata, with no full-download fallback. Download/reconstruction/verification took
+28.035 s; installation through automatic relaunch took 730.372 s, followed by
+80.024 s until ready. See [the measurement and its limits](VERIFICATION-0.3.1.md).
+
 An updater IPC caller must be a trusted top-level local window. The main Easel
 window can read status, open the update window, and use a restricted open-and-check
 action. Only the bundled update window can download/install. The remote AitoEarn view has no updater preload or local
@@ -85,3 +90,12 @@ The old installation can be prepared while the new release is being built using
 `--restore` to uninstall only the registered test copy and restore the backups.
 Successful runs restore the machine automatically and retain a JSON measurement
 report beside the installer. Do not delete backups until restoration is confirmed.
+
+The helper checkpoints results at each phase. If only the post-upgrade UI checks
+were interrupted after installation, `--verify-installed` resumes those checks
+against the owned temporary copy without repeating download/install. The actual
+automatic restart is observed through a temporary loopback Node inspector attached
+only to the verified test-process PID; this adds no debugger to the published app.
+`--retain-on-failure` is for diagnosis and deliberately defers cleanup; follow it
+with successful verification or `--restore`. Never leave the test profile occupying
+the user's standard paths after a diagnostic run.

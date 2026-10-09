@@ -16,7 +16,8 @@ let journal,app,inspector;
 const result={from:'0.3.0',to:'0.3.1',startedAt:stamp(),feed:'https://github.com/jerryrenjianxing-sys/MediaSail/releases',temporaryInstallation:true};
 function save(){fs.writeFileSync(journalFile,JSON.stringify(journal,null,2));}
 function event(type,extra={}){fs.appendFileSync(eventsFile,JSON.stringify({type,at:Date.now(),...extra})+'\n');}
-function phase(name){journal.phase=name;save();console.log(stamp()+' '+name);}
+function checkpoint(){fs.writeFileSync(resultFile,JSON.stringify(result,null,2));}
+function phase(name){journal.phase=name;save();checkpoint();console.log(stamp()+' '+name);}
 async function digest(file){const h=crypto.createHash('sha256');for await(const b of fs.createReadStream(file))h.update(b);return h.digest('hex');}
 async function waitUntil(check,ms,label){const end=Date.now()+ms;while(Date.now()<end){const v=await check();if(v)return v;await sleep(500);}throw new Error('Timed out: '+label);}
 function processes(){const value=JSON.parse(powershell("@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'MediaSail.exe' -or $_.Name -eq 'ElectronEasel.exe' } | Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine) | ConvertTo-Json -Compress")||'[]');return Array.isArray(value)?value:[value];}
@@ -47,7 +48,7 @@ async function launch(){
   app=await electron.launch({executablePath:exe,args:[],env,timeout:30000});
   return app;
 }
-async function readyPage(){const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.locator('#root').waitFor();const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();return page;}
+async function readyPage(){const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.locator('.sidebar-status').filter({hasText:'网关已连接'}).waitFor({timeout:180000});const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();return page;}
 async function observe(){
   await app.evaluate(({app},logfile)=>{
     const req=process.getBuiltinModule('node:module').createRequire(app.getAppPath()+'/package.json'),fs=req('node:fs');
@@ -129,16 +130,23 @@ async function benchmark(){
   phase('verifying-installed-0.3.1');
   result.automaticProfileRetention=await inspector.evaluate(`(async()=>{const {app,BrowserWindow,session}=process.mainModule.require('electron');const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path'),data=app.getPath('userData');const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'));return {content:fs.readFileSync(path.join(data,'workspace/outputs/升级测速/成品.txt'),'utf8')==='MediaSail 升级测速保留',config:fs.readFileSync(path.join(data,'workspace/.env'),'utf8').includes('MEDIASAIL_SPEED_FIXTURE=keep-v030'),localStorage:await w.webContents.executeJavaScript("localStorage.getItem('mediasail-speed-fixture')==='keep-v030'"),cookie:(await session.fromPartition('persist:aitoearn-cn').cookies.get({name:'mediasail-speed-fixture'}))[0]?.value==='keep-v030'};})()`);
   assert.ok(Object.values(result.automaticProfileRetention).every(Boolean));
+  checkpoint();
   await inspector.evaluate("setTimeout(()=>process.mainModule.require('electron').app.quit(),100);true");inspector.close();inspector=null;
   await waitUntil(()=>ownedProcesses().length===0,30000,'test process exit');await sleep(2000);
-  await launch();page=await readyPage();assert.equal(await app.evaluate(({app})=>app.getVersion()),'0.3.1');
+  await verifyInstalled();
+}
+async function verifyInstalled(){
+  phase('verifying-installed-settings');
+  await launch();const page=await readyPage();assert.equal(await app.evaluate(({app})=>app.getVersion()),'0.3.1');
   assert.equal(fs.readFileSync(path.join(data,'workspace/outputs/升级测速/成品.txt'),'utf8'),'MediaSail 升级测速保留');
   assert.match(fs.readFileSync(path.join(data,'workspace/.env'),'utf8'),/MEDIASAIL_SPEED_FIXTURE=keep-v030/);
   assert.equal(await page.evaluate(()=>localStorage.getItem('mediasail-speed-fixture')),'keep-v030');
   assert.equal(await app.evaluate(async({session})=>(await session.fromPartition('persist:aitoearn-cn').cookies.get({name:'mediasail-speed-fixture'}))[0]?.value),'keep-v030');
   await page.locator('.settings-gear').click();const settings=page.getByRole('dialog',{name:'设置',exact:true});await settings.getByRole('button',{name:'软件更新',exact:true}).click();
   assert.equal(await settings.getByTestId('update-current-version').innerText(),'0.3.1');
-  const panelPromise=app.waitForEvent('window',{predicate:p=>p!==page});await settings.getByRole('button',{name:'检查更新',exact:true}).click();const latest=await panelPromise;
+  const checkButton=settings.getByRole('button',{name:'检查更新',exact:true});
+  await checkButton.waitFor({timeout:180000});await waitUntil(()=>checkButton.isEnabled(),180000,'settings check button ready');
+  const [latest]=await Promise.all([app.waitForEvent('window',{predicate:p=>p!==page,timeout:180000}),checkButton.click({timeout:180000})]);
   await latest.getByRole('heading',{name:'已是最新版本'}).waitFor({timeout:180000});
   await app.evaluate(({BrowserWindow})=>{for(const w of BrowserWindow.getAllWindows())if(w.webContents.getURL().endsWith('/updates.html'))w.hide();});
   await page.screenshot({path:path.join(out,'MediaSail-0.3.1-设置更新.png')});
@@ -171,17 +179,19 @@ async function restore(){
   assert.equal(ownedProcesses().length,0);phase('restored');result.cleanupRestored=true;fs.writeFileSync(resultFile,JSON.stringify(result,null,2));
 }
 (async()=>{
-  const prepareOnly=process.argv.includes('--prepare-only'),resume=process.argv.includes('--resume'),restoreOnly=process.argv.includes('--restore');
+  const prepareOnly=process.argv.includes('--prepare-only'),resume=process.argv.includes('--resume'),restoreOnly=process.argv.includes('--restore'),verifyOnly=process.argv.includes('--verify-installed');
   let prepared=false;
   try{
-    if(resume||restoreOnly){
+    if(resume||restoreOnly||verifyOnly){
       const saved=JSON.parse(fs.readFileSync(journalFile,'utf8'));assert.equal(saved.target,target);assert.equal(saved.directories.length,2);
       for(const [index,item] of saved.directories.entries()){assert.equal(item.original,[data,cache][index]);assert.equal(item.backup,item.original+'.before-mediasail-speed-v031');}
       assert.notEqual(saved.phase,'restored','Test already restored');journal=saved;
       if(resume)assert.equal(journal.phase,'baseline-ready','Only resume a prepared baseline');
+      if(restoreOnly||verifyOnly)Object.assign(result,JSON.parse(fs.readFileSync(resultFile,'utf8')));
+      if(verifyOnly)assert.ok(journal.phase.startsWith('verifying-installed'),'Only continue UI verification after the actual upgrade');
     }else await prepare();
     if(prepareOnly){phase('baseline-ready');prepared=true;return;}
-    if(!restoreOnly)await benchmark();
+    if(verifyOnly)await verifyInstalled();else if(!restoreOnly)await benchmark();
   }
   catch(error){result.error=error.stack;console.error(error);process.exitCode=1;}
   finally{if(!prepared){
