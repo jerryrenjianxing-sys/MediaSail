@@ -2,6 +2,7 @@
 // Only run after publishing v0.3.1. All temporary replacements have a persistent recovery journal.
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const {_electron:electron}=require('playwright');
+const {attachTestMain}=require('./test-main-inspector.cjs');
 const root=path.resolve(__dirname,'..'),workspace=path.resolve(root,'../..'),out=path.join(workspace,'outputs/MediaSail');
 const run=path.join(root,'.test-data/update-speed-v031'),target=path.join(workspace,'work/更新测速 临时 v031');
 const data=path.join(process.env.LOCALAPPDATA,'ElectronEasel'),cache=path.join(process.env.LOCALAPPDATA,'mediasail-updater');
@@ -11,7 +12,7 @@ const quote=s=>"'"+s.replace(/'/g,"''")+"'";
 const powershell=command=>cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding; $ErrorActionPreference='Stop'; "+command],{encoding:'utf8',windowsHide:true}).trim();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const stamp=()=>new Date().toISOString();
-let journal,app;
+let journal,app,inspector;
 const result={from:'0.3.0',to:'0.3.1',startedAt:stamp(),feed:'https://github.com/jerryrenjianxing-sys/MediaSail/releases',temporaryInstallation:true};
 function save(){fs.writeFileSync(journalFile,JSON.stringify(journal,null,2));}
 function event(type,extra={}){fs.appendFileSync(eventsFile,JSON.stringify({type,at:Date.now(),...extra})+'\n');}
@@ -107,13 +108,16 @@ async function benchmark(){
   assert.equal(state.phase,'downloaded',state.message);
   result.downloadAndVerifyMs=Date.now()-downloadStart;event('verified-download');
   await panel.screenshot({path:path.join(out,'MediaSail-0.3.1-真实下载完成.png')});
-  const logBefore=fs.readFileSync(path.join(data,'logs/desktop.log'),'utf8');
   phase('installing-and-auto-relaunching');event('manual-install');const installStart=Date.now();
   await panel.locator('#install').click().catch(error=>{if(!/closed|destroyed/i.test(error.message))throw error;});
   await waitUntil(()=>ownedProcesses().length===0,60000,'old application exit');app=null;
   const newProcess=await waitUntil(()=>ownedProcesses().find(p=>!p.CommandLine?.includes('--type=')&&p.CommandLine?.includes('--updated')),1800000,'installer automatic relaunch');
   result.installToRelaunchMs=Date.now()-installStart;result.autoRelaunchPid=newProcess.ProcessId;event('automatic-relaunch',{pid:newProcess.ProcessId});
-  await waitUntil(()=>{try{return fs.readFileSync(path.join(data,'logs/desktop.log'),'utf8').slice(logBefore.length).includes('MediaSail 已就绪');}catch{return false;}},240000,'automatically relaunched app ready');
+  inspector=await attachTestMain(newProcess.ProcessId);
+  await waitUntil(()=>inspector.evaluate("Boolean(process.mainModule?.require && process.mainModule.require('electron').app.isReady())"),30000,'test app main context');
+  const identity=await inspector.evaluate(`(()=>{const {app}=process.mainModule.require('electron');const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path');const data=app.getPath('userData');return {version:app.getVersion(),data,fixture:fs.existsSync(path.join(data,'workspace/outputs/升级测速/成品.txt'))};})()`);
+  result.relaunchIdentity=identity;console.log('AUTOMATIC RELAUNCH '+JSON.stringify(identity));assert.equal(identity.version,'0.3.1');assert.equal(path.resolve(identity.data).toLowerCase(),data.toLowerCase());assert.equal(identity.fixture,true,'Automatic relaunch must use the seeded profile');
+  await waitUntil(async()=>inspector.evaluate(`(async()=>{const {BrowserWindow}=process.mainModule.require('electron');const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'));if(!w)return false;return w.webContents.executeJavaScript(${JSON.stringify("fetch('/api/status').then(r=>r.json()).then(s=>s.gateway===true&&!!document.querySelector('.settings-gear')).catch(()=>false)")});})()`),240000,'automatically relaunched app ready');
   result.installToReadyMs=Date.now()-installStart;result.relaunchToReadyMs=result.installToReadyMs-result.installToRelaunchMs;event('automatic-app-ready');
   const requests=new Map();for(const line of fs.readFileSync(eventsFile,'utf8').trim().split('\n')){const e=JSON.parse(line);if(e.type==='http-bytes'){const old=requests.get(e.id);if(!old||e.bytes>old.bytes)requests.set(e.id,e);}}
   result.transferredBodyBytes={installer:0,blockmap:0,metadata:0};for(const r of requests.values())result.transferredBodyBytes[r.kind]+=r.bytes;
@@ -122,9 +126,11 @@ async function benchmark(){
   result.differentialUsed=updaterLog.includes('Differential download:');result.fullDownloadFallback=updaterLog.includes('fallback to full download');
   result.method='HTTP response body bytes from the unchanged updater transport, including retries. Excludes HTTP/TLS overhead. Download phase includes local reconstruction and checksum validation. Install timing ends at actual automatic process launch; readiness is recorded separately.';
   result.network={proxyConfigured:Boolean(process.env.HTTPS_PROXY||process.env.HTTP_PROXY||process.env.ALL_PROXY),platform:process.platform,arch:process.arch};
-  // Relaunched release is unmodified and has no debugging port. After timing it,
-  // stop only this test installation, then reopen with Playwright for UI/data assertions.
-  phase('verifying-installed-0.3.1');stopOwned();await waitUntil(()=>ownedProcesses().length===0,30000,'test process exit');await sleep(3000);
+  phase('verifying-installed-0.3.1');
+  result.automaticProfileRetention=await inspector.evaluate(`(async()=>{const {app,BrowserWindow,session}=process.mainModule.require('electron');const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path'),data=app.getPath('userData');const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'));return {content:fs.readFileSync(path.join(data,'workspace/outputs/升级测速/成品.txt'),'utf8')==='MediaSail 升级测速保留',config:fs.readFileSync(path.join(data,'workspace/.env'),'utf8').includes('MEDIASAIL_SPEED_FIXTURE=keep-v030'),localStorage:await w.webContents.executeJavaScript("localStorage.getItem('mediasail-speed-fixture')==='keep-v030'"),cookie:(await session.fromPartition('persist:aitoearn-cn').cookies.get({name:'mediasail-speed-fixture'}))[0]?.value==='keep-v030'};})()`);
+  assert.ok(Object.values(result.automaticProfileRetention).every(Boolean));
+  await inspector.evaluate("setTimeout(()=>process.mainModule.require('electron').app.quit(),100);true");inspector.close();inspector=null;
+  await waitUntil(()=>ownedProcesses().length===0,30000,'test process exit');await sleep(2000);
   await launch();page=await readyPage();assert.equal(await app.evaluate(({app})=>app.getVersion()),'0.3.1');
   assert.equal(fs.readFileSync(path.join(data,'workspace/outputs/升级测速/成品.txt'),'utf8'),'MediaSail 升级测速保留');
   assert.match(fs.readFileSync(path.join(data,'workspace/.env'),'utf8'),/MEDIASAIL_SPEED_FIXTURE=keep-v030/);
@@ -142,8 +148,10 @@ async function benchmark(){
 async function restore(){
   if(!journal)return;
   phase('restoring-pre-test-state');
+  inspector?.close();inspector=null;
   if(app){await app.evaluate(({dialog})=>{dialog.showMessageBox=async()=>({response:1});}).catch(()=>{});await app.close().catch(()=>{});app=null;}stopOwned();await sleep(2000);
   const uninstaller=path.join(target,'Uninstall MediaSail.exe');
+  powershell(`. ${quote(path.join(__dirname,'assert-test-install.ps1'))}; Assert-TestInstallOwnership ${quote(target)}`);
   if(fs.existsSync(uninstaller))await setup(uninstaller);
   await waitUntil(()=>!fs.existsSync(exe),90000,'test uninstall');
   assert.ok(path.resolve(target).startsWith(workspace+path.sep));
@@ -176,5 +184,9 @@ async function restore(){
     if(!restoreOnly)await benchmark();
   }
   catch(error){result.error=error.stack;console.error(error);process.exitCode=1;}
-  finally{if(!prepared){try{await restore();}catch(error){result.cleanupError=error.stack;console.error('RECOVERY REQUIRED: '+journalFile+'\n'+error.stack);process.exitCode=1;}fs.mkdirSync(out,{recursive:true});fs.writeFileSync(resultFile,JSON.stringify(result,null,2));}}
+  finally{if(!prepared){
+    if(result.error&&process.argv.includes('--retain-on-failure')){inspector?.close();inspector=null;result.cleanupRestored=false;console.error('Diagnostic run retained. Complete recovery with --restore: '+journalFile);}
+    else try{await restore();}catch(error){result.cleanupError=error.stack;console.error('RECOVERY REQUIRED: '+journalFile+'\n'+error.stack);process.exitCode=1;}
+    fs.mkdirSync(out,{recursive:true});fs.writeFileSync(resultFile,JSON.stringify(result,null,2));
+  }}
 })().catch(error=>{console.error(error);process.exitCode=1;});
