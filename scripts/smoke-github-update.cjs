@@ -23,8 +23,8 @@ const path=require('node:path'),assert=require('node:assert/strict');
    if(state.phase==='current')break;
    await page.waitForTimeout(5000);
   }
-  assert.equal(state.phase,'current',state.message);assert.equal(state.current,'0.3.0');
+  assert.equal(state.phase,'current',state.message);assert.equal(state.current,require('../package.json').version);
   await panel.screenshot({path:path.resolve(root,'../../outputs/MediaSail/MediaSail-软件更新.png')});
-  console.log('PUBLIC GITHUB FEED PASSED: packaged 0.3.0 resolves the published stable release and is up to date. No download/install performed.');
+  console.log('PUBLIC GITHUB FEED PASSED: packaged '+state.current+' resolves the published stable release and is up to date. No download/install performed.');
  }finally{await app.evaluate(({dialog})=>{dialog.showMessageBox=async()=>({response:1});}).catch(()=>{});await app.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

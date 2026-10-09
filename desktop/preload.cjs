@@ -1,6 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('desktopUpdates',{
   open:()=>ipcRenderer.invoke('updates:open'),
+  openAndCheck:()=>ipcRenderer.invoke('updates:open-and-check'),
   status:async()=>{const r=await ipcRenderer.invoke('updates:call','status');return r.ok?r.data:null;},
   subscribe:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('updates:state',listener);return()=>ipcRenderer.removeListener('updates:state',listener);}
 });

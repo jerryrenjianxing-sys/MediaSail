@@ -128,16 +128,16 @@ index 0000000..a56c3d8
 +}
 diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
 new file mode 100644
-index 0000000..6f38050
+index 0000000..2b9081a
 --- /dev/null
 +++ b/web/frontend/src/components/DesktopUpdates.tsx
-@@ -0,0 +1,21 @@
+@@ -0,0 +1,25 @@
 +import { useEffect, useState } from 'react';
-+type State = { phase: string; current: string; version: string; percent: number };
++type State = { phase: string; current: string; version: string; percent: number; message: string; checkedAt: number | null; transferred: number; total: number; bytesPerSecond: number };
 +declare global {
-+  interface Window { desktopUpdates?: { open: () => Promise<boolean>; status: () => Promise<State | null>; subscribe: (callback: (state: State) => void) => () => void } }
++  interface Window { desktopUpdates?: { open: () => Promise<boolean>; openAndCheck: () => Promise<boolean>; status: () => Promise<State | null>; subscribe: (callback: (state: State) => void) => () => void } }
 +}
-+export default function DesktopUpdates() {
++export function useDesktopUpdateState() {
 +  const [state, setState] = useState<State | null>(null);
 +  useEffect(() => {
 +    const bridge = window.desktopUpdates;
@@ -147,6 +147,10 @@ index 0000000..6f38050
 +    const off = bridge.subscribe(setState);
 +    return () => { live = false; off(); };
 +  }, []);
++  return state;
++}
++export default function DesktopUpdates() {
++  const state = useDesktopUpdateState();
 +  if (!window.desktopUpdates) return null;
 +  const label = state?.phase === 'available' ? '发现新版' : state?.phase === 'downloaded' ? '重启更新' : state?.phase === 'downloading' ? `下载中 ${Math.round(state.percent)}%` : '软件更新';
 +  return <button className="nav-item" style={{ margin: '4px 12px', width: 'calc(100% - 24px)', fontSize: 12 }} onClick={() => { void window.desktopUpdates?.open(); }} title="从 GitHub 检查和下载 MediaSail 新版">
@@ -297,6 +301,62 @@ index 0000000..1671b6c
 +    </div>
 +  </div>;
 +}
+diff --git a/web/frontend/src/components/SettingsPanel.tsx b/web/frontend/src/components/SettingsPanel.tsx
+index 68eccd3..e6a5087 100644
+--- a/web/frontend/src/components/SettingsPanel.tsx
++++ b/web/frontend/src/components/SettingsPanel.tsx
+@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
+ import { createPortal } from 'react-dom';
+ import type { Dispatch, SetStateAction } from 'react';
+ import EnvBoard from './EnvBoard';
++import SoftwareUpdates from './SoftwareUpdates';
+ import type { JobView } from './EnvBoard';
+ import {
+   fetchEnvTools, startEnvInstall, fetchEnvJob,
+@@ -13,7 +14,7 @@ import { IconSlidersHorizontal, IconPackage, IconEllipsis } from './settingsIcon
+ 
+ interface Props { onClose: () => void; }
+ 
+-type Sec = 'model' | 'env' | 'more';
++type Sec = 'model' | 'env' | 'updates' | 'more';
+ type Chan = 'chat' | 'transcribe' | 'speech' | 'image' | 'video' | 'music';
+ 
+ const CHANNELS: { id: Chan; label: string }[] = [
+@@ -579,7 +580,7 @@ export default function SettingsPanel({ onClose }: Props) {
+         <div className="settings-head">
+           <div>
+             <h2 className="settings-title">设置</h2>
+-            <div className="settings-sub">模型配置 · 环境安装 · 更多设置</div>
++            <div className="settings-sub">模型配置 · 环境安装{window.desktopUpdates ? ' · 软件更新' : ''} · 更多设置</div>
+           </div>
+           <div className="settings-actions">
+             <button
+@@ -592,7 +593,7 @@ export default function SettingsPanel({ onClose }: Props) {
+             <button
+               className="btn btn-sm"
+               onClick={() => void doSelftest(sec === 'model' ? chan : 'all')}
+-              disabled={testing}
++              disabled={testing || sec === 'updates'}
+             >
+               {testing ? '自测中…' : '全部自测'}
+             </button>
+@@ -608,12 +609,16 @@ export default function SettingsPanel({ onClose }: Props) {
+             <button className={`snav${sec === 'env' ? ' active' : ''}`} onClick={() => setSec('env')}>
+               <IconPackage size={16} />环境安装<small>{total ? (okCount === total ? '全就绪' : `${okCount}/${total}`) : '…'}</small>
+             </button>
++            {window.desktopUpdates && <button className={`snav${sec === 'updates' ? ' active' : ''}`} onClick={() => setSec('updates')}>
++              <span aria-hidden="true" style={{ width: 16, textAlign: 'center' }}>↑</span>软件更新
++            </button>}
+             <button className={`snav${sec === 'more' ? ' active' : ''}`} onClick={() => setSec('more')}>
+               <IconEllipsis size={16} />更多设置
+             </button>
+           </nav>
+ 
+           <div className="settings-main">
++            {sec === 'updates' && <SoftwareUpdates />}
+             {sec === 'model' && (
+               <section className="st-sec active">
+                 <div className="tabbar">
 diff --git a/web/frontend/src/components/Sidebar.tsx b/web/frontend/src/components/Sidebar.tsx
 index 1120f43..22333a6 100644
 --- a/web/frontend/src/components/Sidebar.tsx
@@ -352,6 +412,44 @@ index 1120f43..22333a6 100644
        </div>
      </div>
    );
+diff --git a/web/frontend/src/components/SoftwareUpdates.tsx b/web/frontend/src/components/SoftwareUpdates.tsx
+new file mode 100644
+index 0000000..7775078
+--- /dev/null
++++ b/web/frontend/src/components/SoftwareUpdates.tsx
+@@ -0,0 +1,32 @@
++import { useState } from 'react';
++import { useDesktopUpdateState } from './DesktopUpdates';
++
++export default function SoftwareUpdates() {
++  const state = useDesktopUpdateState();
++  const [error, setError] = useState('');
++  const busy = state?.phase === 'checking';
++  const prepared = state?.phase === 'downloaded' || state?.phase === 'installing';
++  const downloading = state?.phase === 'downloading';
++  const open = async () => {
++    setError('');
++    try {
++      if (!await window.desktopUpdates?.openAndCheck()) setError('暂时无法打开更新窗口，请重试。');
++    } catch { setError('暂时无法打开更新窗口，请重试。'); }
++  };
++  return <section className="st-sec active" aria-label="软件更新">
++    <div className="panel-top"><strong>MediaSail</strong><span className="desc">软件更新</span></div>
++    <div className="board" style={{ padding: 24 }}>
++      <p style={{ marginTop: 0 }}>当前版本 <strong data-testid="update-current-version">{state?.current || '读取中…'}</strong></p>
++      <p style={{ opacity: .65, fontSize: 13 }}>最近检查：{state?.checkedAt ? new Date(state.checkedAt).toLocaleString('zh-CN', { hour12: false }) : '尚未检查'}</p>
++      <p role="status" aria-live="polite">{error || state?.message || '正在读取更新状态…'}</p>
++      {downloading && <div style={{ marginBottom: 16 }}>
++        <progress aria-label="更新下载进度" value={state.percent} max={100} style={{ width: '100%', accentColor: '#6d4aff' }} />
++        <span style={{ fontSize: 13 }}>已下载 {Math.round(state.percent)}%</span>
++      </div>}
++      <button className="btn btn-primary" onClick={() => void open()} disabled={!state || busy || state.phase === 'disabled'}>
++        {busy ? '检查中…' : downloading ? '查看下载进度' : prepared ? '查看更新' : '检查更新'}
++      </button>
++    </div>
++    <div className="foot-note">从 GitHub 获取新版。下载完成后，由你选择重启安装；配置、素材和登录状态会保留。</div>
++  </section>;
++}
 diff --git a/web/frontend/src/lib/aitoearn.ts b/web/frontend/src/lib/aitoearn.ts
 new file mode 100644
 index 0000000..219c2e8

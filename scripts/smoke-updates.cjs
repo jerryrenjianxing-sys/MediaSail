@@ -4,10 +4,11 @@ const {_electron:electron}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),data=path.join(root,'.test-data/软件 更新 '+Date.now());
 const executable=process.env.EASEL_TEST_EXE||path.resolve(root,'../../outputs/MediaSail/win-unpacked/MediaSail.exe');
+const currentVersion=require('../package.json').version,targetVersion='0.4.0';
 const bytes=crypto.randomBytes(3*1024*1024),hash=crypto.createHash('sha512').update(bytes).digest('base64');
 let offline=true,badHash=false,requests=0,hold=false,releaseDownload;
 const server=http.createServer(async(req,res)=>{
- if(req.url.startsWith('/latest.yml')){if(offline){res.writeHead(503);res.end('fixture offline');return;}res.setHeader('Content-Type','text/yaml');res.end(`version: 0.3.1\nfiles:\n  - url: MediaSail-0.3.1-win-x64-Setup.exe\n    sha512: ${badHash?Buffer.alloc(64).toString('base64'):hash}\n    size: ${bytes.length}\npath: MediaSail-0.3.1-win-x64-Setup.exe\nsha512: ${hash}\nreleaseDate: '2026-10-09T00:00:00.000Z'\n`);return;}
+ if(req.url.startsWith('/latest.yml')){if(offline){res.writeHead(503);res.end('fixture offline');return;}res.setHeader('Content-Type','text/yaml');res.end(`version: ${targetVersion}\nfiles:\n  - url: MediaSail-${targetVersion}-win-x64-Setup.exe\n    sha512: ${badHash?Buffer.alloc(64).toString('base64'):hash}\n    size: ${bytes.length}\npath: MediaSail-${targetVersion}-win-x64-Setup.exe\nsha512: ${hash}\nreleaseDate: '2026-10-09T00:00:00.000Z'\n`);return;}
  if(req.url.includes('Setup.exe')){requests++;res.writeHead(200,{'Content-Length':bytes.length,'Content-Type':'application/octet-stream'});res.write(bytes.subarray(0,1024));if(hold)await new Promise(r=>{releaseDownload=r;});res.end(bytes.subarray(1024));return;}
  res.writeHead(404);res.end();
 });
@@ -29,18 +30,31 @@ const server=http.createServer(async(req,res)=>{
   },{data,feed});
   const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.locator('#root').waitFor();
   const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();
+  await page.locator('.settings-gear').click();
+  const settings=page.getByRole('dialog',{name:'设置',exact:true});
+  await settings.getByText('＋ 添加供应商', {exact:false}).click();
+  const name=settings.getByPlaceholder('名称').last();await name.fill('unsaved-update-fixture');
+  await settings.getByRole('button',{name:'软件更新',exact:true}).click();
+  assert.equal(await settings.getByTestId('update-current-version').innerText(),currentVersion);
   const panelReady=app.waitForEvent('window',{predicate:p=>p!==page,timeout:10000});
-  await page.getByRole('button',{name:/软件更新|发现新版/}).click();
+  // The settings action starts a check itself; no second click in the child window.
+  await settings.getByRole('button',{name:'检查更新',exact:true}).click();
   const panel=await panelReady;
-  await panel.waitForLoadState('domcontentloaded');return {page,panel};
+  await panel.locator('#headline').waitFor();
+  await settings.getByRole('button',{name:/模型配置/}).click();
+  assert.equal(await settings.getByPlaceholder('名称').last().inputValue(),'unsaved-update-fixture');
+  await settings.getByRole('button',{name:'软件更新',exact:true}).click();
+  return {page,panel};
  }
  const phase=(p,v)=>p.waitForFunction(v=>document.querySelector('#headline').textContent.includes(v),v,{timeout:30000});
  try{
   let {page,panel}=await launch();
-  await panel.locator('#check').click();await phase(panel,'更新暂未完成');
-  offline=false;badHash=true;await panel.getByRole('button',{name:'重新检查'}).click();await phase(panel,'新版本 0.3.1');
+  await phase(panel,'更新暂未完成');
+  assert.match(await page.getByRole('dialog',{name:'设置',exact:true}).getByRole('status').innerText(),/更新未完成/);
+  await page.screenshot({path:path.resolve(root,'../../outputs/MediaSail/MediaSail-0.3.1-设置更新.png')});
+  offline=false;badHash=true;await panel.getByRole('button',{name:'重新检查'}).click();await phase(panel,'新版本 '+targetVersion);
   await panel.getByRole('button',{name:'下载新版'}).click();await phase(panel,'更新暂未完成');assert.match(await panel.locator('#message').innerText(),/校验/);
-  badHash=false;hold=true;await panel.getByRole('button',{name:'重新检查'}).click();await phase(panel,'新版本 0.3.1');await panel.getByRole('button',{name:'下载新版'}).click();
+  badHash=false;hold=true;await panel.getByRole('button',{name:'重新检查'}).click();await phase(panel,'新版本 '+targetVersion);await panel.getByRole('button',{name:'下载新版'}).click();
   await phase(panel,'正在下载');await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:')).close());
   await new Promise(r=>setTimeout(r,600));assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:')).isVisible()),false);
   while(!releaseDownload)await new Promise(r=>setTimeout(r,50));releaseDownload();hold=false;

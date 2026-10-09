@@ -7,6 +7,10 @@ class UpdatesWindow{
     Object.assign(this,{updates,main,localOrigin,startupUrl,data});this.panel=null;
     this.panelUrl=pathToFileURL(path.join(__dirname,'updates.html')).href;
     ipcMain.handle('updates:open',event=>{if(this.trusted(event)){this.show();return true;}return false;});
+    ipcMain.handle('updates:open-and-check',event=>{
+      if(!this.trusted(event)||event.sender!==this.main.webContents||event.senderFrame.url===this.startupUrl)return false;
+      this.show();void updates.check();return true;
+    });
     ipcMain.handle('updates:call',async(event,action)=>{
       if(!this.trusted(event,action!=='status'))return {ok:false,error:'此页面不能操作软件更新。'};
       switch(action){

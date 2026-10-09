@@ -5,7 +5,10 @@ The public feed is GitHub Releases in `jerryrenjianxing-sys/MediaSail`. Applicat
 contain no GitHub token. They use builder-generated `resources/app-update.yml`.
 Only stable versions greater than the installed version are offered.
 
-The sidebar and tray open a local update window. A background check runs once,
+Since 0.3.1, Settings > Software update shows the installed version, last successful
+check, shared status and download progress. Its button opens the local update window
+and immediately checks, without discarding unsaved settings. The sidebar and tray
+also open that same update window. A background check runs once,
 15 seconds after launch. Downloads start only on a user click. Progress survives
 closing to the tray. Both automatic download and install-on-quit are disabled.
 The user explicitly chooses restart/install; active Easel tasks, AitoEarn uploads
@@ -30,8 +33,8 @@ reconstructs a complete installer locally; installation replaces program files.
 Separately versioned code/runtime packages would be a distinct future design.
 
 An updater IPC caller must be a trusted top-level local window. The main Easel
-window can read status and open the update window. Only that bundled update window
-can check/download/install. The remote AitoEarn view has no updater preload or local
+window can read status, open the update window, and use a restricted open-and-check
+action. Only the bundled update window can download/install. The remote AitoEarn view has no updater preload or local
 file/command API. Renderers cannot set a feed URL or an arbitrary installer path.
 
 ## Compatibility
@@ -61,3 +64,20 @@ never embed GH_TOKEN/GITHUB_TOKEN in the installer. `--publish never` prevents a
 local build from accidentally uploading anything.
 
 Official reference: https://www.electron.build/docs/features/auto-update/
+
+## Reproducing the 0.3.0 -> 0.3.1 benchmark
+
+`node scripts/benchmark-update.cjs` requires the published baseline installer in
+the output directory and v0.3.1 on the real public GitHub feed. It refuses another
+installed/running MediaSail. The test backs up the existing data/cache directories
+and shortcuts, installs 0.3.0 in a temporary path, and performs an actual update.
+Its HTTP response listeners count body bytes without changing the updater requests,
+download source, checksums, or installation. No credentials or real social posts
+are used. Raw logs stay in ignored `.test-data`, never the public source bundle.
+
+The old installation can be prepared while the new release is being built using
+`--prepare-only`; after publication use `--resume`. The recovery journal is kept at
+`.test-data/update-speed-v031/recovery.json`. On an interrupted run inspect it and use
+`--restore` to uninstall only the registered test copy and restore the backups.
+Successful runs restore the machine automatically and retain a JSON measurement
+report beside the installer. Do not delete backups until restoration is confirmed.

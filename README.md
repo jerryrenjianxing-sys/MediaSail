@@ -6,11 +6,11 @@
 模型配置与平台工作流，集成 AitoEarn 中国站的「AI 发布」，支持从 GitHub 更新。
 
 **[下载 Windows 64 位完整安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** ·
-[更新机制](docs/UPDATES.md) · [验证记录](docs/VERIFICATION-0.3.0.md)
+[更新机制](docs/UPDATES.md) · [验证记录](docs/VERIFICATION-0.3.1.md)
 
 ## 使用
 
-安装 `MediaSail-0.3.0-win-x64-Setup.exe`，从桌面或开始菜单打开。
+安装 `MediaSail-0.3.1-win-x64-Setup.exe`，从桌面或开始菜单打开。
 内置 Python、独立 Node.js、OpenClaw、浏览器自动化环境及 FFmpeg，无需用户另装开发工具。
 在设置中配置自己的模型服务，在原版流程中登录平台账号。模型服务、社交平台、
 AitoEarn 和部分按需资源需要联网；模型额度和平台账号不包含在安装包中。
@@ -32,7 +32,7 @@ AitoEarn 和部分按需资源需要联网；模型额度和平台账号不包�
 
 ## 更新与数据
 
-侧栏「软件更新」或托盘「检查更新」→ 下载新版 → 重启并安装。启动时只检查版本，
+设置 →「软件更新」→「检查更新」→ 下载新版 → 重启并安装。侧栏和托盘入口也可使用。启动时只检查版本，
 不会自动下载大包，也不会在普通退出时擅自安装。先完成下载和校验，再替换程序文件。
 支持时尝试差分下载，失败则下载完整安装包；并非每次只需下载几 MB。
 
@@ -65,7 +65,7 @@ Windows x64 构建机器需要 Git、uv、PowerShell 和用于引导的 Python�
 
 | 部件 | 固定版本 |
 |---|---|
-| MediaSail | 0.3.0 |
+| MediaSail | 0.3.1 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Node.js / Python | 24.21.0 / 3.11.15 |
