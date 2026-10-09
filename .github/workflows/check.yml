@@ -15,13 +15,9 @@ jobs:
           node-version: '24.21.0'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11.15'
+      - uses: astral-sh/setup-uv@v6
       - shell: pwsh
         run: |
-          $Target = 'build/runtime/python/cpython-3.11.15-windows-x86_64-none'
-          New-Item -ItemType Directory -Force $Target | Out-Null
-          Copy-Item -Recurse "$env:pythonLocation/*" $Target
-          python scripts/launchers.py
+          uv python install 3.11.15 --install-dir build/runtime/python --no-bin --no-registry
+          & build/runtime/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/launchers.py
       - run: npm test
