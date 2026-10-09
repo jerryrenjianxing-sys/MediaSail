@@ -21,7 +21,11 @@ async function waitUntil(check,ms,label){const end=Date.now()+ms;while(Date.now(
 function processes(){const value=JSON.parse(powershell("@(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'MediaSail.exe' -or $_.Name -eq 'ElectronEasel.exe' } | Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine) | ConvertTo-Json -Compress")||'[]');return Array.isArray(value)?value:[value];}
 function ownedProcesses(){return processes().filter(p=>p.ExecutablePath?.toLowerCase()===exe.toLowerCase());}
 function stopOwned(){for(const p of ownedProcesses().filter(p=>!p.CommandLine?.includes('--type='))){try{cp.execFileSync('taskkill.exe',['/PID',String(p.ProcessId),'/T','/F'],{windowsHide:true,stdio:'ignore'});}catch{}}}
-async function setup(file){await new Promise((resolve,reject)=>{const child=cp.spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`$p=Start-Process -FilePath ${quote(file)} -ArgumentList @('/S',${quote('/D='+target)}) -WindowStyle Hidden -PassThru; $p.WaitForExit(); exit $p.ExitCode`],{windowsHide:true,stdio:'inherit'});child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error('Installer exit '+code)));});}
+async function setup(file){
+  // NSIS _?= runs the uninstaller in place, so WaitForExit covers all cleanup.
+  const args=path.basename(file).startsWith('Uninstall ')?['/S','/KEEP_APP_DATA','_?='+target]:['/S','/D='+target];
+  await new Promise((resolve,reject)=>{const child=cp.spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`$p=Start-Process -FilePath ${quote(file)} -ArgumentList @(${args.map(quote).join(',')}) -WindowStyle Hidden -PassThru; $p.WaitForExit(); exit $p.ExitCode`],{windowsHide:true,stdio:'inherit'});child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error('Installer exit '+code)));});
+}
 async function prepare(){
   assert.equal(require('../package.json').version,'0.3.1');
   assert.ok(target.startsWith(workspace+path.sep));assert.ok(!fs.existsSync(target),'Test installation already exists');assert.ok(!fs.existsSync(journalFile),'Existing recovery journal: inspect/restore before repeating');
@@ -73,14 +77,34 @@ async function benchmark(){
   fs.appendFileSync(path.join(data,'workspace/.env'),'\nMEDIASAIL_SPEED_FIXTURE=keep-v030\n');
   await page.evaluate(()=>localStorage.setItem('mediasail-speed-fixture','keep-v030'));
   await app.evaluate(async({session})=>{const s=session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'mediasail-speed-fixture',value:'keep-v030',expirationDate:Date.now()/1000+604800,secure:true});await s.cookies.flushStore();});
-  const panelReady=app.waitForEvent('window',{predicate:p=>p!==page});await page.getByRole('button',{name:/软件更新|发现新版/}).click();const panel=await panelReady;await panel.locator('#check').waitFor();
-  phase('checking-real-github-release');event('manual-check');const checkStart=Date.now();
-  if(await panel.locator('#check').isVisible())await panel.locator('#check').click();
-  let state=await waitUntil(async()=>{const s=await page.evaluate(()=>window.desktopUpdates.status());if(s.phase==='error')throw new Error(s.message);return s.phase==='available'?s:false;},180000,'public release discovery');
-  assert.equal(state.version,'0.3.1');result.checkMs=Date.now()-checkStart;result.fullInstallerBytes=state.total;
-  phase('downloading-real-github-update');event('manual-download');const downloadStart=Date.now();await panel.locator('#download').click();
+  const panelReady=app.waitForEvent('window',{predicate:p=>p!==page});await page.getByRole('button',{name:/软件更新|发现新版/}).click();const panel=await panelReady;await panel.locator('#headline').waitFor();
+  async function checkRelease(){
+    const existing=await page.evaluate(()=>window.desktopUpdates.status());
+    if(existing.phase==='available')return existing;
+    if(existing.phase!=='checking'){
+      event('manual-check');await panel.locator('#check').click();
+      // Wait for IPC dispatch so a previous terminal state cannot satisfy the poll.
+      await panel.evaluate(()=>window.mediaSailUpdate.call('status'));
+    }
+    return waitUntil(async()=>{const s=await page.evaluate(()=>window.desktopUpdates.status());return ['available','error','current'].includes(s.phase)?s:false;},180000,'public release discovery');
+  }
+  phase('checking-real-github-release');const checkStart=Date.now();let state;
+  for(let attempt=0;attempt<3;attempt++){state=await checkRelease();if(state.phase==='available')break;event('check-retry',{message:state.message});await sleep(3000);}
+  assert.equal(state.phase,'available',state.message);
+  assert.equal(state.version,'0.3.1');result.checkWaitFromOpeningPanelMs=Date.now()-checkStart;result.fullInstallerBytes=state.total;
+  const checkEvents=fs.readFileSync(eventsFile,'utf8').trim().split('\n').map(line=>JSON.parse(line));
+  const checkEvent=checkEvents.findLast(e=>e.type==='checking-for-update'),availableEvent=checkEvents.findLast(e=>e.type==='update-available');
+  assert.ok(checkEvent&&availableEvent);result.checkMs=availableEvent.at-checkEvent.at;result.checkAttempts=checkEvents.filter(e=>e.type==='checking-for-update').length;
+  result.checkMode=checkEvents.some(e=>e.type==='manual-check')?'manual':'automatic-on-startup';
+  phase('downloading-real-github-update');const downloadStart=Date.now();
   let lastReport=0;
-  state=await waitUntil(async()=>{const s=await page.evaluate(()=>window.desktopUpdates.status());if(s.phase==='error')throw new Error(s.message);if(Date.now()-lastReport>30000){console.log(JSON.stringify({phase:s.phase,percent:s.percent,transferred:s.transferred,total:s.total}));lastReport=Date.now();}return s.phase==='downloaded'?s:false;},3600000,'download and verification');
+  for(let attempt=0;attempt<3;attempt++){
+    result.downloadAttempts=attempt+1;event('manual-download');await panel.locator('#download').click();
+    state=await waitUntil(async()=>{const s=await page.evaluate(()=>window.desktopUpdates.status());if(Date.now()-lastReport>30000){console.log(JSON.stringify({phase:s.phase,percent:s.percent,transferred:s.transferred,total:s.total}));lastReport=Date.now();}return ['downloaded','error'].includes(s.phase)?s:false;},3600000,'download and verification');
+    if(state.phase==='downloaded')break;
+    event('download-retry',{message:state.message});await sleep(3000);state=await checkRelease();assert.equal(state.phase,'available',state.message);
+  }
+  assert.equal(state.phase,'downloaded',state.message);
   result.downloadAndVerifyMs=Date.now()-downloadStart;event('verified-download');
   await panel.screenshot({path:path.join(out,'MediaSail-0.3.1-真实下载完成.png')});
   const logBefore=fs.readFileSync(path.join(data,'logs/desktop.log'),'utf8');
@@ -122,6 +146,8 @@ async function restore(){
   const uninstaller=path.join(target,'Uninstall MediaSail.exe');
   if(fs.existsSync(uninstaller))await setup(uninstaller);
   await waitUntil(()=>!fs.existsSync(exe),90000,'test uninstall');
+  assert.ok(path.resolve(target).startsWith(workspace+path.sep));
+  if(fs.existsSync(target))fs.rmSync(target,{recursive:true,force:true});
   for(const item of journal.directories){
     if(item.existed&&!item.moved)continue;
     if(item.moved)assert.ok(fs.existsSync(item.backup),'Original backup missing; preserve test state for recovery');
