@@ -61,7 +61,7 @@ async function observe(){
       record('http-start',{id,kind,url:url.origin+url.pathname});
       request.on('redirect',(_code,_method,destination)=>redirectKinds.set(destination,kind));
       request.on('response',response=>{
-        let bytes=0;response.on('data',chunk=>{bytes+=chunk.length;});
+        let bytes=0;response.on('data',chunk=>{bytes+=Buffer.byteLength(chunk);});
         const report=()=>record('http-bytes',{id,kind,bytes,status:response.statusCode});
         response.on('end',report);response.on('close',report);response.on('error',report);
       });
