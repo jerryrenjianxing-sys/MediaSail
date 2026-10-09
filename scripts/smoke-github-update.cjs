@@ -9,11 +9,18 @@ const path=require('node:path'),assert=require('node:assert/strict');
   const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.locator('#root').waitFor();
   const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();
   const panelReady=app.waitForEvent('window',{predicate:p=>p!==page});await page.getByRole('button',{name:/软件更新/}).click();const panel=await panelReady;
-  await panel.waitForLoadState('domcontentloaded');let state;
+  await panel.locator('#check').waitFor();let state;
   for(let attempt=0;attempt<3;attempt++){
-   await panel.locator('#check').click();
-   await panel.waitForFunction(()=>['已是最新版本','更新暂未完成'].includes(document.querySelector('#headline').textContent),null,{timeout:150000});
-   state=await page.evaluate(()=>window.desktopUpdates.status());if(state.phase==='current')break;
+   // Await the IPC dispatch and poll immutable snapshots. Startup's automatic
+   // check may run between UI frames, so do not assert against stale DOM text.
+   await panel.evaluate(()=>window.mediaSailUpdate.call('check'));
+   const deadline=Date.now()+150000;
+   do{
+    state=await page.evaluate(()=>window.desktopUpdates.status());
+    if(['current','error'].includes(state.phase))break;
+    await page.waitForTimeout(250);
+   }while(Date.now()<deadline);
+   if(state.phase==='current')break;
    await page.waitForTimeout(5000);
   }
   assert.equal(state.phase,'current',state.message);assert.equal(state.current,'0.3.0');

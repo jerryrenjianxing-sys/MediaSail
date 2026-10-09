@@ -55,7 +55,12 @@ const server=http.createServer(async(req,res)=>{
   await panel.getByRole('button',{name:'重启并安装'}).click();await page.waitForTimeout(600);assert.equal(await app.evaluate(()=>globalThis.updateFixture.prompts),1);assert.equal(await app.evaluate(()=>globalThis.updateFixture.installs),0);
   fs.unlinkSync(pending);await app.evaluate(({dialog})=>{dialog.showMessageBox=globalThis.originalDialog;});
   await panel.getByRole('button',{name:'重启并安装'}).click();await phase(panel,'更新暂未完成');assert.equal(await app.evaluate(()=>globalThis.updateFixture.installs),1);
-  await page.waitForFunction(async()=>{try{return(await(await fetch('/api/status')).json()).gateway===true;}catch{return false;}},{timeout:180000});
+  const recoveryDeadline=Date.now()+180000;let recovered=false;
+  while(Date.now()<recoveryDeadline){
+   recovered=await page.evaluate(async()=>{try{return(await(await fetch('/api/status')).json()).gateway===true;}catch{return false;}}).catch(()=>false);
+   if(recovered)break;await new Promise(r=>setTimeout(r,300));
+  }
+  assert.equal(recovered,true,'Local gateway must really recover after the simulated installer failure');
   assert.equal((await page.evaluate(()=>window.desktopAito.call('status'))).busy,false);
   await panel.screenshot({path:path.resolve(root,'../../outputs/MediaSail/更新-失败恢复验证.png')});
   console.log('CACHE REUSE AFTER RESTART, BUSY INSTALL CANCELLATION, INSTALL FAILURE SERVICE RECOVERY PASSED');

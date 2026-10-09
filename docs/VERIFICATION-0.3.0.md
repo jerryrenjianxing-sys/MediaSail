@@ -37,8 +37,15 @@ Test data is isolated from normal user data. No real social-account writes occur
   latest.yml version, file size and SHA-512 matched. GitHub's uploaded asset digest
   matched the local installer, blockmap and update manifest before publishing.
 
-The public feed can be checked after publishing with `scripts/smoke-github-update.cjs`;
-it checks the real GitHub endpoint without downloading or installing an update.
+## Post-publication check (2026-10-09)
+
+The packaged 0.3.0 app successfully read the actual public GitHub feed and displayed
+that 0.3.0 is current. No newer package was downloaded or installed by this check.
+The main-branch smoke helpers were corrected to await navigation and poll actual
+asynchronous state; the public-feed and installer-failure recovery checks were then
+rerun successfully. Recovery was confirmed against the real restarted local gateway.
+These are test-only corrections: the published installer and source snapshot remain
+unchanged. Use the current main-branch smoke scripts for repeat verification.
 
 ## Limits
 
