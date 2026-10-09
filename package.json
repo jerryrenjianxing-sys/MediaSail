@@ -1,0 +1,96 @@
+{
+  "name": "mediasail",
+  "version": "0.3.0",
+  "description": "MediaSail: Easel desktop workspace with AI publishing",
+  "author": "MediaSail contributors",
+  "license": "Apache-2.0",
+  "private": true,
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "stage": "node scripts/stage.cjs",
+    "pack": "npm run stage && electron-builder --win dir --x64 --publish never && node scripts/verify-payload.cjs",
+    "dist": "npm run pack && electron-builder --win nsis --x64 --publish never --prepackaged ../../outputs/MediaSail/win-unpacked"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.59.1"
+  },
+  "build": {
+    "afterPack": "scripts/after-pack.cjs",
+    "appId": "org.electroneasel.desktop",
+    "productName": "MediaSail",
+    "asar": true,
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "../../outputs/MediaSail",
+      "buildResources": "desktop/assets"
+    },
+    "files": [
+      "desktop/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/payload",
+        "to": "payload"
+      },
+      {
+        "from": "build/runtime",
+        "to": "runtime",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc"
+        ]
+      },
+      {
+        "from": "bridge",
+        "to": "bridge"
+      },
+      {
+        "from": "licenses",
+        "to": "licenses"
+      },
+      {
+        "from": "runtime-lock.json",
+        "to": "runtime-lock.json"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "desktop/assets/icon.ico",
+      "signExecutable": false
+    },
+    "nsis": {
+      "include": "scripts/installer.nsh",
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": false,
+      "artifactName": "MediaSail-${version}-win-x64-Setup.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "jerryrenjianxing-sys",
+        "repo": "MediaSail",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jerryrenjianxing-sys/MediaSail.git"
+  },
+  "homepage": "https://github.com/jerryrenjianxing-sys/MediaSail"
+}

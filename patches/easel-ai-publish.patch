@@ -1,0 +1,424 @@
+diff --git a/web/frontend/index.html b/web/frontend/index.html
+index 20faa14..bfe31d1 100644
+--- a/web/frontend/index.html
++++ b/web/frontend/index.html
+@@ -25,7 +25,7 @@
+         }
+       })();
+     </script>
+-    <link rel="icon" type="image/png" href="./static/easel-icon-transparent.png" />
++    <link rel="icon" type="image/png" href="./assets/mediasail-icon.png" />
+     <!-- Google Fonts 改为非阻塞加载：stylesheet 的 <link> 默认阻塞首屏渲染，而
+          fonts.googleapis.com 在中国大陆网络下是 net::ERR_TIMED_OUT，于是整个页面要
+          等到连接超时才画出来。media="print" + onload 切回 all 是标准的 non-blocking
+@@ -40,7 +40,7 @@
+       href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Manrope:wght@400;500;600&family=Noto+Serif+SC:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap"
+     />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Easel</title>
++    <title>MediaSail</title>
+   </head>
+   <body>
+     <div id="root"></div>
+diff --git a/web/frontend/src/App.tsx b/web/frontend/src/App.tsx
+index fee8255..e7d6802 100644
+--- a/web/frontend/src/App.tsx
++++ b/web/frontend/src/App.tsx
+@@ -15,6 +15,9 @@ import BreakdownPage from './components/BreakdownPage';
+ import SubNav from './components/SubNav';
+ import OnboardingWizard from './components/OnboardingWizard';
+ import SettingsPanel from './components/SettingsPanel';
++import AitoPage from './components/AitoPage';
++import SendToAitoModal from './components/SendToAitoModal';
++import type { OutputNode } from './lib/api';
+ import { fetchStatus, fetchPersonas, streamChat, fetchLastTurn, stopChat } from './lib/api';
+ import type { PersonaItem, UploadedFile, ChatQuestion } from './lib/api';
+ import { questionStatus } from './lib/api';
+@@ -54,6 +57,7 @@ export default function App() {
+   const [showRecommend, setShowRecommend] = useState(false);
+   const [showWizard, setShowWizard] = useState(false);
+   const [settingsOpen, setSettingsOpen] = useState(false);
++  const [sendPanel, setSendPanel] = useState<{ project?: OutputNode } | null>(null);
+ 
+   // 对话里的「产物路径 → 内容库」跳转：linkifyOutputs 把目录路径生成为
+   // `#/outputs/<路径>` 锚点，这里监听 hashchange 切页并带上下文，随后清掉 hash
+@@ -732,7 +736,9 @@ export default function App() {
+       case 'skills':
+         return <SkillPage persona={selectedPersona} />;
+       case 'outputs':
+-        return <OutputsPage jumpPath={outputsJump} onJumpHandled={clearOutputsJump} />;
++        return <OutputsPage jumpPath={outputsJump} onJumpHandled={clearOutputsJump} onSendProject={project => setSendPanel({project})} />;
++      case 'aito':
++        return <AitoPage suspended={Boolean(sendPanel || settingsOpen || showWizard || showRecommend)} onCompose={() => setSendPanel({})} />;
+       case 'accounts':
+         return <AccountsPage />;
+       case 'profile':
+@@ -797,7 +803,7 @@ export default function App() {
+         <div className="overlay">
+           <div className="modal" style={{ width: 420, maxWidth: '100%', textAlign: 'center' }}>
+             <div style={{ fontSize: 40 }}>👋</div>
+-            <h2 style={{ margin: '12px 0 8px', fontSize: 20 }}>欢迎使用 Easel</h2>
++            <h2 style={{ margin: '12px 0 8px', fontSize: 20 }}>欢迎使用 MediaSail</h2>
+             <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
+               配置你的账号画像，生成的内容会更贴合你的风格、受众和平台调性。<br />
+               大约 2 分钟，也可以随时在侧栏「+ 新建画像」补配。
+@@ -817,6 +823,7 @@ export default function App() {
+ 
+       {/* 设置（统一入口：模型配置 · 环境安装 · 更多设置） */}
+       {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
++      {sendPanel && <SendToAitoModal project={sendPanel.project} onClose={() => setSendPanel(null)} onOpenAito={() => setCurrentPage('aito')} />}
+     </div>
+   );
+ }
+diff --git a/web/frontend/src/components/AitoPage.tsx b/web/frontend/src/components/AitoPage.tsx
+new file mode 100644
+index 0000000..a56c3d8
+--- /dev/null
++++ b/web/frontend/src/components/AitoPage.tsx
+@@ -0,0 +1,50 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { aitoCall, useAitoState } from '../lib/aitoearn';
++import '../styles/aitoearn.css';
++
++export default function AitoPage({ suspended, onCompose }: { suspended: boolean; onCompose: () => void }) {
++  const state = useAitoState(), viewport = useRef<HTMLDivElement>(null);
++  const [error, setError] = useState(''), [history, setHistory] = useState(false), [acting, setActing] = useState(false);
++  const newestJob = useRef('');
++  useEffect(() => { const id = state?.jobs[0]?.id; if (id && id !== newestJob.current) { newestJob.current = id; setHistory(true); } }, [state]);
++  const command = useCallback(async (action: string, input?: unknown) => {
++    setError(''); setActing(true);
++    try { await aitoCall(action, input); } catch (e) { setError((e as Error).message); } finally { setActing(false); }
++  }, []);
++  useEffect(() => {
++    const element = viewport.current; if (!element) return;
++    const sync = () => { const b = element.getBoundingClientRect(); void aitoCall('view', { visible: !suspended, bounds: { x: b.x, y: b.y, width: b.width, height: b.height } }).catch(e => setError(e.message)); };
++    const observer = new ResizeObserver(sync); observer.observe(element); window.addEventListener('resize', sync); sync();
++    return () => { observer.disconnect(); window.removeEventListener('resize', sync); void aitoCall('view', { visible: false }).catch(() => {}); };
++  }, [suspended]);
++  return <section className="aito-page" data-testid="aito-page">
++    <header className="aito-toolbar">
++      <div className="aito-heading"><strong>AI 发布</strong><span>AitoEarn 中国站</span></div>
++      <button className="btn btn-sm" disabled={!state?.canGoBack || acting} onClick={() => command('back')}>返回</button>
++      <button className="btn btn-sm" disabled={acting} onClick={() => command('home')}>首页 / 登录</button>
++      <button className="btn btn-sm" disabled={acting} onClick={() => command('refresh')}>刷新</button>
++      <button className="btn btn-sm" onClick={() => command('external')}>浏览器打开 ↗</button>
++      {state?.compose && <button className="btn btn-sm btn-primary" onClick={onCompose}>待发送内容</button>}
++      <button className="btn btn-sm" onClick={() => setHistory(v => !v)}>发送记录 {state?.jobs.length || ''}</button>
++    </header>
++    {error && <div className="aito-notice" role="alert">{error}</div>}
++    {state?.busy && !history && <button className="aito-progress" onClick={() => setHistory(true)}>{state.jobs.find(j => ['checking', 'uploading', 'creating'].includes(j.status))?.message || '正在准备素材…'}</button>}
++    {history && <div className="aito-history">
++      {!state?.jobs.length && <p>还没有发送记录。从 Easel 内容库选择成品，即可带入 AitoEarn 草稿箱。</p>}
++      {state?.jobs.map(job => <article key={job.id} className="aito-job">
++        <div><strong>{job.content.title}</strong><small>{job.accountName} · {new Date(job.createdAt).toLocaleString()}</small><p>{job.message}</p>
++          {['checking', 'uploading', 'creating'].includes(job.status) && <progress max={100} value={job.progress} />}</div>
++        <div className="aito-job-actions">
++          {job.status === 'done' && <button className="btn btn-sm" disabled={acting || state.busy} onClick={() => command('openDraft', { id: job.id })}>打开草稿</button>}
++          {['failed', 'paused', 'login'].includes(job.status) && <button className="btn btn-sm" disabled={acting || state.busy} onClick={() => command('retry', { id: job.id })}>继续发送</button>}
++          {job.status === 'uncertain' && <><button className="btn btn-sm" disabled={acting || state.busy} onClick={() => command('reconcile', { id: job.id })}>核对草稿结果</button>
++            {job.checkedAbsentAt && <button className="btn btn-sm" disabled={acting || state.busy} onClick={() => command('retry', { id: job.id, confirmedAbsent: true })}>确认未创建，重新发送</button>}</>}
++        </div>
++      </article>)}
++    </div>}
++    <div ref={viewport} className="aito-viewport" data-testid="aito-viewport">
++      <div className="aito-placeholder">{state?.web.error ? <><p>{state.web.error}</p><button className="btn btn-primary" onClick={() => command('refresh')}>重试加载</button></> : <p>正在打开 AitoEarn…</p>}</div>
++    </div>
++    <footer className="aito-footer">{state?.web.loading ? '页面加载中…' : '内容仅保存为草稿，发布请在 AitoEarn 中确认。'} 需要官方浏览器插件时，可选择「浏览器打开」。</footer>
++  </section>;
++}
+diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
+new file mode 100644
+index 0000000..6f38050
+--- /dev/null
++++ b/web/frontend/src/components/DesktopUpdates.tsx
+@@ -0,0 +1,21 @@
++import { useEffect, useState } from 'react';
++type State = { phase: string; current: string; version: string; percent: number };
++declare global {
++  interface Window { desktopUpdates?: { open: () => Promise<boolean>; status: () => Promise<State | null>; subscribe: (callback: (state: State) => void) => () => void } }
++}
++export default function DesktopUpdates() {
++  const [state, setState] = useState<State | null>(null);
++  useEffect(() => {
++    const bridge = window.desktopUpdates;
++    if (!bridge) return;
++    let live = true;
++    bridge.status().then(s => { if (live) setState(s); }).catch(() => {});
++    const off = bridge.subscribe(setState);
++    return () => { live = false; off(); };
++  }, []);
++  if (!window.desktopUpdates) return null;
++  const label = state?.phase === 'available' ? '发现新版' : state?.phase === 'downloaded' ? '重启更新' : state?.phase === 'downloading' ? `下载中 ${Math.round(state.percent)}%` : '软件更新';
++  return <button className="nav-item" style={{ margin: '4px 12px', width: 'calc(100% - 24px)', fontSize: 12 }} onClick={() => { void window.desktopUpdates?.open(); }} title="从 GitHub 检查和下载 MediaSail 新版">
++    <span aria-hidden="true" className="nav-icon">↑</span>{label}<span style={{ marginLeft: 'auto', opacity: .5 }}>{state?.current}</span>
++  </button>;
++}
+diff --git a/web/frontend/src/components/OutputsPage.tsx b/web/frontend/src/components/OutputsPage.tsx
+index 043dc91..852cdbe 100644
+--- a/web/frontend/src/components/OutputsPage.tsx
++++ b/web/frontend/src/components/OutputsPage.tsx
+@@ -76,12 +76,13 @@ function Thumb({ f, big }: { f: OutputNode | null; big?: boolean }) {
+ }
+ 
+ interface OutputsPageProps {
++  onSendProject?: (project: OutputNode) => void;
+   /** 从对话跳转进来的目录（outputs 相对路径，不含 outputs/ 前缀）；消费后由父层清空 */
+   jumpPath?: string;
+   onJumpHandled?: () => void;
+ }
+ 
+-export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProps) {
++export default function OutputsPage({ jumpPath, onJumpHandled, onSendProject }: OutputsPageProps) {
+   const [roots, setRoots] = useState<OutputNode[]>([]);
+   const [treeError, setTreeError] = useState('');
+   const [stack, setStack] = useState<string[]>([]);   // 当前所在的文件夹名称路径
+@@ -203,6 +204,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+             {m?.status && <span style={statusBadge(m.status)}>{STATUS_LABEL[m.status] || m.status}</span>}
+             <span>{d.fileCount ?? 0} 个文件</span>
+           </div>
++          {atTop && onSendProject && <button className="btn btn-sm" style={{ marginTop: 9 }} onClick={e => { e.stopPropagation(); onSendProject(d); }}>发送到 AI 发布</button>}
+         </div>
+       </div>
+     );
+@@ -245,7 +247,10 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+               : `${dirs.length} 个文件夹 · ${files.length} 个文件（可继续点开子文件夹）`}
+           </p>
+         </div>
+-        <button className="btn btn-sm" onClick={load}><IconRefresh size={14} /> 刷新</button>
++        <div style={{ display: 'flex', gap: 8 }}>
++          {atProjectRoot && onSendProject && <button className="btn btn-sm btn-primary" onClick={() => { const project = roots.find(r => r.name === stack[0]); if (project) onSendProject(project); }}>发送到 AI 发布</button>}
++          <button className="btn btn-sm" onClick={load}><IconRefresh size={14} /> 刷新</button>
++        </div>
+       </div>
+ 
+       {treeError && <div className="notice-error">{treeError}</div>}
+diff --git a/web/frontend/src/components/SendToAitoModal.tsx b/web/frontend/src/components/SendToAitoModal.tsx
+new file mode 100644
+index 0000000..1671b6c
+--- /dev/null
++++ b/web/frontend/src/components/SendToAitoModal.tsx
+@@ -0,0 +1,99 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { fetchOutputContent, mediaUrl } from '../lib/api';
++import type { OutputNode } from '../lib/api';
++import { aitoCall, projectCompose } from '../lib/aitoearn';
++import type { AitoState, Compose, Connection } from '../lib/aitoearn';
++import '../styles/aitoearn.css';
++
++export default function SendToAitoModal({ project, onClose, onOpenAito }: { project?: OutputNode; onClose: () => void; onOpenAito: () => void }) {
++  const [draft, setDraft] = useState<Compose | null>(null), [connection, setConnection] = useState<Connection | null>(null);
++  const [groupId, setGroupId] = useState(''), [error, setError] = useState(''), [accountError, setAccountError] = useState('');
++  const [busy, setBusy] = useState(false), [connecting, setConnecting] = useState(false), [coverBusy, setCoverBusy] = useState(false);
++  const draftRef = useRef(draft), textRequest = useRef(0); draftRef.current = draft;
++  const change = (update: Partial<Compose>) => setDraft(d => d ? { ...d, ...update } : d);
++  const connect = useCallback(async () => {
++    setConnecting(true); setAccountError('');
++    try { const c = await aitoCall<Connection>('connection'); setConnection(c); setGroupId(c.groups.some(g => g.id === c.selectedGroup) ? c.selectedGroup : ''); }
++    catch (e) { setConnection(null); setAccountError((e as Error).message); } finally { setConnecting(false); }
++  }, []);
++  useEffect(() => {
++    let live = true;
++    const init = async () => {
++      try {
++        const d = project ? projectCompose(project) : (await aitoCall<AitoState>('status')).compose;
++        if (!d) { if (live) setError('没有待发送内容，请从内容库选择项目。'); return; }
++        if (project && d.textPath) d.body = (await fetchOutputContent(d.textPath)).content;
++        if (live) setDraft(d);
++      } catch (e) { if (live) setError((e as Error).message); }
++    };
++    void init(); void connect();
++    return () => { live = false; };
++  }, [project, connect]);
++  useEffect(() => {
++    if (!draft) return;
++    const timer = setTimeout(() => { void aitoCall('compose', draft).catch(e => setError(e.message)); }, 250);
++    return () => clearTimeout(timer);
++  }, [draft]);
++  useEffect(() => () => { if (draftRef.current) void aitoCall('compose', draftRef.current).catch(() => {}); }, []);
++  const readText = async (file: string) => {
++    const seq = ++textRequest.current; change({ textPath: file }); if (!file) return;
++    try { const value = await fetchOutputContent(file); if (seq === textRequest.current) change({ body: value.content }); } catch (e) { setError((e as Error).message); }
++  };
++  const goToSite = async () => { if (draft) await aitoCall('compose', draft); onClose(); onOpenAito(); };
++  const createGroup = async () => {
++    setConnecting(true); setAccountError('');
++    try { const g = await aitoCall<{ id: string; name: string }>('group'); await connect(); setGroupId(g.id); }
++    catch (e) { setAccountError((e as Error).message); } finally { setConnecting(false); }
++  };
++  const makeCover = async () => {
++    if (!draft?.video) return; setCoverBusy(true); setError(''); const video = draft.video;
++    try { const p = await aitoCall<string>('cover', { path: video }); setDraft(d => d?.video === video ? { ...d, cover: p, files: d.files.some(f => f.path === p) ? d.files : [...d.files, {path:p,name:'视频首帧封面',kind:'image'}] } : d); }
++    catch (e) { setError((e as Error).message); } finally { setCoverBusy(false); }
++  };
++  const send = async () => {
++    if (!draft || !connection) return; setBusy(true); setError('');
++    try {
++      await aitoCall('compose', draft);
++      await aitoCall<string>('send', { title:draft.title, body:draft.body, groupId, accountId:connection.user.id,
++        images:draft.mode === 'images' ? draft.images : [], video:draft.mode === 'video' ? draft.video : '', cover:draft.cover });
++      onClose(); onOpenAito();
++    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
++  };
++  const images = draft?.files.filter(f => /\.(png|jpe?g|webp)$/i.test(f.path)) || [];
++  const videos = draft?.files.filter(f => /\.(mp4|mov)$/i.test(f.path)) || [];
++  const texts = draft?.files.filter(f => /\.(md|txt|markdown)$/i.test(f.path)) || [];
++  const hasMedia = draft && (draft.mode === 'video' ? draft.video && draft.cover : draft.images.length > 0);
++  return <div className="overlay aito-modal-overlay" role="dialog" aria-modal="true" aria-label="发送到 AI 发布">
++    <div className="aito-compose">
++      <header><div><h2>发送到 AI 发布</h2><p>把选中的成品保存到 AitoEarn 草稿箱，再去原版页面检查和发布。</p></div><button className="icon-btn" disabled={busy || coverBusy} aria-label="关闭发送面板" onClick={onClose}>×</button></header>
++      <div className="aito-compose-body">
++        {error && <div className="aito-notice" role="alert">{error}</div>}
++        {draft && <>
++          <section className="aito-compose-account">
++            <strong>{connection ? `AitoEarn · ${connection.user.name}` : '连接 AitoEarn 中国站'}</strong>
++            {accountError && <p>{accountError}</p>}
++            <div className="aito-inline"><button className="btn btn-sm" onClick={goToSite} disabled={busy || coverBusy}>打开页面登录</button><button className="btn btn-sm" disabled={connecting || busy} onClick={connect}>{connecting ? '正在连接…' : '刷新账号和草稿箱'}</button></div>
++            {connection && <div className="aito-inline"><label>草稿箱 <select aria-label="AitoEarn 草稿箱" value={groupId} onChange={e => setGroupId(e.target.value)} disabled={busy}><option value="">请选择草稿箱</option>{connection.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label><button className="btn btn-sm" disabled={connecting || busy} onClick={createGroup}>创建 / 使用「Easel 导入」</button></div>}
++          </section>
++          <label>标题<input aria-label="发送标题" value={draft.title} maxLength={500} disabled={busy} onChange={e => change({title:e.target.value})} /></label>
++          {texts.length > 0 && <label>正文来源<select aria-label="正文来源" value={draft.textPath} disabled={busy} onChange={e => readText(e.target.value)}><option value="">手动填写 / 保留当前正文</option>{texts.map(f => <option key={f.path} value={f.path}>{f.name}</option>)}</select></label>}
++          <label>正文<textarea aria-label="发送正文" rows={7} value={draft.body} disabled={busy} onChange={e => change({body:e.target.value})} /></label>
++          <div className="aito-inline"><button className={`chip ${draft.mode === 'images' ? 'active' : ''}`} disabled={busy} onClick={() => change({mode:'images',cover:''})}>图文</button><button className={`chip ${draft.mode === 'video' ? 'active' : ''}`} disabled={busy} onClick={() => change({mode:'video',cover:''})}>视频</button></div>
++          {draft.mode === 'images' ? <>
++            <p className="aito-muted">选择图片。下方顺序就是草稿中的图片顺序。</p>
++            <div className="aito-image-picker">{images.map(f => <label key={f.path} className="aito-image-option"><input type="checkbox" checked={draft.images.includes(f.path)} disabled={busy} onChange={e => change({images:e.target.checked ? [...draft.images,f.path] : draft.images.filter(p => p !== f.path)})} /><img src={mediaUrl(f.path)} alt={f.name} /><span>{f.name}</span></label>)}</div>
++            {draft.images.map((p,i) => <div className="aito-order" key={p}><span>{i+1}. {p.split('/').pop()}</span><button className="btn btn-sm" aria-label={`上移图片 ${i+1}`} disabled={busy || i===0} onClick={() => {const a=[...draft.images];[a[i-1],a[i]]=[a[i],a[i-1]];change({images:a});}}>↑</button><button className="btn btn-sm" aria-label={`下移图片 ${i+1}`} disabled={busy || i===draft.images.length-1} onClick={() => {const a=[...draft.images];[a[i],a[i+1]]=[a[i+1],a[i]];change({images:a});}}>↓</button></div>)}
++          </> : <>
++            <label>视频<select aria-label="发送视频" value={draft.video} disabled={busy || coverBusy} onChange={e => change({video:e.target.value,cover:''})}><option value="">请选择一个视频</option>{videos.map(f => <option key={f.path} value={f.path}>{f.name}</option>)}</select></label>
++            {draft.video && <video className="aito-video-preview" src={mediaUrl(draft.video)} controls preload="metadata" />}
++          </>}
++          <label>封面<select aria-label="发送封面" value={draft.cover} disabled={busy || coverBusy} onChange={e => change({cover:e.target.value})}><option value="">{draft.mode === 'images' ? '使用第一张图片' : '请选择封面或提取视频首帧'}</option>{images.map(f => <option key={f.path} value={f.path}>{f.name}</option>)}</select></label>
++          {draft.mode === 'video' && <button className="btn btn-sm" disabled={!draft.video || coverBusy || busy} onClick={makeCover}>{coverBusy ? '正在提取封面…' : '使用视频首帧作封面'}</button>}
++          {draft.cover && <img className="aito-cover-preview" src={mediaUrl(draft.cover)} alt="草稿封面" />}
++          {!hasMedia && <p className="aito-muted">{draft.mode === 'video' && draft.video ? '请补充视频封面。' : 'AitoEarn 草稿需要图片或视频。当前文字会保留，补充素材后即可发送。'}</p>}
++        </>}
++      </div>
++      <footer><span>内容会上传到你的 AitoEarn 账号。此操作不会发布。</span><button className="btn" disabled={busy || coverBusy} onClick={onClose}>暂存并关闭</button><button className="btn btn-primary" disabled={!draft?.title.trim() || !draft?.body.trim() || !hasMedia || !groupId || !connection || busy || coverBusy} onClick={send}>{busy ? '正在准备…' : '保存到 AitoEarn 草稿'}</button></footer>
++    </div>
++  </div>;
++}
+diff --git a/web/frontend/src/components/Sidebar.tsx b/web/frontend/src/components/Sidebar.tsx
+index 1120f43..22333a6 100644
+--- a/web/frontend/src/components/Sidebar.tsx
++++ b/web/frontend/src/components/Sidebar.tsx
+@@ -5,12 +5,13 @@ import type { ComponentType } from 'react';
+ import {
+   IconChat, IconSkills, IconOutputs, IconAccounts, IconProfile,
+   IconNewChat, IconEdit, IconArchive, IconUnarchive, IconTrash, IconChevron,
+-  IconDashboard,
++  IconDashboard, IconPublish,
+ } from './icons';
+ import { IconGear } from './settingsIcons';
+ import ThemeToggle from './ThemeToggle';
++import DesktopUpdates from './DesktopUpdates';
+ 
+-export type Page = 'dashboard' | 'chat' | 'trends' | 'ideas' | 'calendar' | 'publish' | 'breakdown' | 'skills' | 'outputs' | 'accounts' | 'profile';
++export type Page = 'dashboard' | 'chat' | 'trends' | 'ideas' | 'calendar' | 'publish' | 'breakdown' | 'skills' | 'outputs' | 'accounts' | 'profile' | 'aito';
+ 
+ interface SidebarProps {
+   currentPage: Page;
+@@ -37,6 +38,7 @@ const NAV: { page: Page; Icon: ComponentType<{ size?: number }>; label: string }
+   { page: 'chat', Icon: IconChat, label: '对话' },
+   { page: 'skills', Icon: IconSkills, label: '技能库' },
+   { page: 'outputs', Icon: IconOutputs, label: '内容库' },
++  { page: 'aito', Icon: IconPublish, label: 'AI 发布' },
+   { page: 'accounts', Icon: IconAccounts, label: '账号' },
+   { page: 'profile', Icon: IconProfile, label: '画像' },
+ ];
+@@ -116,8 +118,8 @@ export default function Sidebar({
+     <div className="sidebar">
+       <div className="sidebar-header">
+         <div className="sidebar-logo">
+-          <img className="sidebar-logo-icon" src="./static/easel-icon-transparent.png" alt="" />
+-          <h1>Easel</h1>
++          <img className="sidebar-logo-icon" src="./assets/mediasail-icon.png" alt="" />
++          <h1>MediaSail</h1>
+           <ThemeToggle />
+         </div>
+         <select
+@@ -171,6 +173,7 @@ export default function Sidebar({
+         )}
+       </div>
+ 
++      <DesktopUpdates />
+       <div className="sidebar-status">
+         <span className={`status-dot ${gatewayStatus === 'connected' ? '' : 'offline'}`} />
+         {gatewayStatus === 'connected'
+@@ -181,7 +184,6 @@ export default function Sidebar({
+         <button className="settings-gear" onClick={onOpenSettings} title="设置（模型 · 环境 · 更多）">
+           <IconGear size={13} /> 设置
+         </button>
+-        <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--text-tertiary)' }}>subnav-1</span>
+       </div>
+     </div>
+   );
+diff --git a/web/frontend/src/lib/aitoearn.ts b/web/frontend/src/lib/aitoearn.ts
+new file mode 100644
+index 0000000..219c2e8
+--- /dev/null
++++ b/web/frontend/src/lib/aitoearn.ts
+@@ -0,0 +1,46 @@
++import { useEffect, useState } from 'react';
++import type { OutputNode } from './api';
++
++export interface Compose {
++  projectPath: string; title: string; body: string; textPath: string;
++  images: string[]; video: string; cover: string; mode: 'images' | 'video';
++  files: Pick<OutputNode, 'path' | 'name' | 'kind'>[];
++}
++export interface AitoJob {
++  id: string; accountId: string; accountName: string; content: { title: string; groupId: string };
++  status: string; message: string; progress: number; createdAt: number; checkedAbsentAt?: number;
++}
++export interface AitoState {
++  compose: Compose | null; jobs: AitoJob[]; busy: boolean;
++  web: { loading: boolean; error: string; url: string }; canGoBack: boolean;
++}
++export interface Connection { user: { id: string; name: string }; groups: { id: string; name: string }[]; selectedGroup: string }
++declare global {
++  interface Window { desktopAito?: { call: (action: string, input?: unknown) => Promise<unknown>; subscribe: (callback: (state: AitoState) => void) => () => void } }
++}
++export function aitoCall<T = unknown>(action: string, input?: unknown): Promise<T> {
++  if (!window.desktopAito) return Promise.reject(new Error('此功能需要在 MediaSail 桌面软件中打开。'));
++  return window.desktopAito.call(action, input) as Promise<T>;
++}
++export function useAitoState() {
++  const [state, setState] = useState<AitoState | null>(null);
++  useEffect(() => {
++    let live = true;
++    aitoCall<AitoState>('status').then(s => { if (live) setState(s); }).catch(() => {});
++    const off = window.desktopAito?.subscribe(setState);
++    return () => { live = false; off?.(); };
++  }, []);
++  return state;
++}
++export function projectCompose(project: OutputNode): Compose {
++  const files: Compose['files'] = [];
++  const walk = (node: OutputNode) => { if (node.type === 'file') files.push({ path: node.path, name: node.name, kind: node.kind }); else node.children?.forEach(walk); };
++  walk(project);
++  const preferred = project.meta?.deliverablePaths || [];
++  const images = preferred.filter(p => /\.(png|jpe?g|webp)$/i.test(p));
++  const videos = preferred.filter(p => /\.(mp4|mov)$/i.test(p));
++  const texts = files.filter(f => /\.(md|txt|markdown)$/i.test(f.name));
++  const mode = videos.length || project.meta?.kind === 'video' ? 'video' : 'images';
++  return { projectPath: project.path, title: project.meta?.title || project.name, body: project.meta?.summary || '', textPath: texts.length === 1 ? texts[0].path : '',
++    images, video: videos.length === 1 ? videos[0] : '', cover: /\.(png|jpe?g|webp)$/i.test(project.meta?.cover || '') ? project.meta!.cover! : '', mode, files };
++}
+diff --git a/web/frontend/src/styles/aitoearn.css b/web/frontend/src/styles/aitoearn.css
+new file mode 100644
+index 0000000..1c6aa2b
+--- /dev/null
++++ b/web/frontend/src/styles/aitoearn.css
+@@ -0,0 +1,12 @@
++.aito-page{display:flex;flex-direction:column;min-height:0;background:var(--bg)}
++.aito-toolbar{display:flex;align-items:center;gap:7px;padding:13px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
++.aito-heading{display:flex;flex-direction:column;margin-right:auto;gap:3px}.aito-heading strong{font-size:17px}.aito-heading span,.aito-footer,.aito-muted{font-size:12px;color:var(--text-secondary)}
++.aito-viewport{position:relative;flex:1;min-height:100px;background:var(--surface)}.aito-placeholder{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;color:var(--text-secondary)}
++.aito-footer{padding:8px 18px;flex-shrink:0;border-top:1px solid var(--border)}.aito-notice{padding:10px 16px;background:color-mix(in srgb,#d97706 12%,var(--surface));border:1px solid color-mix(in srgb,#d97706 30%,var(--border));border-radius:8px;margin:8px 12px;font-size:13px;overflow-wrap:anywhere}
++.aito-progress{border:0;border-bottom:1px solid var(--border);padding:10px 18px;text-align:left;background:var(--surface-hover);color:var(--text-primary);cursor:pointer}
++.aito-history{max-height:260px;overflow:auto;padding:0 18px;border-bottom:1px solid var(--border)}.aito-history>p{padding:14px 0;font-size:13px;color:var(--text-secondary)}.aito-job{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);font-size:13px}.aito-job small{display:block;color:var(--text-tertiary);margin:5px 0}.aito-job p{margin:4px 0;overflow-wrap:anywhere}.aito-job progress{width:240px;max-width:100%}.aito-job-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
++.aito-modal-overlay{z-index:2500}.aito-compose{width:min(900px,95vw);max-height:92vh;display:flex;flex-direction:column;background:var(--surface);color:var(--text-primary);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 70px #0003;overflow:hidden}
++.aito-compose>header{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 24px;border-bottom:1px solid var(--border)}.aito-compose h2{font-size:20px;margin:0 0 7px}.aito-compose header p{font-size:13px;color:var(--text-secondary);margin:0}.aito-compose-body{padding:18px 24px;overflow:auto;display:flex;flex-direction:column;gap:16px}.aito-compose-body>label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:500}
++.aito-compose input:not([type=checkbox]),.aito-compose select,.aito-compose textarea{width:100%;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-primary);padding:10px 12px;font:inherit;box-sizing:border-box}.aito-compose textarea{resize:vertical;line-height:1.6}.aito-compose input:focus,.aito-compose textarea:focus,.aito-compose select:focus{outline:2px solid var(--accent-start);outline-offset:1px}.aito-inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.aito-inline label{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}.aito-inline select{flex:1}
++.aito-compose-account{padding:14px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:12px}.aito-compose-account p{margin:0;font-size:13px;color:var(--text-secondary)}.aito-image-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;max-height:280px;overflow:auto}.aito-image-option{display:flex;position:relative;flex-direction:column;gap:5px;border:1px solid var(--border);padding:8px;border-radius:8px;cursor:pointer;font-size:12px;overflow:hidden}.aito-image-option>input{position:absolute;top:12px;left:12px;width:17px;height:17px}.aito-image-option img{width:100%;height:90px;object-fit:contain;background:var(--bg)}.aito-image-option span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aito-order{display:flex;gap:6px;align-items:center}.aito-order span{flex:1;font-size:13px;overflow-wrap:anywhere}.aito-cover-preview{max-width:230px;max-height:140px;object-fit:contain;align-self:flex-start;border-radius:8px}.aito-video-preview{max-height:210px;width:100%;background:#111;border-radius:8px}
++.aito-compose>footer{display:flex;gap:10px;align-items:center;padding:16px 24px;border-top:1px solid var(--border);flex-wrap:wrap}.aito-compose>footer span{font-size:12px;color:var(--text-secondary);flex:1;min-width:150px}.aito-compose button:disabled{opacity:.5;cursor:not-allowed}

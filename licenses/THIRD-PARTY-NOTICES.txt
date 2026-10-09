@@ -1,0 +1,51 @@
+MediaSail 0.3.0 — third-party notices
+
+Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02.
+Original frontend and workflows are retained. A three-line compatibility patch adds
+the model display name required by OpenClaw to the custom-provider save path.
+Desktop lifecycle, runtime isolation,
+bootstrap and packaging are separate desktop adapters. MediaSail also adds branding,
+AitoEarn draft integration and GitHub updates. Easel's root license is
+Apache-2.0. Nested components retain their individual licenses, including GPL/AGPL
+components; the root license does not replace those terms.
+Source: https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02
+
+Electron 44.7.0: MIT. Chromium and other notices are in Chromium-NOTICES.html and
+the Electron distribution's LICENSES.chromium.html.
+https://github.com/electron/electron/releases/tag/v44.7.0
+
+Node.js 24.21.0: MIT and bundled third-party terms. See runtime/node/LICENSE.
+https://nodejs.org/dist/v24.21.0/
+
+OpenClaw 2026.9.9: MIT; plugins/dependencies retain their own licenses.
+See runtime/node/node_modules/openclaw/LICENSE and node-packages.json.
+https://github.com/openclaw/openclaw
+
+CPython 3.11.15: Python Software Foundation license and bundled library licenses.
+Portable distribution from Astral python-build-standalone, installed with uv.
+See runtime/python/cpython-3.11.15-windows-x86_64-none/LICENSE* and distribution metadata.
+https://github.com/astral-sh/python-build-standalone
+
+Python dependencies: versions and hashes are pinned in requirements.lock; package
+metadata and licensing are listed in python-packages.json. Their distribution licenses
+remain alongside the packages in Lib/site-packages/*.dist-info.
+
+Playwright and Chromium: see runtime/browsers and the Python Playwright distribution.
+Browser revisions match the pinned Python Playwright version, not the Electron browser.
+https://github.com/microsoft/playwright
+
+FFmpeg 8.1.1 full build from Gyan.dev: GPLv3; enabled external libraries retain their
+licenses. See runtime/ffmpeg/LICENSE and README.txt. The binary hash is pinned in
+ffmpeg-lock.json in the source bundle. Build details are available via ffmpeg -version.
+https://www.gyan.dev/ffmpeg/builds/
+https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz
+
+All files in this bundled runtime are recorded in runtime-sha256.json. No model
+service subscription, API credentials, or social-media accounts are included.
+
+electron-updater 6.8.9: MIT. See ElectronUpdater-LICENSE.txt and package-lock.json.
+https://github.com/electron-userland/electron-builder
+The Electron app's production dependency tree is bundled in app.asar; each package
+retains its license files. See desktop-packages.json for versions and terms.
+
+AitoEarn is loaded from its official website and is not redistributed in this package.

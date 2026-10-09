@@ -1,0 +1,14 @@
+diff --git a/web/app.py b/web/app.py
+index 66b3678..215d299 100644
+--- a/web/app.py
++++ b/web/app.py
+@@ -1537,6 +1537,9 @@ def _sync_openclaw_chat(provider_updates: dict[str, dict], keep_custom: set[str]
+                 if models[0].get('id') != model:
+                     models[0]['id'] = model
+                     changed = True
++                if not models[0].get('name'):
++                    models[0]['name'] = model
++                    changed = True
+                 prov['models'] = models
+         if primary_ref:
+             ref = data.setdefault('agents', {}).setdefault('defaults', {}).setdefault('model', {})

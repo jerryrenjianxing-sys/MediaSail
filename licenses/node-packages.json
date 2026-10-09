@@ -1,0 +1,6403 @@
+[
+  {
+    "name": "corepack",
+    "version": "0.36.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/nodejs/corepack.git"
+    },
+    "path": "node_modules/corepack/package.json"
+  },
+  {
+    "name": "npm",
+    "version": "11.19.0",
+    "license": "Artistic-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git"
+    },
+    "path": "node_modules/npm/package.json"
+  },
+  {
+    "name": "@gar/promise-retry",
+    "version": "1.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/wraithgar/node-promise-retry.git"
+    },
+    "path": "node_modules/npm/node_modules/@gar/promise-retry/package.json"
+  },
+  {
+    "name": "@isaacs/fs-minipass",
+    "version": "4.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/fs-minipass.git"
+    },
+    "path": "node_modules/npm/node_modules/@isaacs/fs-minipass/package.json"
+  },
+  {
+    "name": "@isaacs/string-locale-compare",
+    "version": "1.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/string-locale-compare"
+    },
+    "path": "node_modules/npm/node_modules/@isaacs/string-locale-compare/package.json"
+  },
+  {
+    "name": "@npmcli/agent",
+    "version": "4.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/agent.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/agent/package.json"
+  },
+  {
+    "name": "@npmcli/arborist",
+    "version": "9.9.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/arborist"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/arborist/package.json"
+  },
+  {
+    "name": "@npmcli/config",
+    "version": "10.12.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/config"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/config/package.json"
+  },
+  {
+    "name": "@npmcli/fs",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/fs.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/fs/package.json"
+  },
+  {
+    "name": "@npmcli/git",
+    "version": "7.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/git.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/git/package.json"
+  },
+  {
+    "name": "@npmcli/installed-package-contents",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/installed-package-contents.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/installed-package-contents/package.json"
+  },
+  {
+    "name": "@npmcli/map-workspaces",
+    "version": "5.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/map-workspaces.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/map-workspaces/package.json"
+  },
+  {
+    "name": "@npmcli/metavuln-calculator",
+    "version": "9.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/metavuln-calculator.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/metavuln-calculator/package.json"
+  },
+  {
+    "name": "@npmcli/name-from-folder",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/name-from-folder.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/name-from-folder/package.json"
+  },
+  {
+    "name": "@npmcli/node-gyp",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-gyp.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/node-gyp/package.json"
+  },
+  {
+    "name": "@npmcli/package-json",
+    "version": "7.0.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/package-json.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/package-json/package.json"
+  },
+  {
+    "name": "@npmcli/promise-spawn",
+    "version": "9.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/promise-spawn.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/promise-spawn/package.json"
+  },
+  {
+    "name": "@npmcli/query",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/query.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/query/package.json"
+  },
+  {
+    "name": "@npmcli/redact",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/redact.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/redact/package.json"
+  },
+  {
+    "name": "@npmcli/run-script",
+    "version": "10.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/run-script.git"
+    },
+    "path": "node_modules/npm/node_modules/@npmcli/run-script/package.json"
+  },
+  {
+    "name": "@sigstore/bundle",
+    "version": "4.0.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/bundle/package.json"
+  },
+  {
+    "name": "@sigstore/core",
+    "version": "3.2.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/core/package.json"
+  },
+  {
+    "name": "@sigstore/protobuf-specs",
+    "version": "0.5.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/protobuf-specs.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/protobuf-specs/package.json"
+  },
+  {
+    "name": "@sigstore/sign",
+    "version": "4.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/sign/package.json"
+  },
+  {
+    "name": "@sigstore/tuf",
+    "version": "4.0.2",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/tuf/package.json"
+  },
+  {
+    "name": "@sigstore/verify",
+    "version": "3.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@sigstore/verify/package.json"
+  },
+  {
+    "name": "@tufjs/canonical-json",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@tufjs/canonical-json/package.json"
+  },
+  {
+    "name": "@tufjs/models",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/npm/node_modules/@tufjs/models/package.json"
+  },
+  {
+    "name": "abbrev",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/abbrev-js.git"
+    },
+    "path": "node_modules/npm/node_modules/abbrev/package.json"
+  },
+  {
+    "name": "agent-base",
+    "version": "7.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/agent-base"
+    },
+    "path": "node_modules/npm/node_modules/agent-base/package.json"
+  },
+  {
+    "name": "aproba",
+    "version": "2.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/iarna/aproba"
+    },
+    "path": "node_modules/npm/node_modules/aproba/package.json"
+  },
+  {
+    "name": "archy",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/substack/node-archy.git"
+    },
+    "path": "node_modules/npm/node_modules/archy/package.json"
+  },
+  {
+    "name": "balanced-match",
+    "version": "4.0.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/juliangruber/balanced-match.git"
+    },
+    "path": "node_modules/npm/node_modules/balanced-match/package.json"
+  },
+  {
+    "name": "bin-links",
+    "version": "6.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/bin-links.git"
+    },
+    "path": "node_modules/npm/node_modules/bin-links/package.json"
+  },
+  {
+    "name": "binary-extensions",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/binary-extensions",
+    "path": "node_modules/npm/node_modules/binary-extensions/package.json"
+  },
+  {
+    "name": "brace-expansion",
+    "version": "5.0.7",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/juliangruber/brace-expansion.git"
+    },
+    "path": "node_modules/npm/node_modules/brace-expansion/package.json"
+  },
+  {
+    "name": "cacache",
+    "version": "20.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cacache.git"
+    },
+    "path": "node_modules/npm/node_modules/cacache/package.json"
+  },
+  {
+    "name": "chalk",
+    "version": "5.6.2",
+    "license": "MIT",
+    "repository": "chalk/chalk",
+    "path": "node_modules/npm/node_modules/chalk/package.json"
+  },
+  {
+    "name": "chownr",
+    "version": "3.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/chownr.git"
+    },
+    "path": "node_modules/npm/node_modules/chownr/package.json"
+  },
+  {
+    "name": "ci-info",
+    "version": "4.4.0",
+    "license": "MIT",
+    "repository": "github:watson/ci-info",
+    "path": "node_modules/npm/node_modules/ci-info/package.json"
+  },
+  {
+    "name": "cidr-regex",
+    "version": "5.0.5",
+    "license": "BSD-2-Clause",
+    "repository": "silverwind/cidr-regex",
+    "path": "node_modules/npm/node_modules/cidr-regex/package.json"
+  },
+  {
+    "name": "cmd-shim",
+    "version": "8.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cmd-shim.git"
+    },
+    "path": "node_modules/npm/node_modules/cmd-shim/package.json"
+  },
+  {
+    "name": "common-ancestor-path",
+    "version": "2.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/common-ancestor-path"
+    },
+    "path": "node_modules/npm/node_modules/common-ancestor-path/package.json"
+  },
+  {
+    "name": "cssesc",
+    "version": "3.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mathiasbynens/cssesc.git"
+    },
+    "path": "node_modules/npm/node_modules/cssesc/package.json"
+  },
+  {
+    "name": "debug",
+    "version": "4.4.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/debug-js/debug.git"
+    },
+    "path": "node_modules/npm/node_modules/debug/package.json"
+  },
+  {
+    "name": "diff",
+    "version": "8.0.4",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/kpdecker/jsdiff.git"
+    },
+    "path": "node_modules/npm/node_modules/diff/package.json"
+  },
+  {
+    "name": "env-paths",
+    "version": "2.2.1",
+    "license": "MIT",
+    "repository": "sindresorhus/env-paths",
+    "path": "node_modules/npm/node_modules/env-paths/package.json"
+  },
+  {
+    "name": "exponential-backoff",
+    "version": "3.1.3",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/coveooss/exponential-backoff.git"
+    },
+    "path": "node_modules/npm/node_modules/exponential-backoff/package.json"
+  },
+  {
+    "name": "fastest-levenshtein",
+    "version": "1.0.16",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ka-weihe/fastest-levenshtein.git"
+    },
+    "path": "node_modules/npm/node_modules/fastest-levenshtein/package.json"
+  },
+  {
+    "name": "fs-minipass",
+    "version": "3.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/fs-minipass.git"
+    },
+    "path": "node_modules/npm/node_modules/fs-minipass/package.json"
+  },
+  {
+    "name": "glob",
+    "version": "13.0.6",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/node-glob.git"
+    },
+    "path": "node_modules/npm/node_modules/glob/package.json"
+  },
+  {
+    "name": "graceful-fs",
+    "version": "4.2.11",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/isaacs/node-graceful-fs"
+    },
+    "path": "node_modules/npm/node_modules/graceful-fs/package.json"
+  },
+  {
+    "name": "hosted-git-info",
+    "version": "9.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/hosted-git-info.git"
+    },
+    "path": "node_modules/npm/node_modules/hosted-git-info/package.json"
+  },
+  {
+    "name": "http-cache-semantics",
+    "version": "4.2.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/kornelski/http-cache-semantics.git"
+    },
+    "path": "node_modules/npm/node_modules/http-cache-semantics/package.json"
+  },
+  {
+    "name": "http-proxy-agent",
+    "version": "7.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/http-proxy-agent"
+    },
+    "path": "node_modules/npm/node_modules/http-proxy-agent/package.json"
+  },
+  {
+    "name": "https-proxy-agent",
+    "version": "7.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/https-proxy-agent"
+    },
+    "path": "node_modules/npm/node_modules/https-proxy-agent/package.json"
+  },
+  {
+    "name": "iconv-lite",
+    "version": "0.7.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/pillarjs/iconv-lite.git"
+    },
+    "path": "node_modules/npm/node_modules/iconv-lite/package.json"
+  },
+  {
+    "name": "ignore-walk",
+    "version": "8.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ignore-walk.git"
+    },
+    "path": "node_modules/npm/node_modules/ignore-walk/package.json"
+  },
+  {
+    "name": "ini",
+    "version": "6.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ini.git"
+    },
+    "path": "node_modules/npm/node_modules/ini/package.json"
+  },
+  {
+    "name": "init-package-json",
+    "version": "8.2.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/init-package-json.git"
+    },
+    "path": "node_modules/npm/node_modules/init-package-json/package.json"
+  },
+  {
+    "name": "ip-address",
+    "version": "10.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/beaugunderson/ip-address.git"
+    },
+    "path": "node_modules/npm/node_modules/ip-address/package.json"
+  },
+  {
+    "name": "is-cidr",
+    "version": "6.0.4",
+    "license": "BSD-2-Clause",
+    "repository": "silverwind/is-cidr",
+    "path": "node_modules/npm/node_modules/is-cidr/package.json"
+  },
+  {
+    "name": "isexe",
+    "version": "4.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": "https://github.com/isaacs/isexe",
+    "path": "node_modules/npm/node_modules/isexe/package.json"
+  },
+  {
+    "name": "json-parse-even-better-errors",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/json-parse-even-better-errors.git"
+    },
+    "path": "node_modules/npm/node_modules/json-parse-even-better-errors/package.json"
+  },
+  {
+    "name": "json-stringify-nice",
+    "version": "1.1.4",
+    "license": "ISC",
+    "repository": "https://github.com/isaacs/json-stringify-nice",
+    "path": "node_modules/npm/node_modules/json-stringify-nice/package.json"
+  },
+  {
+    "name": "jsonparse",
+    "version": "1.3.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/creationix/jsonparse.git"
+    },
+    "path": "node_modules/npm/node_modules/jsonparse/package.json"
+  },
+  {
+    "name": "just-diff",
+    "version": "6.0.2",
+    "license": "MIT",
+    "repository": "https://github.com/angus-c/just",
+    "path": "node_modules/npm/node_modules/just-diff/package.json"
+  },
+  {
+    "name": "just-diff-apply",
+    "version": "5.5.0",
+    "license": "MIT",
+    "repository": "https://github.com/angus-c/just",
+    "path": "node_modules/npm/node_modules/just-diff-apply/package.json"
+  },
+  {
+    "name": "libnpmaccess",
+    "version": "10.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmaccess"
+    },
+    "path": "node_modules/npm/node_modules/libnpmaccess/package.json"
+  },
+  {
+    "name": "libnpmdiff",
+    "version": "8.1.12",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmdiff"
+    },
+    "path": "node_modules/npm/node_modules/libnpmdiff/package.json"
+  },
+  {
+    "name": "libnpmexec",
+    "version": "10.3.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmexec"
+    },
+    "path": "node_modules/npm/node_modules/libnpmexec/package.json"
+  },
+  {
+    "name": "libnpmfund",
+    "version": "7.0.26",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmfund"
+    },
+    "path": "node_modules/npm/node_modules/libnpmfund/package.json"
+  },
+  {
+    "name": "libnpmorg",
+    "version": "8.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmorg"
+    },
+    "path": "node_modules/npm/node_modules/libnpmorg/package.json"
+  },
+  {
+    "name": "libnpmpack",
+    "version": "9.1.12",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmpack"
+    },
+    "path": "node_modules/npm/node_modules/libnpmpack/package.json"
+  },
+  {
+    "name": "libnpmpublish",
+    "version": "11.2.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmpublish"
+    },
+    "path": "node_modules/npm/node_modules/libnpmpublish/package.json"
+  },
+  {
+    "name": "libnpmsearch",
+    "version": "9.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmsearch"
+    },
+    "path": "node_modules/npm/node_modules/libnpmsearch/package.json"
+  },
+  {
+    "name": "libnpmteam",
+    "version": "8.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmteam"
+    },
+    "path": "node_modules/npm/node_modules/libnpmteam/package.json"
+  },
+  {
+    "name": "libnpmversion",
+    "version": "8.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmversion"
+    },
+    "path": "node_modules/npm/node_modules/libnpmversion/package.json"
+  },
+  {
+    "name": "lru-cache",
+    "version": "11.5.1",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/isaacs/node-lru-cache.git"
+    },
+    "path": "node_modules/npm/node_modules/lru-cache/package.json"
+  },
+  {
+    "name": "make-fetch-happen",
+    "version": "15.0.6",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/make-fetch-happen.git"
+    },
+    "path": "node_modules/npm/node_modules/make-fetch-happen/package.json"
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.5",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/minimatch"
+    },
+    "path": "node_modules/npm/node_modules/minimatch/package.json"
+  },
+  {
+    "name": "minipass",
+    "version": "7.1.3",
+    "license": "BlueOak-1.0.0",
+    "repository": "https://github.com/isaacs/minipass",
+    "path": "node_modules/npm/node_modules/minipass/package.json"
+  },
+  {
+    "name": "minipass-collect",
+    "version": "2.0.1",
+    "license": "ISC",
+    "repository": "https://github.com/isaacs/minipass-collect",
+    "path": "node_modules/npm/node_modules/minipass-collect/package.json"
+  },
+  {
+    "name": "minipass-fetch",
+    "version": "5.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/minipass-fetch.git"
+    },
+    "path": "node_modules/npm/node_modules/minipass-fetch/package.json"
+  },
+  {
+    "name": "minipass-flush",
+    "version": "1.0.6",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass-flush.git"
+    },
+    "path": "node_modules/npm/node_modules/minipass-flush/package.json"
+  },
+  {
+    "name": "minipass-pipeline",
+    "version": "1.2.4",
+    "license": "ISC",
+    "repository": null,
+    "path": "node_modules/npm/node_modules/minipass-pipeline/package.json"
+  },
+  {
+    "name": "minipass",
+    "version": "3.3.6",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass.git"
+    },
+    "path": "node_modules/npm/node_modules/minipass-pipeline/node_modules/minipass/package.json"
+  },
+  {
+    "name": "yallist",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/yallist.git"
+    },
+    "path": "node_modules/npm/node_modules/minipass-pipeline/node_modules/yallist/package.json"
+  },
+  {
+    "name": "minipass-sized",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass-sized.git"
+    },
+    "path": "node_modules/npm/node_modules/minipass-sized/package.json"
+  },
+  {
+    "name": "minizlib",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minizlib.git"
+    },
+    "path": "node_modules/npm/node_modules/minizlib/package.json"
+  },
+  {
+    "name": "ms",
+    "version": "2.1.3",
+    "license": "MIT",
+    "repository": "vercel/ms",
+    "path": "node_modules/npm/node_modules/ms/package.json"
+  },
+  {
+    "name": "mute-stream",
+    "version": "3.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/mute-stream.git"
+    },
+    "path": "node_modules/npm/node_modules/mute-stream/package.json"
+  },
+  {
+    "name": "negotiator",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": "jshttp/negotiator",
+    "path": "node_modules/npm/node_modules/negotiator/package.json"
+  },
+  {
+    "name": "node-gyp",
+    "version": "12.4.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/nodejs/node-gyp.git"
+    },
+    "path": "node_modules/npm/node_modules/node-gyp/package.json"
+  },
+  {
+    "name": "nopt",
+    "version": "9.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/nopt.git"
+    },
+    "path": "node_modules/npm/node_modules/nopt/package.json"
+  },
+  {
+    "name": "npm-audit-report",
+    "version": "7.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-audit-report.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-audit-report/package.json"
+  },
+  {
+    "name": "npm-bundled",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-bundled.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-bundled/package.json"
+  },
+  {
+    "name": "npm-install-checks",
+    "version": "8.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-install-checks.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-install-checks/package.json"
+  },
+  {
+    "name": "npm-normalize-package-bin",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-normalize-package-bin.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-normalize-package-bin/package.json"
+  },
+  {
+    "name": "npm-package-arg",
+    "version": "13.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-package-arg.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-package-arg/package.json"
+  },
+  {
+    "name": "npm-packlist",
+    "version": "10.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-packlist.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-packlist/package.json"
+  },
+  {
+    "name": "npm-pick-manifest",
+    "version": "11.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-pick-manifest.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-pick-manifest/package.json"
+  },
+  {
+    "name": "npm-profile",
+    "version": "12.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-profile.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-profile/package.json"
+  },
+  {
+    "name": "npm-registry-fetch",
+    "version": "19.1.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-registry-fetch.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-registry-fetch/package.json"
+  },
+  {
+    "name": "npm-user-validate",
+    "version": "4.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-user-validate.git"
+    },
+    "path": "node_modules/npm/node_modules/npm-user-validate/package.json"
+  },
+  {
+    "name": "p-map",
+    "version": "7.0.4",
+    "license": "MIT",
+    "repository": "sindresorhus/p-map",
+    "path": "node_modules/npm/node_modules/p-map/package.json"
+  },
+  {
+    "name": "pacote",
+    "version": "21.5.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/pacote.git"
+    },
+    "path": "node_modules/npm/node_modules/pacote/package.json"
+  },
+  {
+    "name": "parse-conflict-json",
+    "version": "5.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/parse-conflict-json.git"
+    },
+    "path": "node_modules/npm/node_modules/parse-conflict-json/package.json"
+  },
+  {
+    "name": "path-scurry",
+    "version": "2.0.2",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/path-scurry"
+    },
+    "path": "node_modules/npm/node_modules/path-scurry/package.json"
+  },
+  {
+    "name": "postcss-selector-parser",
+    "version": "7.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/postcss/postcss-selector-parser.git"
+    },
+    "path": "node_modules/npm/node_modules/postcss-selector-parser/package.json"
+  },
+  {
+    "name": "proc-log",
+    "version": "6.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/proc-log.git"
+    },
+    "path": "node_modules/npm/node_modules/proc-log/package.json"
+  },
+  {
+    "name": "proggy",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/proggy.git"
+    },
+    "path": "node_modules/npm/node_modules/proggy/package.json"
+  },
+  {
+    "name": "promise-all-reject-late",
+    "version": "1.0.1",
+    "license": "ISC",
+    "repository": null,
+    "path": "node_modules/npm/node_modules/promise-all-reject-late/package.json"
+  },
+  {
+    "name": "promise-call-limit",
+    "version": "3.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/promise-call-limit"
+    },
+    "path": "node_modules/npm/node_modules/promise-call-limit/package.json"
+  },
+  {
+    "name": "promzard",
+    "version": "3.0.1",
+    "license": "ISC",
+    "repository": {
+      "url": "git+https://github.com/npm/promzard.git",
+      "type": "git"
+    },
+    "path": "node_modules/npm/node_modules/promzard/package.json"
+  },
+  {
+    "name": "qrcode-terminal",
+    "version": "0.12.0",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/gtanner/qrcode-terminal"
+    },
+    "path": "node_modules/npm/node_modules/qrcode-terminal/package.json"
+  },
+  {
+    "name": "read",
+    "version": "5.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/read.git"
+    },
+    "path": "node_modules/npm/node_modules/read/package.json"
+  },
+  {
+    "name": "read-cmd-shim",
+    "version": "6.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/read-cmd-shim.git"
+    },
+    "path": "node_modules/npm/node_modules/read-cmd-shim/package.json"
+  },
+  {
+    "name": "safer-buffer",
+    "version": "2.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ChALkeR/safer-buffer.git"
+    },
+    "path": "node_modules/npm/node_modules/safer-buffer/package.json"
+  },
+  {
+    "name": "semver",
+    "version": "7.8.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-semver.git"
+    },
+    "path": "node_modules/npm/node_modules/semver/package.json"
+  },
+  {
+    "name": "signal-exit",
+    "version": "4.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tapjs/signal-exit.git"
+    },
+    "path": "node_modules/npm/node_modules/signal-exit/package.json"
+  },
+  {
+    "name": "sigstore",
+    "version": "4.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/npm/node_modules/sigstore/package.json"
+  },
+  {
+    "name": "smart-buffer",
+    "version": "4.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/JoshGlazebrook/smart-buffer.git"
+    },
+    "path": "node_modules/npm/node_modules/smart-buffer/package.json"
+  },
+  {
+    "name": "socks",
+    "version": "2.8.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/JoshGlazebrook/socks.git"
+    },
+    "path": "node_modules/npm/node_modules/socks/package.json"
+  },
+  {
+    "name": "socks-proxy-agent",
+    "version": "8.0.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/socks-proxy-agent"
+    },
+    "path": "node_modules/npm/node_modules/socks-proxy-agent/package.json"
+  },
+  {
+    "name": "spdx-exceptions",
+    "version": "2.5.0",
+    "license": "CC-BY-3.0",
+    "repository": "kemitchell/spdx-exceptions.json",
+    "path": "node_modules/npm/node_modules/spdx-exceptions/package.json"
+  },
+  {
+    "name": "spdx-expression-parse",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "jslicense/spdx-expression-parse.js",
+    "path": "node_modules/npm/node_modules/spdx-expression-parse/package.json"
+  },
+  {
+    "name": "spdx-license-ids",
+    "version": "3.0.23",
+    "license": "CC0-1.0",
+    "repository": "jslicense/spdx-license-ids",
+    "path": "node_modules/npm/node_modules/spdx-license-ids/package.json"
+  },
+  {
+    "name": "ssri",
+    "version": "13.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ssri.git"
+    },
+    "path": "node_modules/npm/node_modules/ssri/package.json"
+  },
+  {
+    "name": "supports-color",
+    "version": "10.2.2",
+    "license": "MIT",
+    "repository": "chalk/supports-color",
+    "path": "node_modules/npm/node_modules/supports-color/package.json"
+  },
+  {
+    "name": "tar",
+    "version": "7.5.19",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/isaacs/node-tar.git"
+    },
+    "path": "node_modules/npm/node_modules/tar/package.json"
+  },
+  {
+    "name": "text-table",
+    "version": "0.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/substack/text-table.git"
+    },
+    "path": "node_modules/npm/node_modules/text-table/package.json"
+  },
+  {
+    "name": "tiny-relative-date",
+    "version": "2.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/wildlyinaccurate/relative-date.git"
+    },
+    "path": "node_modules/npm/node_modules/tiny-relative-date/package.json"
+  },
+  {
+    "name": "tinyglobby",
+    "version": "0.2.17",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/SuperchupuDev/tinyglobby.git"
+    },
+    "path": "node_modules/npm/node_modules/tinyglobby/package.json"
+  },
+  {
+    "name": "fdir",
+    "version": "6.5.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/thecodrr/fdir.git"
+    },
+    "path": "node_modules/npm/node_modules/tinyglobby/node_modules/fdir/package.json"
+  },
+  {
+    "name": "picomatch",
+    "version": "4.0.4",
+    "license": "MIT",
+    "repository": "micromatch/picomatch",
+    "path": "node_modules/npm/node_modules/tinyglobby/node_modules/picomatch/package.json"
+  },
+  {
+    "name": "treeverse",
+    "version": "3.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/treeverse.git"
+    },
+    "path": "node_modules/npm/node_modules/treeverse/package.json"
+  },
+  {
+    "name": "tuf-js",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/npm/node_modules/tuf-js/package.json"
+  },
+  {
+    "name": "undici",
+    "version": "6.27.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nodejs/undici.git"
+    },
+    "path": "node_modules/npm/node_modules/undici/package.json"
+  },
+  {
+    "name": "util-deprecate",
+    "version": "1.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/TooTallNate/util-deprecate.git"
+    },
+    "path": "node_modules/npm/node_modules/util-deprecate/package.json"
+  },
+  {
+    "name": "validate-npm-package-name",
+    "version": "7.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/validate-npm-package-name.git"
+    },
+    "path": "node_modules/npm/node_modules/validate-npm-package-name/package.json"
+  },
+  {
+    "name": "walk-up-path",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/walk-up-path"
+    },
+    "path": "node_modules/npm/node_modules/walk-up-path/package.json"
+  },
+  {
+    "name": "which",
+    "version": "6.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-which.git"
+    },
+    "path": "node_modules/npm/node_modules/which/package.json"
+  },
+  {
+    "name": "write-file-atomic",
+    "version": "7.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/write-file-atomic.git"
+    },
+    "path": "node_modules/npm/node_modules/write-file-atomic/package.json"
+  },
+  {
+    "name": "yallist",
+    "version": "5.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/yallist.git"
+    },
+    "path": "node_modules/npm/node_modules/yallist/package.json"
+  },
+  {
+    "name": "openclaw",
+    "version": "2026.9.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/openclaw.git"
+    },
+    "path": "node_modules/openclaw/package.json"
+  },
+  {
+    "name": "@openclaw/a2a",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/a2a/package.json"
+  },
+  {
+    "name": "@openclaw/admin-http-rpc",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/admin-http-rpc/package.json"
+  },
+  {
+    "name": "@openclaw/agentsapi",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/agentsapi/package.json"
+  },
+  {
+    "name": "@openclaw/alibaba-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/alibaba/package.json"
+  },
+  {
+    "name": "@openclaw/anthropic-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/anthropic/package.json"
+  },
+  {
+    "name": "@openclaw/apple-fm-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/apple-fm/package.json"
+  },
+  {
+    "name": "@openclaw/azure-speech",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/azure-speech/package.json"
+  },
+  {
+    "name": "@openclaw/beam",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/beam/package.json"
+  },
+  {
+    "name": "@openclaw/bonjour",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/bonjour/package.json"
+  },
+  {
+    "name": "@openclaw/browser-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/browser/package.json"
+  },
+  {
+    "name": "@openclaw/canvas-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/canvas/package.json"
+  },
+  {
+    "name": "@openclaw/clawrouter",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/clawrouter/package.json"
+  },
+  {
+    "name": "@openclaw/code-mode-quickjs",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/code-mode-quickjs/package.json"
+  },
+  {
+    "name": "@openclaw/copilot-proxy",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/copilot-proxy/package.json"
+  },
+  {
+    "name": "@openclaw/crabbox-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/crabbox/package.json"
+  },
+  {
+    "name": "@openclaw/cua-computer",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/cua-computer/package.json"
+  },
+  {
+    "name": "@openclaw/deepgram-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/deepgram/package.json"
+  },
+  {
+    "name": "@openclaw/document-extract-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/document-extract/package.json"
+  },
+  {
+    "name": "@openclaw/elevenlabs-speech",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/elevenlabs/package.json"
+  },
+  {
+    "name": "@openclaw/fal-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/fal/package.json"
+  },
+  {
+    "name": "@openclaw/file-transfer",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/file-transfer/package.json"
+  },
+  {
+    "name": "@openclaw/geolocation-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/geolocation/package.json"
+  },
+  {
+    "name": "@openclaw/github",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw",
+      "directory": "extensions/github"
+    },
+    "path": "node_modules/openclaw/dist/extensions/github/package.json"
+  },
+  {
+    "name": "@openclaw/github-copilot-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/github-copilot/package.json"
+  },
+  {
+    "name": "@openclaw/google-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/google/package.json"
+  },
+  {
+    "name": "@openclaw/huggingface-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/huggingface/package.json"
+  },
+  {
+    "name": "@openclaw/image-generation-core",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/image-generation-core/package.json"
+  },
+  {
+    "name": "@openclaw/imap",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/imap/package.json"
+  },
+  {
+    "name": "@openclaw/kie-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/kie/package.json"
+  },
+  {
+    "name": "@openclaw/linux-node",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/linux-node/package.json"
+  },
+  {
+    "name": "@openclaw/litellm-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/litellm/package.json"
+  },
+  {
+    "name": "@openclaw/llm-task",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/llm-task/package.json"
+  },
+  {
+    "name": "@openclaw/lmstudio-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/lmstudio/package.json"
+  },
+  {
+    "name": "@openclaw/logbook",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/logbook/package.json"
+  },
+  {
+    "name": "@openclaw/memory-core",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/memory-core/package.json"
+  },
+  {
+    "name": "@openclaw/memory-wiki",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/memory-wiki/package.json"
+  },
+  {
+    "name": "@openclaw/microsoft-speech",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/microsoft/package.json"
+  },
+  {
+    "name": "@openclaw/microsoft-foundry",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/microsoft-foundry/package.json"
+  },
+  {
+    "name": "@openclaw/migrate-claude",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/migrate-claude/package.json"
+  },
+  {
+    "name": "@openclaw/migrate-hermes",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/migrate-hermes/package.json"
+  },
+  {
+    "name": "@openclaw/minimax-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/minimax/package.json"
+  },
+  {
+    "name": "@openclaw/nvidia-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/nvidia/package.json"
+  },
+  {
+    "name": "@openclaw/oc-path",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/oc-path/package.json"
+  },
+  {
+    "name": "@openclaw/ollama-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/ollama/package.json"
+  },
+  {
+    "name": "@openclaw/onepassword",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/onepassword/package.json"
+  },
+  {
+    "name": "@openclaw/openai-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/openai/package.json"
+  },
+  {
+    "name": "@openclaw/opencode-go-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/openclaw/openclaw"
+    },
+    "path": "node_modules/openclaw/dist/extensions/opencode-go/package.json"
+  },
+  {
+    "name": "@openclaw/openrouter-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/openrouter/package.json"
+  },
+  {
+    "name": "@openclaw/policy",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/policy/package.json"
+  },
+  {
+    "name": "@openclaw/reef",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/reef/package.json"
+  },
+  {
+    "name": "@openclaw/runway-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/runway/package.json"
+  },
+  {
+    "name": "@openclaw/senseaudio-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/senseaudio/package.json"
+  },
+  {
+    "name": "@openclaw/session-share",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/session-share/package.json"
+  },
+  {
+    "name": "@openclaw/sglang-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/sglang/package.json"
+  },
+  {
+    "name": "@openclaw/telegram",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/telegram/package.json"
+  },
+  {
+    "name": "@openclaw/together-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/together/package.json"
+  },
+  {
+    "name": "@openclaw/tts-local-cli",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/tts-local-cli/package.json"
+  },
+  {
+    "name": "@openclaw/vault",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/vault/package.json"
+  },
+  {
+    "name": "@openclaw/vllm-provider",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/vllm/package.json"
+  },
+  {
+    "name": "@openclaw/web-readability-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/web-readability/package.json"
+  },
+  {
+    "name": "@openclaw/workboard",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/workboard/package.json"
+  },
+  {
+    "name": "@openclaw/xai-plugin",
+    "version": "2026.9.9",
+    "license": null,
+    "repository": null,
+    "path": "node_modules/openclaw/dist/extensions/xai/package.json"
+  },
+  {
+    "name": "@agentclientprotocol/sdk",
+    "version": "1.4.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/agentclientprotocol/typescript-sdk.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@agentclientprotocol/sdk/package.json"
+  },
+  {
+    "name": "@anthropic-ai/sdk",
+    "version": "0.127.0",
+    "license": "MIT",
+    "repository": "github:anthropics/anthropic-sdk-typescript",
+    "path": "node_modules/openclaw/node_modules/@anthropic-ai/sdk/package.json"
+  },
+  {
+    "name": "@babel/code-frame",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-code-frame"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/code-frame/package.json"
+  },
+  {
+    "name": "@babel/generator",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-generator"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/generator/package.json"
+  },
+  {
+    "name": "@babel/helper-globals",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-helper-globals"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/helper-globals/package.json"
+  },
+  {
+    "name": "@babel/helper-string-parser",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-helper-string-parser"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/helper-string-parser/package.json"
+  },
+  {
+    "name": "@babel/helper-validator-identifier",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-helper-validator-identifier"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/helper-validator-identifier/package.json"
+  },
+  {
+    "name": "@babel/parser",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-parser"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/parser/package.json"
+  },
+  {
+    "name": "@babel/runtime",
+    "version": "7.29.10",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-runtime"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/runtime/package.json"
+  },
+  {
+    "name": "@babel/template",
+    "version": "8.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-template"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/template/package.json"
+  },
+  {
+    "name": "@babel/traverse",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-traverse"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/traverse/package.json"
+  },
+  {
+    "name": "@babel/types",
+    "version": "8.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/babel/babel.git",
+      "directory": "packages/babel-types"
+    },
+    "path": "node_modules/openclaw/node_modules/@babel/types/package.json"
+  },
+  {
+    "name": "@borewit/text-codec",
+    "version": "0.2.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Borewit/text-codec.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@borewit/text-codec/package.json"
+  },
+  {
+    "name": "@clack/core",
+    "version": "1.5.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/bombshell-dev/clack.git",
+      "directory": "packages/core"
+    },
+    "path": "node_modules/openclaw/node_modules/@clack/core/package.json"
+  },
+  {
+    "name": "@clack/prompts",
+    "version": "1.8.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/bombshell-dev/clack.git",
+      "directory": "packages/prompts"
+    },
+    "path": "node_modules/openclaw/node_modules/@clack/prompts/package.json"
+  },
+  {
+    "name": "@earendil-works/pi-tui",
+    "version": "0.86.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/earendil-works/pi.git",
+      "directory": "packages/tui"
+    },
+    "path": "node_modules/openclaw/node_modules/@earendil-works/pi-tui/package.json"
+  },
+  {
+    "name": "@esbuild/win32-x64",
+    "version": "0.28.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/evanw/esbuild.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@esbuild/win32-x64/package.json"
+  },
+  {
+    "name": "@google/genai",
+    "version": "2.23.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/googleapis/js-genai.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@google/genai/package.json"
+  },
+  {
+    "name": "@grammyjs/transformer-throttler",
+    "version": "1.2.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/grammyjs/transformer-throttler.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@grammyjs/transformer-throttler/package.json"
+  },
+  {
+    "name": "@grammyjs/types",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/grammyjs/types.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@grammyjs/types/package.json"
+  },
+  {
+    "name": "@homebridge/ciao",
+    "version": "1.3.12",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/homebridge/ciao.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@homebridge/ciao/package.json"
+  },
+  {
+    "name": "@hono/node-server",
+    "version": "2.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/honojs/node-server.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@hono/node-server/package.json"
+  },
+  {
+    "name": "@isaacs/fs-minipass",
+    "version": "4.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/fs-minipass.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@isaacs/fs-minipass/package.json"
+  },
+  {
+    "name": "@jridgewell/gen-mapping",
+    "version": "0.4.0-beta.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jridgewell/sourcemaps.git",
+      "directory": "packages/gen-mapping"
+    },
+    "path": "node_modules/openclaw/node_modules/@jridgewell/gen-mapping/package.json"
+  },
+  {
+    "name": "@jridgewell/resolve-uri",
+    "version": "3.1.2",
+    "license": "MIT",
+    "repository": "https://github.com/jridgewell/resolve-uri",
+    "path": "node_modules/openclaw/node_modules/@jridgewell/resolve-uri/package.json"
+  },
+  {
+    "name": "@jridgewell/sourcemap-codec",
+    "version": "1.6.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jridgewell/sourcemaps.git",
+      "directory": "packages/sourcemap-codec"
+    },
+    "path": "node_modules/openclaw/node_modules/@jridgewell/sourcemap-codec/package.json"
+  },
+  {
+    "name": "@jridgewell/trace-mapping",
+    "version": "0.3.31",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jridgewell/sourcemaps.git",
+      "directory": "packages/trace-mapping"
+    },
+    "path": "node_modules/openclaw/node_modules/@jridgewell/trace-mapping/package.json"
+  },
+  {
+    "name": "@koromix/koffi-win32-x64",
+    "version": "3.3.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Koromix/koffi"
+    },
+    "path": "node_modules/openclaw/node_modules/@koromix/koffi-win32-x64/package.json"
+  },
+  {
+    "name": "@lydell/node-pty",
+    "version": "1.2.0-beta.15",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/lydell/node-pty.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@lydell/node-pty/package.json"
+  },
+  {
+    "name": "@lydell/node-pty-win32-x64",
+    "version": "1.2.0-beta.15",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/lydell/node-pty.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@lydell/node-pty-win32-x64/package.json"
+  },
+  {
+    "name": "@mistralai/mistralai",
+    "version": "2.7.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mistralai/client-ts.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@mistralai/mistralai/package.json"
+  },
+  {
+    "name": "@modelcontextprotocol/sdk",
+    "version": "1.31.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/modelcontextprotocol/typescript-sdk.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@modelcontextprotocol/sdk/package.json"
+  },
+  {
+    "name": "@mozilla/readability",
+    "version": "0.6.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mozilla/readability"
+    },
+    "path": "node_modules/openclaw/node_modules/@mozilla/readability/package.json"
+  },
+  {
+    "name": "@openclaw/ai",
+    "version": "2026.9.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/openclaw.git",
+      "directory": "packages/ai"
+    },
+    "path": "node_modules/openclaw/node_modules/@openclaw/ai/package.json"
+  },
+  {
+    "name": "@openclaw/fs-safe",
+    "version": "0.21.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/fs-safe.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@openclaw/fs-safe/package.json"
+  },
+  {
+    "name": "@openclaw/fs-safe-win32-x64-msvc",
+    "version": "0.21.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/fs-safe.git",
+      "directory": "packages/win32-x64-msvc"
+    },
+    "path": "node_modules/openclaw/node_modules/@openclaw/fs-safe-win32-x64-msvc/package.json"
+  },
+  {
+    "name": "@openclaw/proxyline",
+    "version": "0.3.12",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/proxyline.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@openclaw/proxyline/package.json"
+  },
+  {
+    "name": "@opentelemetry/semantic-conventions",
+    "version": "1.43.0",
+    "license": "Apache-2.0",
+    "repository": "open-telemetry/opentelemetry-js",
+    "path": "node_modules/openclaw/node_modules/@opentelemetry/semantic-conventions/package.json"
+  },
+  {
+    "name": "@protobufjs/aspromise",
+    "version": "1.1.2",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/aspromise/package.json"
+  },
+  {
+    "name": "@protobufjs/base64",
+    "version": "1.1.2",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/base64/package.json"
+  },
+  {
+    "name": "@protobufjs/codegen",
+    "version": "2.0.5",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/codegen/package.json"
+  },
+  {
+    "name": "@protobufjs/eventemitter",
+    "version": "1.1.1",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/eventemitter/package.json"
+  },
+  {
+    "name": "@protobufjs/fetch",
+    "version": "1.1.1",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/fetch/package.json"
+  },
+  {
+    "name": "@protobufjs/float",
+    "version": "1.0.2",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/float/package.json"
+  },
+  {
+    "name": "@protobufjs/path",
+    "version": "1.1.2",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/path/package.json"
+  },
+  {
+    "name": "@protobufjs/pool",
+    "version": "1.1.0",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/pool/package.json"
+  },
+  {
+    "name": "@protobufjs/utf8",
+    "version": "1.1.2",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/protobufjs/protobuf.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@protobufjs/utf8/package.json"
+  },
+  {
+    "name": "@sec-ant/readable-stream",
+    "version": "0.4.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Sec-ant/readable-stream.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@sec-ant/readable-stream/package.json"
+  },
+  {
+    "name": "@silvia-odwyer/photon-node",
+    "version": "0.3.4",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/silvia-odwyer/photon"
+    },
+    "path": "node_modules/openclaw/node_modules/@silvia-odwyer/photon-node/package.json"
+  },
+  {
+    "name": "@sindresorhus/merge-streams",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/merge-streams",
+    "path": "node_modules/openclaw/node_modules/@sindresorhus/merge-streams/package.json"
+  },
+  {
+    "name": "@stablelib/base64",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "url": "https://github.com/StableLib/stablelib"
+    },
+    "path": "node_modules/openclaw/node_modules/@stablelib/base64/package.json"
+  },
+  {
+    "name": "@tokenizer/inflate",
+    "version": "0.4.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Borewit/tokenizer-inflate.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@tokenizer/inflate/package.json"
+  },
+  {
+    "name": "@tokenizer/token",
+    "version": "0.3.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Borewit/tokenizer-token.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@tokenizer/token/package.json"
+  },
+  {
+    "name": "@trycua/cua-driver",
+    "version": "0.28.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/trycua/cua.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@trycua/cua-driver/package.json"
+  },
+  {
+    "name": "@trycua/cua-driver-win32-x64-msvc",
+    "version": "0.28.2",
+    "license": "MIT AND MPL-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/trycua/cua.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@trycua/cua-driver-win32-x64-msvc/package.json"
+  },
+  {
+    "name": "@types/jsesc",
+    "version": "2.5.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+      "directory": "types/jsesc"
+    },
+    "path": "node_modules/openclaw/node_modules/@types/jsesc/package.json"
+  },
+  {
+    "name": "@types/node",
+    "version": "26.6.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+      "directory": "types/node"
+    },
+    "path": "node_modules/openclaw/node_modules/@types/node/package.json"
+  },
+  {
+    "name": "@types/retry",
+    "version": "0.12.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+    },
+    "path": "node_modules/openclaw/node_modules/@types/retry/package.json"
+  },
+  {
+    "name": "@ubjs/core",
+    "version": "0.31.0-3",
+    "license": "MPL-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jhugman/uniffi-bindgen-react-native.git",
+      "directory": "typescript"
+    },
+    "path": "node_modules/openclaw/node_modules/@ubjs/core/package.json"
+  },
+  {
+    "name": "@ubjs/node",
+    "version": "0.31.0-3",
+    "license": "MPL-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jhugman/uniffi-bindgen-react-native.git",
+      "directory": "runtimes/napi"
+    },
+    "path": "node_modules/openclaw/node_modules/@ubjs/node/package.json"
+  },
+  {
+    "name": "@ubjs/node-win32-x64-msvc",
+    "version": "0.31.0-3",
+    "license": "MPL-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jhugman/uniffi-bindgen-react-native.git",
+      "directory": "runtimes/napi"
+    },
+    "path": "node_modules/openclaw/node_modules/@ubjs/node-win32-x64-msvc/package.json"
+  },
+  {
+    "name": "abort-controller",
+    "version": "3.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/mysticatea/abort-controller.git"
+    },
+    "path": "node_modules/openclaw/node_modules/abort-controller/package.json"
+  },
+  {
+    "name": "accepts",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "jshttp/accepts",
+    "path": "node_modules/openclaw/node_modules/accepts/package.json"
+  },
+  {
+    "name": "acorn",
+    "version": "8.18.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/acornjs/acorn.git"
+    },
+    "path": "node_modules/openclaw/node_modules/acorn/package.json"
+  },
+  {
+    "name": "agent-base",
+    "version": "7.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/agent-base"
+    },
+    "path": "node_modules/openclaw/node_modules/agent-base/package.json"
+  },
+  {
+    "name": "ajv",
+    "version": "8.20.0",
+    "license": "MIT",
+    "repository": "ajv-validator/ajv",
+    "path": "node_modules/openclaw/node_modules/ajv/package.json"
+  },
+  {
+    "name": "ajv-formats",
+    "version": "3.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ajv-validator/ajv-formats.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ajv-formats/package.json"
+  },
+  {
+    "name": "ansi-regex",
+    "version": "5.0.1",
+    "license": "MIT",
+    "repository": "chalk/ansi-regex",
+    "path": "node_modules/openclaw/node_modules/ansi-regex/package.json"
+  },
+  {
+    "name": "ansi-styles",
+    "version": "4.3.0",
+    "license": "MIT",
+    "repository": "chalk/ansi-styles",
+    "path": "node_modules/openclaw/node_modules/ansi-styles/package.json"
+  },
+  {
+    "name": "asn1.js",
+    "version": "5.4.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:indutny/asn1.js"
+    },
+    "path": "node_modules/openclaw/node_modules/asn1.js/package.json"
+  },
+  {
+    "name": "balanced-match",
+    "version": "4.0.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/juliangruber/balanced-match.git"
+    },
+    "path": "node_modules/openclaw/node_modules/balanced-match/package.json"
+  },
+  {
+    "name": "base64-js",
+    "version": "1.5.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/beatgammit/base64-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/base64-js/package.json"
+  },
+  {
+    "name": "bignumber.js",
+    "version": "9.3.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/MikeMcl/bignumber.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/bignumber.js/package.json"
+  },
+  {
+    "name": "bn.js",
+    "version": "4.12.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:indutny/bn.js"
+    },
+    "path": "node_modules/openclaw/node_modules/bn.js/package.json"
+  },
+  {
+    "name": "body-parser",
+    "version": "2.3.0",
+    "license": "MIT",
+    "repository": "expressjs/body-parser",
+    "path": "node_modules/openclaw/node_modules/body-parser/package.json"
+  },
+  {
+    "name": "content-type",
+    "version": "2.1.0",
+    "license": "MIT",
+    "repository": "jshttp/content-type",
+    "path": "node_modules/openclaw/node_modules/body-parser/node_modules/content-type/package.json"
+  },
+  {
+    "name": "boolbase",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fb55/boolbase"
+    },
+    "path": "node_modules/openclaw/node_modules/boolbase/package.json"
+  },
+  {
+    "name": "bottleneck",
+    "version": "2.19.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/SGrondin/bottleneck"
+    },
+    "path": "node_modules/openclaw/node_modules/bottleneck/package.json"
+  },
+  {
+    "name": "brace-expansion",
+    "version": "5.0.12",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/juliangruber/brace-expansion.git"
+    },
+    "path": "node_modules/openclaw/node_modules/brace-expansion/package.json"
+  },
+  {
+    "name": "buffer-equal-constant-time",
+    "version": "1.0.1",
+    "license": "BSD-3-Clause",
+    "repository": "git@github.com:goinstant/buffer-equal-constant-time.git",
+    "path": "node_modules/openclaw/node_modules/buffer-equal-constant-time/package.json"
+  },
+  {
+    "name": "buffer-from",
+    "version": "1.1.2",
+    "license": "MIT",
+    "repository": "LinusU/buffer-from",
+    "path": "node_modules/openclaw/node_modules/buffer-from/package.json"
+  },
+  {
+    "name": "bytes",
+    "version": "3.1.2",
+    "license": "MIT",
+    "repository": "visionmedia/bytes.js",
+    "path": "node_modules/openclaw/node_modules/bytes/package.json"
+  },
+  {
+    "name": "call-bind-apply-helpers",
+    "version": "1.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/call-bind-apply-helpers.git"
+    },
+    "path": "node_modules/openclaw/node_modules/call-bind-apply-helpers/package.json"
+  },
+  {
+    "name": "call-bound",
+    "version": "1.0.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/call-bound.git"
+    },
+    "path": "node_modules/openclaw/node_modules/call-bound/package.json"
+  },
+  {
+    "name": "camelcase",
+    "version": "5.3.1",
+    "license": "MIT",
+    "repository": "sindresorhus/camelcase",
+    "path": "node_modules/openclaw/node_modules/camelcase/package.json"
+  },
+  {
+    "name": "chalk",
+    "version": "6.0.0",
+    "license": "MIT",
+    "repository": "chalk/chalk",
+    "path": "node_modules/openclaw/node_modules/chalk/package.json"
+  },
+  {
+    "name": "chokidar",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/paulmillr/chokidar.git"
+    },
+    "path": "node_modules/openclaw/node_modules/chokidar/package.json"
+  },
+  {
+    "name": "chownr",
+    "version": "3.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/chownr.git"
+    },
+    "path": "node_modules/openclaw/node_modules/chownr/package.json"
+  },
+  {
+    "name": "chrome-devtools-mcp",
+    "version": "1.9.0",
+    "license": "Apache-2.0",
+    "repository": "ChromeDevTools/chrome-devtools-mcp",
+    "path": "node_modules/openclaw/node_modules/chrome-devtools-mcp/package.json"
+  },
+  {
+    "name": "clawpdf",
+    "version": "0.3.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/clawpdf.git"
+    },
+    "path": "node_modules/openclaw/node_modules/clawpdf/package.json"
+  },
+  {
+    "name": "cliui",
+    "version": "8.0.1",
+    "license": "ISC",
+    "repository": "yargs/cliui",
+    "path": "node_modules/openclaw/node_modules/cliui/package.json"
+  },
+  {
+    "name": "color-convert",
+    "version": "2.0.1",
+    "license": "MIT",
+    "repository": "Qix-/color-convert",
+    "path": "node_modules/openclaw/node_modules/color-convert/package.json"
+  },
+  {
+    "name": "color-name",
+    "version": "1.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:colorjs/color-name.git"
+    },
+    "path": "node_modules/openclaw/node_modules/color-name/package.json"
+  },
+  {
+    "name": "commander",
+    "version": "15.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/tj/commander.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/commander/package.json"
+  },
+  {
+    "name": "content-disposition",
+    "version": "1.1.0",
+    "license": "MIT",
+    "repository": "jshttp/content-disposition",
+    "path": "node_modules/openclaw/node_modules/content-disposition/package.json"
+  },
+  {
+    "name": "content-type",
+    "version": "1.0.5",
+    "license": "MIT",
+    "repository": "jshttp/content-type",
+    "path": "node_modules/openclaw/node_modules/content-type/package.json"
+  },
+  {
+    "name": "cookie",
+    "version": "0.7.2",
+    "license": "MIT",
+    "repository": "jshttp/cookie",
+    "path": "node_modules/openclaw/node_modules/cookie/package.json"
+  },
+  {
+    "name": "cookie-signature",
+    "version": "1.2.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/visionmedia/node-cookie-signature.git"
+    },
+    "path": "node_modules/openclaw/node_modules/cookie-signature/package.json"
+  },
+  {
+    "name": "core-util-is",
+    "version": "1.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/core-util-is"
+    },
+    "path": "node_modules/openclaw/node_modules/core-util-is/package.json"
+  },
+  {
+    "name": "cors",
+    "version": "2.8.6",
+    "license": "MIT",
+    "repository": "expressjs/cors",
+    "path": "node_modules/openclaw/node_modules/cors/package.json"
+  },
+  {
+    "name": "croner",
+    "version": "10.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/hexagon/croner"
+    },
+    "path": "node_modules/openclaw/node_modules/croner/package.json"
+  },
+  {
+    "name": "cross-spawn",
+    "version": "7.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:moxystudio/node-cross-spawn.git"
+    },
+    "path": "node_modules/openclaw/node_modules/cross-spawn/package.json"
+  },
+  {
+    "name": "css-select",
+    "version": "7.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/css-select.git"
+    },
+    "path": "node_modules/openclaw/node_modules/css-select/package.json"
+  },
+  {
+    "name": "css-what",
+    "version": "8.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fb55/css-what"
+    },
+    "path": "node_modules/openclaw/node_modules/css-what/package.json"
+  },
+  {
+    "name": "cssom",
+    "version": "0.5.0",
+    "license": "MIT",
+    "repository": "NV/CSSOM",
+    "path": "node_modules/openclaw/node_modules/cssom/package.json"
+  },
+  {
+    "name": "data-uri-to-buffer",
+    "version": "4.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/TooTallNate/node-data-uri-to-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/data-uri-to-buffer/package.json"
+  },
+  {
+    "name": "debug",
+    "version": "4.4.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/debug-js/debug.git"
+    },
+    "path": "node_modules/openclaw/node_modules/debug/package.json"
+  },
+  {
+    "name": "decamelize",
+    "version": "1.2.0",
+    "license": "MIT",
+    "repository": "sindresorhus/decamelize",
+    "path": "node_modules/openclaw/node_modules/decamelize/package.json"
+  },
+  {
+    "name": "depd",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "dougwilson/nodejs-depd",
+    "path": "node_modules/openclaw/node_modules/depd/package.json"
+  },
+  {
+    "name": "diff",
+    "version": "9.0.0",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/kpdecker/jsdiff.git"
+    },
+    "path": "node_modules/openclaw/node_modules/diff/package.json"
+  },
+  {
+    "name": "dijkstrajs",
+    "version": "1.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/tcort/dijkstrajs"
+    },
+    "path": "node_modules/openclaw/node_modules/dijkstrajs/package.json"
+  },
+  {
+    "name": "dom-serializer",
+    "version": "3.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/cheeriojs/dom-serializer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/dom-serializer/package.json"
+  },
+  {
+    "name": "domelementtype",
+    "version": "3.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domelementtype.git"
+    },
+    "path": "node_modules/openclaw/node_modules/domelementtype/package.json"
+  },
+  {
+    "name": "domhandler",
+    "version": "6.0.1",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domhandler.git"
+    },
+    "path": "node_modules/openclaw/node_modules/domhandler/package.json"
+  },
+  {
+    "name": "domutils",
+    "version": "4.0.2",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domutils.git"
+    },
+    "path": "node_modules/openclaw/node_modules/domutils/package.json"
+  },
+  {
+    "name": "dotenv",
+    "version": "18.0.1",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/motdotla/dotenv.git"
+    },
+    "path": "node_modules/openclaw/node_modules/dotenv/package.json"
+  },
+  {
+    "name": "dunder-proto",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/es-shims/dunder-proto.git"
+    },
+    "path": "node_modules/openclaw/node_modules/dunder-proto/package.json"
+  },
+  {
+    "name": "ecdsa-sig-formatter",
+    "version": "1.0.11",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/Brightspace/node-ecdsa-sig-formatter.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ecdsa-sig-formatter/package.json"
+  },
+  {
+    "name": "ee-first",
+    "version": "1.1.1",
+    "license": "MIT",
+    "repository": "jonathanong/ee-first",
+    "path": "node_modules/openclaw/node_modules/ee-first/package.json"
+  },
+  {
+    "name": "emoji-regex",
+    "version": "8.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mathiasbynens/emoji-regex.git"
+    },
+    "path": "node_modules/openclaw/node_modules/emoji-regex/package.json"
+  },
+  {
+    "name": "encodeurl",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "pillarjs/encodeurl",
+    "path": "node_modules/openclaw/node_modules/encodeurl/package.json"
+  },
+  {
+    "name": "entities",
+    "version": "8.1.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fb55/entities.git"
+    },
+    "path": "node_modules/openclaw/node_modules/entities/package.json"
+  },
+  {
+    "name": "es-define-property",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/es-define-property.git"
+    },
+    "path": "node_modules/openclaw/node_modules/es-define-property/package.json"
+  },
+  {
+    "name": "es-errors",
+    "version": "1.3.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/es-errors.git"
+    },
+    "path": "node_modules/openclaw/node_modules/es-errors/package.json"
+  },
+  {
+    "name": "es-object-atoms",
+    "version": "1.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/es-object-atoms.git"
+    },
+    "path": "node_modules/openclaw/node_modules/es-object-atoms/package.json"
+  },
+  {
+    "name": "esbuild",
+    "version": "0.28.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/evanw/esbuild.git"
+    },
+    "path": "node_modules/openclaw/node_modules/esbuild/package.json"
+  },
+  {
+    "name": "escalade",
+    "version": "3.2.0",
+    "license": "MIT",
+    "repository": "lukeed/escalade",
+    "path": "node_modules/openclaw/node_modules/escalade/package.json"
+  },
+  {
+    "name": "escape-html",
+    "version": "1.0.3",
+    "license": "MIT",
+    "repository": "component/escape-html",
+    "path": "node_modules/openclaw/node_modules/escape-html/package.json"
+  },
+  {
+    "name": "etag",
+    "version": "1.8.1",
+    "license": "MIT",
+    "repository": "jshttp/etag",
+    "path": "node_modules/openclaw/node_modules/etag/package.json"
+  },
+  {
+    "name": "event-target-shim",
+    "version": "5.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mysticatea/event-target-shim.git"
+    },
+    "path": "node_modules/openclaw/node_modules/event-target-shim/package.json"
+  },
+  {
+    "name": "eventsource",
+    "version": "3.0.7",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://git@github.com/EventSource/eventsource.git"
+    },
+    "path": "node_modules/openclaw/node_modules/eventsource/package.json"
+  },
+  {
+    "name": "eventsource-parser",
+    "version": "3.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/rexxars/eventsource-parser.git"
+    },
+    "path": "node_modules/openclaw/node_modules/eventsource-parser/package.json"
+  },
+  {
+    "name": "execa",
+    "version": "10.0.1",
+    "license": "MIT",
+    "repository": "sindresorhus/execa",
+    "path": "node_modules/openclaw/node_modules/execa/package.json"
+  },
+  {
+    "name": "express",
+    "version": "5.2.1",
+    "license": "MIT",
+    "repository": "expressjs/express",
+    "path": "node_modules/openclaw/node_modules/express/package.json"
+  },
+  {
+    "name": "express-rate-limit",
+    "version": "8.7.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/express-rate-limit/express-rate-limit.git"
+    },
+    "path": "node_modules/openclaw/node_modules/express-rate-limit/package.json"
+  },
+  {
+    "name": "extend",
+    "version": "3.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/justmoon/node-extend.git"
+    },
+    "path": "node_modules/openclaw/node_modules/extend/package.json"
+  },
+  {
+    "name": "fast-deep-equal",
+    "version": "3.1.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/epoberezkin/fast-deep-equal.git"
+    },
+    "path": "node_modules/openclaw/node_modules/fast-deep-equal/package.json"
+  },
+  {
+    "name": "fast-sha256",
+    "version": "1.3.0",
+    "license": "Unlicense",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dchest/fast-sha256-js"
+    },
+    "path": "node_modules/openclaw/node_modules/fast-sha256/package.json"
+  },
+  {
+    "name": "fast-string-truncated-width",
+    "version": "3.0.3",
+    "license": "MIT",
+    "repository": "github:fabiospampinato/fast-string-truncated-width",
+    "path": "node_modules/openclaw/node_modules/fast-string-truncated-width/package.json"
+  },
+  {
+    "name": "fast-string-width",
+    "version": "3.0.2",
+    "license": "MIT",
+    "repository": "github:fabiospampinato/fast-string-width",
+    "path": "node_modules/openclaw/node_modules/fast-string-width/package.json"
+  },
+  {
+    "name": "fast-uri",
+    "version": "3.1.8",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/fastify/fast-uri.git"
+    },
+    "path": "node_modules/openclaw/node_modules/fast-uri/package.json"
+  },
+  {
+    "name": "benchmark",
+    "version": "1.0.0",
+    "license": "ISC",
+    "repository": null,
+    "path": "node_modules/openclaw/node_modules/fast-uri/benchmark/package.json"
+  },
+  {
+    "name": "fast-wrap-ansi",
+    "version": "0.2.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/43081j/fast-wrap-ansi.git"
+    },
+    "path": "node_modules/openclaw/node_modules/fast-wrap-ansi/package.json"
+  },
+  {
+    "name": "fetch-blob",
+    "version": "3.2.0",
+    "license": "MIT",
+    "repository": "https://github.com/node-fetch/fetch-blob.git",
+    "path": "node_modules/openclaw/node_modules/fetch-blob/package.json"
+  },
+  {
+    "name": "figures",
+    "version": "6.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/figures",
+    "path": "node_modules/openclaw/node_modules/figures/package.json"
+  },
+  {
+    "name": "file-type",
+    "version": "22.1.1",
+    "license": "MIT",
+    "repository": "sindresorhus/file-type",
+    "path": "node_modules/openclaw/node_modules/file-type/package.json"
+  },
+  {
+    "name": "finalhandler",
+    "version": "2.1.1",
+    "license": "MIT",
+    "repository": "pillarjs/finalhandler",
+    "path": "node_modules/openclaw/node_modules/finalhandler/package.json"
+  },
+  {
+    "name": "find-up",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/find-up",
+    "path": "node_modules/openclaw/node_modules/find-up/package.json"
+  },
+  {
+    "name": "formdata-polyfill",
+    "version": "4.0.10",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://jimmywarting@github.com/jimmywarting/FormData.git"
+    },
+    "path": "node_modules/openclaw/node_modules/formdata-polyfill/package.json"
+  },
+  {
+    "name": "forwarded",
+    "version": "0.2.0",
+    "license": "MIT",
+    "repository": "jshttp/forwarded",
+    "path": "node_modules/openclaw/node_modules/forwarded/package.json"
+  },
+  {
+    "name": "fresh",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "jshttp/fresh",
+    "path": "node_modules/openclaw/node_modules/fresh/package.json"
+  },
+  {
+    "name": "function-bind",
+    "version": "1.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Raynos/function-bind.git"
+    },
+    "path": "node_modules/openclaw/node_modules/function-bind/package.json"
+  },
+  {
+    "name": "gaxios",
+    "version": "7.3.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "directory": "core/packages/gaxios",
+      "url": "https://github.com/googleapis/google-cloud-node.git"
+    },
+    "path": "node_modules/openclaw/node_modules/gaxios/package.json"
+  },
+  {
+    "name": "gcp-metadata",
+    "version": "8.1.2",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "directory": "packages/gcp-metadata",
+      "url": "https://github.com/googleapis/google-cloud-node-core.git"
+    },
+    "path": "node_modules/openclaw/node_modules/gcp-metadata/package.json"
+  },
+  {
+    "name": "get-caller-file",
+    "version": "2.0.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/stefanpenner/get-caller-file.git"
+    },
+    "path": "node_modules/openclaw/node_modules/get-caller-file/package.json"
+  },
+  {
+    "name": "get-east-asian-width",
+    "version": "1.6.0",
+    "license": "MIT",
+    "repository": "sindresorhus/get-east-asian-width",
+    "path": "node_modules/openclaw/node_modules/get-east-asian-width/package.json"
+  },
+  {
+    "name": "get-intrinsic",
+    "version": "1.3.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/get-intrinsic.git"
+    },
+    "path": "node_modules/openclaw/node_modules/get-intrinsic/package.json"
+  },
+  {
+    "name": "get-proto",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/get-proto.git"
+    },
+    "path": "node_modules/openclaw/node_modules/get-proto/package.json"
+  },
+  {
+    "name": "get-stream",
+    "version": "9.0.1",
+    "license": "MIT",
+    "repository": "sindresorhus/get-stream",
+    "path": "node_modules/openclaw/node_modules/get-stream/package.json"
+  },
+  {
+    "name": "google-auth-library",
+    "version": "10.9.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "directory": "core/packages/google-auth-library-nodejs",
+      "url": "https://github.com/googleapis/google-cloud-node.git"
+    },
+    "path": "node_modules/openclaw/node_modules/google-auth-library/package.json"
+  },
+  {
+    "name": "google-logging-utils",
+    "version": "1.1.3",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "directory": "dev-packages/logging-utils",
+      "url": "https://github.com/googleapis/google-cloud-node-core.git"
+    },
+    "path": "node_modules/openclaw/node_modules/google-logging-utils/package.json"
+  },
+  {
+    "name": "gopd",
+    "version": "1.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/gopd.git"
+    },
+    "path": "node_modules/openclaw/node_modules/gopd/package.json"
+  },
+  {
+    "name": "grammy",
+    "version": "1.46.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/grammyjs/grammY.git"
+    },
+    "path": "node_modules/openclaw/node_modules/grammy/package.json"
+  },
+  {
+    "name": "node-fetch",
+    "version": "2.7.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/bitinn/node-fetch.git"
+    },
+    "path": "node_modules/openclaw/node_modules/grammy/node_modules/node-fetch/package.json"
+  },
+  {
+    "name": "has-symbols",
+    "version": "1.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/inspect-js/has-symbols.git"
+    },
+    "path": "node_modules/openclaw/node_modules/has-symbols/package.json"
+  },
+  {
+    "name": "hasown",
+    "version": "2.0.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/inspect-js/hasOwn.git"
+    },
+    "path": "node_modules/openclaw/node_modules/hasown/package.json"
+  },
+  {
+    "name": "highlight.js",
+    "version": "11.12.0",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/highlightjs/highlight.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/highlight.js/package.json"
+  },
+  {
+    "name": "hono",
+    "version": "4.13.13",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/honojs/hono.git"
+    },
+    "path": "node_modules/openclaw/node_modules/hono/package.json"
+  },
+  {
+    "name": "hosted-git-info",
+    "version": "10.1.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/hosted-git-info.git"
+    },
+    "path": "node_modules/openclaw/node_modules/hosted-git-info/package.json"
+  },
+  {
+    "name": "html-escaper",
+    "version": "3.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/WebReflection/html-escaper.git"
+    },
+    "path": "node_modules/openclaw/node_modules/html-escaper/package.json"
+  },
+  {
+    "name": "htmlparser2",
+    "version": "10.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/htmlparser2.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/package.json"
+  },
+  {
+    "name": "dom-serializer",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/cheeriojs/dom-serializer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/dom-serializer/package.json"
+  },
+  {
+    "name": "entities",
+    "version": "4.5.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/entities.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/dom-serializer/node_modules/entities/package.json"
+  },
+  {
+    "name": "domelementtype",
+    "version": "2.3.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domelementtype.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/domelementtype/package.json"
+  },
+  {
+    "name": "domhandler",
+    "version": "5.0.3",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domhandler.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/domhandler/package.json"
+  },
+  {
+    "name": "domutils",
+    "version": "3.2.2",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/fb55/domutils.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/domutils/package.json"
+  },
+  {
+    "name": "entities",
+    "version": "7.0.1",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fb55/entities.git"
+    },
+    "path": "node_modules/openclaw/node_modules/htmlparser2/node_modules/entities/package.json"
+  },
+  {
+    "name": "http-errors",
+    "version": "2.0.1",
+    "license": "MIT",
+    "repository": "jshttp/http-errors",
+    "path": "node_modules/openclaw/node_modules/http-errors/package.json"
+  },
+  {
+    "name": "https-proxy-agent",
+    "version": "7.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/https-proxy-agent"
+    },
+    "path": "node_modules/openclaw/node_modules/https-proxy-agent/package.json"
+  },
+  {
+    "name": "http_ece",
+    "version": "1.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/martinthomson/encrypted-content-encoding.git"
+    },
+    "path": "node_modules/openclaw/node_modules/http_ece/package.json"
+  },
+  {
+    "name": "human-signals",
+    "version": "8.0.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ehmicky/human-signals.git"
+    },
+    "path": "node_modules/openclaw/node_modules/human-signals/package.json"
+  },
+  {
+    "name": "iconv-lite",
+    "version": "0.7.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/pillarjs/iconv-lite.git"
+    },
+    "path": "node_modules/openclaw/node_modules/iconv-lite/package.json"
+  },
+  {
+    "name": "ieee754",
+    "version": "1.2.1",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/feross/ieee754.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ieee754/package.json"
+  },
+  {
+    "name": "ignore",
+    "version": "7.0.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/kaelzhang/node-ignore.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ignore/package.json"
+  },
+  {
+    "name": "immediate",
+    "version": "3.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/calvinmetcalf/immediate.git"
+    },
+    "path": "node_modules/openclaw/node_modules/immediate/package.json"
+  },
+  {
+    "name": "import-meta-resolve",
+    "version": "4.2.0",
+    "license": "MIT",
+    "repository": "wooorm/import-meta-resolve",
+    "path": "node_modules/openclaw/node_modules/import-meta-resolve/package.json"
+  },
+  {
+    "name": "inherits",
+    "version": "2.0.4",
+    "license": "ISC",
+    "repository": "git://github.com/isaacs/inherits",
+    "path": "node_modules/openclaw/node_modules/inherits/package.json"
+  },
+  {
+    "name": "ip-address",
+    "version": "10.7.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/beaugunderson/ip-address.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ip-address/package.json"
+  },
+  {
+    "name": "ipaddr.js",
+    "version": "1.9.1",
+    "license": "MIT",
+    "repository": "git://github.com/whitequark/ipaddr.js",
+    "path": "node_modules/openclaw/node_modules/ipaddr.js/package.json"
+  },
+  {
+    "name": "is-fullwidth-code-point",
+    "version": "3.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/is-fullwidth-code-point",
+    "path": "node_modules/openclaw/node_modules/is-fullwidth-code-point/package.json"
+  },
+  {
+    "name": "is-plain-obj",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/is-plain-obj",
+    "path": "node_modules/openclaw/node_modules/is-plain-obj/package.json"
+  },
+  {
+    "name": "is-promise",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/then/is-promise.git"
+    },
+    "path": "node_modules/openclaw/node_modules/is-promise/package.json"
+  },
+  {
+    "name": "is-stream",
+    "version": "4.0.1",
+    "license": "MIT",
+    "repository": "sindresorhus/is-stream",
+    "path": "node_modules/openclaw/node_modules/is-stream/package.json"
+  },
+  {
+    "name": "is-unicode-supported",
+    "version": "2.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/is-unicode-supported",
+    "path": "node_modules/openclaw/node_modules/is-unicode-supported/package.json"
+  },
+  {
+    "name": "isarray",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/juliangruber/isarray.git"
+    },
+    "path": "node_modules/openclaw/node_modules/isarray/package.json"
+  },
+  {
+    "name": "isexe",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/isexe.git"
+    },
+    "path": "node_modules/openclaw/node_modules/isexe/package.json"
+  },
+  {
+    "name": "jiti",
+    "version": "2.7.0",
+    "license": "MIT",
+    "repository": "unjs/jiti",
+    "path": "node_modules/openclaw/node_modules/jiti/package.json"
+  },
+  {
+    "name": "jose",
+    "version": "6.2.12",
+    "license": "MIT",
+    "repository": "panva/jose",
+    "path": "node_modules/openclaw/node_modules/jose/package.json"
+  },
+  {
+    "name": "js-tokens",
+    "version": "10.0.0",
+    "license": "MIT",
+    "repository": "lydell/js-tokens",
+    "path": "node_modules/openclaw/node_modules/js-tokens/package.json"
+  },
+  {
+    "name": "jsesc",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mathiasbynens/jsesc.git"
+    },
+    "path": "node_modules/openclaw/node_modules/jsesc/package.json"
+  },
+  {
+    "name": "json-bigint",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:sidorares/json-bigint.git"
+    },
+    "path": "node_modules/openclaw/node_modules/json-bigint/package.json"
+  },
+  {
+    "name": "json-schema-to-ts",
+    "version": "3.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ThomasAribart/json-schema-to-ts.git"
+    },
+    "path": "node_modules/openclaw/node_modules/json-schema-to-ts/package.json"
+  },
+  {
+    "name": "json-schema-traverse",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/epoberezkin/json-schema-traverse.git"
+    },
+    "path": "node_modules/openclaw/node_modules/json-schema-traverse/package.json"
+  },
+  {
+    "name": "json-schema-typed",
+    "version": "8.0.2",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/RemyRylan/json-schema-typed.git"
+    },
+    "path": "node_modules/openclaw/node_modules/json-schema-typed/package.json"
+  },
+  {
+    "name": "json5",
+    "version": "2.2.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/json5/json5.git"
+    },
+    "path": "node_modules/openclaw/node_modules/json5/package.json"
+  },
+  {
+    "name": "jszip",
+    "version": "3.10.2",
+    "license": "(MIT OR GPL-3.0-or-later)",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Stuk/jszip.git"
+    },
+    "path": "node_modules/openclaw/node_modules/jszip/package.json"
+  },
+  {
+    "name": "jwa",
+    "version": "2.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/brianloveswords/node-jwa.git"
+    },
+    "path": "node_modules/openclaw/node_modules/jwa/package.json"
+  },
+  {
+    "name": "jws",
+    "version": "4.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/brianloveswords/node-jws.git"
+    },
+    "path": "node_modules/openclaw/node_modules/jws/package.json"
+  },
+  {
+    "name": "koffi",
+    "version": "3.3.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Koromix/koffi"
+    },
+    "path": "node_modules/openclaw/node_modules/koffi/package.json"
+  },
+  {
+    "name": "kysely",
+    "version": "0.29.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/kysely-org/kysely.git"
+    },
+    "path": "node_modules/openclaw/node_modules/kysely/package.json"
+  },
+  {
+    "name": "lie",
+    "version": "3.3.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/calvinmetcalf/lie.git"
+    },
+    "path": "node_modules/openclaw/node_modules/lie/package.json"
+  },
+  {
+    "name": "linkedom",
+    "version": "0.18.13",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/WebReflection/linkedom.git"
+    },
+    "path": "node_modules/openclaw/node_modules/linkedom/package.json"
+  },
+  {
+    "name": "locate-path",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/locate-path",
+    "path": "node_modules/openclaw/node_modules/locate-path/package.json"
+  },
+  {
+    "name": "long",
+    "version": "5.3.2",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/long.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/long/package.json"
+  },
+  {
+    "name": "lru-cache",
+    "version": "11.5.3",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/isaacs/node-lru-cache.git"
+    },
+    "path": "node_modules/openclaw/node_modules/lru-cache/package.json"
+  },
+  {
+    "name": "marked",
+    "version": "18.0.11",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/markedjs/marked.git"
+    },
+    "path": "node_modules/openclaw/node_modules/marked/package.json"
+  },
+  {
+    "name": "math-intrinsics",
+    "version": "1.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/es-shims/math-intrinsics.git"
+    },
+    "path": "node_modules/openclaw/node_modules/math-intrinsics/package.json"
+  },
+  {
+    "name": "media-typer",
+    "version": "1.1.1",
+    "license": "MIT",
+    "repository": "jshttp/media-typer",
+    "path": "node_modules/openclaw/node_modules/media-typer/package.json"
+  },
+  {
+    "name": "merge-descriptors",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/merge-descriptors",
+    "path": "node_modules/openclaw/node_modules/merge-descriptors/package.json"
+  },
+  {
+    "name": "mime-db",
+    "version": "1.54.0",
+    "license": "MIT",
+    "repository": "jshttp/mime-db",
+    "path": "node_modules/openclaw/node_modules/mime-db/package.json"
+  },
+  {
+    "name": "mime-types",
+    "version": "3.0.2",
+    "license": "MIT",
+    "repository": "jshttp/mime-types",
+    "path": "node_modules/openclaw/node_modules/mime-types/package.json"
+  },
+  {
+    "name": "minimalistic-assert",
+    "version": "1.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/calvinmetcalf/minimalistic-assert.git"
+    },
+    "path": "node_modules/openclaw/node_modules/minimalistic-assert/package.json"
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.6",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/minimatch"
+    },
+    "path": "node_modules/openclaw/node_modules/minimatch/package.json"
+  },
+  {
+    "name": "minimist",
+    "version": "1.2.8",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/minimistjs/minimist.git"
+    },
+    "path": "node_modules/openclaw/node_modules/minimist/package.json"
+  },
+  {
+    "name": "minipass",
+    "version": "7.1.3",
+    "license": "BlueOak-1.0.0",
+    "repository": "https://github.com/isaacs/minipass",
+    "path": "node_modules/openclaw/node_modules/minipass/package.json"
+  },
+  {
+    "name": "minizlib",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minizlib.git"
+    },
+    "path": "node_modules/openclaw/node_modules/minizlib/package.json"
+  },
+  {
+    "name": "ms",
+    "version": "2.1.3",
+    "license": "MIT",
+    "repository": "vercel/ms",
+    "path": "node_modules/openclaw/node_modules/ms/package.json"
+  },
+  {
+    "name": "negotiator",
+    "version": "1.1.0",
+    "license": "MIT",
+    "repository": "jshttp/negotiator",
+    "path": "node_modules/openclaw/node_modules/negotiator/package.json"
+  },
+  {
+    "name": "content-type",
+    "version": "2.1.0",
+    "license": "MIT",
+    "repository": "jshttp/content-type",
+    "path": "node_modules/openclaw/node_modules/negotiator/node_modules/content-type/package.json"
+  },
+  {
+    "name": "node-domexception",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/jimmywarting/node-domexception.git"
+    },
+    "path": "node_modules/openclaw/node_modules/node-domexception/package.json"
+  },
+  {
+    "name": "node-edge-tts",
+    "version": "1.2.10",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/SchneeHertz/node-edge-tts.git"
+    },
+    "path": "node_modules/openclaw/node_modules/node-edge-tts/package.json"
+  },
+  {
+    "name": "node-fetch",
+    "version": "3.3.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/node-fetch/node-fetch.git"
+    },
+    "path": "node_modules/openclaw/node_modules/node-fetch/package.json"
+  },
+  {
+    "name": "npm",
+    "version": "11.20.0",
+    "license": "Artistic-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/package.json"
+  },
+  {
+    "name": "@gar/promise-retry",
+    "version": "1.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/wraithgar/node-promise-retry.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@gar/promise-retry/package.json"
+  },
+  {
+    "name": "@isaacs/fs-minipass",
+    "version": "4.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/fs-minipass.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@isaacs/fs-minipass/package.json"
+  },
+  {
+    "name": "@isaacs/string-locale-compare",
+    "version": "1.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/string-locale-compare"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@isaacs/string-locale-compare/package.json"
+  },
+  {
+    "name": "@npmcli/agent",
+    "version": "4.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/agent.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/agent/package.json"
+  },
+  {
+    "name": "@npmcli/arborist",
+    "version": "9.9.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/arborist"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/arborist/package.json"
+  },
+  {
+    "name": "@npmcli/config",
+    "version": "10.13.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/config"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/config/package.json"
+  },
+  {
+    "name": "@npmcli/fs",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/fs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/fs/package.json"
+  },
+  {
+    "name": "@npmcli/git",
+    "version": "7.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/git.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/git/package.json"
+  },
+  {
+    "name": "@npmcli/installed-package-contents",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/installed-package-contents.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/installed-package-contents/package.json"
+  },
+  {
+    "name": "@npmcli/map-workspaces",
+    "version": "5.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/map-workspaces.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/map-workspaces/package.json"
+  },
+  {
+    "name": "@npmcli/metavuln-calculator",
+    "version": "9.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/metavuln-calculator.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/metavuln-calculator/package.json"
+  },
+  {
+    "name": "@npmcli/name-from-folder",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/name-from-folder.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/name-from-folder/package.json"
+  },
+  {
+    "name": "@npmcli/node-gyp",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-gyp.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/node-gyp/package.json"
+  },
+  {
+    "name": "@npmcli/package-json",
+    "version": "7.0.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/package-json.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/package-json/package.json"
+  },
+  {
+    "name": "@npmcli/promise-spawn",
+    "version": "9.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/promise-spawn.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/promise-spawn/package.json"
+  },
+  {
+    "name": "@npmcli/query",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/query.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/query/package.json"
+  },
+  {
+    "name": "@npmcli/redact",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/redact.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/redact/package.json"
+  },
+  {
+    "name": "@npmcli/run-script",
+    "version": "10.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/run-script.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@npmcli/run-script/package.json"
+  },
+  {
+    "name": "@sigstore/bundle",
+    "version": "4.0.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/bundle/package.json"
+  },
+  {
+    "name": "@sigstore/core",
+    "version": "3.2.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/core/package.json"
+  },
+  {
+    "name": "@sigstore/protobuf-specs",
+    "version": "0.5.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/protobuf-specs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/protobuf-specs/package.json"
+  },
+  {
+    "name": "@sigstore/sign",
+    "version": "4.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/sign/package.json"
+  },
+  {
+    "name": "@sigstore/tuf",
+    "version": "4.0.2",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/tuf/package.json"
+  },
+  {
+    "name": "@sigstore/verify",
+    "version": "3.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@sigstore/verify/package.json"
+  },
+  {
+    "name": "@tufjs/canonical-json",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@tufjs/canonical-json/package.json"
+  },
+  {
+    "name": "@tufjs/models",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/@tufjs/models/package.json"
+  },
+  {
+    "name": "abbrev",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/abbrev-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/abbrev/package.json"
+  },
+  {
+    "name": "agent-base",
+    "version": "7.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/agent-base"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/agent-base/package.json"
+  },
+  {
+    "name": "aproba",
+    "version": "2.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/iarna/aproba"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/aproba/package.json"
+  },
+  {
+    "name": "archy",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/substack/node-archy.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/archy/package.json"
+  },
+  {
+    "name": "balanced-match",
+    "version": "4.0.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/juliangruber/balanced-match.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/balanced-match/package.json"
+  },
+  {
+    "name": "bin-links",
+    "version": "6.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/bin-links.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/bin-links/package.json"
+  },
+  {
+    "name": "binary-extensions",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/binary-extensions",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/binary-extensions/package.json"
+  },
+  {
+    "name": "brace-expansion",
+    "version": "5.0.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/juliangruber/brace-expansion.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/brace-expansion/package.json"
+  },
+  {
+    "name": "cacache",
+    "version": "20.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cacache.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/cacache/package.json"
+  },
+  {
+    "name": "chalk",
+    "version": "5.6.2",
+    "license": "MIT",
+    "repository": "chalk/chalk",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/chalk/package.json"
+  },
+  {
+    "name": "chownr",
+    "version": "3.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/chownr.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/chownr/package.json"
+  },
+  {
+    "name": "ci-info",
+    "version": "4.4.0",
+    "license": "MIT",
+    "repository": "github:watson/ci-info",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ci-info/package.json"
+  },
+  {
+    "name": "cidr-regex",
+    "version": "5.0.5",
+    "license": "BSD-2-Clause",
+    "repository": "silverwind/cidr-regex",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/cidr-regex/package.json"
+  },
+  {
+    "name": "cmd-shim",
+    "version": "8.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cmd-shim.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/cmd-shim/package.json"
+  },
+  {
+    "name": "common-ancestor-path",
+    "version": "2.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/common-ancestor-path"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/common-ancestor-path/package.json"
+  },
+  {
+    "name": "cssesc",
+    "version": "3.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mathiasbynens/cssesc.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/cssesc/package.json"
+  },
+  {
+    "name": "debug",
+    "version": "4.4.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/debug-js/debug.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/debug/package.json"
+  },
+  {
+    "name": "diff",
+    "version": "8.0.4",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/kpdecker/jsdiff.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/diff/package.json"
+  },
+  {
+    "name": "env-paths",
+    "version": "2.2.1",
+    "license": "MIT",
+    "repository": "sindresorhus/env-paths",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/env-paths/package.json"
+  },
+  {
+    "name": "exponential-backoff",
+    "version": "3.1.3",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/coveooss/exponential-backoff.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/exponential-backoff/package.json"
+  },
+  {
+    "name": "fastest-levenshtein",
+    "version": "1.0.16",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ka-weihe/fastest-levenshtein.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/fastest-levenshtein/package.json"
+  },
+  {
+    "name": "fs-minipass",
+    "version": "3.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/fs-minipass.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/fs-minipass/package.json"
+  },
+  {
+    "name": "glob",
+    "version": "13.0.6",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/node-glob.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/glob/package.json"
+  },
+  {
+    "name": "graceful-fs",
+    "version": "4.2.11",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/isaacs/node-graceful-fs"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/graceful-fs/package.json"
+  },
+  {
+    "name": "hosted-git-info",
+    "version": "9.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/hosted-git-info.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/hosted-git-info/package.json"
+  },
+  {
+    "name": "http-cache-semantics",
+    "version": "4.2.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/kornelski/http-cache-semantics.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/http-cache-semantics/package.json"
+  },
+  {
+    "name": "http-proxy-agent",
+    "version": "7.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/http-proxy-agent"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/http-proxy-agent/package.json"
+  },
+  {
+    "name": "https-proxy-agent",
+    "version": "7.0.6",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/https-proxy-agent"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/https-proxy-agent/package.json"
+  },
+  {
+    "name": "iconv-lite",
+    "version": "0.7.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/pillarjs/iconv-lite.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/iconv-lite/package.json"
+  },
+  {
+    "name": "ignore-walk",
+    "version": "8.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ignore-walk.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ignore-walk/package.json"
+  },
+  {
+    "name": "ini",
+    "version": "6.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ini.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ini/package.json"
+  },
+  {
+    "name": "init-package-json",
+    "version": "8.2.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/init-package-json.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/init-package-json/package.json"
+  },
+  {
+    "name": "ip-address",
+    "version": "10.5.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/beaugunderson/ip-address.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ip-address/package.json"
+  },
+  {
+    "name": "is-cidr",
+    "version": "6.0.4",
+    "license": "BSD-2-Clause",
+    "repository": "silverwind/is-cidr",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/is-cidr/package.json"
+  },
+  {
+    "name": "isexe",
+    "version": "4.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": "https://github.com/isaacs/isexe",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/isexe/package.json"
+  },
+  {
+    "name": "json-parse-even-better-errors",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/json-parse-even-better-errors.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/json-parse-even-better-errors/package.json"
+  },
+  {
+    "name": "json-stringify-nice",
+    "version": "1.1.4",
+    "license": "ISC",
+    "repository": "https://github.com/isaacs/json-stringify-nice",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/json-stringify-nice/package.json"
+  },
+  {
+    "name": "jsonparse",
+    "version": "1.3.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/creationix/jsonparse.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/jsonparse/package.json"
+  },
+  {
+    "name": "just-diff",
+    "version": "6.0.2",
+    "license": "MIT",
+    "repository": "https://github.com/angus-c/just",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/just-diff/package.json"
+  },
+  {
+    "name": "just-diff-apply",
+    "version": "5.5.0",
+    "license": "MIT",
+    "repository": "https://github.com/angus-c/just",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/just-diff-apply/package.json"
+  },
+  {
+    "name": "libnpmaccess",
+    "version": "10.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmaccess"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmaccess/package.json"
+  },
+  {
+    "name": "libnpmdiff",
+    "version": "8.1.13",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmdiff"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmdiff/package.json"
+  },
+  {
+    "name": "libnpmexec",
+    "version": "10.3.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmexec"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmexec/package.json"
+  },
+  {
+    "name": "libnpmfund",
+    "version": "7.0.27",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmfund"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmfund/package.json"
+  },
+  {
+    "name": "libnpmorg",
+    "version": "8.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmorg"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmorg/package.json"
+  },
+  {
+    "name": "libnpmpack",
+    "version": "9.1.14",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmpack"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmpack/package.json"
+  },
+  {
+    "name": "libnpmpublish",
+    "version": "11.2.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmpublish"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmpublish/package.json"
+  },
+  {
+    "name": "libnpmsearch",
+    "version": "9.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmsearch"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmsearch/package.json"
+  },
+  {
+    "name": "libnpmteam",
+    "version": "8.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmteam"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmteam/package.json"
+  },
+  {
+    "name": "libnpmversion",
+    "version": "8.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/cli.git",
+      "directory": "workspaces/libnpmversion"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/libnpmversion/package.json"
+  },
+  {
+    "name": "lru-cache",
+    "version": "11.5.1",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/isaacs/node-lru-cache.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/lru-cache/package.json"
+  },
+  {
+    "name": "make-fetch-happen",
+    "version": "15.0.6",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/make-fetch-happen.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/make-fetch-happen/package.json"
+  },
+  {
+    "name": "minimatch",
+    "version": "10.2.5",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:isaacs/minimatch"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minimatch/package.json"
+  },
+  {
+    "name": "minipass",
+    "version": "7.1.3",
+    "license": "BlueOak-1.0.0",
+    "repository": "https://github.com/isaacs/minipass",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass/package.json"
+  },
+  {
+    "name": "minipass-collect",
+    "version": "2.0.1",
+    "license": "ISC",
+    "repository": "https://github.com/isaacs/minipass-collect",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-collect/package.json"
+  },
+  {
+    "name": "minipass-fetch",
+    "version": "5.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/minipass-fetch.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-fetch/package.json"
+  },
+  {
+    "name": "minipass-flush",
+    "version": "1.0.6",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass-flush.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-flush/package.json"
+  },
+  {
+    "name": "minipass-pipeline",
+    "version": "1.2.4",
+    "license": "ISC",
+    "repository": null,
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-pipeline/package.json"
+  },
+  {
+    "name": "minipass",
+    "version": "3.3.6",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-pipeline/node_modules/minipass/package.json"
+  },
+  {
+    "name": "yallist",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/yallist.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-pipeline/node_modules/yallist/package.json"
+  },
+  {
+    "name": "minipass-sized",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minipass-sized.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minipass-sized/package.json"
+  },
+  {
+    "name": "minizlib",
+    "version": "3.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/minizlib.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/minizlib/package.json"
+  },
+  {
+    "name": "ms",
+    "version": "2.1.3",
+    "license": "MIT",
+    "repository": "vercel/ms",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ms/package.json"
+  },
+  {
+    "name": "mute-stream",
+    "version": "3.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/mute-stream.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/mute-stream/package.json"
+  },
+  {
+    "name": "negotiator",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": "jshttp/negotiator",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/negotiator/package.json"
+  },
+  {
+    "name": "node-gyp",
+    "version": "12.4.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/nodejs/node-gyp.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/node-gyp/package.json"
+  },
+  {
+    "name": "nopt",
+    "version": "9.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/nopt.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/nopt/package.json"
+  },
+  {
+    "name": "npm-audit-report",
+    "version": "7.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-audit-report.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-audit-report/package.json"
+  },
+  {
+    "name": "npm-bundled",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-bundled.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-bundled/package.json"
+  },
+  {
+    "name": "npm-install-checks",
+    "version": "8.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-install-checks.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-install-checks/package.json"
+  },
+  {
+    "name": "npm-normalize-package-bin",
+    "version": "5.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-normalize-package-bin.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-normalize-package-bin/package.json"
+  },
+  {
+    "name": "npm-package-arg",
+    "version": "13.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-package-arg.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-package-arg/package.json"
+  },
+  {
+    "name": "npm-packlist",
+    "version": "10.0.4",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-packlist.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-packlist/package.json"
+  },
+  {
+    "name": "npm-pick-manifest",
+    "version": "11.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-pick-manifest.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-pick-manifest/package.json"
+  },
+  {
+    "name": "npm-profile",
+    "version": "12.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-profile.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-profile/package.json"
+  },
+  {
+    "name": "npm-registry-fetch",
+    "version": "19.1.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-registry-fetch.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-registry-fetch/package.json"
+  },
+  {
+    "name": "npm-user-validate",
+    "version": "4.0.0",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/npm-user-validate.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/npm-user-validate/package.json"
+  },
+  {
+    "name": "p-map",
+    "version": "7.0.4",
+    "license": "MIT",
+    "repository": "sindresorhus/p-map",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/p-map/package.json"
+  },
+  {
+    "name": "pacote",
+    "version": "21.5.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/pacote.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/pacote/package.json"
+  },
+  {
+    "name": "parse-conflict-json",
+    "version": "5.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/parse-conflict-json.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/parse-conflict-json/package.json"
+  },
+  {
+    "name": "path-scurry",
+    "version": "2.0.2",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/path-scurry"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/path-scurry/package.json"
+  },
+  {
+    "name": "postcss-selector-parser",
+    "version": "7.1.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/postcss/postcss-selector-parser.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/postcss-selector-parser/package.json"
+  },
+  {
+    "name": "proc-log",
+    "version": "6.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/proc-log.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/proc-log/package.json"
+  },
+  {
+    "name": "proggy",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/proggy.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/proggy/package.json"
+  },
+  {
+    "name": "promise-all-reject-late",
+    "version": "1.0.1",
+    "license": "ISC",
+    "repository": null,
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/promise-all-reject-late/package.json"
+  },
+  {
+    "name": "promise-call-limit",
+    "version": "3.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/promise-call-limit"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/promise-call-limit/package.json"
+  },
+  {
+    "name": "promzard",
+    "version": "3.0.1",
+    "license": "ISC",
+    "repository": {
+      "url": "git+https://github.com/npm/promzard.git",
+      "type": "git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/promzard/package.json"
+  },
+  {
+    "name": "qrcode-terminal",
+    "version": "0.12.0",
+    "license": null,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/gtanner/qrcode-terminal"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/qrcode-terminal/package.json"
+  },
+  {
+    "name": "read",
+    "version": "5.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/read.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/read/package.json"
+  },
+  {
+    "name": "read-cmd-shim",
+    "version": "6.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/read-cmd-shim.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/read-cmd-shim/package.json"
+  },
+  {
+    "name": "safer-buffer",
+    "version": "2.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ChALkeR/safer-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/safer-buffer/package.json"
+  },
+  {
+    "name": "semver",
+    "version": "7.8.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-semver.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/semver/package.json"
+  },
+  {
+    "name": "signal-exit",
+    "version": "4.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tapjs/signal-exit.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/signal-exit/package.json"
+  },
+  {
+    "name": "sigstore",
+    "version": "4.1.1",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sigstore/sigstore-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/sigstore/package.json"
+  },
+  {
+    "name": "smart-buffer",
+    "version": "4.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/JoshGlazebrook/smart-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/smart-buffer/package.json"
+  },
+  {
+    "name": "socks",
+    "version": "2.8.9",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/JoshGlazebrook/socks.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/socks/package.json"
+  },
+  {
+    "name": "socks-proxy-agent",
+    "version": "8.0.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/TooTallNate/proxy-agents.git",
+      "directory": "packages/socks-proxy-agent"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/socks-proxy-agent/package.json"
+  },
+  {
+    "name": "spdx-exceptions",
+    "version": "2.5.0",
+    "license": "CC-BY-3.0",
+    "repository": "kemitchell/spdx-exceptions.json",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/spdx-exceptions/package.json"
+  },
+  {
+    "name": "spdx-expression-parse",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "jslicense/spdx-expression-parse.js",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/spdx-expression-parse/package.json"
+  },
+  {
+    "name": "spdx-license-ids",
+    "version": "3.0.23",
+    "license": "CC0-1.0",
+    "repository": "jslicense/spdx-license-ids",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/spdx-license-ids/package.json"
+  },
+  {
+    "name": "ssri",
+    "version": "13.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/ssri.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/ssri/package.json"
+  },
+  {
+    "name": "supports-color",
+    "version": "10.2.2",
+    "license": "MIT",
+    "repository": "chalk/supports-color",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/supports-color/package.json"
+  },
+  {
+    "name": "tar",
+    "version": "7.5.22",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/isaacs/node-tar.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tar/package.json"
+  },
+  {
+    "name": "text-table",
+    "version": "0.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/substack/text-table.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/text-table/package.json"
+  },
+  {
+    "name": "tiny-relative-date",
+    "version": "2.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/wildlyinaccurate/relative-date.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tiny-relative-date/package.json"
+  },
+  {
+    "name": "tinyglobby",
+    "version": "0.2.17",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/SuperchupuDev/tinyglobby.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tinyglobby/package.json"
+  },
+  {
+    "name": "fdir",
+    "version": "6.5.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/thecodrr/fdir.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tinyglobby/node_modules/fdir/package.json"
+  },
+  {
+    "name": "picomatch",
+    "version": "4.0.4",
+    "license": "MIT",
+    "repository": "micromatch/picomatch",
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tinyglobby/node_modules/picomatch/package.json"
+  },
+  {
+    "name": "treeverse",
+    "version": "3.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/treeverse.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/treeverse/package.json"
+  },
+  {
+    "name": "tuf-js",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/theupdateframework/tuf-js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/tuf-js/package.json"
+  },
+  {
+    "name": "undici",
+    "version": "6.28.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nodejs/undici.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/undici/package.json"
+  },
+  {
+    "name": "util-deprecate",
+    "version": "1.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/TooTallNate/util-deprecate.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/util-deprecate/package.json"
+  },
+  {
+    "name": "validate-npm-package-name",
+    "version": "7.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/validate-npm-package-name.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/validate-npm-package-name/package.json"
+  },
+  {
+    "name": "walk-up-path",
+    "version": "4.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/walk-up-path"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/walk-up-path/package.json"
+  },
+  {
+    "name": "which",
+    "version": "6.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-which.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/which/package.json"
+  },
+  {
+    "name": "write-file-atomic",
+    "version": "7.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/write-file-atomic.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/write-file-atomic/package.json"
+  },
+  {
+    "name": "yallist",
+    "version": "5.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/yallist.git"
+    },
+    "path": "node_modules/openclaw/node_modules/npm/node_modules/yallist/package.json"
+  },
+  {
+    "name": "npm-run-path",
+    "version": "6.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/npm-run-path",
+    "path": "node_modules/openclaw/node_modules/npm-run-path/package.json"
+  },
+  {
+    "name": "path-key",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/path-key",
+    "path": "node_modules/openclaw/node_modules/npm-run-path/node_modules/path-key/package.json"
+  },
+  {
+    "name": "nth-check",
+    "version": "3.0.1",
+    "license": "BSD-2-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fb55/nth-check"
+    },
+    "path": "node_modules/openclaw/node_modules/nth-check/package.json"
+  },
+  {
+    "name": "object-assign",
+    "version": "4.1.1",
+    "license": "MIT",
+    "repository": "sindresorhus/object-assign",
+    "path": "node_modules/openclaw/node_modules/object-assign/package.json"
+  },
+  {
+    "name": "object-inspect",
+    "version": "1.13.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/inspect-js/object-inspect.git"
+    },
+    "path": "node_modules/openclaw/node_modules/object-inspect/package.json"
+  },
+  {
+    "name": "obug",
+    "version": "2.2.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/sxzz/obug.git"
+    },
+    "path": "node_modules/openclaw/node_modules/obug/package.json"
+  },
+  {
+    "name": "on-finished",
+    "version": "2.4.1",
+    "license": "MIT",
+    "repository": "jshttp/on-finished",
+    "path": "node_modules/openclaw/node_modules/on-finished/package.json"
+  },
+  {
+    "name": "once",
+    "version": "1.4.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/once"
+    },
+    "path": "node_modules/openclaw/node_modules/once/package.json"
+  },
+  {
+    "name": "openai",
+    "version": "7.20.0",
+    "license": "Apache-2.0",
+    "repository": "github:openai/openai-node",
+    "path": "node_modules/openclaw/node_modules/openai/package.json"
+  },
+  {
+    "name": "p-limit",
+    "version": "7.3.3",
+    "license": "MIT",
+    "repository": "sindresorhus/p-limit",
+    "path": "node_modules/openclaw/node_modules/p-limit/package.json"
+  },
+  {
+    "name": "p-locate",
+    "version": "4.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/p-locate",
+    "path": "node_modules/openclaw/node_modules/p-locate/package.json"
+  },
+  {
+    "name": "p-limit",
+    "version": "2.3.0",
+    "license": "MIT",
+    "repository": "sindresorhus/p-limit",
+    "path": "node_modules/openclaw/node_modules/p-locate/node_modules/p-limit/package.json"
+  },
+  {
+    "name": "p-map",
+    "version": "7.0.8",
+    "license": "MIT",
+    "repository": "sindresorhus/p-map",
+    "path": "node_modules/openclaw/node_modules/p-map/package.json"
+  },
+  {
+    "name": "p-retry",
+    "version": "4.6.2",
+    "license": "MIT",
+    "repository": "sindresorhus/p-retry",
+    "path": "node_modules/openclaw/node_modules/p-retry/package.json"
+  },
+  {
+    "name": "p-try",
+    "version": "2.2.0",
+    "license": "MIT",
+    "repository": "sindresorhus/p-try",
+    "path": "node_modules/openclaw/node_modules/p-try/package.json"
+  },
+  {
+    "name": "pako",
+    "version": "1.0.11",
+    "license": "(MIT AND Zlib)",
+    "repository": "nodeca/pako",
+    "path": "node_modules/openclaw/node_modules/pako/package.json"
+  },
+  {
+    "name": "parse-ms",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/parse-ms",
+    "path": "node_modules/openclaw/node_modules/parse-ms/package.json"
+  },
+  {
+    "name": "parseurl",
+    "version": "1.3.3",
+    "license": "MIT",
+    "repository": "pillarjs/parseurl",
+    "path": "node_modules/openclaw/node_modules/parseurl/package.json"
+  },
+  {
+    "name": "partial-json",
+    "version": "0.1.7",
+    "license": "MIT",
+    "repository": "https://github.com/promplate/partial-json-parser-js",
+    "path": "node_modules/openclaw/node_modules/partial-json/package.json"
+  },
+  {
+    "name": "path-exists",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/path-exists",
+    "path": "node_modules/openclaw/node_modules/path-exists/package.json"
+  },
+  {
+    "name": "path-key",
+    "version": "3.1.1",
+    "license": "MIT",
+    "repository": "sindresorhus/path-key",
+    "path": "node_modules/openclaw/node_modules/path-key/package.json"
+  },
+  {
+    "name": "path-to-regexp",
+    "version": "8.4.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/pillarjs/path-to-regexp.git"
+    },
+    "path": "node_modules/openclaw/node_modules/path-to-regexp/package.json"
+  },
+  {
+    "name": "pkce-challenge",
+    "version": "5.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/crouchcd/pkce-challenge.git"
+    },
+    "path": "node_modules/openclaw/node_modules/pkce-challenge/package.json"
+  },
+  {
+    "name": "playwright-core",
+    "version": "1.63.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/microsoft/playwright.git"
+    },
+    "path": "node_modules/openclaw/node_modules/playwright-core/package.json"
+  },
+  {
+    "name": "pngjs",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/lukeapage/pngjs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/pngjs/package.json"
+  },
+  {
+    "name": "pretty-ms",
+    "version": "9.3.1",
+    "license": "MIT",
+    "repository": "sindresorhus/pretty-ms",
+    "path": "node_modules/openclaw/node_modules/pretty-ms/package.json"
+  },
+  {
+    "name": "process-nextick-args",
+    "version": "2.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/calvinmetcalf/process-nextick-args.git"
+    },
+    "path": "node_modules/openclaw/node_modules/process-nextick-args/package.json"
+  },
+  {
+    "name": "protobufjs",
+    "version": "7.6.6",
+    "license": "BSD-3-Clause",
+    "repository": "protobufjs/protobuf.js",
+    "path": "node_modules/openclaw/node_modules/protobufjs/package.json"
+  },
+  {
+    "name": "proxy-addr",
+    "version": "2.0.8",
+    "license": "MIT",
+    "repository": "jshttp/proxy-addr",
+    "path": "node_modules/openclaw/node_modules/proxy-addr/package.json"
+  },
+  {
+    "name": "qrcode",
+    "version": "1.5.4",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/soldair/node-qrcode.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qrcode/package.json"
+  },
+  {
+    "name": "cliui",
+    "version": "6.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/yargs/cliui.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qrcode/node_modules/cliui/package.json"
+  },
+  {
+    "name": "wrap-ansi",
+    "version": "6.2.0",
+    "license": "MIT",
+    "repository": "chalk/wrap-ansi",
+    "path": "node_modules/openclaw/node_modules/qrcode/node_modules/wrap-ansi/package.json"
+  },
+  {
+    "name": "y18n",
+    "version": "4.0.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:yargs/y18n.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qrcode/node_modules/y18n/package.json"
+  },
+  {
+    "name": "yargs",
+    "version": "15.4.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yargs/yargs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qrcode/node_modules/yargs/package.json"
+  },
+  {
+    "name": "yargs-parser",
+    "version": "18.1.3",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yargs/yargs-parser.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qrcode/node_modules/yargs-parser/package.json"
+  },
+  {
+    "name": "qs",
+    "version": "6.16.0",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/ljharb/qs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/qs/package.json"
+  },
+  {
+    "name": "range-parser",
+    "version": "1.3.0",
+    "license": "MIT",
+    "repository": "jshttp/range-parser",
+    "path": "node_modules/openclaw/node_modules/range-parser/package.json"
+  },
+  {
+    "name": "rastermill",
+    "version": "0.3.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/openclaw/rastermill.git"
+    },
+    "path": "node_modules/openclaw/node_modules/rastermill/package.json"
+  },
+  {
+    "name": "raw-body",
+    "version": "3.0.2",
+    "license": "MIT",
+    "repository": "stream-utils/raw-body",
+    "path": "node_modules/openclaw/node_modules/raw-body/package.json"
+  },
+  {
+    "name": "readable-stream",
+    "version": "2.3.8",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/nodejs/readable-stream"
+    },
+    "path": "node_modules/openclaw/node_modules/readable-stream/package.json"
+  },
+  {
+    "name": "safe-buffer",
+    "version": "5.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/feross/safe-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/readable-stream/node_modules/safe-buffer/package.json"
+  },
+  {
+    "name": "readdirp",
+    "version": "5.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/paulmillr/readdirp.git"
+    },
+    "path": "node_modules/openclaw/node_modules/readdirp/package.json"
+  },
+  {
+    "name": "require-directory",
+    "version": "2.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/troygoode/node-require-directory.git"
+    },
+    "path": "node_modules/openclaw/node_modules/require-directory/package.json"
+  },
+  {
+    "name": "require-from-string",
+    "version": "2.0.2",
+    "license": "MIT",
+    "repository": "floatdrop/require-from-string",
+    "path": "node_modules/openclaw/node_modules/require-from-string/package.json"
+  },
+  {
+    "name": "require-main-filename",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com/yargs/require-main-filename.git"
+    },
+    "path": "node_modules/openclaw/node_modules/require-main-filename/package.json"
+  },
+  {
+    "name": "retry",
+    "version": "0.13.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/tim-kos/node-retry.git"
+    },
+    "path": "node_modules/openclaw/node_modules/retry/package.json"
+  },
+  {
+    "name": "router",
+    "version": "2.2.0",
+    "license": "MIT",
+    "repository": "pillarjs/router",
+    "path": "node_modules/openclaw/node_modules/router/package.json"
+  },
+  {
+    "name": "safe-buffer",
+    "version": "5.2.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/feross/safe-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/safe-buffer/package.json"
+  },
+  {
+    "name": "safer-buffer",
+    "version": "2.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ChALkeR/safer-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/safer-buffer/package.json"
+  },
+  {
+    "name": "semver",
+    "version": "7.8.5",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/npm/node-semver.git"
+    },
+    "path": "node_modules/openclaw/node_modules/semver/package.json"
+  },
+  {
+    "name": "send",
+    "version": "1.2.1",
+    "license": "MIT",
+    "repository": "pillarjs/send",
+    "path": "node_modules/openclaw/node_modules/send/package.json"
+  },
+  {
+    "name": "serve-static",
+    "version": "2.2.1",
+    "license": "MIT",
+    "repository": "expressjs/serve-static",
+    "path": "node_modules/openclaw/node_modules/serve-static/package.json"
+  },
+  {
+    "name": "set-blocking",
+    "version": "2.0.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/yargs/set-blocking.git"
+    },
+    "path": "node_modules/openclaw/node_modules/set-blocking/package.json"
+  },
+  {
+    "name": "setimmediate",
+    "version": "1.0.5",
+    "license": "MIT",
+    "repository": "YuzuJS/setImmediate",
+    "path": "node_modules/openclaw/node_modules/setimmediate/package.json"
+  },
+  {
+    "name": "setprototypeof",
+    "version": "1.2.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/wesleytodd/setprototypeof.git"
+    },
+    "path": "node_modules/openclaw/node_modules/setprototypeof/package.json"
+  },
+  {
+    "name": "shebang-command",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": "kevva/shebang-command",
+    "path": "node_modules/openclaw/node_modules/shebang-command/package.json"
+  },
+  {
+    "name": "shebang-regex",
+    "version": "3.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/shebang-regex",
+    "path": "node_modules/openclaw/node_modules/shebang-regex/package.json"
+  },
+  {
+    "name": "side-channel",
+    "version": "1.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/side-channel.git"
+    },
+    "path": "node_modules/openclaw/node_modules/side-channel/package.json"
+  },
+  {
+    "name": "side-channel-list",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/side-channel-list.git"
+    },
+    "path": "node_modules/openclaw/node_modules/side-channel-list/package.json"
+  },
+  {
+    "name": "side-channel-map",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/side-channel-map.git"
+    },
+    "path": "node_modules/openclaw/node_modules/side-channel-map/package.json"
+  },
+  {
+    "name": "side-channel-weakmap",
+    "version": "1.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ljharb/side-channel-weakmap.git"
+    },
+    "path": "node_modules/openclaw/node_modules/side-channel-weakmap/package.json"
+  },
+  {
+    "name": "signal-exit",
+    "version": "4.1.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tapjs/signal-exit.git"
+    },
+    "path": "node_modules/openclaw/node_modules/signal-exit/package.json"
+  },
+  {
+    "name": "sisteransi",
+    "version": "1.0.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/terkelg/sisteransi"
+    },
+    "path": "node_modules/openclaw/node_modules/sisteransi/package.json"
+  },
+  {
+    "name": "source-map",
+    "version": "0.6.1",
+    "license": "BSD-3-Clause",
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/mozilla/source-map.git"
+    },
+    "path": "node_modules/openclaw/node_modules/source-map/package.json"
+  },
+  {
+    "name": "source-map-support",
+    "version": "0.5.21",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/evanw/node-source-map-support"
+    },
+    "path": "node_modules/openclaw/node_modules/source-map-support/package.json"
+  },
+  {
+    "name": "sqlite-vec",
+    "version": "0.1.9",
+    "license": "MIT OR Apache",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/asg017/sqlite-vec",
+      "directory": null
+    },
+    "path": "node_modules/openclaw/node_modules/sqlite-vec/package.json"
+  },
+  {
+    "name": "sqlite-vec-windows-x64",
+    "version": "0.1.9",
+    "license": "MIT OR Apache",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/asg017/sqlite-vec",
+      "directory": null
+    },
+    "path": "node_modules/openclaw/node_modules/sqlite-vec-windows-x64/package.json"
+  },
+  {
+    "name": "standardwebhooks",
+    "version": "1.1.1",
+    "license": "MIT",
+    "repository": "https://github.com/standard-webhooks/standard-webhooks",
+    "path": "node_modules/openclaw/node_modules/standardwebhooks/package.json"
+  },
+  {
+    "name": "statuses",
+    "version": "2.0.2",
+    "license": "MIT",
+    "repository": "jshttp/statuses",
+    "path": "node_modules/openclaw/node_modules/statuses/package.json"
+  },
+  {
+    "name": "string-width",
+    "version": "4.2.3",
+    "license": "MIT",
+    "repository": "sindresorhus/string-width",
+    "path": "node_modules/openclaw/node_modules/string-width/package.json"
+  },
+  {
+    "name": "string_decoder",
+    "version": "1.1.1",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/nodejs/string_decoder.git"
+    },
+    "path": "node_modules/openclaw/node_modules/string_decoder/package.json"
+  },
+  {
+    "name": "safe-buffer",
+    "version": "5.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/feross/safe-buffer.git"
+    },
+    "path": "node_modules/openclaw/node_modules/string_decoder/node_modules/safe-buffer/package.json"
+  },
+  {
+    "name": "strip-ansi",
+    "version": "6.0.1",
+    "license": "MIT",
+    "repository": "chalk/strip-ansi",
+    "path": "node_modules/openclaw/node_modules/strip-ansi/package.json"
+  },
+  {
+    "name": "strip-final-newline",
+    "version": "4.0.0",
+    "license": "MIT",
+    "repository": "sindresorhus/strip-final-newline",
+    "path": "node_modules/openclaw/node_modules/strip-final-newline/package.json"
+  },
+  {
+    "name": "strtok3",
+    "version": "10.3.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Borewit/strtok3.git"
+    },
+    "path": "node_modules/openclaw/node_modules/strtok3/package.json"
+  },
+  {
+    "name": "tar",
+    "version": "7.5.22",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/isaacs/node-tar.git"
+    },
+    "path": "node_modules/openclaw/node_modules/tar/package.json"
+  },
+  {
+    "name": "toidentifier",
+    "version": "1.0.1",
+    "license": "MIT",
+    "repository": "component/toidentifier",
+    "path": "node_modules/openclaw/node_modules/toidentifier/package.json"
+  },
+  {
+    "name": "token-types",
+    "version": "6.1.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Borewit/token-types.git"
+    },
+    "path": "node_modules/openclaw/node_modules/token-types/package.json"
+  },
+  {
+    "name": "tr46",
+    "version": "0.0.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Sebmaster/tr46.js.git"
+    },
+    "path": "node_modules/openclaw/node_modules/tr46/package.json"
+  },
+  {
+    "name": "ts-algebra",
+    "version": "2.0.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ThomasAribart/ts-algebra.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ts-algebra/package.json"
+  },
+  {
+    "name": "tslib",
+    "version": "2.8.1",
+    "license": "0BSD",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Microsoft/tslib.git"
+    },
+    "path": "node_modules/openclaw/node_modules/tslib/package.json"
+  },
+  {
+    "name": "tslog",
+    "version": "5.2.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/fullstack-build/tslog.git"
+    },
+    "path": "node_modules/openclaw/node_modules/tslog/package.json"
+  },
+  {
+    "name": "type-is",
+    "version": "2.1.0",
+    "license": "MIT",
+    "repository": "jshttp/type-is",
+    "path": "node_modules/openclaw/node_modules/type-is/package.json"
+  },
+  {
+    "name": "content-type",
+    "version": "2.1.0",
+    "license": "MIT",
+    "repository": "jshttp/content-type",
+    "path": "node_modules/openclaw/node_modules/type-is/node_modules/content-type/package.json"
+  },
+  {
+    "name": "typebox",
+    "version": "1.3.34",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/sinclairzx81/typebox"
+    },
+    "path": "node_modules/openclaw/node_modules/typebox/package.json"
+  },
+  {
+    "name": "uhyphen",
+    "version": "0.2.0",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/WebReflection/uhyphen.git"
+    },
+    "path": "node_modules/openclaw/node_modules/uhyphen/package.json"
+  },
+  {
+    "name": "uint8array-extras",
+    "version": "1.6.0",
+    "license": "MIT",
+    "repository": "sindresorhus/uint8array-extras",
+    "path": "node_modules/openclaw/node_modules/uint8array-extras/package.json"
+  },
+  {
+    "name": "undici",
+    "version": "8.10.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nodejs/undici.git"
+    },
+    "path": "node_modules/openclaw/node_modules/undici/package.json"
+  },
+  {
+    "name": "undici-types",
+    "version": "8.9.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nodejs/undici.git"
+    },
+    "path": "node_modules/openclaw/node_modules/undici-types/package.json"
+  },
+  {
+    "name": "unicorn-magic",
+    "version": "0.3.0",
+    "license": "MIT",
+    "repository": "sindresorhus/unicorn-magic",
+    "path": "node_modules/openclaw/node_modules/unicorn-magic/package.json"
+  },
+  {
+    "name": "unpipe",
+    "version": "1.0.0",
+    "license": "MIT",
+    "repository": "stream-utils/unpipe",
+    "path": "node_modules/openclaw/node_modules/unpipe/package.json"
+  },
+  {
+    "name": "util-deprecate",
+    "version": "1.0.2",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/TooTallNate/util-deprecate.git"
+    },
+    "path": "node_modules/openclaw/node_modules/util-deprecate/package.json"
+  },
+  {
+    "name": "vary",
+    "version": "1.1.2",
+    "license": "MIT",
+    "repository": "jshttp/vary",
+    "path": "node_modules/openclaw/node_modules/vary/package.json"
+  },
+  {
+    "name": "web-push",
+    "version": "3.6.7",
+    "license": "MPL-2.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/web-push-libs/web-push.git"
+    },
+    "path": "node_modules/openclaw/node_modules/web-push/package.json"
+  },
+  {
+    "name": "web-streams-polyfill",
+    "version": "3.3.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/MattiasBuelens/web-streams-polyfill.git"
+    },
+    "path": "node_modules/openclaw/node_modules/web-streams-polyfill/package.json"
+  },
+  {
+    "name": "web-tree-sitter",
+    "version": "0.27.0",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/tree-sitter/tree-sitter.git",
+      "directory": "lib/binding_web"
+    },
+    "path": "node_modules/openclaw/node_modules/web-tree-sitter/package.json"
+  },
+  {
+    "name": "webidl-conversions",
+    "version": "3.0.1",
+    "license": "BSD-2-Clause",
+    "repository": "jsdom/webidl-conversions",
+    "path": "node_modules/openclaw/node_modules/webidl-conversions/package.json"
+  },
+  {
+    "name": "whatwg-url",
+    "version": "5.0.0",
+    "license": "MIT",
+    "repository": "jsdom/whatwg-url",
+    "path": "node_modules/openclaw/node_modules/whatwg-url/package.json"
+  },
+  {
+    "name": "which",
+    "version": "2.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/isaacs/node-which.git"
+    },
+    "path": "node_modules/openclaw/node_modules/which/package.json"
+  },
+  {
+    "name": "which-command",
+    "version": "0.1.0",
+    "license": "MIT",
+    "repository": "sindresorhus/which-command",
+    "path": "node_modules/openclaw/node_modules/which-command/package.json"
+  },
+  {
+    "name": "which-module",
+    "version": "2.0.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nexdrew/which-module.git"
+    },
+    "path": "node_modules/openclaw/node_modules/which-module/package.json"
+  },
+  {
+    "name": "wrap-ansi",
+    "version": "7.0.0",
+    "license": "MIT",
+    "repository": "chalk/wrap-ansi",
+    "path": "node_modules/openclaw/node_modules/wrap-ansi/package.json"
+  },
+  {
+    "name": "wrappy",
+    "version": "1.0.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/npm/wrappy"
+    },
+    "path": "node_modules/openclaw/node_modules/wrappy/package.json"
+  },
+  {
+    "name": "ws",
+    "version": "8.21.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/websockets/ws.git"
+    },
+    "path": "node_modules/openclaw/node_modules/ws/package.json"
+  },
+  {
+    "name": "y18n",
+    "version": "5.0.8",
+    "license": "ISC",
+    "repository": "yargs/y18n",
+    "path": "node_modules/openclaw/node_modules/y18n/package.json"
+  },
+  {
+    "name": "yallist",
+    "version": "5.0.0",
+    "license": "BlueOak-1.0.0",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/isaacs/yallist.git"
+    },
+    "path": "node_modules/openclaw/node_modules/yallist/package.json"
+  },
+  {
+    "name": "yaml",
+    "version": "2.9.1",
+    "license": "ISC",
+    "repository": "github:eemeli/yaml",
+    "path": "node_modules/openclaw/node_modules/yaml/package.json"
+  },
+  {
+    "name": "yargs",
+    "version": "17.7.3",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yargs/yargs.git"
+    },
+    "path": "node_modules/openclaw/node_modules/yargs/package.json"
+  },
+  {
+    "name": "yargs-parser",
+    "version": "21.1.1",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/yargs/yargs-parser.git"
+    },
+    "path": "node_modules/openclaw/node_modules/yargs-parser/package.json"
+  },
+  {
+    "name": "yocto-queue",
+    "version": "1.2.2",
+    "license": "MIT",
+    "repository": "sindresorhus/yocto-queue",
+    "path": "node_modules/openclaw/node_modules/yocto-queue/package.json"
+  },
+  {
+    "name": "yoctocolors",
+    "version": "2.2.0",
+    "license": "MIT",
+    "repository": "sindresorhus/yoctocolors",
+    "path": "node_modules/openclaw/node_modules/yoctocolors/package.json"
+  },
+  {
+    "name": "zod",
+    "version": "4.6.5",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/colinhacks/zod.git"
+    },
+    "path": "node_modules/openclaw/node_modules/zod/package.json"
+  },
+  {
+    "name": "zod-to-json-schema",
+    "version": "3.25.2",
+    "license": "ISC",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/StefanTerdell/zod-to-json-schema"
+    },
+    "path": "node_modules/openclaw/node_modules/zod-to-json-schema/package.json"
+  }
+]

@@ -1,0 +1,15 @@
+MediaSail
+Copyright 2026 MediaSail contributors
+
+Derived from Easel by ZJU-REAL and contributors, pinned to
+fb80ae6dd6fc26f5553efcb293ee6d93ef253f02, under Apache License 2.0.
+https://github.com/ZJU-REAL/Easel
+
+MediaSail adds Windows desktop packaging, isolated portable runtimes, lifecycle
+management, AitoEarn draft integration, branding and GitHub Release updates.
+The upstream source is obtained at the pinned revision and modified by patches/.
+This distribution is independently maintained and does not imply endorsement
+by Easel, AitoEarn, Electron or the other component authors.
+
+AitoEarn is an external online service. Its website is not redistributed here.
+All bundled third-party components retain their original licenses; see licenses/.

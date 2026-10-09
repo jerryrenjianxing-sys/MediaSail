@@ -1,0 +1,2 @@
+# Last Windows ABI3 wheel within Easel's declared biliup>=1,<2 range.
+biliup==1.2.9

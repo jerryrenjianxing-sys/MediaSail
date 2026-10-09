@@ -1,0 +1,27 @@
+name: Check source
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.15'
+      - shell: pwsh
+        run: |
+          $Target = 'build/runtime/python/cpython-3.11.15-windows-x86_64-none'
+          New-Item -ItemType Directory -Force $Target | Out-Null
+          Copy-Item -Recurse "$env:pythonLocation/*" $Target
+          python scripts/launchers.py
+      - run: npm test

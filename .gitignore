@@ -1,0 +1,16 @@
+node_modules/
+build/
+vendor/
+.test-data/
+*.log
+dist/
+release/
+outputs/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+*.pfx
+*.p12
+*.pem

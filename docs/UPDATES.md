@@ -1,0 +1,55 @@
+# Updates and releases
+
+MediaSail 0.3.0 introduces `electron-updater` 6.8.9, pinned in package-lock.json.
+The public feed is GitHub Releases in `jerryrenjianxing-sys/MediaSail`. Applications
+contain no GitHub token. They use builder-generated `resources/app-update.yml`.
+Only stable versions greater than the installed version are offered.
+
+The sidebar and tray open a local update window. A background check runs once,
+15 seconds after launch. Downloads start only on a user click. Progress survives
+closing to the tray. Both automatic download and install-on-quit are disabled.
+The user explicitly chooses restart/install; active Easel tasks, AitoEarn uploads
+and uncertain service status trigger the existing confirmation. Services owned by
+this app stop before installation. Canceling the confirmation keeps them running.
+
+Electron-updater verifies the downloaded SHA-512 against release metadata. The
+current Windows build is unsigned; no Authenticode publisher certificate is
+configured. The updater attempts NSIS differential downloads using blockmaps and
+falls back to downloading the complete installer. Keep older release assets:
+the previous blockmap can be needed. A first update or large runtime change can
+require the full installer (~1.8 GB). Complete downloads are cached; after restart,
+checking and downloading the same version revalidates and reuses the cached file.
+Partial failed downloads may restart. Offline errors do not stop the local app.
+
+An updater IPC caller must be a trusted top-level local window. The main Easel
+window can read status and open the update window. Only that bundled update window
+can check/download/install. The remote AitoEarn view has no updater preload or local
+file/command API. Renderers cannot set a feed URL or an arbitrary installer path.
+
+## Compatibility
+
+Keep `build.appId = org.electroneasel.desktop`, the NSIS installation identity,
+`%LOCALAPPDATA%\ElectronEasel`, and `persist:aitoearn-cn` stable. They intentionally
+retain the old name so ElectronEasel 0.1/0.2 data and sessions survive the rebrand.
+Install MediaSail 0.3 once manually over the old app. Subsequent updates happen
+inside the app. Uninstall defaults to keeping data.
+
+## Publish a version
+
+1. Bump package.json and package-lock.json together. Build and verify on Windows.
+2. Run `npm run dist`, then `python scripts/source-bundle.py` using the build Python.
+3. Commit and push the tested source. Create a matching tag such as `v0.3.0`.
+4. Create a **draft** GitHub Release and upload all of:
+   - `MediaSail-VERSION-win-x64-Setup.exe`
+   - `MediaSail-VERSION-win-x64-Setup.exe.blockmap`
+   - `latest.yml` (generated for those exact bytes; never hand-edit its hash)
+   - matching source archive and SHA256SUMS.txt
+5. Verify the asset names and checksums, then publish the release as stable/latest.
+
+Do not publish `latest.yml` before its installer is available. Do not overwrite
+already published version binaries: fix forward with a new version. Pushing code
+alone does not ship an app update. Authentication is used only by maintainers/CI;
+never embed GH_TOKEN/GITHUB_TOKEN in the installer. `--publish never` prevents a
+local build from accidentally uploading anything.
+
+Official reference: https://www.electron.build/docs/features/auto-update/
