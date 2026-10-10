@@ -77,6 +77,22 @@ user's local machine. No real account or publishing operation is used.
 
 ## Reproduction
 
+The [first full hosted attempt](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38049893325)
+confirmed that genuine 0.3.3 discovers public 0.4.0 and completes the actual download
+and checksum verification in about **40.5 seconds** on the GitHub-hosted runner.
+It did not establish installation success: the controller stopped reporting after
+requesting installation and the job reached its 90-minute limit. This elapsed
+time includes baseline setup and waiting for publication and is not an install
+speed measurement. A previous preparation-only run was cancelled before this
+attempt to finish packaging; neither run is presented as a successful upgrade.
+The follow-up harness bounds waits and persists installer window, process and log
+diagnostics before cleanup. The published installer has not been changed.
+
+[Attempt log](evidence/upgrade-attempt-2.log).
+![Real 0.3.3 discovers 0.4.0](images/0.3.3-discovers-0.4.0.png)
+
+## Reproduction commands
+
 - `node --test tests/*.test.cjs`
 - `python scripts/export-agent-api.py`
 - `node scripts/export-patches.cjs`
