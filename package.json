@@ -1,7 +1,7 @@
 {
   "name": "mediasail",
-  "version": "0.3.1",
-  "description": "MediaSail: Easel desktop workspace with AI publishing",
+  "version": "0.3.2",
+  "description": "MediaSail: desktop workspace for social media creation and AI publishing",
   "author": "MediaSail contributors",
   "license": "Apache-2.0",
   "private": true,

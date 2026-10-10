@@ -1,0 +1,290 @@
+diff --git a/openclaw/workspace/AGENTS.md b/openclaw/workspace/AGENTS.md
+index 4ed2648..406244f 100644
+--- a/openclaw/workspace/AGENTS.md
++++ b/openclaw/workspace/AGENTS.md
+@@ -1,6 +1,6 @@
+-# Easel Agent
++# MediaSail Agent
+ 
+-你是 Easel，运行在 OpenClaw gateway 上的社媒内容创作助手。发现、策划、制作、发布、归因五层都由当前 Agent 直接执行；只组合任务需要的层。
++你是 MediaSail，运行在 OpenClaw gateway 上的社媒内容创作助手。发现、策划、制作、发布、归因五层都由当前 Agent 直接执行；只组合任务需要的层。
+ 
+ ## 核心执行规则
+ 
+@@ -92,7 +92,7 @@ python skills/openclaw/skill-publish-log/scripts/log.py record --platform <平
+ - 每个画像是 `easel-profiles/<画像>/` 下的一组 `identity/style/audience/platforms/preferences/memory.md`，代表一个跨平台人设。
+ - 发现、策划、发布、归因读取六维；制作只凝练制作相关维度。未指定画像时走通用模式，可提示指定画像效果更好。
+ - `easel-profiles/<当前画像>/memory.md` 是该会话唯一的账号长期记忆；每轮以消息中声明的当前画像为准，不从其他画像推断或借用经验。
+-- 工作区根目录的全局 `MEMORY.md` 在 Easel 中不承载用户画像、账号经验或创作红线：不要读取、写入或调用 memory 工具检索它。通用模式不使用任何画像的 `memory.md`。
++- 工作区根目录的全局 `MEMORY.md` 在 MediaSail 中不承载用户画像、账号经验或创作红线：不要读取、写入或调用 memory 工具检索它。通用模式不使用任何画像的 `memory.md`。
+ - 不得为了切换画像而改写、复制或软链接全局 `MEMORY.md`；并行会话必须各自直接读取所绑定画像目录，避免互相覆盖。
+ 
+ 任务结束时，只有出现真正可复用的偏好、红线、制作技巧或效果归因，才凝练 1–3 条并询问是否写入画像：
+diff --git a/openclaw/workspace/SOUL.md b/openclaw/workspace/SOUL.md
+index 491e3e9..5a0edee 100644
+--- a/openclaw/workspace/SOUL.md
++++ b/openclaw/workspace/SOUL.md
+@@ -1,6 +1,6 @@
+-# Easel — 人格
++# MediaSail — 人格
+ 
+-你是 Easel，创作者的社媒内容搭子——既是懂策略的操盘手，也是能上手干活的制作伙伴。
++你是 MediaSail，创作者的社媒内容搭子——既是懂策略的操盘手，也是能上手干活的制作伙伴。
+ 从一个热点、一句灵感，到成稿、成图、成片、发出去、再回头看数据复盘，你都陪着一起把它做成。
+ 
+ ## 你能做的事（心里有数，遇事先想怎么做成）
+@@ -17,7 +17,7 @@
+ 
+ 而且这些本事大多沉淀成了**技能库里的 SKILL**——所以遇到活，**先去技能库找对应的 SKILL 照着用，别凭记忆裸做**；没有一模一样的就找最接近的参考，实在没有才自己想办法。（具体规则见 AGENTS。）
+ 
+-你还清楚创作者在 Easel 里的家底：他登录了哪些平台账号、画像怎么设的、之前做过什么。
++你还清楚创作者在 MediaSail 里的家底：他登录了哪些平台账号、画像怎么设的、之前做过什么。
+ 问到"我的账号 / 我的帖子 / 我的粉丝 / 最近发了啥"这类，**先去查已登录账号和站内数据，别回头问他要账号名**。
+ 真碰到一时不趁手的工具或拿不到的数据，就实话实说卡在哪、再给个能走的替代路子。
+ 
+diff --git a/web/static/index.html b/web/static/index.html
+index 09bcffb..87cdf5f 100644
+--- a/web/static/index.html
++++ b/web/static/index.html
+@@ -3,8 +3,8 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<title>Easel</title>
+-<link rel="icon" type="image/png" href="easel-icon-transparent.png">
++<title>MediaSail</title>
++<link rel="icon" type="image/png" href="/static/mediasail-icon.png">
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <!-- 非阻塞加载：fonts.googleapis.com 在中国大陆网络下会 net::ERR_TIMED_OUT，
+@@ -236,8 +236,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
+   <!-- ====== Sidebar ====== -->
+   <aside class="sidebar">
+     <div class="sidebar-header">
+-      <img class="logo" src="easel-icon-transparent.png" alt="">
+-      <span class="sidebar-title">Easel</span>
++      <img class="logo" src="/static/mediasail-icon.png" alt="">
++      <span class="sidebar-title">MediaSail</span>
+     </div>
+ 
+     <div class="persona-section">
+@@ -278,7 +278,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
+       <div class="chat-messages" id="chatMessages">
+         <div class="chat-empty" id="chatEmpty">
+           <div>
+-            <img class="chat-empty-logo" src="easel-icon-transparent.png" alt="">
++            <img class="chat-empty-logo" src="/static/mediasail-icon.png" alt="">
+             <div>Start a conversation</div>
+             <div class="chat-empty-hint">Try: Help me plan a tech review topic</div>
+           </div>
+@@ -522,7 +522,7 @@ function clearChat() {
+   const empty = document.createElement('div');
+   empty.className = 'chat-empty';
+   empty.id = 'chatEmpty';
+-  empty.innerHTML = '<div><img class="chat-empty-logo" src="easel-icon-transparent.png" alt=""><div>Start a conversation</div><div class="chat-empty-hint">Try: Help me plan a tech review topic</div></div>';
++  empty.innerHTML = '<div><img class="chat-empty-logo" src="/static/mediasail-icon.png" alt=""><div>Start a conversation</div><div class="chat-empty-hint">Try: Help me plan a tech review topic</div></div>';
+   container.appendChild(empty);
+ }
+ 
+diff --git a/web/static/main.html b/web/static/main.html
+index 2842a9f..f9bfca8 100644
+--- a/web/static/main.html
++++ b/web/static/main.html
+@@ -3,9 +3,9 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<meta name="description" content="Easel - 从灵感到发布，完整的社媒内容工作流。">
+-<title>Easel - 让好内容自然发生</title>
+-<link rel="icon" type="image/png" href="easel-icon-transparent.png">
++<meta name="description" content="MediaSail - 从灵感到发布，完整的社媒内容工作流。">
++<title>MediaSail - 让好内容自然发生</title>
++<link rel="icon" type="image/png" href="/static/mediasail-icon.png">
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <!-- 非阻塞加载：fonts.googleapis.com 在中国大陆网络下会 net::ERR_TIMED_OUT，
+@@ -295,13 +295,13 @@
+ </head>
+ <body>
+   <header class="shell topbar">
+-    <a class="brand" href="#top" aria-label="Easel 首页"><img class="brand-mark" src="easel-icon-transparent.png" alt=""><span>Easel</span><span class="brand-tagline">Your private evolving social media assistant, making creation easier</span></a>
++    <a class="brand" href="#top" aria-label="MediaSail 首页"><img class="brand-mark" src="/static/mediasail-icon.png" alt=""><span>MediaSail</span><span class="brand-tagline">Your private evolving social media assistant, making creation easier</span></a>
+     <nav class="nav" aria-label="主导航">
+       <a href="#workflow">工作流</a>
+       <a href="#features">产品能力</a>
+       <a href="#workflow">产物案例</a>
+       <a href="#about">关于</a>
+-      <a class="pill pill-dark" href="https://github.com/ZJU-REAL/Easel">进入 Easel <span>↗</span></a>
++      <a class="pill pill-dark" href="https://github.com/jerryrenjianxing-sys/MediaSail">进入 MediaSail <span>↗</span></a>
+     </nav>
+   </header>
+ 
+@@ -312,9 +312,9 @@
+       <div class="hero-copy">
+         <div class="eyebrow">One agent · five content loops</div>
+         <h1>从一句想法，<br>到一份<em>可发布的作品</em></h1>
+-        <p class="hero-desc">Easel 把一个 Agent 变成你的社媒内容搭档：懂你的风格，接住平台变化，从热点发现一直陪你做到发布和复盘。</p>
++        <p class="hero-desc">MediaSail 把一个 Agent 变成你的社媒内容搭档：懂你的风格，接住平台变化，从热点发现一直陪你做到发布和复盘。</p>
+         <div class="hero-actions">
+-          <a class="pill pill-dark" href="https://github.com/ZJU-REAL/Easel">开始创作 <span>→</span></a>
++          <a class="pill pill-dark" href="https://github.com/jerryrenjianxing-sys/MediaSail">开始创作 <span>→</span></a>
+           <a class="pill pill-light" href="#workflow">看看怎么工作</a>
+         </div>
+       </div>
+@@ -331,7 +331,7 @@
+         <div class="signal-head"><span>最近产物</span><small>内容库 →</small></div>
+         <div class="output-list"><div><span>如月站v2</span><b>AI 短剧</b></div><div><span>论文解说-Transformer</span><b>视频</b></div><div><span>知乎恐怖问答</span><b>长文</b></div></div>
+       </div>
+-      <div class="artifact composer" aria-hidden="true"><img class="avatar" src="easel-icon-transparent.png" alt=""><span>选题 / 文案 / 卡片 / 视频 / 发布都行…</span><div class="composer-button">↑</div></div>
++      <div class="artifact composer" aria-hidden="true"><img class="avatar" src="/static/mediasail-icon.png" alt=""><span>选题 / 文案 / 卡片 / 视频 / 发布都行…</span><div class="composer-button">↑</div></div>
+     </section>
+     </div>
+ 
+@@ -347,7 +347,7 @@
+     <section class="story-scroll" id="productStory">
+       <div class="story-sticky">
+         <div class="story-copy">
+-          <div class="story-kicker">Easel / How it works</div>
++          <div class="story-kicker">MediaSail / How it works</div>
+           <article class="story-step active" data-copy-stage="0">
+             <span class="step-no">01 / Discover</span>
+             <h2>发现热点，<br>先找到<em>适合你的机会</em></h2>
+@@ -381,12 +381,12 @@
+           <div class="studio-bar"><i class="studio-dot"></i><i class="studio-dot"></i><i class="studio-dot"></i><span class="studio-title">EASEL · CREATIVE CANVAS</span><span class="studio-status">Live workflow</span></div>
+           <div class="studio-canvas">
+             <div class="scene scene-0">
+-              <div class="mock-sidebar"><strong>Easel</strong><span class="mock-nav active">概览</span><span class="mock-nav">热点雷达</span><span class="mock-nav">内容日历</span><span class="mock-nav">内容库</span><small>本周画像</small><b>科技内容创作者</b></div>
++              <div class="mock-sidebar"><strong>MediaSail</strong><span class="mock-nav active">概览</span><span class="mock-nav">热点雷达</span><span class="mock-nav">内容日历</span><span class="mock-nav">内容库</span><small>本周画像</small><b>科技内容创作者</b></div>
+               <div class="mock-main"><div class="mock-toolbar"><div><small>周一 · 09:42</small><h3>今天什么值得做？</h3></div><span class="mock-toolbar-pill">画像已同步</span></div><div class="mock-grid discover-grid"><article class="mock-panel mock-feature"><div class="mock-panel-head"><span>热榜雷达</span><em>实时更新</em></div><h4>AI 陪伴正在成为新的内容入口</h4><p>从平台热榜、竞品动向和你的账号定位里，筛出值得跟进的选题。</p><div class="mock-tags"><i>趋势上升</i><i>匹配受众</i></div><button>生成选题简报 →</button></article><article class="mock-panel"><div class="mock-panel-head"><span>竞品动态</span><em>12 个账号</em></div><h4>同赛道近期高互动内容</h4><ul class="mock-list"><li><b>01</b><span>先抛问题，再展示实验结果</span><em>+28%</em></li><li><b>02</b><span>一张图讲清复杂技术概念</span><em>+19%</em></li><li><b>03</b><span>把新闻节点改写成个人观点</span><em>+14%</em></li></ul></article><article class="mock-panel mock-wide"><div class="mock-panel-head"><span>画像匹配</span><em>今日推荐 03</em></div><div class="mock-recommend"><strong>科技论文解读</strong><span>适合你的“专业但不端着”表达方式</span><b>92 <small>匹配度</small></b></div><p>建议从空间智能、具身 AI、Agent 协作三个方向开始。</p></article></div></div>
+             </div>
+ 
+             <div class="scene scene-1">
+-              <div class="mock-sidebar"><strong>Easel</strong><span class="mock-nav">概览</span><span class="mock-nav">热点雷达</span><span class="mock-nav active">内容日历</span><span class="mock-nav">内容库</span><small>本周计划</small><b>4 条待制作</b></div>
++              <div class="mock-sidebar"><strong>MediaSail</strong><span class="mock-nav">概览</span><span class="mock-nav">热点雷达</span><span class="mock-nav active">内容日历</span><span class="mock-nav">内容库</span><small>本周计划</small><b>4 条待制作</b></div>
+               <div class="mock-main"><div class="mock-toolbar"><div><small>内容日历 · 09 月 09 日</small><h3>把一个灵感，排进内容节奏</h3></div><span class="mock-toolbar-pill peach">本周 4 条</span></div><div class="mock-grid plan-grid"><article class="mock-panel mock-feature"><div class="mock-panel-head"><span>选题评分</span><em>88 / 100</em></div><h4>空间智能为什么是 AI 的下一道坎？</h4><p>已有热点信号和账号画像支持，适合做成连续三期的解释型内容。</p><div class="score-line"><i style="width:88%"></i></div><div class="mock-tags"><i>抓痛点</i><i>适合连载</i></div></article><article class="mock-panel calendar-panel"><div class="mock-panel-head"><span>内容日历</span><em>本周</em></div><div class="calendar-rows"><div><b>09.10</b><span>论文卡片 · 认识空间智能</span><i>草稿</i></div><div><b>09.12</b><span>口播视频 · 三分钟讲清楚</span><i>待制作</i></div><div><b>09.14</b><span>长文复盘 · 从热点到观点</span><i>已排期</i></div></div></article><article class="mock-panel mock-wide"><div class="mock-panel-head"><span>内容矩阵</span><em>1 个主题 → 4 种形态</em></div><div class="matrix-row"><div><b>论文卡片</b><span>小红书 / 朋友圈</span></div><div><b>口播视频</b><span>抖音 / 视频号</span></div><div><b>深度长文</b><span>知乎 / 长文</span></div><div><b>短帖摘要</b><span>微博 / 即刻</span></div></div></article></div></div>
+             </div>
+ 
+@@ -415,7 +415,7 @@
+     <section class="section section-fog" id="workflow">
+       <div class="shell">
+         <div class="section-head reveal">
+-          <div><div class="section-label">Easel 到底能做什么</div><h2>五层能力串起，<br><em>内容创作全流程</em></h2></div>
++          <div><div class="section-label">MediaSail 到底能做什么</div><h2>五层能力串起，<br><em>内容创作全流程</em></h2></div>
+           <p class="section-intro">五个阶段共享同一份创作者画像：从“这个账号适合做什么”开始，到“这条内容表现如何”结束，形成持续变聪明的创作闭环。</p>
+         </div>
+         <aside class="profile-rail reveal" aria-label="用户画像贯穿全部五层能力">
+@@ -435,7 +435,7 @@
+ 
+     <section class="work-reel" aria-label="真实内容产物">
+       <div class="shell">
+-        <div class="work-reel-head"><div><small>Selected work · content library</small><strong>看看 Easel 创作的真实作品。</strong></div><span>真实产物 · 持续滚动</span></div>
++        <div class="work-reel-head"><div><small>Selected work · content library</small><strong>看看 MediaSail 创作的真实作品。</strong></div><span>真实产物 · 持续滚动</span></div>
+       </div>
+       <div class="work-grid">
+       <div class="work-category"><div class="shell work-category-head"><i></i><span>小红书卡片 · 5-card stories</span></div><div class="category-track">
+@@ -462,7 +462,7 @@
+       <div class="shell">
+         <div class="section-head reveal">
+           <div><div class="section-label">持续使用的理由 · 已落地产品能力</div><h2>不只提供建议，<br>陪你完成<em>创作与运营</em></h2></div>
+-          <p class="section-intro">Easel 把账号画像、内容制作、跨平台发布和效果复盘放进同一个工作台。从一条灵感到一份完整素材包，每一步围绕同一个创作者，并把有效经验带回下一次创作。</p>
++          <p class="section-intro">MediaSail 把账号画像、内容制作、跨平台发布和效果复盘放进同一个工作台。从一条灵感到一份完整素材包，每一步围绕同一个创作者，并把有效经验带回下一次创作。</p>
+         </div>
+         <div class="cap-grid">
+           <article class="cap-card reveal"><span class="cap-index">01 / Content</span><h3>从一句想法，到一整套内容项目</h3><p>支持社媒文案、图文卡片、海报、信息图、长文、小说和论文解读。成品与中间素材按项目归档，不再散落在聊天记录和不同工具里。</p><div class="cap-tags"><span>社媒文案</span><span>图文卡片</span><span>海报与信息图</span><span>论文解读</span><span>小说写作</span></div></article>
+@@ -476,12 +476,12 @@
+     <section class="shell cta reveal">
+       <div class="section-label">现在，轮到你的下一条内容</div>
+       <h2>少一点工具切换，<br>多一点真正的<em>创作</em></h2>
+-      <p>进入 Easel，从一个热点、一句话或一份素材开始，把今天的想法真正做成。</p>
+-      <div class="cta-actions"><a class="pill pill-dark" href="https://github.com/ZJU-REAL/Easel">进入 Easel <span>→</span></a><a class="pill pill-light" href="#top">返回顶部</a></div>
++      <p>进入 MediaSail，从一个热点、一句话或一份素材开始，把今天的想法真正做成。</p>
++      <div class="cta-actions"><a class="pill pill-dark" href="https://github.com/jerryrenjianxing-sys/MediaSail">进入 MediaSail <span>→</span></a><a class="pill pill-light" href="#top">返回顶部</a></div>
+     </section>
+   </main>
+ 
+-  <footer class="shell footer"><a class="brand" href="#top"><img class="brand-mark" src="easel-icon-transparent.png" alt="">Easel</a><span>从灵感到影响力，一站式社媒内容工作流。</span><span>© 2026 Easel</span></footer>
++  <footer class="shell footer"><a class="brand" href="#top"><img class="brand-mark" src="/static/mediasail-icon.png" alt="">MediaSail</a><span>从灵感到影响力，一站式社媒内容工作流。</span><!-- Original page copyright: © 2026 Easel. See bundled NOTICE. --><span>MediaSail 桌面版</span></footer>
+ 
+ <script>
+   (() => {
+diff --git a/web/static/onepage.html b/web/static/onepage.html
+index c90db2c..5e304f2 100644
+--- a/web/static/onepage.html
++++ b/web/static/onepage.html
+@@ -3,8 +3,8 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+-<title>Easel</title>
+-<link rel="icon" type="image/png" href="easel-icon-transparent.png">
++<title>MediaSail</title>
++<link rel="icon" type="image/png" href="/static/mediasail-icon.png">
+ <style>
+ *{margin:0;padding:0;box-sizing:border-box}
+ :root{--font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;--mono:"SF Mono","JetBrains Mono",monospace}
+@@ -45,7 +45,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;opacity:.03;ba
+ @keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+ 
+ /* 标题辉光 */
+-.hero h1::after{content:'Easel';position:absolute;top:0;left:0;right:0;font-size:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit;text-align:center;background:linear-gradient(135deg,#7c5aff,#00c8ff,#ff5caa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:blur(40px);opacity:.4;pointer-events:none;z-index:-1}
++.hero h1::after{content:'MediaSail';position:absolute;top:0;left:0;right:0;font-size:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit;text-align:center;background:linear-gradient(135deg,#7c5aff,#00c8ff,#ff5caa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:blur(40px);opacity:.4;pointer-events:none;z-index:-1}
+ 
+ .g2{color:rgba(255,255,255,.2);letter-spacing:-.02em}
+ 
+@@ -289,7 +289,7 @@ h2{font-size:3.5rem;font-weight:750;letter-spacing:-.04em;line-height:1.1;margin
+   <div class="hero-content">
+     <div class="hero-pill"><span class="hero-pill-glow"></span>AI-Powered Content Workflow</div>
+     <h1>
+-      <span class="g1">Easel</span>
++      <span class="g1">MediaSail</span>
+       <span class="line2 g2">for Creators</span>
+     </h1>
+     <p class="hero-p">给社媒创作者一个<strong>「越用越懂我」</strong>的 AI 内容工厂<br>从热点发现到成片发布，全链路个性化生产</p>
+@@ -303,7 +303,7 @@ h2{font-size:3.5rem;font-weight:750;letter-spacing:-.04em;line-height:1.1;margin
+     <div class="tag">Problem</div>
+     <h2>通用 AI 对创作者<br>是<span class="g1">半成品</span></h2>
+     <p class="sub">
+-      今天一个博主想用 AI 做内容，要在蝉妈妈找热点、ChatGPT 写脚本、剪映剪视频、Canva 做封面，然后手动适配小红书竖屏、B站横屏、抖音 15 秒节奏——每个环节断开，每次从零开始。GPT Work 和 Claude Cowork 确实强大，但它们是通用 Agent，<strong>不知道你的账号是什么风格、受众喜欢什么、哪些词在小红书会被限流</strong>。Easel 把这些通用能力特化到社媒场景，用用户画像把所有环节串起来。
++      今天一个博主想用 AI 做内容，要在蝉妈妈找热点、ChatGPT 写脚本、剪映剪视频、Canva 做封面，然后手动适配小红书竖屏、B站横屏、抖音 15 秒节奏——每个环节断开，每次从零开始。GPT Work 和 Claude Cowork 确实强大，但它们是通用 Agent，<strong>不知道你的账号是什么风格、受众喜欢什么、哪些词在小红书会被限流</strong>。MediaSail 把这些通用能力特化到社媒场景，用用户画像把所有环节串起来。
+     </p>
+   </div>
+ </section>
+@@ -423,17 +423,17 @@ h2{font-size:3.5rem;font-weight:750;letter-spacing:-.04em;line-height:1.1;margin
+       <div class="cmp-card glass">
+         <div class="cmp-vs">vs 剪映 AI</div>
+         <div class="cmp-h">可编程 vs 黑盒</div>
+-        <div class="cmp-p">剪映不可编程，不知道你是谁。Easel 是可编程管线 + 账号记忆——同样做一条视频，Easel 做出来的像你的风格。</div>
++        <div class="cmp-p">剪映不可编程，不知道你是谁。MediaSail 是可编程管线 + 账号记忆——同样做一条视频，MediaSail 做出来的像你的风格。</div>
+       </div>
+       <div class="cmp-card glass">
+         <div class="cmp-vs">vs GPT Work / Cowork</div>
+         <div class="cmp-h">社媒专精 vs 通用</div>
+-        <div class="cmp-p">通用 Agent 不知道小红书禁什么词。Easel 把社媒 know-how 编码进 SKILL，这是通用 Agent 做不了的事。</div>
++        <div class="cmp-p">通用 Agent 不知道小红书禁什么词。MediaSail 把社媒 know-how 编码进 SKILL，这是通用 Agent 做不了的事。</div>
+       </div>
+       <div class="cmp-card glass">
+         <div class="cmp-vs">vs 蝉妈妈</div>
+         <div class="cmp-h">洞察→行动 距离为零</div>
+-        <div class="cmp-p">蝉妈妈帮你看数据，Easel 帮你用数据。「对比表格收藏率高」不是一个数字，是下次脚本里自动多加一张表格。</div>
++        <div class="cmp-p">蝉妈妈帮你看数据，MediaSail 帮你用数据。「对比表格收藏率高」不是一个数字，是下次脚本里自动多加一张表格。</div>
+       </div>
+     </div>
+   </div>
+@@ -459,7 +459,7 @@ h2{font-size:3.5rem;font-weight:750;letter-spacing:-.04em;line-height:1.1;margin
+     <h2>每个创作者身边的<span class="g1">内容搭档</span></h2>
+     <div class="vision">
+       <p class="vision-text">
+-        Easel 的终局不是一个工具，是<strong>每个创作者身边的内容搭档</strong>。它了解你的风格、知道你的受众、记得你的成功和失败、跟踪平台的变化。创作者不需要学 AI、不需要写 prompt，只需要说「帮我做下一条」。真正为自媒体博主设计的产品——不是通用 AI 加个皮肤，是从第一天就只为创作者服务的。
++        MediaSail 的终局不是一个工具，是<strong>每个创作者身边的内容搭档</strong>。它了解你的风格、知道你的受众、记得你的成功和失败、跟踪平台的变化。创作者不需要学 AI、不需要写 prompt，只需要说「帮我做下一条」。真正为自媒体博主设计的产品——不是通用 AI 加个皮肤，是从第一天就只为创作者服务的。
+       </p>
+     </div>
+   </div>
+@@ -468,7 +468,7 @@ h2{font-size:3.5rem;font-weight:750;letter-spacing:-.04em;line-height:1.1;margin
+ <!-- FOOTER -->
+ <footer class="foot">
+   <div class="w">
+-    <div class="foot-logo">✦ Easel</div>
++    <div class="foot-logo">✦ MediaSail</div>
+     <div class="foot-info">
+       李鼎铭 · lidingming@xiaohongshu.com
+     </div>

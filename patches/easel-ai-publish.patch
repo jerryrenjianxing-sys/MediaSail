@@ -72,7 +72,7 @@ index fee8255..e7d6802 100644
  }
 diff --git a/web/frontend/src/components/AitoPage.tsx b/web/frontend/src/components/AitoPage.tsx
 new file mode 100644
-index 0000000..a56c3d8
+index 0000000..3754e2c
 --- /dev/null
 +++ b/web/frontend/src/components/AitoPage.tsx
 @@ -0,0 +1,50 @@
@@ -108,7 +108,7 @@ index 0000000..a56c3d8
 +    {error && <div className="aito-notice" role="alert">{error}</div>}
 +    {state?.busy && !history && <button className="aito-progress" onClick={() => setHistory(true)}>{state.jobs.find(j => ['checking', 'uploading', 'creating'].includes(j.status))?.message || '正在准备素材…'}</button>}
 +    {history && <div className="aito-history">
-+      {!state?.jobs.length && <p>还没有发送记录。从 Easel 内容库选择成品，即可带入 AitoEarn 草稿箱。</p>}
++      {!state?.jobs.length && <p>还没有发送记录。从 MediaSail 内容库选择成品，即可带入 AitoEarn 草稿箱。</p>}
 +      {state?.jobs.map(job => <article key={job.id} className="aito-job">
 +        <div><strong>{job.content.title}</strong><small>{job.accountName} · {new Date(job.createdAt).toLocaleString()}</small><p>{job.message}</p>
 +          {['checking', 'uploading', 'creating'].includes(job.status) && <progress max={100} value={job.progress} />}</div>
@@ -126,6 +126,27 @@ index 0000000..a56c3d8
 +    <footer className="aito-footer">{state?.web.loading ? '页面加载中…' : '内容仅保存为草稿，发布请在 AitoEarn 中确认。'} 需要官方浏览器插件时，可选择「浏览器打开」。</footer>
 +  </section>;
 +}
+diff --git a/web/frontend/src/components/ChatPage.tsx b/web/frontend/src/components/ChatPage.tsx
+index 0f5c8ed..1a6ae7b 100644
+--- a/web/frontend/src/components/ChatPage.tsx
++++ b/web/frontend/src/components/ChatPage.tsx
+@@ -1,4 +1,5 @@
+ import { useState, useRef, useEffect } from 'react';
++import { PRODUCT_NAME, PRODUCT_ICON } from '../lib/branding';
+ import MessageBubble from './MessageBubble';
+ import QuestionCards from './QuestionCards';
+ import BrushEntry from './BrushEntry';
+@@ -179,8 +180,8 @@ export default function ChatPage({ session, stream, onSend, onStop, onResend, on
+       <div className="chat-page">
+         <div className="chat-hero">
+           <div className="chat-hero-brand">
+-            <img src="./static/easel-icon-transparent.png" alt="" />
+-            <span>Easel</span>
++            <img src={PRODUCT_ICON} alt={PRODUCT_NAME} />
++            <span>{PRODUCT_NAME}</span>
+           </div>
+           <h1 className="chat-hero-title">{greeting()}</h1>
+           <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
 new file mode 100644
 index 0000000..2b9081a
@@ -157,6 +178,19 @@ index 0000000..2b9081a
 +    <span aria-hidden="true" className="nav-icon">↑</span>{label}<span style={{ marginLeft: 'auto', opacity: .5 }}>{state?.current}</span>
 +  </button>;
 +}
+diff --git a/web/frontend/src/components/ErrorBoundary.tsx b/web/frontend/src/components/ErrorBoundary.tsx
+index c151628..26b4f2e 100644
+--- a/web/frontend/src/components/ErrorBoundary.tsx
++++ b/web/frontend/src/components/ErrorBoundary.tsx
+@@ -13,7 +13,7 @@ export default class ErrorBoundary extends Component<Props, State> {
+   }
+ 
+   componentDidCatch(error: Error, info: ErrorInfo) {
+-    console.error('Easel UI error:', error, info);
++    console.error('MediaSail UI error:', error, info);
+   }
+ 
+   render() {
 diff --git a/web/frontend/src/components/OutputsPage.tsx b/web/frontend/src/components/OutputsPage.tsx
 index 043dc91..852cdbe 100644
 --- a/web/frontend/src/components/OutputsPage.tsx
@@ -198,7 +232,7 @@ index 043dc91..852cdbe 100644
        {treeError && <div className="notice-error">{treeError}</div>}
 diff --git a/web/frontend/src/components/SendToAitoModal.tsx b/web/frontend/src/components/SendToAitoModal.tsx
 new file mode 100644
-index 0000000..1671b6c
+index 0000000..a8beba5
 --- /dev/null
 +++ b/web/frontend/src/components/SendToAitoModal.tsx
 @@ -0,0 +1,99 @@
@@ -277,7 +311,7 @@ index 0000000..1671b6c
 +            <strong>{connection ? `AitoEarn · ${connection.user.name}` : '连接 AitoEarn 中国站'}</strong>
 +            {accountError && <p>{accountError}</p>}
 +            <div className="aito-inline"><button className="btn btn-sm" onClick={goToSite} disabled={busy || coverBusy}>打开页面登录</button><button className="btn btn-sm" disabled={connecting || busy} onClick={connect}>{connecting ? '正在连接…' : '刷新账号和草稿箱'}</button></div>
-+            {connection && <div className="aito-inline"><label>草稿箱 <select aria-label="AitoEarn 草稿箱" value={groupId} onChange={e => setGroupId(e.target.value)} disabled={busy}><option value="">请选择草稿箱</option>{connection.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label><button className="btn btn-sm" disabled={connecting || busy} onClick={createGroup}>创建 / 使用「Easel 导入」</button></div>}
++            {connection && <div className="aito-inline"><label>草稿箱 <select aria-label="AitoEarn 草稿箱" value={groupId} onChange={e => setGroupId(e.target.value)} disabled={busy}><option value="">请选择草稿箱</option>{connection.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label><button className="btn btn-sm" disabled={connecting || busy} onClick={createGroup}>创建 / 使用「MediaSail 导入」</button></div>}
 +          </section>
 +          <label>标题<input aria-label="发送标题" value={draft.title} maxLength={500} disabled={busy} onChange={e => change({title:e.target.value})} /></label>
 +          {texts.length > 0 && <label>正文来源<select aria-label="正文来源" value={draft.textPath} disabled={busy} onChange={e => readText(e.target.value)}><option value="">手动填写 / 保留当前正文</option>{texts.map(f => <option key={f.path} value={f.path}>{f.name}</option>)}</select></label>}
@@ -358,10 +392,15 @@ index 68eccd3..e6a5087 100644
                <section className="st-sec active">
                  <div className="tabbar">
 diff --git a/web/frontend/src/components/Sidebar.tsx b/web/frontend/src/components/Sidebar.tsx
-index 1120f43..22333a6 100644
+index 1120f43..4fcd783 100644
 --- a/web/frontend/src/components/Sidebar.tsx
 +++ b/web/frontend/src/components/Sidebar.tsx
-@@ -5,12 +5,13 @@ import type { ComponentType } from 'react';
+@@ -1,16 +1,18 @@
+ import { useState } from 'react';
++import { PRODUCT_NAME, PRODUCT_ICON } from '../lib/branding';
+ import type { ChatSession } from '../lib/store';
+ import type { PersonaItem } from '../lib/api';
+ import type { ComponentType } from 'react';
  import {
    IconChat, IconSkills, IconOutputs, IconAccounts, IconProfile,
    IconNewChat, IconEdit, IconArchive, IconUnarchive, IconTrash, IconChevron,
@@ -377,7 +416,7 @@ index 1120f43..22333a6 100644
  
  interface SidebarProps {
    currentPage: Page;
-@@ -37,6 +38,7 @@ const NAV: { page: Page; Icon: ComponentType<{ size?: number }>; label: string }
+@@ -37,6 +39,7 @@ const NAV: { page: Page; Icon: ComponentType<{ size?: number }>; label: string }
    { page: 'chat', Icon: IconChat, label: '对话' },
    { page: 'skills', Icon: IconSkills, label: '技能库' },
    { page: 'outputs', Icon: IconOutputs, label: '内容库' },
@@ -385,18 +424,18 @@ index 1120f43..22333a6 100644
    { page: 'accounts', Icon: IconAccounts, label: '账号' },
    { page: 'profile', Icon: IconProfile, label: '画像' },
  ];
-@@ -116,8 +118,8 @@ export default function Sidebar({
+@@ -116,8 +119,8 @@ export default function Sidebar({
      <div className="sidebar">
        <div className="sidebar-header">
          <div className="sidebar-logo">
 -          <img className="sidebar-logo-icon" src="./static/easel-icon-transparent.png" alt="" />
 -          <h1>Easel</h1>
-+          <img className="sidebar-logo-icon" src="./assets/mediasail-icon.png" alt="" />
-+          <h1>MediaSail</h1>
++          <img className="sidebar-logo-icon" src={PRODUCT_ICON} alt={PRODUCT_NAME} />
++          <h1>{PRODUCT_NAME}</h1>
            <ThemeToggle />
          </div>
          <select
-@@ -171,6 +173,7 @@ export default function Sidebar({
+@@ -171,6 +174,7 @@ export default function Sidebar({
          )}
        </div>
  
@@ -404,7 +443,7 @@ index 1120f43..22333a6 100644
        <div className="sidebar-status">
          <span className={`status-dot ${gatewayStatus === 'connected' ? '' : 'offline'}`} />
          {gatewayStatus === 'connected'
-@@ -181,7 +184,6 @@ export default function Sidebar({
+@@ -181,7 +185,6 @@ export default function Sidebar({
          <button className="settings-gear" onClick={onOpenSettings} title="设置（模型 · 环境 · 更多）">
            <IconGear size={13} /> 设置
          </button>
@@ -412,6 +451,48 @@ index 1120f43..22333a6 100644
        </div>
      </div>
    );
+diff --git a/web/frontend/src/components/SkillDrawer.tsx b/web/frontend/src/components/SkillDrawer.tsx
+index 9a2cc2b..d77a25d 100644
+--- a/web/frontend/src/components/SkillDrawer.tsx
++++ b/web/frontend/src/components/SkillDrawer.tsx
+@@ -3,6 +3,7 @@ import { fetchSkillDetail, executeSkill, saveEnv } from '../lib/api';
+ import type { SkillDetail } from '../lib/api';
+ import { renderMarkdown } from '../lib/sanitize';
+ import { displayName } from '../lib/skillDisplayNames';
++import { brandSkillHtml } from '../lib/branding';
+ 
+ interface SkillDrawerProps {
+   skillName: string;
+@@ -37,7 +38,7 @@ export default function SkillDrawer({ skillName, persona, onClose, onConfigured
+ 
+   useEffect(loadDetail, [skillName]);
+ 
+-  const bodyHtml = useMemo(() => renderMarkdown(detail?.body || ''), [detail?.body]);
++  const bodyHtml = useMemo(() => brandSkillHtml(renderMarkdown(detail?.body || '')), [detail?.body]);
+   const resultHtml = useMemo(() => renderMarkdown(result), [result]);
+ 
+   const handleSaveEnv = async () => {
+diff --git a/web/frontend/src/components/SkillPage.tsx b/web/frontend/src/components/SkillPage.tsx
+index 22a53ae..969ed81 100644
+--- a/web/frontend/src/components/SkillPage.tsx
++++ b/web/frontend/src/components/SkillPage.tsx
+@@ -4,6 +4,7 @@ import { fetchSkills } from '../lib/api';
+ import type { SkillItem } from '../lib/api';
+ import SkillDrawer from './SkillDrawer';
+ import { displayName } from '../lib/skillDisplayNames';
++import { brandSkillDescription } from '../lib/branding';
+ import {
+   IconSearch, IconCompass, IconSkills, IconSend, IconChart, IconLayers,
+   IconVideo, IconImage, IconMusic, IconMic, IconText, IconLayout, IconProfile, IconOutputs,
+@@ -60,7 +61,7 @@ export default function SkillPage({ persona }: SkillPageProps) {
+   const [selected, setSelected] = useState<string | null>(null);
+ 
+   const load = () => {
+-    fetchSkills().then(setSkills).catch(() => setError('加载 SKILL 列表失败'));
++    fetchSkills().then(rows => setSkills(rows.map(s => ({ ...s, description: brandSkillDescription(s.description || '') })))).catch(() => setError('加载 SKILL 列表失败'));
+   };
+   useEffect(load, []);
+ 
 diff --git a/web/frontend/src/components/SoftwareUpdates.tsx b/web/frontend/src/components/SoftwareUpdates.tsx
 new file mode 100644
 index 0000000..7775078
@@ -502,6 +583,75 @@ index 0000000..219c2e8
 +  return { projectPath: project.path, title: project.meta?.title || project.name, body: project.meta?.summary || '', textPath: texts.length === 1 ? texts[0].path : '',
 +    images, video: videos.length === 1 ? videos[0] : '', cover: /\.(png|jpe?g|webp)$/i.test(project.meta?.cover || '') ? project.meta!.cover! : '', mode, files };
 +}
+diff --git a/web/frontend/src/lib/branding.ts b/web/frontend/src/lib/branding.ts
+new file mode 100644
+index 0000000..793c43e
+--- /dev/null
++++ b/web/frontend/src/lib/branding.ts
+@@ -0,0 +1,19 @@
++// Shared by all application brand marks; keep user content and storage keys intact.
++export const PRODUCT_NAME = 'MediaSail';
++export const PRODUCT_ICON = './assets/mediasail-icon.png';
++
++// Descriptions are presentation copy; skill IDs, commands and source files stay intact.
++export const brandSkillDescription = (text: string) => text.replace(/\bEasel\b/g, PRODUCT_NAME);
++
++export function brandSkillHtml(html: string): string {
++  const doc = new DOMParser().parseFromString(html, 'text/html');
++  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
++  let node: Node | null;
++  while ((node = walker.nextNode())) {
++    const parent = node.parentElement;
++    // Keep source links, executable examples, and copyright/origin statements literal.
++    if (!parent || parent.closest('a, code, pre') || /自研|版权|copyright|licen[sc]e|许可证|©/i.test(parent.textContent || '')) continue;
++    node.textContent = brandSkillDescription(node.textContent || '');
++  }
++  return doc.body.innerHTML;
++}
+diff --git a/web/frontend/src/lib/capabilityMenu.ts b/web/frontend/src/lib/capabilityMenu.ts
+index f6dac0a..3f048f9 100644
+--- a/web/frontend/src/lib/capabilityMenu.ts
++++ b/web/frontend/src/lib/capabilityMenu.ts
+@@ -6,7 +6,7 @@ export interface CapabilityGroup { id?: string; label: string; items: Capability
+ export interface CapabilityTab { id: string; label: string; groups: CapabilityGroup[]; }
+ export const CAPABILITY_MENU: { meta?: unknown; tabs: CapabilityTab[] } = {
+  "meta": {
+-  "name": "Easel 能力菜单",
++  "name": "MediaSail 能力菜单",
+   "version": "v1-draft",
+   "date": "2026-09-17",
+   "legend": {
+@@ -268,7 +268,7 @@ export const CAPABILITY_MENU: { meta?: unknown; tabs: CapabilityTab[] } = {
+       {
+        "skill": "auto-short-video",
+        "label": "一句话出片",
+-       "desc": "一句话主题 → 成品短视频：自动串联 文案→配图/AI视频→配音→字幕→BGM→合成，把 Easel 制作层零件编排成一条'一键出片'流水线。**单条视频、口播/资讯向，画面默认逐句配图 + Ken Burns 缓动，需",
++       "desc": "一句话主题 → 成品短视频：自动串联 文案→配图/AI视频→配音→字幕→BGM→合成，把 MediaSail 制作层零件编排成一条'一键出片'流水线。**单条视频、口播/资讯向，画面默认逐句配图 + Ken Burns 缓动，需",
+        "status": "ready"
+       },
+       {
+@@ -743,7 +743,7 @@ export const CAPABILITY_MENU: { meta?: unknown; tabs: CapabilityTab[] } = {
+       {
+        "skill": "skill-my-account",
+        "label": "账号查询",
+-       "desc": "查询用户自己在 Easel 已登录的小红书、抖音、快手、知乎和视频号身份、粉丝、获赞、关注及作品列表。 当用户问“我登录了哪些号、我是谁、我的粉丝/获赞、我最近发了什么、我有哪些帖子”时，先用本 SKILL 查本地登录态",
++       "desc": "查询用户自己在 MediaSail 已登录的小红书、抖音、快手、知乎和视频号身份、粉丝、获赞、关注及作品列表。 当用户问“我登录了哪些号、我是谁、我的粉丝/获赞、我最近发了什么、我有哪些帖子”时，先用本 SKILL 查本地登录态",
+        "status": "done"
+       },
+       {
+diff --git a/web/frontend/src/main.tsx b/web/frontend/src/main.tsx
+index dd33e5a..75701be 100644
+--- a/web/frontend/src/main.tsx
++++ b/web/frontend/src/main.tsx
+@@ -6,7 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary.tsx'
+ 
+ export const BUILD_ID = 'subnav-1';
+ // 打到控制台，便于确认浏览器加载的是最新前端（排查缓存旧包）
+-console.log(`%cEasel build: ${BUILD_ID}`, 'color:#8b5cf6;font-weight:bold');
++console.log(`%cMediaSail build: ${BUILD_ID}`, 'color:#8b5cf6;font-weight:bold');
+ 
+ createRoot(document.getElementById('root')!).render(
+   <StrictMode>
 diff --git a/web/frontend/src/styles/aitoearn.css b/web/frontend/src/styles/aitoearn.css
 new file mode 100644
 index 0000000..1c6aa2b

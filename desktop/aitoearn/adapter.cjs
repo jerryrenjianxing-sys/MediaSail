@@ -63,11 +63,11 @@ class WebsiteAdapter {
   }
   async createGroup(accountId) {
     const groups = await this.groups(accountId);
-    const existing = groups.find(g => g.name === 'Easel 导入');
+    const existing = groups.find(g => g.name === 'MediaSail 导入');
     if (existing) return existing;
-    const data = await this.request('material/group', 'POST', { name: 'Easel 导入', type: 'video' }, accountId);
+    const data = await this.request('material/group', 'POST', { name: 'MediaSail 导入', type: 'video' }, accountId);
     if (!data?.id && !data?._id) throw new AitoError('草稿箱创建结果不明，请刷新列表核对。', 'uncertain');
-    return { id: String(data.id || data._id), name: 'Easel 导入' };
+    return { id: String(data.id || data._id), name: 'MediaSail 导入' };
   }
   sign(file, accountId) { return this.request('assets/uploadSign', 'POST', { filename: file.name, size: file.size, type: 'userMedia' }, accountId); }
   confirm(id, accountId) {

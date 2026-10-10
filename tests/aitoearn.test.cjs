@@ -86,6 +86,24 @@ test('website adapter rejects every publishing endpoint before reaching the webs
   await assert.rejects(adapter.request('https://other.example/upload','POST',{}),/不支持/);
   await assert.rejects(adapter.request('material/other','DELETE'),/不支持/);
 });
+test('default group uses MediaSail without renaming or replacing a legacy remote group',async()=>{
+  const adapter=new WebsiteAdapter(()=>{throw new Error('No live website in unit test');});
+  const groups=[{id:'legacy',name:'Easel 导入'}],calls=[];
+  adapter.groups=async()=>groups;
+  adapter.request=async(...args)=>{calls.push(args);return {id:'new-group'};};
+  assert.deepEqual(await adapter.createGroup('user-1'),{id:'new-group',name:'MediaSail 导入'});
+  assert.deepEqual(calls,[['material/group','POST',{name:'MediaSail 导入',type:'video'},'user-1']]);
+  assert.deepEqual(groups,[{id:'legacy',name:'Easel 导入'}]);
+  groups.push({id:'new-group',name:'MediaSail 导入'});
+  assert.equal((await adapter.createGroup('user-1')).id,'new-group');assert.equal(calls.length,1);
+});
+test('remembered legacy group and completed draft survive branding upgrade and restart',async t=>{
+  const f=fixture(t);f.remote.groups[0].name='Easel 导入';
+  await f.store.start(f.input);await f.store.running;
+  const restored=new ImportStore(f.options),connection=await restored.connection();
+  assert.equal(connection.selectedGroup,'group-1');assert.equal(connection.groups[0].name,'Easel 导入');
+  assert.equal(restored.state.jobs[0].draftId,'draft-1');assert.equal(f.remote.creates,1);
+});
 test('isolated page request keeps bearer token in the website and validates account and origin',async()=>{
   let calls=0;
   const sandbox={location:{origin:'https://aitoearn.cn'},localStorage:{getItem:()=>JSON.stringify({state:{token:'fixture-private-token',userInfo:{id:'u'}}})},setTimeout,clearTimeout,AbortController,fetch:async(url,options)=>{calls++;assert.equal(url,'https://aitoearn.cn/api/user/mine');assert.equal(options.headers.Authorization,'Bearer fixture-private-token');return {ok:true,status:200,json:async()=>({code:0,data:{id:'u'}})};}};

@@ -1,4 +1,4 @@
-MediaSail 0.3.0 — third-party notices
+MediaSail 0.3.2 — third-party notices
 
 Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02.
 Original frontend and workflows are retained. A three-line compatibility patch adds

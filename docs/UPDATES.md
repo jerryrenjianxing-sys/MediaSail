@@ -24,6 +24,15 @@ require the full installer (~1.8 GB). Complete downloads are cached; after resta
 checking and downloading the same version revalidates and reuses the cached file.
 Partial failed downloads may restart. Offline errors do not stop the local app.
 
+Version 0.3.2 completes MediaSail branding in chat, static pages, skill descriptions,
+AI import copy and default agent identity. Only recognized unmodified old identity
+templates are migrated, with original bytes backed up in the agent workspace's
+`.mediasail-brand-backup-0.3.2` directory. Existing cloud group names, user content,
+custom identities and legacy storage keys are preserved. This is still a full NSIS
+installation update; it does not split or accelerate runtime installation.
+See [the 0.3.2 verification record](VERIFICATION-0.3.2.md), including the observed
+limitation when another service forces the local browser origin to change ports.
+
 As one size estimate, comparing the 0.2.0 and 0.3.0 NSIS blockmaps found
 1,777,733,201 reusable bytes out of a 1,785,234,218-byte new installer. Changed
 blocks total 7,501,017 bytes (0.42%). This excludes blockmap downloads and HTTP

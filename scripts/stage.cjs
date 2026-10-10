@@ -16,6 +16,8 @@ const names = hasGit ? cp.execFileSync('git', ['ls-files', '-z'], { cwd: source,
 function walk(dir, prefix) { for (const e of fs.readdirSync(dir, {withFileTypes:true})) {const name=prefix+'/'+e.name; if(e.isDirectory()) walk(path.join(dir,e.name),name); else names.push(name);} }
 walk(path.join(source, 'web/frontend/dist'), 'web/frontend/dist');
 walk(path.join(source, 'web/frontend/src'), 'web/frontend/src');
+// Generated from the approved branding master by prepare.py assets.
+names.push('web/static/mediasail-icon.png');
 const manifest = { version: require('../package.json').version + '-' + lock.easel.slice(0,7), upstream: lock.easel, files: {} };
 for (const name of new Set(names)) {
   if (path.basename(name) === '.gitkeep') continue;

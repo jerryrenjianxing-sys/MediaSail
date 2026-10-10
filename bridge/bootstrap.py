@@ -1,6 +1,7 @@
 """Initialize an isolated Easel profile, without upstream's global installers."""
 import json, os, shutil, subprocess, _winapi
 from pathlib import Path
+from branding import sync_defaults, without_runtime_root
 
 def write_json(file, value):
     temp=file.with_suffix('.desktop-tmp'); temp.write_text(json.dumps(value,ensure_ascii=False,indent=2),encoding='utf8'); temp.replace(file)
@@ -18,13 +19,11 @@ def prepare(root):
     for name in ('profiles','outputs','assets'): (root/name).mkdir(exist_ok=True)
     if not (root/'.env').exists(): shutil.copy2(root/'.env.example',root/'.env')
     for name,target in [('skills',root/'skills/openclaw'),('shared',root/'skills/shared'),('easel-profiles',root/'profiles'),('outputs',root/'outputs')]: junction(workspace/name,target)
-    for source in (root/'openclaw/workspace').glob('*.md'):
-        dest=workspace/source.name
-        if not dest.exists(): shutil.copy2(source,dest)
-    context=f'# Easel 项目路径\n\n项目根目录：{root}\n产物输出到：{root / "outputs"}\n用户素材在：{root / "assets"}\n用户画像在：{root / "profiles"}\n'
+    sync_defaults(root/'openclaw/workspace', workspace)
+    context=f'# MediaSail 项目路径\n\n项目根目录：{root}\n产物输出到：{root / "outputs"}\n用户素材在：{root / "assets"}\n用户画像在：{root / "profiles"}\n'
     (workspace/'CONTEXT.md').write_text(context,encoding='utf8')
     agents=workspace/'AGENTS.md'
-    text=agents.read_text(encoding='utf8').split('\n## 运行时项目根')[0]
+    text=without_runtime_root(agents.read_text(encoding='utf8'))
     agents.write_text(text+f'\n## 运行时项目根\n\n`{root}`\n',encoding='utf8')
     config=state/'openclaw.json'
     value=json.loads(config.read_text(encoding='utf8')) if config.exists() else {}

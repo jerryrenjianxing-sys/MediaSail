@@ -38,6 +38,7 @@ elif sys.argv[1] == 'assets':
     public = ROOT / 'vendor/easel/web/frontend/public/assets'
     public.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, public / 'mediasail-icon.png')
+    shutil.copy2(source, ROOT / 'vendor/easel/web/static/mediasail-icon.png')
 
 elif sys.argv[1] == 'electron':
     version=LOCK['electron'];name=f'electron-v{version}-win32-x64.zip'
