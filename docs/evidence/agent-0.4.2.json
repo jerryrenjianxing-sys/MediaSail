@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "version": "0.4.2",
+  "date": "2026-10-10T15:05:59.416Z",
+  "automaticChecks": 2,
+  "totalMetadataRequests": 4,
+  "oldUrl": "http://127.0.0.1:7860",
+  "newUrl": "http://127.0.0.1:62261",
+  "checks": [
+    "copied prompt",
+    "manual copy",
+    "full skill zip",
+    "profile read/write",
+    "manifest and content library",
+    "bundled Python/Node",
+    "light/dark",
+    "automatic banner",
+    "shared updater",
+    "dismiss across reload and tray",
+    "restart reminder",
+    "AitoEarn bounds",
+    "offline recovery",
+    "port change",
+    "stale identity rejection",
+    "offline paths"
+  ]
+}
