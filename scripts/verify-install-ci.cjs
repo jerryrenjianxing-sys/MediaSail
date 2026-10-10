@@ -11,7 +11,8 @@ const processes=()=>{const p=JSON.parse(ps("@(Get-CimInstance Win32_Process -Fil
 const owned=()=>processes().filter(p=>p.ExecutablePath?.toLowerCase()===exe.toLowerCase());
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn,ms,label){const end=Date.now()+ms;while(Date.now()<end){const value=await fn();if(value)return value;await delay(1000);}throw Error('Timed out: '+label);}
-async function setup(file,args){await new Promise((r,j)=>{const p=cp.spawn(file,args,{windowsHide:true,stdio:'ignore'});p.on('error',j);p.on('exit',code=>code===0?r():j(Error('Installer exit '+code)));});}
+// NSIS requires its trailing /D= and _?= paths verbatim, including spaces.
+async function setup(file,args){await new Promise((r,j)=>{const p=cp.spawn(file,args,{windowsHide:true,windowsVerbatimArguments:true,stdio:'ignore'});p.on('error',j);p.on('exit',code=>code===0?r():j(Error('Installer exit '+code)));});}
 let app,inspector,installerProcess;
 (async()=>{
  await fs.mkdir(artifacts,{recursive:true});assert.equal(processes().length,0);assert.equal(fss.existsSync(data),false,'Runner must start without user data');
