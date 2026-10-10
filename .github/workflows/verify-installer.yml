@@ -36,9 +36,14 @@ jobs:
         run: |
           New-Item -ItemType Directory release-input | Out-Null
           gh release download v0.3.2 --pattern '*Setup.exe' --dir release-input
-          $download=[uri]$env:MEDIASAIL_TEST_INSTALLER_URL
-          if($download.Scheme -ne 'https' -or $download.Host -ne 'release-assets.githubusercontent.com') { throw 'Expected a GitHub single-asset download URL' }
-          Invoke-WebRequest -Uri $download -OutFile release-input/MediaSail-0.3.3-win-x64-Setup.exe
+          if($env:MEDIASAIL_TEST_INSTALLER_URL) {
+            $download=[uri]$env:MEDIASAIL_TEST_INSTALLER_URL
+            if($download.Scheme -ne 'https' -or $download.Host -ne 'release-assets.githubusercontent.com') { throw 'Expected a GitHub single-asset download URL' }
+            Invoke-WebRequest -Uri $download -OutFile release-input/MediaSail-0.3.3-win-x64-Setup.exe
+          } else {
+            # After publication, the same read-only workflow needs no temporary secret.
+            gh release download v0.3.3 --pattern '*Setup.exe' --dir release-input
+          }
           $expected='4d091ffa2fe4989e1a4c665e55b9e413af46f15a151529de1b8e728dd01840fb'
           $actual=(Get-FileHash release-input/MediaSail-0.3.3-win-x64-Setup.exe -Algorithm SHA256).Hash.ToLower()
           if ($expected -ne $actual) { throw 'Draft installer checksum mismatch' }

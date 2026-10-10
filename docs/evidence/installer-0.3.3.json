@@ -1,0 +1,24 @@
+{
+  "from": "0.3.2",
+  "to": "0.3.3",
+  "startedAt": "2026-10-10T08:57:38.507Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "installerArgs": [
+    "--updated",
+    "/S",
+    "--force-run"
+  ],
+  "installToRelaunchMs": 1057259,
+  "visibleSamples": 453,
+  "installToReadyMs": 1099099,
+  "retention": {
+    "version": "0.3.3",
+    "exe": "D:\\a\\_temp\\mediasail-installer-test\\用户 自选目录\\MediaSail.exe",
+    "theme": "dark",
+    "chat": true,
+    "content": "升级成品保留",
+    "cookie": "keep"
+  },
+  "passed": true,
+  "cleanedUp": true
+}
