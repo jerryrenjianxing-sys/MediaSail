@@ -1,6 +1,11 @@
 name: Verify actual Windows installer
 on:
   workflow_dispatch:
+    inputs:
+      preflight_only:
+        description: Check isolated runner capacity and draft access without installing
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -9,12 +14,23 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Check disposable environment and draft access
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Select-Object Name,Free,Used
+          Write-Output "Temporary test root: $env:RUNNER_TEMP"
+          gh release view v0.3.3 --json isDraft,assets --jq '{draft:.isDraft,assets:[.assets[]|{name,state,size}]}'
       - uses: actions/setup-node@v4
+        if: ${{ !inputs.preflight_only }}
         with:
           node-version: '24.21.0'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
+        if: ${{ !inputs.preflight_only }}
       - name: Download exact baseline and draft installer
+        if: ${{ !inputs.preflight_only }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
@@ -28,8 +44,9 @@ jobs:
           $baseline=(Get-FileHash release-input/MediaSail-0.3.2-win-x64-Setup.exe -Algorithm SHA256).Hash.ToLower()
           if ($baseline -ne '652721fb62f06d122f1d08bc03ac3fc543cb9fbd646b9065bf339869a11fa7b6') { throw 'Baseline checksum mismatch' }
       - run: node scripts/verify-install-ci.cjs
+        if: ${{ !inputs.preflight_only }}
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() && !inputs.preflight_only }}
         with:
           name: mediasail-0.3.3-installer-evidence
           path: installer-evidence/
