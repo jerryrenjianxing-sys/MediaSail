@@ -78,8 +78,22 @@ The final installer is 1,786,570,046 bytes; SHA-256:
 
 Application/installer source is pinned to `5d8d2a0f056950d7f9175d4b01fb9b0120f4a8fc`.
 Later main-branch commits improve the verification harness and append evidence.
-Published assets are not overwritten. Old-client discovery will be recorded below
-after publication.
+Published assets are not overwritten. Final discovery evidence follows below.
+
+## Published update discovery
+
+[v0.3.3](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.3.3)
+was published at 2026-10-10 17:31:32 Asia/Shanghai and confirmed as GitHub's latest
+stable release. An isolated preserved 0.3.2 package opened Settings > Software
+update and discovered 0.3.3 through the unchanged real GitHub feed. Its actual
+update window screenshot was inspected; this check did not download or install.
+
+![0.3.2 discovers 0.3.3](images/update-discovery-0.3.3.png)
+
+The one-file temporary download secret used by the hosted test was deleted and
+its absence confirmed. No repository write permission was granted to the workflow.
+After publication the same workflow can read the public installer without that
+secret. The user's existing local installation and data were not replaced.
 
 ## Reproduction
 
