@@ -11,6 +11,7 @@ const nsis=String.raw`Unicode true
 !define isUpdated "0 = 1"
 !define isForceRun "0 = 1"
 !define VERSION "test"
+!define BUILD_RESOURCES_DIR "${path.join(root,'desktop/assets')}"
 !define INSTALL_REGISTRY_KEY "Software\ElectronEasel-Disposable-Path-Test"
 !define UNINSTALL_REGISTRY_KEY "Software\ElectronEasel-Disposable-Path-Test"
 !include "${path.join(root,'scripts/installer.nsh')}"

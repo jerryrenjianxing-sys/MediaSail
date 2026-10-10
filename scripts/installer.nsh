@@ -2,6 +2,7 @@
 ; The old 0.1.0 uninstaller predates customUnInit. Give only that uninstaller
 ; an extended-length form of its existing, registered application directory.
 !ifndef BUILD_UNINSTALLER
+  !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-legacy-temp.nsh"
   Var legacyInstallPath
   Var mediaSailVisibleUpdate
   !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。完整运行环境需要解压，可能持续数分钟。"
@@ -102,7 +103,7 @@
         ; Retry only the known legacy uninstaller and retain its atomic rollback.
         WriteRegStr HKCU "${INSTALL_REGISTRY_KEY}" InstallLocation "\\?\$legacyInstallPath"
         ClearErrors
-        ExecWait '"$PLUGINSDIR\old-uninstaller.exe" /S /KEEP_APP_DATA /currentuser --updated _?=\\?\$legacyInstallPath' $R0
+        !insertmacro mediaSailLegacyExec '"$PLUGINSDIR\old-uninstaller.exe" /S /KEEP_APP_DATA /currentuser --updated _?=\\?\$legacyInstallPath'
         ${If} ${Errors}
           StrCpy $R0 2
         ${EndIf}

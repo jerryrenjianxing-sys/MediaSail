@@ -145,3 +145,11 @@ Exit codes 8 and above stop installation and retain a copy log under
 `logs/installer-<version>-copy.log`. Earlier Shell-copy failures could display
 an unrelated "app cannot be closed" message. Installer extraction and copy errors
 never run the success/relaunch step. This patch retains the full bundled runtime.
+
+## 0.4.2 legacy uninstall compatibility
+
+Old uninstallers stage rollback files in their process temporary directory.
+The incoming installer gives only that child an extended-length TEMP/TMP path,
+then restores the parent's original values and propagates the child's result.
+This supports deep rollback paths without changing Windows long-path policy or
+persistent environment variables. The same helper covers the 0.1.0 retry.

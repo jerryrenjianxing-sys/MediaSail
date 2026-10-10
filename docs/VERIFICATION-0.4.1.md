@@ -69,3 +69,13 @@ five assets. The courier workflow completed successfully in 1 minute 47 seconds.
 
 Real client-upgrade verification remains a separate test and is recorded below
 when completed; release-upload timing is not a client update-speed measurement.
+
+## Follow-up
+
+The first 0.4.1 hosted run (38059382556) completed real GitHub discovery and download,
+but had not reached `old-version-removed`. It was cancelled after repeated
+old-file movement/rollback was observed. This does not count as a passed upgrade.
+At 22:43 China time, 0.4.1 was retained as a prerelease and removed from stable
+latest. Its files were not overwritten. The incoming installer also needs to
+provide long-path-safe temporary storage to the old uninstaller; see
+[0.4.2 verification](VERIFICATION-0.4.2.md).
