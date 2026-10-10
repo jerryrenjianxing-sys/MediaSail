@@ -75,7 +75,7 @@ automatic restart, local service, retained chat/theme/content/persona and
 non-authentication cookie, then uninstalls the test copy. It cannot run on the
 user's local machine. No real account or publishing operation is used.
 
-## Reproduction
+### Hosted attempt and follow-up
 
 The [first full hosted attempt](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38049893325)
 confirmed that genuine 0.3.3 discovers public 0.4.0 and completes the actual download

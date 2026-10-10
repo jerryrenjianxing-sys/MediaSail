@@ -1,0 +1,30 @@
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	﻿2026-10-10T11:52:37.9312039Z ##[group]Run node scripts/verify-agent-upgrade-ci.cjs
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T11:52:37.9312703Z ^[[36;1mnode scripts/verify-agent-upgrade-ci.cjs^[[0m
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T11:52:37.9378774Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T11:52:37.9379420Z ##[endgroup]
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T11:52:48.4379409Z Installing genuine 0.3.3 baseline into a custom folder
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:07:35.4897533Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:08:05.8060735Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:08:36.0837168Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:09:06.3641715Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:09:36.5729910Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:10:06.8340842Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:10:37.1333270Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:11:07.3984392Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:11:37.6532586Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:12:07.9137842Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:12:38.6092416Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:13:08.8993627Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:13:39.1294682Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:14:09.4062457Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:14:39.7071228Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:15:09.9945283Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:15:40.2575549Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:16:10.5568580Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:16:40.8525500Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:17:11.1387269Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:17:41.4233879Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:18:11.6880679Z Waiting for published 0.4.0; rechecking the public GitHub feed
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:18:12.7662378Z Old client discovered 0.4.0; downloading through unchanged GitHub updater
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T12:18:53.2171115Z Verified download complete; starting actual upgrade
+upgrade	Run node scripts/verify-agent-upgrade-ci.cjs	2026-10-10T13:21:47.7931984Z ##[error]The operation was canceled.
