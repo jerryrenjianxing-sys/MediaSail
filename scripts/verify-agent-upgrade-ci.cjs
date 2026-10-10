@@ -12,12 +12,16 @@ const owned=()=>processes().filter(p=>p.ExecutablePath?.toLowerCase()===exe.toLo
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn,ms,label){const end=Date.now()+ms;while(Date.now()<end){const value=await fn();if(value)return value;await delay(1000);}throw Error('Timed out: '+label);}
 // NSIS requires its trailing /D= and _?= paths verbatim, including spaces.
-async function setup(file,args){await new Promise((r,j)=>{const p=cp.spawn(file,args,{windowsHide:true,windowsVerbatimArguments:true,stdio:'ignore'});p.on('error',j);p.on('exit',code=>code===0?r():j(Error('Installer exit '+code)));});}
+async function setup(file,args){await new Promise((r,j)=>{const p=cp.spawn(file,args,{windowsHide:true,windowsVerbatimArguments:true,stdio:'ignore'});const timer=setTimeout(()=>{cp.spawnSync('taskkill.exe',['/PID',String(p.pid),'/T','/F'],{windowsHide:true});j(Error('Installer timed out: '+path.basename(file)));},1800000);p.on('error',e=>{clearTimeout(timer);j(e);});p.on('exit',code=>{clearTimeout(timer);code===0?r():j(Error('Installer exit '+code));});});}
+async function persist(){
+ await fs.writeFile(path.join(artifacts,'result.json'),JSON.stringify(result,null,2));
+ for(const name of ['updates.log','desktop.log','installer-0.4.0.ini'])await fs.copyFile(path.join(data,'logs',name),path.join(artifacts,name)).catch(()=>{});
+}
 let app,inspector;
 (async()=>{
  await fs.mkdir(artifacts,{recursive:true});assert.equal(processes().length,0);assert.equal(fss.existsSync(data),false,'Runner must start without user data');
  const free=Number(ps("(Get-PSDrive -Name C).Free"));assert.ok(free>28*1024**3,'Need 28 GiB free for actual runtime extraction');
- console.log('Installing genuine 0.3.3 baseline into a custom folder');await setup(baseline,['/S','/D='+target]);assert.ok(fss.existsSync(exe));
+ console.log('Installing genuine 0.3.3 baseline into a custom folder');await setup(baseline,['/S','/D='+target]);assert.ok(fss.existsSync(exe));result.baselineInstalledAt=new Date().toISOString();console.log('Baseline installed');await persist();
  try{
   const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;delete env.EASEL_DESKTOP_DATA;
   app=await electron.launch({executablePath:exe,args:[],env,timeout:30000});const page=await app.firstWindow();
@@ -53,9 +57,25 @@ let app,inspector;
   const downloadAt=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('download'));
   await until(async()=>{state=await page.evaluate(()=>window.desktopUpdates.status());if(state.phase==='error')throw Error(state.message);return state.phase==='downloaded';},1200000,'verified download');
   result.downloadMs=Date.now()-downloadAt;result.updateSize=state.total;
-  console.log('Verified download complete; starting actual upgrade');
-  const oldPid=app.process().pid,start=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('install')).catch(()=>{});
-  const launched=await until(()=>owned().find(p=>p.ProcessId!==oldPid&&!p.CommandLine.includes('--type=')&&p.CommandLine.includes('--updated')),1800000,'NSIS install and automatic restart');
+  console.log('Verified download complete; starting actual upgrade');result.phase='installing';await persist();
+  const oldPid=app.process().pid,start=Date.now();
+  // Do not keep a Playwright evaluation waiting for a renderer that is closing.
+  await panel.evaluate(()=>{void window.mediaSailUpdate.call('install');});
+  app=null;let lastSample=0;
+  const launched=await until(async()=>{
+   const current=owned();
+   if(Date.now()-lastSample>30000){
+    lastSample=Date.now();
+    const installers=JSON.parse(ps("@(Get-CimInstance Win32_Process | Where-Object { $_.Name -like '*MediaSail*Setup*' -or $_.Name -eq 'installer.exe' } | Select-Object ProcessId,ExecutablePath,CommandLine) | ConvertTo-Json -Compress")||'[]');
+    result.observation={at:new Date().toISOString(),apps:current,installers:Array.isArray(installers)?installers:[installers],windows:[]};
+    for(const p of result.observation.installers){
+     const observed=cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-File',path.join(__dirname,'observe-installer.ps1'),'-InstallerPid',String(p.ProcessId),'-Screenshot',path.join(artifacts,'installer-progress.png')],{encoding:'utf8',windowsHide:true,timeout:20000});
+     result.observation.windows.push(...JSON.parse(observed||'[]'));
+    }
+    console.log('Install observation '+JSON.stringify(result.observation));await persist();
+   }
+   return current.find(p=>p.ProcessId!==oldPid&&!p.CommandLine.includes('--type=')&&p.CommandLine.includes('--updated'));
+  },1800000,'NSIS install and automatic restart');
   result.installToRelaunchMs=Date.now()-start;app=null;
   inspector=await attachTestMain(launched.ProcessId);
   await until(()=>inspector.evaluate("Boolean(process.mainModule?.require && process.mainModule.require('electron').app.isReady())"),30000,'main context');
@@ -72,11 +92,13 @@ let app,inspector;
   await inspector.evaluate("(async()=>{const image=await "+mainExpr+".webContents.capturePage();process.mainModule.require('node:fs').writeFileSync("+JSON.stringify(path.join(artifacts,'upgraded-agent-page.png'))+",image.toPNG());})()");
   await inspector.evaluate(mainExpr+".webContents.executeJavaScript('window.desktopUpdates.openAndCheck()')");
   await until(()=>inspector.evaluate(mainExpr+".webContents.executeJavaScript(\"window.desktopUpdates.status().then(s=>s.phase==='current')\")"),180000,'new version is current');
-  result.passed=true;console.log('REAL INSTALLATION PASSED '+JSON.stringify(result));
+  result.passed=true;result.phase='verified';await persist();console.log('REAL INSTALLATION PASSED '+JSON.stringify(result));
+ }catch(error){result.error=error.stack||String(error);console.error(result.error);await persist();throw error;
  }finally{
-  inspector?.close();if(app)await app.close().catch(()=>{});
+  inspector?.close();if(app)await Promise.race([app.close().catch(()=>{}),delay(10000)]);
+  await persist();console.log('Cleaning disposable installation');
   for(const p of owned().filter(p=>!p.CommandLine.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(p.ProcessId),'/T','/F'],{windowsHide:true});
   const uninstaller=path.join(target,'Uninstall MediaSail.exe');if(fss.existsSync(uninstaller))await setup(uninstaller,['/S','/KEEP_APP_DATA','_?='+target]);
-  result.cleanedUp=!fss.existsSync(exe);await fs.copyFile(path.join(data,'logs/updates.log'),path.join(artifacts,'updates.log')).catch(()=>{});await fs.writeFile(path.join(artifacts,'result.json'),JSON.stringify(result,null,2));
+  result.cleanedUp=!fss.existsSync(exe);await persist();console.log('Cleanup complete: '+result.cleanedUp);
  }
 })().catch(e=>{console.error(e);process.exitCode=1;});
