@@ -53,10 +53,21 @@ it is not a published release.
 
 ## Release and real upgrade
 
-Installer compression, release checksum verification and hosted real-upgrade
-verification are performed separately from the fixtures above. Their final
-evidence is appended after those operations complete. The current source snapshot
-does not claim that a simulated install is a real upgrade.
+Published [v0.4.0](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.4.0)
+on 2026-10-10 at 20:17 China time. All five release files were uploaded to a draft
+first. GitHub's server-computed SHA-256 digests and sizes matched the local files
+before publication; every asset of 0.3.0, 0.3.1, 0.3.2 and 0.3.3 was unchanged.
+See [asset verification](evidence/assets-0.4.0.json), recorded while still a draft.
+The final installer is 1,786,974,966 bytes; its SHA-256 is
+`830572217f4fba43fb596bed5cef64810ae890b6b981ff98f38c2a3101a01a47`.
+
+The application and source ZIP are pinned to `5dddb74`; later commits update
+build cleanup, verification automation and evidence without changing the shipped
+application. The source checks also passed on `3ab4b5a`.
+
+Hosted real-upgrade verification runs separately from the fixtures above. Its
+final evidence is appended after it completes; the local tests do not claim that
+a simulated install is a real upgrade.
 
 The hosted workflow installs genuine 0.3.3 into a disposable Windows custom path,
 uses its unchanged GitHub updater to discover/download/install 0.4.0, checks the
