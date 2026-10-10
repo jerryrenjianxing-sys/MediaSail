@@ -27,5 +27,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mediasail-0.4.0-real-upgrade
+          name: mediasail-0.4.1-real-upgrade
           path: installer-evidence/

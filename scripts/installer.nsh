@@ -118,6 +118,9 @@
     SetErrorLevel 2
     Quit
   ${EndIf}
+  ${If} $mediaSailVisibleUpdate == "1"
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "old-version-removed"
+  ${EndIf}
 !macroend
 
 !macro customUnInit

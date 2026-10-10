@@ -137,3 +137,11 @@ the user's standard paths after a diagnostic run.
 ## 0.4.0 启动提醒
 
 主页面和本地服务就绪后约 15 秒自动检查一次；成功手动检查的结果可复用。发现新版显示横幅，点击打开原更新窗口；不自动下载或安装。关闭状态只在本次主进程中保留，下次启动再次检查。断网或已经最新不自动弹窗，设置内仍可查看状态并重试。
+
+## 0.4.1 installer compatibility
+
+The installer copy stage uses Windows Robocopy with long Unicode path support.
+Exit codes 8 and above stop installation and retain a copy log under
+`logs/installer-<version>-copy.log`. Earlier Shell-copy failures could display
+an unrelated "app cannot be closed" message. Installer extraction and copy errors
+never run the success/relaunch step. This patch retains the full bundled runtime.

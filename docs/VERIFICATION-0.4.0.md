@@ -102,3 +102,18 @@ diagnostics before cleanup. The published installer has not been changed.
 - GitHub Actions: **Verify MediaSail 0.4 upgrade through GitHub**
 
 The user's installed application and default profile were not test targets.
+
+### Second hosted attempt and stable-channel withdrawal
+
+The second run (38055644727) used the unchanged 0.3.3 GitHub updater. Differential
+transfer was 3,790,460 bytes; download and checksum verification took 15,072 ms.
+Installation did not complete: the native installer displayed "MediaSail cannot
+be closed" and waited for Retry/Cancel despite no MediaSail application process
+remaining. The diagnostic observer did not click through that failure. The run
+was cancelled; its ephemeral Windows VM was discarded. This is not a passed
+installation or an uninstaller-cleanup result.
+
+At approximately 22:00 China time on 2026-10-10, v0.4.0 was changed to prerelease
+and removed from the stable latest channel. All five assets were retained without
+replacement. The follow-up repair and acceptance record is
+[0.4.1 verification](VERIFICATION-0.4.1.md).
