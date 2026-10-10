@@ -47,7 +47,7 @@ let app,inspector;
     await panel.evaluate(()=>window.mediaSailUpdate.call('check'));
    }
    return false;
-  },1800000,'real GitHub discovery');
+  },2700000,'real GitHub discovery');
   assert.equal(state.version,'0.4.0');await panel.screenshot({path:path.join(artifacts,'old-discovers-0.4.0.png'),animations:'disabled'});
   console.log('Old client discovered 0.4.0; downloading through unchanged GitHub updater');
   const downloadAt=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('download'));
