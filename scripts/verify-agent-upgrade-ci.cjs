@@ -36,8 +36,18 @@ let app,inspector;
   await page.reload();await page.locator('.settings-gear').waitFor();
   const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();
   const panelEvent=app.waitForEvent('window',{predicate:p=>p!==page});await page.evaluate(()=>window.desktopUpdates.openAndCheck());const panel=await panelEvent;await panel.locator('#headline').waitFor();
-  let state;
-  await until(async()=>{state=await page.evaluate(()=>window.desktopUpdates.status());if(state.phase==='error')throw Error(state.message);return state.phase==='available';},180000,'real GitHub discovery');
+  let state,lastCheck=Date.now();
+  // Preparing the clean baseline may start while the new release is still a draft.
+  // Recheck through the unchanged public updater, at most once every 30 seconds.
+  await until(async()=>{
+   state=await page.evaluate(()=>window.desktopUpdates.status());
+   if(state.phase==='available')return true;
+   if(['current','error'].includes(state.phase)&&Date.now()-lastCheck>=30000){
+    lastCheck=Date.now();console.log('Waiting for published 0.4.0; rechecking the public GitHub feed');
+    await panel.evaluate(()=>window.mediaSailUpdate.call('check'));
+   }
+   return false;
+  },1800000,'real GitHub discovery');
   assert.equal(state.version,'0.4.0');await panel.screenshot({path:path.join(artifacts,'old-discovers-0.4.0.png'),animations:'disabled'});
   console.log('Old client discovered 0.4.0; downloading through unchanged GitHub updater');
   const downloadAt=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('download'));
