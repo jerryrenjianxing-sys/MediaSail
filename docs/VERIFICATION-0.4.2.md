@@ -35,7 +35,7 @@ startup/dismissal behavior, tray restore and offline recovery. Only the applicat
 version and incoming installer compatibility changed in 0.4.2. The final hosted
 run below also checks the actual new version, local service and Agent page.
 
-Release assets and the real 0.3.3 upgrade result will be recorded after verification.
+Release assets and the passing real 0.3.3 upgrade result are recorded below.
 
 ## Final packaged feature check
 
@@ -68,5 +68,57 @@ Application/source ZIP are pinned to `3f36531`. The release-upload courier moved
 on the publishing runner, and by GitHub's asset digest. It was then removed from
 the draft. This did not change the application's updater or its download source.
 
-The real 0.3.3 client upgrade is a separate hosted test; its final result is
-recorded below when complete. No real social account or publication is used.
+## Real 0.3.3 → 0.4.2 upgrade: passed
+
+The [GitHub-hosted Windows run](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38061369185)
+completed successfully at 2026-10-10 23:21:50 China time. It installed the genuine,
+hash-verified 0.3.3 release into `D:\a\_temp\mediasail-agent-upgrade\用户 自选目录`,
+then used that old application's unchanged GitHub updater to discover, download,
+verify and install the published 0.4.2 release. No download source, checksum or
+installation was simulated. The old client supplied `--updated /S --force-run`;
+the new installer nevertheless displayed the actual installation progress page.
+
+The automatic restart used the same custom Unicode/space-containing directory.
+The new version and real local gateway became ready. The seeded Chinese chat,
+dark theme, output file, custom persona and AitoEarn-partition test cookie survived.
+The test cookie was synthetic and did not authenticate an account. The Agent page
+opened, its new connection descriptor reported 0.4.2, and checking GitHub again
+reported that 0.4.2 was current. All assertions passed. The disposable installation
+was then uninstalled successfully (`cleanedUp: true`); the hosted VM was discarded.
+The user's local installation and real account data were not used.
+
+| Measurement | Result |
+| --- | ---: |
+| Successful version check after GitHub exposed the release | 0.470 seconds |
+| Changed installer payload downloaded | 3,830,314 bytes (3.83 MB / 3.65 MiB) |
+| Download, reconstruction and checksum, as observed by the test | 11.119 seconds |
+| Install request → automatically relaunched process | 11 minutes 4.121 seconds |
+| Relaunched process → local gateway and main page ready | 38.145 seconds |
+| Install request → local gateway and main page ready | 11 minutes 42.266 seconds |
+
+These are observations on an ephemeral GitHub-hosted Windows runner on
+2026-10-10, using its GitHub network route; they do not predict a user's local
+download or disk speed. The payload count excludes update metadata, blockmaps,
+HTTP/TLS overhead and the separately downloaded baseline installer. This run
+did not measure total wire bytes. The old installer remained available for
+differential reuse. The updater log shows 186 changed blocks and successful
+differential download, with no full-download fallback or download retry recorded.
+Earlier checks while the release was unpublished/cached are excluded from the
+single successful-check timing. Most elapsed time remained in installing the
+complete runtime, despite the small network payload.
+
+The installer reached `old-version-removed`, `copying-files`, `files-copied` and
+`succeeded`. Its copy log reports all **85,286 files** copied, with zero failed or
+mismatched files. This validates both the incoming compatibility repair for the
+old uninstaller and the new long-path file-copy operation on the complete bundle.
+
+Evidence: [result](evidence/upgrade-0.4.2.json),
+[updater log](evidence/upgrade-0.4.2-updates.log),
+[copy log](evidence/upgrade-0.4.2-copy.log).
+
+![Old version discovers the release](images/0.3.3-discovers-0.4.2.png)
+![Actual installation progress](images/0.4.2-installer-progress.png)
+![Automatically upgraded application and retained chat](images/0.4.2-upgraded-agent.png)
+
+Real platform login and publishing remain for the user to verify with their own
+accounts. No real social account or publication was used in these tests.

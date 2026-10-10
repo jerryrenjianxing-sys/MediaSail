@@ -1,0 +1,37 @@
+2026-10-10T15:03:55.825Z Checking for update
+2026-10-10T15:03:55.830Z Generated new staging user ID: f03dee64-9aea-5491-8022-7ac05ed52b74
+2026-10-10T15:03:56.477Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:04:15.829Z Checking for update
+2026-10-10T15:04:15.872Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:04:46.686Z Checking for update
+2026-10-10T15:04:46.723Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:05:16.986Z Checking for update
+2026-10-10T15:05:17.519Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:05:47.261Z Checking for update
+2026-10-10T15:05:47.288Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:06:17.558Z Checking for update
+2026-10-10T15:06:17.618Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:06:47.821Z Checking for update
+2026-10-10T15:06:47.853Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:07:18.090Z Checking for update
+2026-10-10T15:07:18.618Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:07:48.341Z Checking for update
+2026-10-10T15:07:48.367Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:08:18.616Z Checking for update
+2026-10-10T15:08:18.659Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:08:48.852Z Checking for update
+2026-10-10T15:08:48.887Z Update for version 0.3.3 is not available (latest version: 0.3.3, downgrade is disallowed).
+2026-10-10T15:09:19.121Z Checking for update
+2026-10-10T15:09:19.591Z Found version 0.4.2 (url: MediaSail-0.4.2-win-x64-Setup.exe)
+2026-10-10T15:09:20.200Z Downloading update from MediaSail-0.4.2-win-x64-Setup.exe
+2026-10-10T15:09:20.204Z Download block maps (old: "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.3.3/MediaSail-0.3.3-win-x64-Setup.exe.blockmap", new: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.4.2/MediaSail-0.4.2-win-x64-Setup.exe.blockmap)
+2026-10-10T15:09:20.637Z File has 186 changed blocks
+2026-10-10T15:09:20.658Z Full: 1,745,094.14 KB, To download: 3,740.54 KB (0%)
+2026-10-10T15:09:20.662Z Differential download: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.4.2/MediaSail-0.4.2-win-x64-Setup.exe
+2026-10-10T15:09:20.744Z Redirect to https://release-assets.githubusercontent.com/github-production-release-asset/1411559429/203ea39f-4086-4792-b253-329f5076434e
+2026-10-10T15:09:30.324Z New version 0.4.2 has been downloaded to C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.4.2-win-x64-Setup.exe
+2026-10-10T15:09:33.110Z Install on explicit quitAndInstall
+2026-10-10T15:09:33.111Z Install: isSilent: true, isForceRunAfter: true
+2026-10-10T15:09:33.111Z Executing: C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.4.2-win-x64-Setup.exe with args: --updated,/S,--force-run
+2026-10-10T15:21:14.645Z Checking for update
+2026-10-10T15:21:15.158Z Update for version 0.4.2 is not available (latest version: 0.4.2, downgrade is disallowed).

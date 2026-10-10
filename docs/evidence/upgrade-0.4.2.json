@@ -1,0 +1,147 @@
+{
+  "from": "0.3.3",
+  "to": "0.4.2",
+  "startedAt": "2026-10-10T14:53:39.982Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "unchanged electron-updater GitHub feed",
+  "baselineInstalledAt": "2026-10-10T15:03:38.358Z",
+  "downloadMs": 11119,
+  "updateSize": 3830314,
+  "phase": "verified",
+  "observation": {
+    "at": "2026-10-10T15:20:28.554Z",
+    "apps": [],
+    "installers": [
+      {
+        "ProcessId": 9788,
+        "ExecutablePath": "C:\\Users\\runneradmin\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.4.2-win-x64-Setup.exe",
+        "CommandLine": "C:\\Users\\runneradmin\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.4.2-win-x64-Setup.exe --updated /S --force-run"
+      }
+    ],
+    "windows": [
+      {
+        "children": [
+          {
+            "position": null,
+            "class": "Button",
+            "text": "< &Back"
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "&Next >"
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "Cancel"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "MediaSail 0.4.2 "
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "MediaSail 0.4.2"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "Installation Complete"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "Setup was completed successfully."
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "#32770",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "Show &details"
+          },
+          {
+            "position": 0,
+            "class": "msctls_progress32",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "SysListView32",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "SysHeader32",
+            "text": ""
+          }
+        ],
+        "title": "MediaSail Setup "
+      }
+    ],
+    "disks": [
+      {
+        "Name": "C",
+        "Free": 23828992000
+      },
+      {
+        "Name": "D",
+        "Free": 150432968704
+      }
+    ],
+    "stage": "[install]\r\nstate=succeeded\r\ndirectory=D:\\a\\_temp\\mediasail-agent-upgrade\\?? ????\r\n"
+  },
+  "installToRelaunchMs": 664121,
+  "installToReadyMs": 702266,
+  "retention": {
+    "version": "0.4.2",
+    "exe": "D:\\a\\_temp\\mediasail-agent-upgrade\\用户 自选目录\\MediaSail.exe",
+    "theme": "dark",
+    "chat": true,
+    "content": "升级成品保留",
+    "cookie": "keep"
+  },
+  "passed": true,
+  "cleanedUp": true
+}
