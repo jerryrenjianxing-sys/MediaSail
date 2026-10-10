@@ -1,5 +1,6 @@
 param([int]$InstallerPid,[string]$Screenshot)
 $ErrorActionPreference='Stop'
+[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)
 Add-Type -AssemblyName System.Drawing
 Add-Type @'
 using System; using System.Text; using System.Runtime.InteropServices;
@@ -31,7 +32,10 @@ $callback=[InstallerWindow+EnumProc]{param($handle,$unused)
   }
   [void][InstallerWindow]::EnumChildWindows($handle,$childCallback,[IntPtr]::Zero)
   $windows.Add(@{title=$title.ToString();children=@($children.ToArray())})
-  if ($Screenshot -and -not (Test-Path -LiteralPath $Screenshot)) {
+  # Capture the actual install page, not NSIS's earlier package-verification window.
+  $installHeading=-join (0x6B63,0x5728,0x5B89,0x88C5 | ForEach-Object { [char]$_ })
+  $installPage=@($children | Where-Object { $_.text.StartsWith($installHeading+' MediaSail') }).Count -gt 0
+  if ($Screenshot -and $installPage -and -not (Test-Path -LiteralPath $Screenshot)) {
    $rect=[InstallerWindow+Rect]::new();[void][InstallerWindow]::GetWindowRect($handle,[ref]$rect)
    $bitmap=[Drawing.Bitmap]::new($rect.Right-$rect.Left,$rect.Bottom-$rect.Top)
    $graphics=[Drawing.Graphics]::FromImage($bitmap);$dc=$graphics.GetHdc()

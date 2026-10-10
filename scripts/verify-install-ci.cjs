@@ -36,10 +36,11 @@ let app,inspector,installerProcess;
    if(exitCode!==undefined&&exitCode!==0)throw Error('Upgrade installer failed: '+exitCode);
    const windows=JSON.parse(cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-File',path.join(__dirname,'observe-installer.ps1'),'-InstallerPid',String(installerProcess.pid),'-Screenshot',path.join(artifacts,'installer-progress.png')],{encoding:'utf8',windowsHide:true})||'[]');
    if(windows.length)samples.push({at:Date.now(),windows});
-   if(Date.now()-lastLog>30000){console.log('Installer running; visible samples: '+samples.length);lastLog=Date.now();}
+   if(Date.now()-lastLog>30000){console.log('Installer running; visible samples: '+samples.length);lastLog=Date.now();await fs.writeFile(path.join(artifacts,'installer-windows.json'),JSON.stringify(samples,null,2));}
    return owned().find(p=>!p.CommandLine.includes('--type=')&&p.CommandLine.includes('--updated'));
   },1800000,'visible install and automatic relaunch');
-  result.installToRelaunchMs=Date.now()-start;result.visibleSamples=samples.length;assert.ok(samples.some(s=>s.windows.some(w=>w.children.some(c=>c.class==='msctls_progress32'))),'Real progress control must be visible');
+  result.installToRelaunchMs=Date.now()-start;result.visibleSamples=samples.length;assert.ok(samples.some(s=>s.windows.some(w=>w.children.some(c=>c.class==='msctls_progress32')&&w.children.some(c=>c.text.startsWith('正在安装 MediaSail')))),'Real install page and progress control must be visible');
+  assert.ok(fss.existsSync(path.join(artifacts,'installer-progress.png')),'Actual installation screenshot required');
   await fs.writeFile(path.join(artifacts,'installer-windows.json'),JSON.stringify(samples,null,2));
   inspector=await attachTestMain(launched.ProcessId);
   await until(()=>inspector.evaluate("Boolean(process.mainModule?.require && process.mainModule.require('electron').app.isReady())"),30000,'main context');
