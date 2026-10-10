@@ -35,3 +35,14 @@ test('development never checks/downloads and arbitrary renderer frames cannot up
   assert.equal(trustedUpdateSender({sender:main,senderFrame:{url:main.mainFrame.url}},options),false);
   for(const url of ['https://aitoearn.cn/zh-CN','http://127.0.0.1:7860/assets/a.html','http://127.0.0.1:9000/','file:///other.html']){main.mainFrame.url=url;assert.equal(trustedUpdateSender(event(main),options),false);}
 });
+
+test('startup checks once, reuses successful manual checks, closes without download, and resets only on process recreation',async()=>{
+ const wait=()=>new Promise(r=>setTimeout(r,35));
+ const a=setup();a.service.scheduleStartupCheck(5);a.service.scheduleStartupCheck(5);await wait();
+ assert.equal(a.updater.checks,1);assert.equal(a.updater.downloads,0);assert.equal(a.updater.installs,0);
+ a.service.dismissBanner();assert.equal(a.service.snapshot().bannerDismissed,true);
+ await a.service.check();assert.equal(a.service.snapshot().bannerDismissed,true);
+ const b=setup();await b.service.check();b.service.scheduleStartupCheck(5);await wait();assert.equal(b.updater.checks,1);assert.equal(b.service.snapshot().bannerDismissed,false);
+ const c=setup();c.updater.offline=true;c.service.scheduleStartupCheck(5);await wait();assert.equal(c.service.snapshot().phase,'error');c.updater.offline=false;await c.service.check();assert.equal(c.service.snapshot().phase,'available');
+ const d=setup();d.service.scheduleStartupCheck(5);await d.service.shutdown();await wait();assert.equal(d.updater.checks,0);
+});

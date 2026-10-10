@@ -6,6 +6,9 @@ const {safe,digest,syncWorkspace}=require('../desktop/workspace.cjs');
  const update=require('js-yaml').load(await fs.readFile(path.join(payload,'../app-update.yml'),'utf8'));
  if(update.provider!=='github'||update.owner!=='jerryrenjianxing-sys'||update.repo!=='MediaSail'||!update.updaterCacheDirName)throw new Error('Missing/invalid packaged updater configuration');
  const manifest=JSON.parse(await fs.readFile(path.join(payload,'manifest.json'),'utf8'));
+ for(const relative of ['SKILL.md','scripts/mediasail.ps1','scripts/mediasail.py','references/api-schema.json']){
+  await fs.access(path.join(payload,'../agent-skill/mediasail',relative));
+ }
  for(const [name,hash]of Object.entries(manifest.files)){
   const bytes=await fs.readFile(safe(path.join(payload,'easel'),name));
   if(digest(bytes)!==hash)throw new Error(`Packaged file checksum mismatch: ${name}`);

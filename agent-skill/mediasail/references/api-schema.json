@@ -1,0 +1,2892 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MediaSail local API",
+    "version": "0.4.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Index",
+        "operationId": "index__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onepage": {
+      "get": {
+        "summary": "Onepage",
+        "operationId": "onepage_onepage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assets/{path}": {
+      "get": {
+        "summary": "React Assets",
+        "operationId": "react_assets_assets__path__get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/static/{path}": {
+      "get": {
+        "summary": "Static File",
+        "operationId": "static_file_static__path__get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "summary": "Api Status",
+        "operationId": "api_status_api_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/personas": {
+      "get": {
+        "summary": "Api Personas",
+        "operationId": "api_personas_api_personas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/persona/{name}": {
+      "get": {
+        "summary": "Api Persona",
+        "operationId": "api_persona_api_persona__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Api Persona Delete",
+        "description": "删除整个画像目录。",
+        "operationId": "api_persona_delete_api_persona__name__delete",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/persona/{name}/files": {
+      "get": {
+        "summary": "Api Persona Files",
+        "description": "返回画像六维文件原文（按固定顺序 + 其余 .md），供在线编辑。",
+        "operationId": "api_persona_files_api_persona__name__files_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/persona/{name}/file": {
+      "put": {
+        "summary": "Api Persona File Save",
+        "description": "保存画像单个维度文件（原子写）。",
+        "operationId": "api_persona_file_save_api_persona__name__file_put",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonaFileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skills": {
+      "get": {
+        "summary": "Api Skills",
+        "operationId": "api_skills_api_skills_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skill/{name}": {
+      "get": {
+        "summary": "Api Skill Detail",
+        "description": "单个 SKILL 详情：描述 + 正文 + API 需求与当前配置状态（脱敏）。",
+        "operationId": "api_skill_detail_api_skill__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/env": {
+      "post": {
+        "summary": "Api Env Save",
+        "description": "写 API key 到项目根 .env（仅允许注册表内 env 名）。返回更新后各 skill 的配置状态。",
+        "operationId": "api_env_save_api_env_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/env/tools": {
+      "get": {
+        "summary": "Api Env Tools",
+        "description": "环境体检：引擎 check --json（15 秒缓存；refresh=1 强制重测）。",
+        "operationId": "api_env_tools_api_env_tools_get",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/env/install": {
+      "post": {
+        "summary": "Api Env Install",
+        "description": "后台安装（引擎 install）：立即返回 jobId，前端轮询进度。",
+        "operationId": "api_env_install_api_env_install_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvInstallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/env/job/{job_id}": {
+      "get": {
+        "summary": "Api Env Job",
+        "description": "查安装进度：running / ok / fail + 最近日志行 + 最终结果。",
+        "operationId": "api_env_job_api_env_job__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/models": {
+      "get": {
+        "summary": "Api Settings Models",
+        "description": "模型通道：chat / transcribe（含可编辑的原值；key 只回脱敏）。",
+        "operationId": "api_settings_models_api_settings_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/models/save": {
+      "post": {
+        "summary": "Api Settings Models Save",
+        "description": "保存模型通道：.env 就地更新（key 留空=不改）；chat 同步 openclaw；媒体通道写 provider 配置。",
+        "operationId": "api_settings_models_save_api_settings_models_save_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/local-agents": {
+      "get": {
+        "summary": "Api Local Agents",
+        "description": "探测本机已装的 agent CLI（Claude Code / Gemini CLI / Codex…）。\n\n目的：装了 Claude Code / Gemini CLI 且已登录的用户**不需要再填 API Key** ——\nOpenClaw 底座有对应的 CLI 后端，直接复用 CLI 自己的登录态。返回值同时如实\n标出哪些 CLI 暂无底座后端（installed 但 supported=false），不假装支持。",
+        "operationId": "api_local_agents_api_settings_local_agents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/local-agents/enable": {
+      "post": {
+        "summary": "Api Local Agent Enable",
+        "description": "把一个本机 CLI agent（目前支持 claude-code / gemini-cli）接入 Easel。\n\n实现是把对应 provider 写进 openclaw.json（复用 _sync_anthropic_provider 的\n原子写套路）。CLI 登录态本身由 openclaw 的 auth store 管理 —— 这里只负责\n「声明 provider 并把主模型切过去」；未登录的 CLI 会在下一轮对话时暴露\n认证错误，返回体里用 hint 提前告知用户先去终端登录。\n\nreq.model 可选：从插件模型目录里选一个（前端下拉列表），不传用各家默认。\n传了但不在目录里 → 400 拒绝，绝不静默写入一个不存在的模型引用。",
+        "operationId": "api_local_agent_enable_api_settings_local_agents_enable_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalAgentEnableRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/models/available": {
+      "post": {
+        "summary": "Api Models Available",
+        "description": "代前端拉一次 GET {base}/models，返回模型 id 列表（自定义供应商不用再手打模型名）。\n\n与 selftest 同一条安全线：带着用户 Key 出去的请求，目标必须过 _valid_base_url +\n_ssrf_safe；不落盘、不写日志。",
+        "operationId": "api_models_available_api_settings_models_available_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelsFetchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/models/selftest": {
+      "post": {
+        "summary": "Api Models Selftest",
+        "description": "真自测：对已配置的 OpenAI 兼容通道发 GET {base}/models 并计耗时。",
+        "operationId": "api_models_selftest_api_settings_models_selftest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelftestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/last/{session_id}": {
+      "get": {
+        "summary": "Api Chat Last",
+        "description": "取某会话最近一轮的完整结果（SSE 断线后前端据此取回，避免丢结果）。",
+        "operationId": "api_chat_last_api_chat_last__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "turn_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Turn Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/jobs/{turn_id}/stream": {
+      "get": {
+        "summary": "Api Chat Job Stream",
+        "description": "Replay missed events, then tail this turn until its terminal event arrives.",
+        "operationId": "api_chat_job_stream_api_chat_jobs__turn_id__stream_get",
+        "parameters": [
+          {
+            "name": "turn_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Turn Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/stream": {
+      "post": {
+        "summary": "Api Chat Stream",
+        "description": "SSE 真流式对话。\n\n`openclaw agent` CLI 会把整段模型输出缓冲到结束才打印（stdout 无增量）。真正跑模型的是\n常驻 gateway，它按自己的 OPENCLAW_RAW_STREAM/OPENCLAW_RAW_STREAM_PATH 把「模型原始流」逐\ntoken 写到**单个共享 jsonl**（SHARED_RAW_STREAM，见 scripts/gateway.sh）。后端在本轮开始时\n记下该文件尾偏移、实时 tail 之后追加的行，用 runId 闩锁隔离本轮，把 assistant_text_stream 的\ntoken delta 转成 SSE `token`、thinking delta 转成 `thinking`。stdout 仅留作错误/兜底。",
+        "operationId": "api_chat_stream_api_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/question/answer": {
+      "post": {
+        "summary": "Api Question Answer",
+        "description": "前端点击 ask_user 选项后调用：转发 gateway question.resolve，让等待的 agent 拿到答案。",
+        "operationId": "api_question_answer_api_chat_question_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/question/status": {
+      "post": {
+        "summary": "Api Question Status",
+        "description": "批量查 question 状态（重放旧事件时过滤已解决的题）。",
+        "operationId": "api_question_status_api_chat_question_status_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/stop": {
+      "post": {
+        "summary": "Api Chat Stop",
+        "description": "用户显式停止当前会话正在跑的对话 agent：终止进程 → supervisor 收尾释放会话锁 →\n下一句立刻能发（不再卡「上一条还在跑」）。仅此显式入口会杀进程；客户端断线不经此路径。",
+        "operationId": "api_chat_stop_api_chat_stop_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StopRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "Api Chat",
+        "description": "非流式对话（备选）。",
+        "operationId": "api_chat_api_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skill": {
+      "post": {
+        "summary": "Api Skill",
+        "operationId": "api_skill_api_skill_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/outputs": {
+      "get": {
+        "summary": "Api Outputs",
+        "operationId": "api_outputs_api_outputs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/output/{path}": {
+      "get": {
+        "summary": "Api Output",
+        "description": "文本产物内容。二进制/媒体返回 isBinary=true，前端改用 /api/media。",
+        "operationId": "api_output_api_output__path__get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Api Output Delete",
+        "description": "删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。",
+        "operationId": "api_output_delete_api_output__path__delete",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{path}": {
+      "get": {
+        "summary": "Api Media",
+        "description": "原样输出媒体文件（图片/视频/音频/HTML/PDF），供 <img>/<video>/iframe/下载。",
+        "operationId": "api_media_api_media__path__get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "summary": "Api Upload",
+        "description": "Store chat attachments in a session-scoped inbox and return opaque refs.",
+        "operationId": "api_upload_api_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_api_upload_api_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/limits": {
+      "get": {
+        "summary": "Api Upload Limits",
+        "description": "当前上传上限（MB）——前端在文件超限时据此切换到本地复制通道。",
+        "operationId": "api_upload_limits_api_upload_limits_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/local": {
+      "post": {
+        "summary": "Api Upload Local",
+        "description": "超过上传上限的文件复制通道：1MB 分块流式落盘（不整读进内存）、无大小上限；\n产出与 /api/upload 同构的附件引用（id/name/path），附件校验与清单链路零改动。",
+        "operationId": "api_upload_local_api_upload_local_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_api_upload_local_api_upload_local_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts": {
+      "get": {
+        "summary": "Api Accounts",
+        "operationId": "api_accounts_api_accounts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login/{platform}": {
+      "post": {
+        "summary": "Api Login Start",
+        "description": "启动某平台登录：浏览器平台后台跑 QR runner，轮询到二维码就绪即返回。",
+        "operationId": "api_login_start_api_login__platform__post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login/{platform}/status": {
+      "get": {
+        "summary": "Api Login Status",
+        "operationId": "api_login_status_api_login__platform__status_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login/{platform}/sms": {
+      "post": {
+        "summary": "Api Login Sms",
+        "description": "回填短信验证码：写入 runner 轮询的一次性验证码文件（见 login_state.read_sms_code）。\n\n登录 runner 检测到风控短信墙时把状态置 sms_required，前端弹输入框，用户把手机\n收到的验证码提交到这里，runner 读走后填码提交，继续完成登录。",
+        "operationId": "api_login_sms_api_login__platform__sms_post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmsCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{platform}/credentials": {
+      "get": {
+        "summary": "Api Get Credentials",
+        "description": "读取凭证式平台（目前仅公众号）的已配置状态（AppID 脱敏，AppSecret 不回传）。",
+        "operationId": "api_get_credentials_api_accounts__platform__credentials_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Api Save Credentials",
+        "description": "保存凭证式平台（公众号）的 AppID/AppSecret，写入 skill 配置并调官方接口验证。",
+        "operationId": "api_save_credentials_api_accounts__platform__credentials_post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WechatCredentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{platform}/mp-login": {
+      "post": {
+        "summary": "Api Mp Login Start",
+        "description": "启动「公众号后台」扫码登录（数据中心取数用，管理员级会话，独立于 AppID 凭证）。\n默认直连起 Playwright 出二维码；受限网络可设 EASEL_PROXY / https_proxy 走正向代理。",
+        "operationId": "api_mp_login_start_api_accounts__platform__mp_login_post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{platform}/mp-login/status": {
+      "get": {
+        "summary": "Api Mp Login Status",
+        "operationId": "api_mp_login_status_api_accounts__platform__mp_login_status_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/accounts/{platform}/whoami": {
+      "get": {
+        "summary": "Api Account Whoami",
+        "description": "真校验登录态 + 读昵称/头像（起 headless 浏览器，数秒）。前端开页后台调用以自愈假阳性。\n带 TTL 进程内缓存（避免账号页+工作台重复起浏览器）；确认已登录则回写标记，令快速路径自愈。",
+        "operationId": "api_account_whoami_api_accounts__platform__whoami_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logout/{platform}": {
+      "post": {
+        "summary": "Api Logout",
+        "description": "退出登录：删持久化浏览器 profile + 登录状态/二维码/头像文件（biliup 删 cookies.json）。",
+        "operationId": "api_logout_api_logout__platform__post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/platforms": {
+      "get": {
+        "summary": "Api Analytics Platforms",
+        "description": "列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。",
+        "operationId": "api_analytics_platforms_api_analytics_platforms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/{platform}": {
+      "get": {
+        "summary": "Api Analytics",
+        "description": "抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。",
+        "operationId": "api_analytics_api_analytics__platform__get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publish/{platform}/status": {
+      "get": {
+        "summary": "Api Publish Status",
+        "description": "轮询异步发布状态：starting/sms_required/verifying/success/error。",
+        "operationId": "api_publish_status_api_publish__platform__status_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publish/{platform}/sms": {
+      "post": {
+        "summary": "Api Publish Sms",
+        "description": "发布触发短信墙时回填验证码（写发布 runner 轮询的一次性验证码文件）。",
+        "operationId": "api_publish_sms_api_publish__platform__sms_post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmsCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publish/{platform}": {
+      "post": {
+        "summary": "Api Publish",
+        "description": "一键发布：分发到对应 publisher 脚本真发（--exec）。二次确认在前端。",
+        "operationId": "api_publish_api_publish__platform__post",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/build": {
+      "post": {
+        "summary": "Api Profile Build",
+        "description": "首次引导：表单 → 写基线画像（确定性，秒可用）→ **后台**跑 agent 分析社媒链接增强。\n\n改异步：立即返回（基线已写、画像即可用），避免 agent 增强(~2min)阻塞请求被 code-server\n代理超时掐断（前端曾因此报 API 400）。前端轮询 /api/profile/build/status/{name} 看增强进度。",
+        "operationId": "api_profile_build_api_profile_build_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileBuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/build/status/{name}": {
+      "get": {
+        "summary": "Api Profile Build Status",
+        "description": "查画像增强进度：running / done / failed / unknown。",
+        "operationId": "api_profile_build_status_api_profile_build_status__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/{session_key}": {
+      "delete": {
+        "summary": "Api Delete Session",
+        "description": "删除 OpenClaw 本地的 session 记录。",
+        "operationId": "api_delete_session_api_session__session_key__delete",
+        "parameters": [
+          {
+            "name": "session_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trends": {
+      "get": {
+        "summary": "Api Trends",
+        "operationId": "api_trends_api_trends_get",
+        "parameters": [
+          {
+            "name": "platforms",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "weibo,douyin,zhihu",
+              "title": "Platforms"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 12,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule": {
+      "get": {
+        "summary": "Api Schedule List",
+        "operationId": "api_schedule_list_api_schedule_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Api Schedule Create",
+        "operationId": "api_schedule_create_api_schedule_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule/{sid}": {
+      "put": {
+        "summary": "Api Schedule Update",
+        "operationId": "api_schedule_update_api_schedule__sid__put",
+        "parameters": [
+          {
+            "name": "sid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Api Schedule Delete",
+        "operationId": "api_schedule_delete_api_schedule__sid__delete",
+        "parameters": [
+          {
+            "name": "sid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schedule/context": {
+      "get": {
+        "summary": "Api Schedule Context",
+        "description": "规划摘要（发布节奏/断更缺口 + 待发排期 + 临近节点 + 建议）——薄封装 calendar_ops，\n前端页头「近期节点/建议」与 Agent 读回共用同一逻辑。失败返回空摘要不抛错。",
+        "operationId": "api_schedule_context_api_schedule_context_get",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 14,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ideas": {
+      "get": {
+        "summary": "Api Ideas List",
+        "operationId": "api_ideas_list_api_ideas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Api Ideas Create",
+        "operationId": "api_ideas_create_api_ideas_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdeaItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ideas/{iid}": {
+      "put": {
+        "summary": "Api Ideas Update",
+        "operationId": "api_ideas_update_api_ideas__iid__put",
+        "parameters": [
+          {
+            "name": "iid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Iid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdeaItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Api Ideas Delete",
+        "operationId": "api_ideas_delete_api_ideas__iid__delete",
+        "parameters": [
+          {
+            "name": "iid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Iid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AttachmentRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "path"
+        ],
+        "title": "AttachmentRef"
+      },
+      "Body_api_upload_api_upload_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files",
+          "sessionId"
+        ],
+        "title": "Body_api_upload_api_upload_post"
+      },
+      "Body_api_upload_local_api_upload_local_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files",
+          "sessionId"
+        ],
+        "title": "Body_api_upload_local_api_upload_local_post"
+      },
+      "ChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "persona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Persona"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          },
+          "turnId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnid"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentRef"
+            },
+            "type": "array",
+            "title": "Attachments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatRequest"
+      },
+      "EnvInstallRequest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "EnvInstallRequest"
+      },
+      "EnvUpdateRequest": {
+        "properties": {
+          "updates": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updates"
+        ],
+        "title": "EnvUpdateRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IdeaItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "IdeaItem"
+      },
+      "LocalAgentEnableRequest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "LocalAgentEnableRequest"
+      },
+      "ModelSaveRequest": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "default": "chat"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSaveRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "title": "ModelSaveRequest"
+      },
+      "ModelSaveRow": {
+        "properties": {
+          "slot": {
+            "type": "string",
+            "title": "Slot",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          },
+          "baseUrl": {
+            "type": "string",
+            "title": "Baseurl",
+            "default": ""
+          },
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "default": ""
+          },
+          "key2": {
+            "type": "string",
+            "title": "Key2",
+            "default": ""
+          },
+          "primary": {
+            "type": "boolean",
+            "title": "Primary",
+            "default": false
+          },
+          "protocol": {
+            "type": "string",
+            "title": "Protocol",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ModelSaveRow"
+      },
+      "ModelsFetchRequest": {
+        "properties": {
+          "baseUrl": {
+            "type": "string",
+            "title": "Baseurl",
+            "default": ""
+          },
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "default": ""
+          },
+          "protocol": {
+            "type": "string",
+            "title": "Protocol",
+            "default": "openai"
+          },
+          "slot": {
+            "type": "string",
+            "title": "Slot",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ModelsFetchRequest",
+        "description": "「拉取模型列表」请求。\n\nkey 优先用前端传来的草稿值（供应商还没落盘时也能拉）；留空则按 slot 从已存配置里取\n—— 用户已经存过 Key，不该为了拉一次列表再贴一遍明文。服务端全程不落盘、不写日志。\n\nbaseUrl 允许留空由 slot 回落，否则「只用已存配置拉列表」这条路径就进不来。"
+      },
+      "PersonaFileRequest": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "content"
+        ],
+        "title": "PersonaFileRequest"
+      },
+      "ProfileBuildRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "form": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Form"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "form"
+        ],
+        "title": "ProfileBuildRequest"
+      },
+      "PublishRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": ""
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "default": ""
+          },
+          "media": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Media",
+            "default": []
+          },
+          "tags": {
+            "type": "string",
+            "title": "Tags",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "PublishRequest"
+      },
+      "QuestionAnswerRequest": {
+        "properties": {
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          },
+          "questionId": {
+            "type": "string",
+            "title": "Questionid"
+          },
+          "answers": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Answers"
+          },
+          "resolvedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolvedby"
+          }
+        },
+        "type": "object",
+        "required": [
+          "questionId",
+          "answers"
+        ],
+        "title": "QuestionAnswerRequest"
+      },
+      "QuestionStatusRequest": {
+        "properties": {
+          "questionIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Questionids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "questionIds"
+        ],
+        "title": "QuestionStatusRequest"
+      },
+      "ScheduleItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "default": ""
+          },
+          "time": {
+            "type": "string",
+            "title": "Time",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "idea"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "default": "content"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "default": ""
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "manual"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "default": ""
+          },
+          "end_date": {
+            "type": "string",
+            "title": "End Date",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "date"
+        ],
+        "title": "ScheduleItem"
+      },
+      "SelftestRequest": {
+        "properties": {
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "default": "chat"
+          }
+        },
+        "type": "object",
+        "title": "SelftestRequest"
+      },
+      "SkillRequest": {
+        "properties": {
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "persona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Persona"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "input"
+        ],
+        "title": "SkillRequest"
+      },
+      "SmsCodeRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "SmsCodeRequest"
+      },
+      "StopRequest": {
+        "properties": {
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          }
+        },
+        "type": "object",
+        "title": "StopRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WechatCredentials": {
+        "properties": {
+          "appId": {
+            "type": "string",
+            "title": "Appid",
+            "default": ""
+          },
+          "appSecret": {
+            "type": "string",
+            "title": "Appsecret",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
+          "author": {
+            "type": "string",
+            "title": "Author",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "WechatCredentials"
+      }
+    }
+  }
+}

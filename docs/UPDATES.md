@@ -133,3 +133,7 @@ only to the verified test-process PID; this adds no debugger to the published ap
 `--retain-on-failure` is for diagnosis and deliberately defers cleanup; follow it
 with successful verification or `--restore`. Never leave the test profile occupying
 the user's standard paths after a diagnostic run.
+
+## 0.4.0 启动提醒
+
+主页面和本地服务就绪后约 15 秒自动检查一次；成功手动检查的结果可复用。发现新版显示横幅，点击打开原更新窗口；不自动下载或安装。关闭状态只在本次主进程中保留，下次启动再次检查。断网或已经最新不自动弹窗，设置内仍可查看状态并重试。

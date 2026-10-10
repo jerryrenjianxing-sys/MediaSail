@@ -26,6 +26,7 @@ Checked { & build/runtime/node/npm.cmd ci --prefix build/runtime/node/node_modul
 Remove-Item -LiteralPath build/runtime/node/node_modules/openclaw/npm-shrinkwrap.json
 Checked { & build/runtime/node/node.exe build/runtime/node/node_modules/openclaw/scripts/postinstall-bundled-plugins.mjs }
 Checked { & $Python scripts/prepare.py assets }
+Checked { & $Python scripts/export-agent-api.py }
 Checked { & build/runtime/node/npm.cmd --prefix vendor/easel/web/frontend ci --ignore-scripts --no-audit --no-fund }
 Checked { & build/runtime/node/npm.cmd --prefix vendor/easel/web/frontend run build }
 $env:PLAYWRIGHT_BROWSERS_PATH = "$Root\build\runtime\browsers"

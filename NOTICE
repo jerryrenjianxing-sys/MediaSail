@@ -13,3 +13,5 @@ by Easel, AitoEarn, Electron or the other component authors.
 
 AitoEarn is an external online service. Its website is not redistributed here.
 All bundled third-party components retain their original licenses; see licenses/.
+
+The Connect Agent landing is adapted, at the user's request, from the user's Media Deep Researcher workbench (PlatformHome.tsx, home-loader.ts, skill-home.css). Its source-project license is included in licenses/Media-Deep-Researcher-LICENSE.txt. Agent icon provenance is preserved in frontend/public/assets/agents/NOTICE.md. Product names/logos identify compatible tools and do not imply endorsement.

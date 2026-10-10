@@ -6,6 +6,7 @@ const {syncWorkspace}=require('./workspace.cjs');
 const {freePort,environment,startSupervisor,stopSupervisor,state}=require('./runtime.cjs');
 const {AitoController}=require('./aitoearn/controller.cjs');
 const {Updates}=require('./updates.cjs');
+const {AgentConnection}=require('./agent-connection.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
 const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
 const {migrateUiState}=require('./ui-migration.cjs');
@@ -18,13 +19,14 @@ if(!locked){app.quit();} else {
   let window,tray,supervisor,aito,updates,updatesWindow,starting=false,quitting=false,exitPending=false,ready=false,baseUrl='',options;
   let startup={message:'正在准备本地工作目录…',error:false};
   const data=app.getPath('userData');
+  const agentConnection=new AgentConnection(data);
   const uiState=new UiStateStore(data);
   const resources=app.isPackaged ? process.resourcesPath : path.join(__dirname,'../build');
   const bridgeResources=app.isPackaged?resources:path.join(__dirname,'..');
   const startupUrl=pathToFileURL(path.join(__dirname,'startup.html')).href;
   const show=()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}};
   function report(message,error=false){startup={message,error};fs.mkdirSync(path.join(data,'logs'),{recursive:true});fs.appendFileSync(path.join(data,'logs/desktop.log'),new Date().toISOString()+' '+message+'\n');}
-  async function fail(message){ready=false;aito?.hide();report(message,true);if(window&&!window.isDestroyed())await window.loadURL(startupUrl);}
+  async function fail(message){ready=false;agentConnection.stop();aito?.hide();report(message,true);if(window&&!window.isDestroyed())await window.loadURL(startupUrl);}
   const ownStartup=event=>event.sender===window?.webContents && event.senderFrame?.url===startupUrl;
   ipcMain.handle('startup:status',event=>ownStartup(event)?startup:null);
   ipcMain.handle('startup:retry',event=>{if(ownStartup(event))void start();});
@@ -42,13 +44,14 @@ if(!locked){app.quit();} else {
   async function start(){
     if(starting||quitting)return;starting=true;ready=false;
     try{
-      report('正在准备本地工作目录…');await stopSupervisor(supervisor);supervisor=null;
+      report('正在准备本地工作目录…');agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;
       await uiState.open(()=>migrateUiState({data,resources,bridgeResources,report}));
       const work=await syncWorkspace(path.join(resources,'payload'),data);
       if(!aito)aito=new AitoController({window,data,resources,localOrigin:()=>baseUrl,outputs:path.join(work,'outputs')});
       if(quitting)return;
       const port=await freePort(7860),gatewayPort=await freePort(37289);
       options=environment(resources,data,work,port,gatewayPort);baseUrl=`http://127.0.0.1:${port}`;
+      agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir:path.join(bridgeResources,'agent-skill/mediasail'),executable:app.getPath('exe')});
       report('正在启动 MediaSail 和本地服务…');
       let failure='';
       supervisor=startSupervisor(bridgeResources,options,event=>{if(event.event==='error'){failure=event.message;if(ready&&!quitting)void fail(event.message);}});
@@ -63,7 +66,7 @@ if(!locked){app.quit();} else {
           const [s,g]=await Promise.all([state(baseUrl,options.env.EASEL_DESKTOP_TOKEN),fetch(`http://127.0.0.1:${gatewayPort}/readyz`,{signal:AbortSignal.timeout(2000)})]);
           if(s.ready&&g.ok){
             const api=await fetch(baseUrl+'/api/status',{signal:AbortSignal.timeout(5000)});
-            if(api.ok && (await api.json()).gateway){ready=true;report('MediaSail 已就绪');await window.loadURL(baseUrl);return;}
+            if(api.ok && (await api.json()).gateway){ready=true;agentConnection.write('ready');report('MediaSail 已就绪');await window.loadURL(baseUrl);updates?.scheduleStartupCheck();return;}
           }
         }catch{}
         await new Promise(resolve=>setTimeout(resolve,500));
@@ -89,7 +92,7 @@ if(!locked){app.quit();} else {
     try{
       if(!await confirmStop(true))return false;
       await flushUiState();
-      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
+      quitting=true;agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
     }catch(e){await recoverInstall();throw e;}finally{exitPending=false;}
   }
   async function recoverInstall(){quitting=false;ready=false;aito?.resume();report('更新安装未启动，正在恢复本地服务…');await start();}
@@ -102,7 +105,7 @@ if(!locked){app.quit();} else {
     try{
       if(!await confirmStop())return;
       await flushUiState();
-      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
+      quitting=true;agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
     }catch(e){
       if(quitting){quitting=false;ready=false;aito?.resume();await start();}
       else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('document.body.inert=false').catch(()=>{});
@@ -117,7 +120,7 @@ if(!locked){app.quit();} else {
     window=new BrowserWindow({width:1360,height:900,minWidth:900,minHeight:640,title:'MediaSail',icon:path.join(__dirname,'assets/icon.ico'),backgroundColor:'#faf9f6',autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
     Menu.setApplicationMenu(null);
     window.on('close',event=>{if(!quitting){event.preventDefault();updatesWindow?.hide();window.hide();}});
-    window.on('query-session-end',()=>{quitting=true;void aito?.shutdown();supervisor?.stdin.end('shutdown\n');});
+    window.on('query-session-end',()=>{quitting=true;agentConnection.stop();void aito?.shutdown();supervisor?.stdin.end('shutdown\n');});
     const external=url=>{try{const u=new URL(url);if(['https:','http:'].includes(u.protocol))void shell.openExternal(url);}catch{}};
     window.webContents.setWindowOpenHandler(({url})=>{external(url);return {action:'deny'};});
     window.webContents.on('will-navigate',(event,url)=>{if(url!==startupUrl && (!baseUrl || new URL(url).origin!==baseUrl)){event.preventDefault();external(url);}});
@@ -131,6 +134,5 @@ if(!locked){app.quit();} else {
     tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'assets/icon.png')).resize({width:20,height:20}));
     tray.setToolTip('MediaSail');tray.setContextMenu(Menu.buildFromTemplate([{label:'打开 MediaSail',click:show},{label:'检查更新…',click:()=>{updatesWindow.show();void updates.check();}},{type:'separator'},{label:'退出',click:()=>void exit()}]));tray.on('double-click',show);
     await window.loadURL(startupUrl);void start();
-    const timer=setTimeout(()=>void updates.check(),15000);timer.unref();
   }).catch(e=>{dialog.showErrorBox('MediaSail 启动失败',e.message);quitting=true;app.quit();});
 }

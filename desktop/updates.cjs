@@ -15,6 +15,7 @@ class Updates extends EventEmitter{
     super();Object.assign(this,{updater,enabled,prepareInstall,recoverInstall,log});
     this.state={phase:enabled?'idle':'disabled',current:version,version:'',percent:0,transferred:0,total:0,bytesPerSecond:0,message:enabled?'可以检查是否有新版本。':'开发模式不下载更新，请使用安装版。',checkedAt:null};
     this.operation=null;this.token=null;this.installPending=false;this.stopped=false;
+    this.state.bannerDismissed=false;this.startupScheduled=false;this.startupTimer=null;
     updater.autoDownload=false;updater.autoInstallOnAppQuit=false;updater.autoRunAppAfterInstall=true;
     updater.allowPrerelease=false;updater.allowDowngrade=false;updater.disableWebInstaller=true;
     updater.on('checking-for-update',()=>this.set({phase:'checking',message:'正在连接 GitHub 检查更新…'}));
@@ -25,6 +26,16 @@ class Updates extends EventEmitter{
     updater.on('error',e=>this.error(e));
   }
   snapshot(){return {...this.state};}
+  dismissBanner(){this.set({bannerDismissed:true});return this.snapshot();}
+  scheduleStartupCheck(delay=15000){
+    if(this.startupScheduled||!this.enabled||this.stopped)return;
+    this.startupScheduled=true;
+    this.startupTimer=setTimeout(()=>{
+      this.startupTimer=null;
+      if(!this.state.checkedAt&&!this.stopped)void this.check();
+    },delay);
+    this.startupTimer.unref?.();
+  }
   set(change){if(this.stopped)return;Object.assign(this.state,change);this.emit('state',this.snapshot());}
   error(error){
     if(this.stopped)return;
@@ -62,6 +73,7 @@ class Updates extends EventEmitter{
   }
   busy(){return this.state.phase==='downloading'||this.state.phase==='installing'||this.installPending;}
   async shutdown(){
+    clearTimeout(this.startupTimer);this.startupTimer=null;
     this.stopped=true;this.token?.cancel();
     if(this.operation){let timer;try{await Promise.race([this.operation.catch(()=>{}),new Promise(resolve=>{timer=setTimeout(resolve,3000);})]);}finally{clearTimeout(timer);}}
   }

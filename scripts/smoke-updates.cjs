@@ -4,7 +4,7 @@ const {_electron:electron}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),data=path.join(root,'.test-data/软件 更新 '+Date.now());
 const executable=process.env.EASEL_TEST_EXE||path.resolve(root,'../../outputs/MediaSail/win-unpacked/MediaSail.exe');
-const currentVersion=require('../package.json').version,targetVersion='0.4.0';
+const currentVersion=require('../package.json').version,targetVersion='0.4.1';
 const bytes=crypto.randomBytes(3*1024*1024),hash=crypto.createHash('sha512').update(bytes).digest('base64');
 let offline=true,badHash=false,requests=0,hold=false,releaseDownload;
 const server=http.createServer(async(req,res)=>{
@@ -35,6 +35,7 @@ const server=http.createServer(async(req,res)=>{
   await settings.getByText('＋ 添加供应商', {exact:false}).click();
   const name=settings.getByPlaceholder('名称').last();await name.fill('unsaved-update-fixture');
   await settings.getByRole('button',{name:'软件更新',exact:true}).click();
+  await settings.getByTestId('update-current-version').filter({hasText:currentVersion}).waitFor();
   assert.equal(await settings.getByTestId('update-current-version').innerText(),currentVersion);
   const panelReady=app.waitForEvent('window',{predicate:p=>p!==page,timeout:10000});
   // The settings action starts a check itself; no second click in the child window.

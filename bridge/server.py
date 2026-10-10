@@ -12,6 +12,9 @@ original = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = original
 spec.loader.exec_module(original)
 original.app.title = 'MediaSail'
+if os.environ.get('EASEL_AGENT_CONNECTION_JSON'):
+    from agent_skill import register
+    register(original.app, json.loads(os.environ['EASEL_AGENT_CONNECTION_JSON']))
 
 # Track in-flight operations without changing the upstream publishing workflow.
 class DesktopState:

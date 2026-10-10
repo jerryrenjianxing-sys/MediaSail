@@ -1,0 +1,6 @@
+interface:
+  display_name: "MediaSail"
+  short_description: "结合运营背景与现有工具，自主研究、创作并回存成果"
+  default_prompt: "使用 $mediasail，结合我的画像、分析和素材完成当前任务。"
+policy:
+  allow_implicit_invocation: false

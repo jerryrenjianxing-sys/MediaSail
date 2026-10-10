@@ -11,6 +11,10 @@ class UpdatesWindow{
       if(!this.trusted(event)||event.sender!==this.main.webContents||event.senderFrame.url===this.startupUrl)return false;
       this.show();void updates.check();return true;
     });
+    ipcMain.handle('updates:dismiss-banner',event=>{
+      if(!this.trusted(event)||event.sender!==this.main.webContents||event.senderFrame.url===this.startupUrl)return false;
+      updates.dismissBanner();return true;
+    });
     ipcMain.handle('updates:call',async(event,action)=>{
       if(!this.trusted(event,action!=='status'))return {ok:false,error:'此页面不能操作软件更新。'};
       switch(action){

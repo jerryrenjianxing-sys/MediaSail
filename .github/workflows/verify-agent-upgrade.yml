@@ -1,0 +1,31 @@
+name: Verify MediaSail 0.4 upgrade through GitHub
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download and verify genuine baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory release-input | Out-Null
+          gh release download v0.3.3 --pattern '*Setup.exe' --dir release-input
+          $hash = (Get-FileHash release-input/MediaSail-0.3.3-win-x64-Setup.exe -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne '4d091ffa2fe4989e1a4c665e55b9e413af46f15a151529de1b8e728dd01840fb') { throw 'Baseline checksum mismatch' }
+      - run: node scripts/verify-agent-upgrade-ci.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediasail-0.4.0-real-upgrade
+          path: installer-evidence/
