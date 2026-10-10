@@ -13,8 +13,10 @@ installation identity, account partitions and data root as 0.3.2.
   deleted the records at one origin, and restarted before reading the snapshot.
   Only live app keys were imported; deleted records and unrelated keys were absent.
   The reader handled origins internally and did not connect to their old services.
+  The larger fixture also produced three actual LevelDB table files and passed
+  the same checks after compaction, including deleted-record exclusion.
 - Packaged UI checks forced occupied preferred ports on two consecutive launches.
-  The final run changed from port 55585 to 52776 and retained 125 nonempty chats,
+  The final run changed from port 52238 to 57072 and retained 125 nonempty chats,
   a Chinese draft, the theme changed through the real UI, a finished-content file,
   a custom persona and a persistent non-authentication AitoEarn cookie.
 - The rendered migrated conversation was opened and its screenshot inspected.
@@ -22,6 +24,8 @@ installation identity, account partitions and data root as 0.3.2.
 - TypeScript/Vite build and 1,017 packaged payload hashes passed, including clean
   workspace initialization. New read-only CCL sources have pinned commits,
   SHA-256 records and MIT notices.
+- All three upstream patches applied to a fresh export of the pinned Easel
+  revision; selected modified files and the new storage module matched the build.
 - The existing NSIS long-path rename/uninstall regression passed without changing
   Windows policy or touching a registered MediaSail installation.
 
@@ -48,6 +52,7 @@ overwritten after release.
 
 - `node --test tests/*.test.cjs`
 - `node scripts/test-ui-migration.cjs` (local Electron fixture; bundled Python required)
+- `node scripts/test-ui-migration.cjs --sst` (larger fixture producing database tables)
 - `node scripts/smoke-state.cjs` (packaged build; optional `EASEL_TEST_EXE` for a copy)
 - GitHub Actions: **Verify actual Windows installer** (ephemeral hosted runner only)
 

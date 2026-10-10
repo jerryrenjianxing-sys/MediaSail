@@ -5,7 +5,7 @@ const launch=()=>electron.launch({executablePath:path.join(root,'node_modules/el
  let app=await launch();
  try{
   await app.firstWindow();
-  await app.evaluate(async()=>{
+  await app.evaluate(async(_electron,largeFixture)=>{
    const {BrowserWindow,session}=global.fixture,s=session.defaultSession;
    s.protocol.handle('http',()=>new Response('<!doctype html><title>fixture</title>',{headers:{'content-type':'text/html'}}));
    const w=new BrowserWindow({show:false});
@@ -16,9 +16,20 @@ const launch=()=>electron.launch({executablePath:path.join(root,'node_modules/el
    }
    // A remote origin and a local origin lacking app keys must not be migrated.
    await w.loadURL('http://127.0.0.1:42113/');await w.webContents.executeJavaScript("localStorage.setItem('unrelated','do not import')");
+   if(largeFixture){
+    for(let i=0;i<12;i++){
+     await w.loadURL('http://127.0.0.1:'+(42300+i)+'/');
+     await w.webContents.executeJavaScript("localStorage.setItem('padding','padding'.repeat(400000))");
+     s.flushStorageData();await new Promise(r=>setTimeout(r,150));
+    }
+   }
    s.flushStorageData();w.destroy();
-  });
+  },process.argv.includes('--sst'));
  }finally{await app.close();}
+ if(process.argv.includes('--sst')){
+  const tables=(await fs.readdir(path.join(data,'Local Storage/leveldb'))).filter(n=>n.endsWith('.ldb'));
+  assert.ok(tables.length,'SST tables required');console.log('Actual LevelDB tables: '+tables.length);
+ }
  app=await launch();
  try{
   await app.firstWindow();

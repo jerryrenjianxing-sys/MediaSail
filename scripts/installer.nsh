@@ -61,7 +61,9 @@
     ${If} $mediaSailVisibleUpdate == "1"
       WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "succeeded"
       HideWindow
-      !insertmacro StartApp
+      ; StartApp also expands in installSection.nsh and declares a global variable.
+      ; Use its launch operation here without declaring that variable twice.
+      ${StdUtils.ExecShellAsUser} $0 "$launchLink" "open" "--updated"
       SetErrorLevel 0
       Quit
     ${EndIf}
