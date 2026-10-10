@@ -72,10 +72,33 @@ origin; they do not demonstrate real platform login validity or cross-port recov
 
 ## Release checks
 
-The installer, source snapshot, blockmap and update manifest will be checksum-checked
-before the draft GitHub Release is published. After publication, an isolated 0.3.1
-client will check the unmodified public feed via Settings. Results will be appended
-to this report on the main branch; published version assets will not be overwritten.
+Published on 2026-10-10 (Asia/Shanghai):
+[MediaSail 0.3.2](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.3.2).
+The release tag points to `113776f1d2e270a061931c73b895c90401f1611a`.
+
+- All five uploaded assets matched their local byte counts and GitHub SHA-256
+  digests before publication: installer, source ZIP, blockmap, latest.yml and
+  SHA256SUMS.txt. Every 0.3.0 and 0.3.1 asset retained its size and digest.
+- Installer: 1,785,979,566 bytes; SHA-256
+  `652721fb62f06d122f1d08bc03ac3fc543cb9fbd646b9065bf339869a11fa7b6`.
+  The update manifest's SHA-512 and size also match. NSIS version metadata is
+  0.3.2 and its six embedded icon payloads match the approved ICO master.
+- The source ZIP passed CRC and required-file checks (1,121 entries), excluding
+  private test profiles, Git internals and real .env files.
+- [GitHub CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38031406719)
+  passed for the release commit.
+- An actual packaged 0.3.1 instance used Settings to check the unchanged public
+  GitHub feed and reported current version 0.3.1 / available version 0.3.2.
+  No download or installation was performed. The first harness attempt ran before
+  the update window finished loading; waiting for its page and bridge fixed the
+  harness timing, without changing the app or update transport.
+- All test apps were closed. Tests used only disposable profiles and did not
+  install a formal application or use real platform accounts.
+
+![0.3.1 discovers 0.3.2](images/update-discovery-0.3.2.png)
+
+This final publication evidence was appended on main after release. The immutable
+source snapshot contains the pre-publication report; published assets are unchanged.
 
 To repeat the UI checks, preserve a packaged 0.3.1 baseline under the test directory
 used by `scripts/smoke-branding.cjs`, then run its `seed`, `upgrade`, `ui` and (after

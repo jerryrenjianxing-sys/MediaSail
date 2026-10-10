@@ -78,6 +78,8 @@ async function noOldBrand(page,label){
       await page.locator('.settings-gear').click();const settings=page.getByRole('dialog',{name:'设置',exact:true});
       await settings.getByRole('button',{name:'软件更新',exact:true}).click();
       const [panel]=await Promise.all([app.waitForEvent('window',{predicate:w=>w!==page,timeout:30000}),settings.getByRole('button',{name:'检查更新',exact:true}).click()]);
+      await panel.waitForURL('**/updates.html');
+      await panel.waitForFunction(()=>typeof window.mediaSailUpdate?.call==='function');
       let state;
       for(let attempt=0;attempt<3;attempt++){
         await panel.evaluate(()=>window.mediaSailUpdate.call('check'));
