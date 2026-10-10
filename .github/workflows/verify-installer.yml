@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       preflight_only:
-        description: Check isolated runner capacity and draft access without installing
+        description: Check isolated runner capacity without installing
         type: boolean
         default: false
 permissions:
@@ -14,14 +14,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Check disposable environment and draft access
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Check disposable environment
         shell: pwsh
         run: |
           Get-PSDrive -PSProvider FileSystem | Select-Object Name,Free,Used
           Write-Output "Temporary test root: $env:RUNNER_TEMP"
-          gh release view v0.3.3 --json isDraft,assets --jq '{draft:.isDraft,assets:[.assets[]|{name,state,size}]}'
       - uses: actions/setup-node@v4
         if: ${{ !inputs.preflight_only }}
         with:
@@ -33,12 +30,16 @@ jobs:
         if: ${{ !inputs.preflight_only }}
         env:
           GH_TOKEN: ${{ github.token }}
+          # An expiring URL for this single asset; never an account token.
+          MEDIASAIL_TEST_INSTALLER_URL: ${{ secrets.MEDIASAIL_TEST_INSTALLER_URL }}
         shell: pwsh
         run: |
           New-Item -ItemType Directory release-input | Out-Null
           gh release download v0.3.2 --pattern '*Setup.exe' --dir release-input
-          gh release download v0.3.3 --pattern '*Setup.exe' --pattern SHA256SUMS.txt --dir release-input
-          $expected=((Get-Content release-input/SHA256SUMS.txt | Where-Object { $_ -match 'win-x64-Setup.exe$' }) -split '  ')[0]
+          $download=[uri]$env:MEDIASAIL_TEST_INSTALLER_URL
+          if($download.Scheme -ne 'https' -or $download.Host -ne 'release-assets.githubusercontent.com') { throw 'Expected a GitHub single-asset download URL' }
+          Invoke-WebRequest -Uri $download -OutFile release-input/MediaSail-0.3.3-win-x64-Setup.exe
+          $expected='4d091ffa2fe4989e1a4c665e55b9e413af46f15a151529de1b8e728dd01840fb'
           $actual=(Get-FileHash release-input/MediaSail-0.3.3-win-x64-Setup.exe -Algorithm SHA256).Hash.ToLower()
           if ($expected -ne $actual) { throw 'Draft installer checksum mismatch' }
           $baseline=(Get-FileHash release-input/MediaSail-0.3.2-win-x64-Setup.exe -Algorithm SHA256).Hash.ToLower()
