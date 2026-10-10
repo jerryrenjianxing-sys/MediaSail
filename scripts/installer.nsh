@@ -3,15 +3,83 @@
 ; an extended-length form of its existing, registered application directory.
 !ifndef BUILD_UNINSTALLER
   Var legacyInstallPath
+  Var mediaSailVisibleUpdate
+  !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。完整运行环境需要解压，可能持续数分钟。"
 !endif
 
 !macro customInit
+  StrCpy $mediaSailVisibleUpdate "0"
+  ${If} ${isUpdated}
+  ${AndIf} ${isForceRun}
+    ; Older clients pass /S. The incoming installer owns the visible update flow.
+    StrCpy $mediaSailVisibleUpdate "1"
+    SetSilent normal
+    CreateDirectory "$LOCALAPPDATA\ElectronEasel\logs"
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "started"
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "directory" "$INSTDIR"
+  ${EndIf}
   ; Recover a readable normal path after an interrupted legacy upgrade.
   StrCpy $R7 $INSTDIR 4
   StrCpy $R8 $INSTDIR 2 5
   ${If} $R7 == "\\?\"
   ${AndIf} $R8 == ":\"
     StrCpy $INSTDIR $INSTDIR "" 4
+  ${EndIf}
+!macroend
+
+!macro customInstallMode
+  !ifndef BUILD_UNINSTALLER
+  ${If} $mediaSailVisibleUpdate == "1"
+    StrCpy $isForceCurrentInstall "1"
+  ${EndIf}
+  !endif
+!macroend
+
+!macro customPageAfterChangeDir
+  ; The default visible page sanitizes arbitrary folders, even on update.
+  ; Preserve the exact registered installation path when skipping that page.
+  !ifdef MUI_PAGE_CUSTOMFUNCTION_PRE
+    !undef MUI_PAGE_CUSTOMFUNCTION_PRE
+  !endif
+  Function MediaSailInstFilesPre
+    ${IfNot} ${isUpdated}
+      Call instFilesPre
+    ${EndIf}
+  FunctionEnd
+  Function MediaSailInstFilesShow
+    ${If} $mediaSailVisibleUpdate == "1"
+      WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "installing"
+      !insertmacro MUI_HEADER_TEXT "正在安装 MediaSail" "请稍候，完成后会自动重新打开。"
+    ${EndIf}
+  FunctionEnd
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE MediaSailInstFilesPre
+  !define MUI_PAGE_CUSTOMFUNCTION_SHOW MediaSailInstFilesShow
+!macroend
+
+!macro customFinishPage
+  Function MediaSailFinishPre
+    ${If} $mediaSailVisibleUpdate == "1"
+      WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "succeeded"
+      HideWindow
+      !insertmacro StartApp
+      SetErrorLevel 0
+      Quit
+    ${EndIf}
+  FunctionEnd
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE MediaSailFinishPre
+  !insertmacro MUI_PAGE_FINISH
+!macroend
+
+!macro customInstall
+  ; This runs after extraction/registration and before any successful launch.
+  ${IfNot} ${FileExists} "$INSTDIR\MediaSail.exe"
+  ${OrIfNot} ${FileExists} "$INSTDIR\resources\app.asar"
+  ${OrIfNot} ${FileExists} "$INSTDIR\resources\runtime-lock.json"
+  ${OrIfNot} ${FileExists} "$INSTDIR\resources\runtime\node\node.exe"
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "incomplete-files"
+    MessageBox MB_OK|MB_ICONSTOP "MediaSail 安装文件不完整。请保留安装包，检查磁盘空间后重新安装。" /SD IDOK
+    SetErrorLevel 2
+    Quit
   ${EndIf}
 !macroend
 
@@ -44,6 +112,7 @@
   ${EndIf}
   ${If} $R0 != 0
     MessageBox MB_OK|MB_ICONEXCLAMATION "$(uninstallFailed): $R0" /SD IDOK
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "old-uninstall-failed"
     SetErrorLevel 2
     Quit
   ${EndIf}

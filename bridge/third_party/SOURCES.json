@@ -1,0 +1,13 @@
+{
+  "license": "MIT",
+  "ccl_leveldb.py": {
+    "source": "https://github.com/cclgroupltd/ccl_chromium_reader",
+    "commit": "ef840de30221c4d65bc96d2f4d9057e9ef2f526d",
+    "sha256": "954d8c1008e59c7461d793dd8033644f22992f23f41a89b7309cf08aead994d8"
+  },
+  "ccl_simplesnappy.py": {
+    "source": "https://github.com/cclgroupltd/ccl_simplesnappy",
+    "commit": "3d085230baa8c46cf2090ebba29bf6e8eab31087",
+    "sha256": "74bbf5c1e8ebdaf09ad9bfd98a7a335d57dc4ac648cc9aede59932c40ddc4170"
+  }
+}

@@ -33,6 +33,31 @@ installation update; it does not split or accelerate runtime installation.
 See [the 0.3.2 verification record](VERIFICATION-0.3.2.md), including the observed
 limitation when another service forces the local browser origin to change ports.
 
+Version 0.3.3 fixes that origin limitation by storing desktop UI state in
+`ui-state.json` inside the same user-data directory. The frontend hydrates before
+loading its store modules. Only allowed keys are exposed to the local main frame;
+the remote AitoEarn partition cannot call this bridge. Writes are serialized,
+atomically replaced, acknowledged, and flushed before exit/install. A previous
+valid snapshot is retained. Disk failures show a retry notice instead of silently
+discarding state. The ordinary web frontend keeps browser localStorage.
+
+The first launch preserves a Local Storage snapshot, enumerates candidate loopback
+origins with pinned MIT CCL readers, then uses an isolated Chromium copy to read
+current live values. An HTTP handler supplies blank local documents, without
+contacting any old port. Raw historical/deleted LevelDB values are never imported.
+Conflicting chat copies get independent IDs and lose backend/pending-turn links.
+The desktop 100-session truncation and old destructive reset are disabled.
+Migration failures retain the source and backup, with retry on the startup page.
+Downgrading to an older version will not show chats created in the new file store;
+the old browser store remains available but is not a bidirectional sync target.
+
+The incoming 0.3.3 installer recognizes `--updated --force-run` even alongside
+`/S`, changes to a visible progress page, preserves the registered custom path,
+and relaunches once after successful installation. Other silent-install commands
+and first-install choices are unchanged. Update installer status is retained in
+`logs/installer-VERSION.ini`. This does not split the runtime or promise faster
+installation. See [0.3.3 verification](VERIFICATION-0.3.3.md).
+
 As one size estimate, comparing the 0.2.0 and 0.3.0 NSIS blockmaps found
 1,777,733,201 reusable bytes out of a 1,785,234,218-byte new installer. Changed
 blocks total 7,501,017 bytes (0.42%). This excludes blockmap downloads and HTTP

@@ -7,6 +7,8 @@ const {freePort,environment,startSupervisor,stopSupervisor,state}=require('./run
 const {AitoController}=require('./aitoearn/controller.cjs');
 const {Updates}=require('./updates.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
+const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
+const {migrateUiState}=require('./ui-migration.cjs');
 
 app.setName('MediaSail');
 // Keep the original installation identity and data location across the rebrand.
@@ -16,6 +18,7 @@ if(!locked){app.quit();} else {
   let window,tray,supervisor,aito,updates,updatesWindow,starting=false,quitting=false,exitPending=false,ready=false,baseUrl='',options;
   let startup={message:'正在准备本地工作目录…',error:false};
   const data=app.getPath('userData');
+  const uiState=new UiStateStore(data);
   const resources=app.isPackaged ? process.resourcesPath : path.join(__dirname,'../build');
   const bridgeResources=app.isPackaged?resources:path.join(__dirname,'..');
   const startupUrl=pathToFileURL(path.join(__dirname,'startup.html')).href;
@@ -26,10 +29,21 @@ if(!locked){app.quit();} else {
   ipcMain.handle('startup:status',event=>ownStartup(event)?startup:null);
   ipcMain.handle('startup:retry',event=>{if(ownStartup(event))void start();});
   ipcMain.handle('startup:logs',event=>{if(ownStartup(event))return shell.openPath(path.join(data,'logs'));});
+  ipcMain.handle('ui-state:call',async(event,action,input)=>{
+    if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面无权访问界面数据。'};
+    try{
+      if(action==='load')return {ok:true,data:uiState.snapshot()};
+      if(action==='set')return {ok:true,data:await uiState.change(input?.key,input?.value)};
+      if(action==='remove')return {ok:true,data:await uiState.change(input?.key,null)};
+      if(action==='flush')return {ok:true,data:await uiState.flush()};
+      throw new Error('不支持的界面数据操作。');
+    }catch(e){report('界面数据操作失败：'+e.message);return {ok:false,error:'界面数据未能保存，请重试。'+e.message};}
+  });
   async function start(){
     if(starting||quitting)return;starting=true;ready=false;
     try{
       report('正在准备本地工作目录…');await stopSupervisor(supervisor);supervisor=null;
+      await uiState.open(()=>migrateUiState({data,resources,bridgeResources,report}));
       const work=await syncWorkspace(path.join(resources,'payload'),data);
       if(!aito)aito=new AitoController({window,data,resources,localOrigin:()=>baseUrl,outputs:path.join(work,'outputs')});
       if(quitting)return;
@@ -74,15 +88,25 @@ if(!locked){app.quit();} else {
     if(exitPending||quitting)return false;exitPending=true;
     try{
       if(!await confirmStop(true))return false;
-      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;return true;
+      await flushUiState();
+      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
     }catch(e){await recoverInstall();throw e;}finally{exitPending=false;}
   }
   async function recoverInstall(){quitting=false;ready=false;aito?.resume();report('更新安装未启动，正在恢复本地服务…');await start();}
+  async function flushUiState(){
+    if(ready&&window&&!window.isDestroyed()&&window.webContents.getURL()===baseUrl+'/')await window.webContents.executeJavaScript('window.mediaSailPrepareClose?.()');
+    await uiState.flush();
+  }
   async function exit(){
     if(exitPending||quitting||updates?.installPending)return;exitPending=true;
     try{
       if(!await confirmStop())return;
-      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);await updates?.shutdown();tray?.destroy();app.quit();
+      await flushUiState();
+      quitting=true;await aito?.shutdown();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
+    }catch(e){
+      if(quitting){quitting=false;ready=false;aito?.resume();await start();}
+      else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('document.body.inert=false').catch(()=>{});
+      show();dialog.showErrorBox('MediaSail 尚未退出','数据保存尚未完成，请稍后重试。'+e.message);
     }finally{exitPending=false;}
   }
   app.on('second-instance',show);

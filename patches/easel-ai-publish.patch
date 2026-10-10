@@ -21,10 +21,15 @@ index 20faa14..bfe31d1 100644
    <body>
      <div id="root"></div>
 diff --git a/web/frontend/src/App.tsx b/web/frontend/src/App.tsx
-index fee8255..e7d6802 100644
+index fee8255..e779a01 100644
 --- a/web/frontend/src/App.tsx
 +++ b/web/frontend/src/App.tsx
-@@ -15,6 +15,9 @@ import BreakdownPage from './components/BreakdownPage';
+@@ -1,3 +1,4 @@
++import { appStorage } from './lib/appStorage';
+ import { useState, useEffect, useCallback, useRef } from 'react';
+ import Sidebar from './components/Sidebar';
+ import type { Page } from './components/Sidebar';
+@@ -15,6 +16,9 @@ import BreakdownPage from './components/BreakdownPage';
  import SubNav from './components/SubNav';
  import OnboardingWizard from './components/OnboardingWizard';
  import SettingsPanel from './components/SettingsPanel';
@@ -34,7 +39,25 @@ index fee8255..e7d6802 100644
  import { fetchStatus, fetchPersonas, streamChat, fetchLastTurn, stopChat } from './lib/api';
  import type { PersonaItem, UploadedFile, ChatQuestion } from './lib/api';
  import { questionStatus } from './lib/api';
-@@ -54,6 +57,7 @@ export default function App() {
+@@ -32,13 +36,13 @@ import type { ChatSession, ChatMessage, StreamState } from './lib/store';
+ const ONBOARDING_SEEN_KEY = 'easel_onboarding_seen';
+ 
+ function onboardingSeen(): boolean {
+-  const current = localStorage.getItem(ONBOARDING_SEEN_KEY);
++  const current = appStorage.getItem(ONBOARDING_SEEN_KEY);
+   if (current) return true;
+   const previousKey = `${['post', 'craft'].join('')}_onboarding_seen`;
+-  const previous = localStorage.getItem(previousKey);
++  const previous = appStorage.getItem(previousKey);
+   if (previous) {
+-    localStorage.setItem(ONBOARDING_SEEN_KEY, previous);
+-    localStorage.removeItem(previousKey);
++    appStorage.setItem(ONBOARDING_SEEN_KEY, previous);
++    appStorage.removeItem(previousKey);
+     return true;
+   }
+   return false;
+@@ -54,6 +58,7 @@ export default function App() {
    const [showRecommend, setShowRecommend] = useState(false);
    const [showWizard, setShowWizard] = useState(false);
    const [settingsOpen, setSettingsOpen] = useState(false);
@@ -42,7 +65,25 @@ index fee8255..e7d6802 100644
  
    // 对话里的「产物路径 → 内容库」跳转：linkifyOutputs 把目录路径生成为
    // `#/outputs/<路径>` 锚点，这里监听 hashchange 切页并带上下文，随后清掉 hash
-@@ -732,7 +736,9 @@ export default function App() {
+@@ -640,7 +645,7 @@ export default function App() {
+ 
+   // 首次引导：跳过（用通用模式）
+   const dismissRecommend = useCallback(() => {
+-    localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
++    appStorage.setItem(ONBOARDING_SEEN_KEY, '1');
+     setShowRecommend(false);
+   }, []);
+ 
+@@ -652,7 +657,7 @@ export default function App() {
+ 
+   // 画像创建完成
+   const handleProfileCreated = useCallback((name: string) => {
+-    localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
++    appStorage.setItem(ONBOARDING_SEEN_KEY, '1');
+     setShowWizard(false);
+     fetchPersonas().then((list) => {
+       setPersonas(list);
+@@ -732,7 +737,9 @@ export default function App() {
        case 'skills':
          return <SkillPage persona={selectedPersona} />;
        case 'outputs':
@@ -53,7 +94,7 @@ index fee8255..e7d6802 100644
        case 'accounts':
          return <AccountsPage />;
        case 'profile':
-@@ -797,7 +803,7 @@ export default function App() {
+@@ -797,7 +804,7 @@ export default function App() {
          <div className="overlay">
            <div className="modal" style={{ width: 420, maxWidth: '100%', textAlign: 'center' }}>
              <div style={{ fontSize: 40 }}>👋</div>
@@ -62,7 +103,7 @@ index fee8255..e7d6802 100644
              <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
                配置你的账号画像，生成的内容会更贴合你的风格、受众和平台调性。<br />
                大约 2 分钟，也可以随时在侧栏「+ 新建画像」补配。
-@@ -817,6 +823,7 @@ export default function App() {
+@@ -817,6 +824,7 @@ export default function App() {
  
        {/* 设置（统一入口：模型配置 · 环境安装 · 更多设置） */}
        {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
@@ -147,6 +188,33 @@ index 0f5c8ed..1a6ae7b 100644
            </div>
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
+diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
+index 135c4fc..076d97f 100644
+--- a/web/frontend/src/components/DashboardPage.tsx
++++ b/web/frontend/src/components/DashboardPage.tsx
+@@ -1,3 +1,4 @@
++import { appStorage } from '../lib/appStorage';
+ import { useState, useEffect } from 'react';
+ import {
+   fetchTrends, fetchSchedule, fetchOutputs, fetchAccounts, fetchIdeas,
+@@ -48,7 +49,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+   const [anaPlats, setAnaPlats] = useState<AnalyticsPlatform[]>([]);
+   const [anaSel, setAnaSel] = useState('');
+   const [anaData, setAnaData] = useState<Record<string, AccountAnalytics | 'loading' | 'error'>>(() => {
+-    try { return JSON.parse(localStorage.getItem('easel_analytics') || '{}'); } catch { return {}; }
++    try { return JSON.parse(appStorage.getItem('easel_analytics') || '{}'); } catch { return {}; }
+   });
+   const [anaWin, setAnaWin] = useState<'last' | 'day' | 'week' | 'month' | 'year'>('week');
+   // whoami 自愈：登录态以真实 profile 为准（与账号页共享 localStorage 缓存）
+@@ -84,7 +85,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+     fetchAccountAnalytics(platform)
+       .then((r) => setAnaData((d) => {
+         const next = { ...d, [platform]: r };
+-        try { localStorage.setItem('easel_analytics', JSON.stringify(next)); } catch { /* quota */ }
++        try { appStorage.setItem('easel_analytics', JSON.stringify(next)); } catch { /* quota */ }
+         return next;
+       }))
+       .catch(() => setAnaData((d) => ({ ...d, [platform]: 'error' as const })));
 diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
 new file mode 100644
 index 0000000..2b9081a
@@ -336,10 +404,12 @@ index 0000000..a8beba5
 +  </div>;
 +}
 diff --git a/web/frontend/src/components/SettingsPanel.tsx b/web/frontend/src/components/SettingsPanel.tsx
-index 68eccd3..e6a5087 100644
+index 68eccd3..abde8c1 100644
 --- a/web/frontend/src/components/SettingsPanel.tsx
 +++ b/web/frontend/src/components/SettingsPanel.tsx
-@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
+@@ -1,7 +1,9 @@
++import { appStorage } from '../lib/appStorage';
+ import { useCallback, useEffect, useRef, useState } from 'react';
  import { createPortal } from 'react-dom';
  import type { Dispatch, SetStateAction } from 'react';
  import EnvBoard from './EnvBoard';
@@ -347,7 +417,7 @@ index 68eccd3..e6a5087 100644
  import type { JobView } from './EnvBoard';
  import {
    fetchEnvTools, startEnvInstall, fetchEnvJob,
-@@ -13,7 +14,7 @@ import { IconSlidersHorizontal, IconPackage, IconEllipsis } from './settingsIcon
+@@ -13,7 +15,7 @@ import { IconSlidersHorizontal, IconPackage, IconEllipsis } from './settingsIcon
  
  interface Props { onClose: () => void; }
  
@@ -356,7 +426,25 @@ index 68eccd3..e6a5087 100644
  type Chan = 'chat' | 'transcribe' | 'speech' | 'image' | 'video' | 'music';
  
  const CHANNELS: { id: Chan; label: string }[] = [
-@@ -579,7 +580,7 @@ export default function SettingsPanel({ onClose }: Props) {
+@@ -167,7 +169,7 @@ export default function SettingsPanel({ onClose }: Props) {
+   // localStorage 里按 baseUrl 存的拉取结果（7 天过期），初始化时一次性读入。
+   const [modelCache, setModelCache] = useState<Record<string, { models: string[]; fetchedAt: number }>>(() => {
+     try {
+-      const raw = localStorage.getItem('easel_model_lists');
++      const raw = appStorage.getItem('easel_model_lists');
+       return raw ? JSON.parse(raw) : {};
+     } catch { return {}; }
+   });
+@@ -207,7 +209,7 @@ export default function SettingsPanel({ onClose }: Props) {
+       if (d.models.length) {
+         setModelCache((c) => {
+           const next = { ...c, [cacheKeyFor(r)]: { models: d.models, fetchedAt } };
+-          try { localStorage.setItem('easel_model_lists', JSON.stringify(next)); } catch { /* 忽略 */ }
++          try { appStorage.setItem('easel_model_lists', JSON.stringify(next)); } catch { /* 忽略 */ }
+           return next;
+         });
+       }
+@@ -579,7 +581,7 @@ export default function SettingsPanel({ onClose }: Props) {
          <div className="settings-head">
            <div>
              <h2 className="settings-title">设置</h2>
@@ -365,7 +453,7 @@ index 68eccd3..e6a5087 100644
            </div>
            <div className="settings-actions">
              <button
-@@ -592,7 +593,7 @@ export default function SettingsPanel({ onClose }: Props) {
+@@ -592,7 +594,7 @@ export default function SettingsPanel({ onClose }: Props) {
              <button
                className="btn btn-sm"
                onClick={() => void doSelftest(sec === 'model' ? chan : 'all')}
@@ -374,7 +462,7 @@ index 68eccd3..e6a5087 100644
              >
                {testing ? '自测中…' : '全部自测'}
              </button>
-@@ -608,12 +609,16 @@ export default function SettingsPanel({ onClose }: Props) {
+@@ -608,12 +610,16 @@ export default function SettingsPanel({ onClose }: Props) {
              <button className={`snav${sec === 'env' ? ' active' : ''}`} onClick={() => setSec('env')}>
                <IconPackage size={16} />环境安装<small>{total ? (okCount === total ? '全就绪' : `${okCount}/${total}`) : '…'}</small>
              </button>
@@ -531,6 +619,33 @@ index 0000000..7775078
 +    <div className="foot-note">从 GitHub 获取新版。下载完成后，由你选择重启安装；配置、素材和登录状态会保留。</div>
 +  </section>;
 +}
+diff --git a/web/frontend/src/components/ThemeToggle.tsx b/web/frontend/src/components/ThemeToggle.tsx
+index 19b0cd8..74f6ada 100644
+--- a/web/frontend/src/components/ThemeToggle.tsx
++++ b/web/frontend/src/components/ThemeToggle.tsx
+@@ -1,3 +1,4 @@
++import { appStorage } from '../lib/appStorage';
+ import { useEffect, useState } from 'react';
+ 
+ type Theme = 'light' | 'dark';
+@@ -7,7 +8,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
+ 
+ function readPreference(): Theme | null {
+   try {
+-    const stored = localStorage.getItem(THEME_KEY);
++    const stored = appStorage.getItem(THEME_KEY);
+     return stored === 'light' || stored === 'dark' ? stored : null;
+   } catch {
+     return null;
+@@ -43,7 +44,7 @@ export default function ThemeToggle() {
+   const toggle = () => {
+     const next = dark ? 'light' : 'dark';
+     setPreference(next);
+-    try { localStorage.setItem(THEME_KEY, next); } catch { /* Still switch for this visit. */ }
++    try { appStorage.setItem(THEME_KEY, next); } catch { /* Still switch for this visit. */ }
+   };
+ 
+   return (
 diff --git a/web/frontend/src/lib/aitoearn.ts b/web/frontend/src/lib/aitoearn.ts
 new file mode 100644
 index 0000000..219c2e8
@@ -583,6 +698,59 @@ index 0000000..219c2e8
 +  return { projectPath: project.path, title: project.meta?.title || project.name, body: project.meta?.summary || '', textPath: texts.length === 1 ? texts[0].path : '',
 +    images, video: videos.length === 1 ? videos[0] : '', cover: /\.(png|jpe?g|webp)$/i.test(project.meta?.cover || '') ? project.meta!.cover! : '', mode, files };
 +}
+diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
+new file mode 100644
+index 0000000..bd91a4f
+--- /dev/null
++++ b/web/frontend/src/lib/appStorage.ts
+@@ -0,0 +1,47 @@
++type Snapshot = {values: Record<string, string>; migration: {sessions: number; copies: number}};
++declare global { interface Window { desktopUiState?: {call(action: string, input?: unknown): Promise<Snapshot | boolean>}; mediaSailPrepareClose?: () => Promise<void>; } }
++export const isDesktopStorage = Boolean(window.desktopUiState);
++let values: Record<string, string> = {}, initialized = false;
++const pending = new Set<Promise<unknown>>();
++const dirty = new Map<string, {value: string | null}>();
++function notice(message: string) {
++  let element = document.getElementById('mediasail-storage-notice');
++  if (!element) {
++    element = document.createElement('div'); element.id = 'mediasail-storage-notice'; element.setAttribute('role', 'alert');
++    Object.assign(element.style, {position:'fixed',bottom:'18px',left:'24px',right:'24px',zIndex:'99999',padding:'14px',background:'#fff1ce',color:'#432d00',borderRadius:'12px',boxShadow:'0 4px 24px #0003'});
++    document.body.appendChild(element);
++  }
++  element.replaceChildren(document.createTextNode(message+' '));
++  const button = document.createElement('button'); button.textContent = '重新保存';
++  button.onclick = () => void flushStorage().then(() => element?.remove()).catch(() => notice('保存仍未完成，请检查磁盘空间后重试。'));
++  element.appendChild(button);
++}
++function write(action: string, input: {key: string; value?: string}) {
++  const change = {value:input.value ?? null}; dirty.set(input.key,change);
++  const task = window.desktopUiState!.call(action, input);
++  pending.add(task);
++  void task.then(() => {if (dirty.get(input.key)===change) dirty.delete(input.key);}).catch(() => {notice('界面数据尚未保存到磁盘，请不要退出软件。');}).finally(() => pending.delete(task));
++}
++export async function initializeStorage() {
++  if (!isDesktopStorage) return;
++  const result = await window.desktopUiState!.call('load') as Snapshot;
++  values = Object.assign(Object.create(null), result.values); initialized = true;
++  window.mediaSailPrepareClose = async () => {
++    document.body.inert = true;
++    try {await flushStorage();} catch (e) {document.body.inert = false; throw e;}
++  };
++  const theme = values.easel_theme;
++  if (theme === 'dark' || theme === 'light') {document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme;}
++}
++export async function flushStorage() {
++  if (!isDesktopStorage) return;
++  await Promise.allSettled([...pending]);
++  // Include failed deletions, not just values that remain in memory.
++  for (const [key,change] of dirty) {await window.desktopUiState!.call(change.value===null?'remove':'set',{key,value:change.value});if (dirty.get(key)===change)dirty.delete(key);}
++  await window.desktopUiState!.call('flush');
++}
++export const appStorage = {
++  getItem(key: string): string | null {if (!isDesktopStorage) return localStorage.getItem(key); if (!initialized) throw new Error('界面数据尚未加载。'); return values[key] ?? null;},
++  setItem(key: string, value: string) {if (!isDesktopStorage) return localStorage.setItem(key,value); if (!initialized) throw new Error('界面数据尚未加载。'); values[key]=value; write('set',{key,value});},
++  removeItem(key: string) {if (!isDesktopStorage) return localStorage.removeItem(key); if (!initialized) throw new Error('界面数据尚未加载。'); delete values[key]; write('remove',{key});},
++};
 diff --git a/web/frontend/src/lib/branding.ts b/web/frontend/src/lib/branding.ts
 new file mode 100644
 index 0000000..793c43e
@@ -639,19 +807,151 @@ index f6dac0a..3f048f9 100644
         "status": "done"
        },
        {
+diff --git a/web/frontend/src/lib/store.ts b/web/frontend/src/lib/store.ts
+index c348732..33a2e17 100644
+--- a/web/frontend/src/lib/store.ts
++++ b/web/frontend/src/lib/store.ts
+@@ -1,3 +1,4 @@
++import { appStorage, isDesktopStorage } from './appStorage';
+ import type { UploadedFile, ChatQuestion } from './api';
+ 
+ export interface ChatMessage {
+@@ -42,7 +43,7 @@ const PREVIOUS_BRAND = ['post', 'craft'].join('');
+ 
+ // One-time reset after clearing the server-side OpenClaw session store.
+ const CHAT_RESET_KEY = 'easel_chat_reset_20260902';
+-if (!localStorage.getItem(CHAT_RESET_KEY)) {
++if (!isDesktopStorage && !appStorage.getItem(CHAT_RESET_KEY)) {
+   for (const key of [
+     'easel_sessions',
+     'easel-sessions',
+@@ -50,7 +51,7 @@ if (!localStorage.getItem(CHAT_RESET_KEY)) {
+     `${PREVIOUS_BRAND}_sessions`,
+     `${PREVIOUS_BRAND}_active_session`,
+   ]) {
+-    localStorage.removeItem(key);
++    appStorage.removeItem(key);
+   }
+   for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+     const key = sessionStorage.key(i);
+@@ -58,17 +59,17 @@ if (!localStorage.getItem(CHAT_RESET_KEY)) {
+       sessionStorage.removeItem(key);
+     }
+   }
+-  localStorage.setItem(CHAT_RESET_KEY, '1');
++  appStorage.setItem(CHAT_RESET_KEY, '1');
+ }
+ 
+ function readMigratedLocalValue(key: string, suffix: string): string | null {
+-  const current = localStorage.getItem(key);
++  const current = appStorage.getItem(key);
+   if (current !== null) return current;
+   const previousKey = `${PREVIOUS_BRAND}_${suffix}`;
+-  const previous = localStorage.getItem(previousKey);
++  const previous = appStorage.getItem(previousKey);
+   if (previous !== null) {
+-    localStorage.setItem(key, previous);
+-    localStorage.removeItem(previousKey);
++    appStorage.setItem(key, previous);
++    appStorage.removeItem(previousKey);
+   }
+   return previous;
+ }
+@@ -86,7 +87,7 @@ export function loadPublishDraft(): PublishDraft {
+   }
+ }
+ export function savePublishDraft(d: PublishDraft): void {
+-  try { localStorage.setItem(PUBLISH_KEY, JSON.stringify(d)); } catch { /* quota */ }
++  try { appStorage.setItem(PUBLISH_KEY, JSON.stringify(d)); } catch { /* quota */ }
+ }
+ 
+ const STORAGE_KEY = 'easel_sessions';
+@@ -100,8 +101,8 @@ export function loadActiveId(): string | null {
+ }
+ export function saveActiveId(id: string | null): void {
+   try {
+-    if (id) localStorage.setItem(ACTIVE_KEY, id);
+-    else localStorage.removeItem(ACTIVE_KEY);
++    if (id) appStorage.setItem(ACTIVE_KEY, id);
++    else appStorage.removeItem(ACTIVE_KEY);
+   } catch { /* quota */ }
+ }
+ 
+@@ -146,11 +147,11 @@ function prune(sessions: ChatSession[]): ChatSession[] {
+     keptEmpty = true;
+     return true;
+   });
+-  return pruned.slice(0, MAX_SESSIONS);
++  return isDesktopStorage ? pruned : pruned.slice(0, MAX_SESSIONS);
+ }
+ 
+ export function saveSessions(sessions: ChatSession[]): void {
+-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prune(sessions)));
++  appStorage.setItem(STORAGE_KEY, JSON.stringify(prune(sessions)));
+ }
+ 
+ export function createSession(persona?: string): ChatSession {
+diff --git a/web/frontend/src/lib/whoami.ts b/web/frontend/src/lib/whoami.ts
+index dd53a3c..cbe8941 100644
+--- a/web/frontend/src/lib/whoami.ts
++++ b/web/frontend/src/lib/whoami.ts
+@@ -1,3 +1,4 @@
++import { appStorage } from './appStorage';
+ // whoami 登录态：缓存 + 开页后台自愈校验。账号页与工作台「创作数据」卡片共用，
+ // 避免对同一平台在 TTL 内重复起 headless 浏览器。缓存落 localStorage，条目带 ts。
+ import { accountWhoami, type AccountWhoami } from './api';
+@@ -8,7 +9,7 @@ export const WHOAMI_TTL_MS = 600_000; // 10 分钟，与后端 WHOAMI_TTL 对齐
+ export type WhoamiEntry = AccountWhoami & { ts: number };
+ 
+ export function getWhoamiCache(): Record<string, WhoamiEntry> {
+-  try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
++  try { return JSON.parse(appStorage.getItem(KEY) || '{}'); } catch { return {}; }
+ }
+ 
+ /** 写缓存；r 为 null 则删除该平台条目。附带 ts 供 TTL 判定（旧格式无 ts→视为过期）。 */
+@@ -17,7 +18,7 @@ export function setWhoamiCache(platform: string, r: AccountWhoami | null): void
+     const c = getWhoamiCache();
+     if (r) c[platform] = { ...r, ts: Date.now() };
+     else delete c[platform];
+-    localStorage.setItem(KEY, JSON.stringify(c));
++    appStorage.setItem(KEY, JSON.stringify(c));
+   } catch { /* 配额 / 隐私模式：忽略 */ }
+ }
+ 
 diff --git a/web/frontend/src/main.tsx b/web/frontend/src/main.tsx
-index dd33e5a..75701be 100644
+index dd33e5a..4eea955 100644
 --- a/web/frontend/src/main.tsx
 +++ b/web/frontend/src/main.tsx
-@@ -6,7 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary.tsx'
+@@ -1,13 +1,17 @@
+ import { StrictMode } from 'react'
+ import { createRoot } from 'react-dom/client'
+ import './index.css'
+-import App from './App.tsx'
+ import ErrorBoundary from './components/ErrorBoundary.tsx'
++import {initializeStorage} from './lib/appStorage'
  
  export const BUILD_ID = 'subnav-1';
  // 打到控制台，便于确认浏览器加载的是最新前端（排查缓存旧包）
 -console.log(`%cEasel build: ${BUILD_ID}`, 'color:#8b5cf6;font-weight:bold');
 +console.log(`%cMediaSail build: ${BUILD_ID}`, 'color:#8b5cf6;font-weight:bold');
  
++async function boot() {
++await initializeStorage();
++// App/store modules must run only after migration and storage hydration finish.
++const {default: App} = await import('./App.tsx');
  createRoot(document.getElementById('root')!).render(
    <StrictMode>
+     <ErrorBoundary>
+@@ -15,3 +19,9 @@ createRoot(document.getElementById('root')!).render(
+     </ErrorBoundary>
+   </StrictMode>,
+ )
++}
++void boot().catch(() => {
++  const root=document.getElementById('root')!;
++  root.replaceChildren(document.createTextNode('MediaSail 无法读取界面数据，原有内容已保留。'));
++  const retry=document.createElement('button');retry.textContent='重试';retry.onclick=()=>location.reload();root.appendChild(retry);
++});
 diff --git a/web/frontend/src/styles/aitoearn.css b/web/frontend/src/styles/aitoearn.css
 new file mode 100644
 index 0000000..1c6aa2b

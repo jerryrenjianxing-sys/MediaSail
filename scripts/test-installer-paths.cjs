@@ -8,6 +8,9 @@ fs.mkdirSync(path.dirname(longFile),{recursive:true});fs.writeFileSync(longFile,
 const compiler=process.env.EASEL_TEST_NSIS;if(!compiler)throw new Error('Set EASEL_TEST_NSIS to makensis.exe');
 const nsis=String.raw`Unicode true
 !include "LogicLib.nsh"
+!define isUpdated "0 = 1"
+!define isForceRun "0 = 1"
+!define VERSION "test"
 !define INSTALL_REGISTRY_KEY "Software\ElectronEasel-Disposable-Path-Test"
 !define UNINSTALL_REGISTRY_KEY "Software\ElectronEasel-Disposable-Path-Test"
 !include "${path.join(root,'scripts/installer.nsh')}"

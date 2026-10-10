@@ -1,4 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('desktopUiState',{
+  call:async(action,input)=>{const result=await ipcRenderer.invoke('ui-state:call',action,input);if(!result.ok)throw new Error(result.error);return result.data;}
+});
 contextBridge.exposeInMainWorld('desktopUpdates',{
   open:()=>ipcRenderer.invoke('updates:open'),
   openAndCheck:()=>ipcRenderer.invoke('updates:open-and-check'),

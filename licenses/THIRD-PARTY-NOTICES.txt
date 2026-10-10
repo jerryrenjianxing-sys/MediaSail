@@ -1,4 +1,4 @@
-MediaSail 0.3.2 — third-party notices
+MediaSail 0.3.3 — third-party notices
 
 Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02.
 Original frontend and workflows are retained. A three-line compatibility patch adds
@@ -49,3 +49,8 @@ The Electron app's production dependency tree is bundled in app.asar; each packa
 retains its license files. See desktop-packages.json for versions and terms.
 
 AitoEarn is loaded from its official website and is not redistributed in this package.
+
+CCL read-only LevelDB and Snappy readers: MIT, Copyright CCL Forensics.
+Pinned sources and SHA-256 values: bridge/third_party/SOURCES.json.
+These readers enumerate candidate legacy origins only; Chromium reads live values.
+License: CCL-Readers-MIT.txt.

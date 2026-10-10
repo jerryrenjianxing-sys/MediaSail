@@ -1,4 +1,5 @@
 * text=auto
 *.patch -text whitespace=-blank-at-eol
+bridge/third_party/*.py text eol=lf
 *.png binary
 *.ico binary
