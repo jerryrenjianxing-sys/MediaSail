@@ -123,6 +123,8 @@ async function verifyNew(launched,start){
  assert.deepEqual(forbidden,[],'Standalone creation runtime found');
  result.runtime={files:files.length,playwrightPrivateNode:privateDriver[0],removed:['runtime/node','runtime/ffmpeg','runtime/browsers']};
  result.afterProgram=await directorySize(target);assert.ok(result.afterProgram.bytes<result.beforeProgram.bytes,'New program should be smaller');
+ result.userDataAfter=await directorySize(data);
+ result.startupObservedMs=result.installToReadyMs-result.installToRelaunchMs;
  result.reclaimedProgramBytes=result.beforeProgram.bytes-result.afterProgram.bytes;
  assert.equal(result.visibleInstallObserved,true,'Actual visible installation page was not observed');assert.ok(fss.existsSync(path.join(evidence,'installer-progress.png')),'Progress screenshot missing');
  const stage=await installerStage();assert.match(stage,/succeeded/);
@@ -145,7 +147,7 @@ async function verifyNew(launched,start){
   assert.ok(fss.existsSync(path.join(target,'resources/runtime/node/node.exe')),'Genuine heavy 0.4.3 baseline required');
   app=await electron.launch({executablePath:exe,args:[],env:appEnvironment(),timeout:60000});const page=await app.firstWindow();
   await page.waitForURL('http://127.0.0.1:*/',{timeout:240000});assert.equal(await app.evaluate(({app})=>app.getVersion()),from);
-  await seed(page);result.baselineReadyAt=new Date().toISOString();result.phase='seeded';await persist();
+  await seed(page);result.userDataBefore=await directorySize(data);result.baselineReadyAt=new Date().toISOString();result.phase='seeded';await persist();
   const oldPid=app.process().pid;let start,launched;
   if(mode==='candidate'){
    await app.close();app=null;await until(()=>owned().length===0,30000,'baseline clean shutdown');
