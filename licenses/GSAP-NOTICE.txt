@@ -1,0 +1,10 @@
+GSAP 3.15.0
+https://gsap.com
+
+Copyright 2008-2026, GreenSock. All rights reserved.
+Subject to the terms at https://gsap.com/standard-license
+Author: Jack Doyle, jack@greensock.com
+
+The frontend uses GSAP core and CSSPlugin for the circular homepage theme
+transition. Package version and integrity are pinned in the frontend lockfile.
+The original copyright/license notices are retained in the bundled JavaScript.

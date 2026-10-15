@@ -6,11 +6,11 @@
 模型配置与平台工作流，集成 AitoEarn 中国站的「AI 发布」，支持从 GitHub 更新。
 
 **[下载 Windows 64 位完整安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** ·
-[更新机制](docs/UPDATES.md) · [验证记录](docs/VERIFICATION-0.4.2.md)
+[更新机制](docs/UPDATES.md) · [验证记录](docs/VERIFICATION-0.4.3.md)
 
 ## 使用
 
-安装 `MediaSail-0.4.2-win-x64-Setup.exe`，从桌面或开始菜单打开。
+安装 `MediaSail-0.4.3-win-x64-Setup.exe`，从桌面或开始菜单打开。
 内置 Python、独立 Node.js、OpenClaw、浏览器自动化环境及 FFmpeg，无需用户另装开发工具。
 在设置中配置自己的模型服务，在原版流程中登录平台账号。模型服务、社交平台、
 AitoEarn 和部分按需资源需要联网；模型额度和平台账号不包含在安装包中。
@@ -20,7 +20,11 @@ AitoEarn 和部分按需资源需要联网；模型额度和平台账号不包�
 
 ## 连接 Agent
 
-左侧第一行「连接 Agent」→「复制 Skill」，粘贴给同一台电脑上的 Hermes、Codex 或其他支持本地文件和工具的 Agent。
+0.4.3 起，启动后先显示全宽 Agent 首页，左侧「控制台」进入原有工作台，右侧「复制 Skill」粘贴给同一台电脑上的 Hermes、Codex 或其他支持本地文件和工具的 Agent。
+控制台侧栏「连接 Agent」可返回首页。首页与 MediaFlow、Media Deep Researcher 共用产品布局，
+保留紫色 MediaSail 品牌，并使用圆形扩散的亮暗切换动画；主题沿用已有持久存储。
+首次画像配置提示在进入控制台后显示。
+[首页改版验证与截图](docs/HOME-REDESIGN-2026-10-15.md)。
 MediaSail 提供画像、运营分析、素材、历史内容和工具背景，由 Agent 自主研究、策划、创作、复盘或维护软件。
 Skill 分为简短入口和按需查阅的资料，不规定固定创作流程，也不自动修改外部 Agent 的全局配置。
 

@@ -22,6 +22,7 @@ async function launch(feed){
   session.fromPartition('persist:aitoearn-cn').protocol.handle('https',()=>new Response('<html><body>AitoEarn layout fixture (no account)</body></html>',{headers:{'content-type':'text/html'}}));
  },{feed,data});
  const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:240000});
+ await page.getByRole('button',{name:'控制台',exact:true}).click();
  await page.locator('.sidebar-status').filter({hasText:'网关已连接'}).waitFor({timeout:240000});
  const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();
  return page;
@@ -63,6 +64,7 @@ async function helper(info,args,expected=0){
   await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});await page.screenshot({path:path.join(evidence,'agent-dark.png'),animations:'disabled'});
   const panelEvent=app.waitForEvent('window',{predicate:p=>p!==page});await page.getByRole('button',{name:'查看更新',exact:true}).click();const panel=await panelEvent;await panel.locator('#headline').waitFor();assert.ok((await panel.locator('#headline').innerText()).includes(futureVersion));
   await panel.close();
+  await page.getByRole('button',{name:'控制台',exact:true}).click();
   await page.getByRole('button',{name:'内容库',exact:true}).click();await page.getByText('外部 Agent 成品',{exact:true}).first().waitFor();
   await page.getByRole('button',{name:'AI 发布',exact:true}).click();await page.getByTestId('aito-viewport').waitFor();await wait(500);
   let before=await page.getByTestId('aito-viewport').boundingBox();
@@ -70,7 +72,7 @@ async function helper(info,args,expected=0){
   let after=await page.getByTestId('aito-viewport').boundingBox();assert.ok(after.y<before.y);
   const view=await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));return w.contentView.children.find(v=>v.webContents&&v.webContents!==w.webContents)?.getBounds();});
   assert.ok(view&&Math.abs(view.y-after.y)<=1,'Embedded AitoEarn view follows banner layout');
-  await page.getByRole('button',{name:'连接 Agent',exact:true}).click();await page.reload();await page.getByRole('button',{name:'连接 Agent',exact:true}).click();assert.equal(await page.locator('.desktop-update-banner').count(),0);
+  await page.getByRole('button',{name:'连接 Agent',exact:true}).click();await page.reload();await page.locator('.skill-home').waitFor();assert.equal(await page.locator('.desktop-update-banner').count(),0);
   await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));w.close();});
   assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:')).isVisible()),false);
   await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));w.show();});assert.equal(await page.locator('.desktop-update-banner').count(),0);

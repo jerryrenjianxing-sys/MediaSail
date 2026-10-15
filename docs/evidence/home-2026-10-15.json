@@ -1,0 +1,153 @@
+{
+  "passed": true,
+  "version": "0.4.2",
+  "at": "2026-10-15T05:00:31.598Z",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\home-preview-2026-10-15\\win-unpacked\\MediaSail.exe",
+  "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\首页 中文 空格 0.4.2 1792040353438",
+  "checks": [
+    "fresh full-width Agent-first home",
+    "no first-use overlay on home",
+    "two console buttons and copy entry",
+    "console keeps original sidebar and first-use recommendation",
+    "footer console entry",
+    "console returns to standalone home",
+    "chat history preserved across home/console changes",
+    "synthetic slow SSE completes and persists while homepage is shown; no model request",
+    "actual clipboard copy with all original formats restored",
+    "manual dialog identical selected content",
+    "service failure feedback and retry",
+    "real circular theme wipe captured",
+    "theme persisted to existing desktop storage and reload",
+    "rapid toggles",
+    "navigation during animation",
+    "reduced-motion immediate switch",
+    "marquee pause/resume and duplicated accessible groups",
+    "reduced-motion static logos",
+    "1100x700 content size",
+    "125/150 percent Electron page zoom (not system DPI)",
+    "home and console share banner/update window",
+    "dismiss survives page switch/reload/tray restore",
+    "no automatic installer download",
+    "unconfigured theme follows changing system preference",
+    "explicit theme overrides system and survives process restart",
+    "dismiss resets next application run"
+  ],
+  "phases": [
+    {
+      "name": "Launch fresh packaged application",
+      "at": "2026-10-15T04:59:13.442Z"
+    },
+    {
+      "name": "Existing console and onboarding",
+      "at": "2026-10-15T04:59:28.550Z"
+    },
+    {
+      "name": "Chat state and fixture stream survive homepage navigation",
+      "at": "2026-10-15T04:59:29.193Z"
+    },
+    {
+      "name": "Copy Skill, manual fallback and retry",
+      "at": "2026-10-15T04:59:33.601Z"
+    },
+    {
+      "name": "Animated theme and persistence",
+      "at": "2026-10-15T04:59:39.684Z"
+    },
+    {
+      "name": "Agent marquee and responsive page zoom",
+      "at": "2026-10-15T04:59:49.611Z"
+    },
+    {
+      "name": "Startup update banner shared by home and console",
+      "at": "2026-10-15T04:59:55.186Z"
+    },
+    {
+      "name": "System preference and explicit preference precedence",
+      "at": "2026-10-15T04:59:56.035Z"
+    },
+    {
+      "name": "Restart retains selected theme and checks once again",
+      "at": "2026-10-15T05:00:00.681Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "home-light.png",
+      "width": 1441,
+      "height": 901,
+      "devicePixelRatio": 2,
+      "scrollWidth": 1441,
+      "clientWidth": 1441
+    },
+    {
+      "file": "home-dark.png",
+      "width": 1441,
+      "height": 901,
+      "devicePixelRatio": 2,
+      "scrollWidth": 1441,
+      "clientWidth": 1441
+    },
+    {
+      "file": "home-small-light.png",
+      "width": 1101,
+      "height": 701,
+      "devicePixelRatio": 2,
+      "scrollWidth": 1101,
+      "clientWidth": 1101
+    },
+    {
+      "file": "home-small-dark.png",
+      "width": 1101,
+      "height": 701,
+      "devicePixelRatio": 2,
+      "scrollWidth": 1101,
+      "clientWidth": 1101
+    },
+    {
+      "file": "home-page-zoom-125-dark.png",
+      "width": 1153,
+      "height": 721,
+      "devicePixelRatio": 2.5,
+      "scrollWidth": 1153,
+      "clientWidth": 1153
+    },
+    {
+      "file": "home-page-zoom-125-light.png",
+      "width": 1153,
+      "height": 721,
+      "devicePixelRatio": 2.5,
+      "scrollWidth": 1153,
+      "clientWidth": 1153
+    },
+    {
+      "file": "home-page-zoom-150-dark.png",
+      "width": 960,
+      "height": 600,
+      "devicePixelRatio": 3,
+      "scrollWidth": 960,
+      "clientWidth": 960
+    },
+    {
+      "file": "home-page-zoom-150-light.png",
+      "width": 960,
+      "height": 600,
+      "devicePixelRatio": 3,
+      "scrollWidth": 960,
+      "clientWidth": 960
+    },
+    {
+      "file": "home-update-banner.png",
+      "width": 1441,
+      "height": 901,
+      "devicePixelRatio": 2,
+      "scrollWidth": 1441,
+      "clientWidth": 1441
+    }
+  ],
+  "metadataRequests": 2,
+  "installerRequests": 0,
+  "pageErrors": [],
+  "fixtureUpdateVersion": "0.4.3",
+  "scaleMethod": "Electron webContents.setZoomFactor(1.25/1.5), not Windows system DPI",
+  "videoMethod": "Playwright Electron recordVideo captures real rendered frames to WebM; bundled FFmpeg transcodes to MP4 without replacement graphics"
+}
