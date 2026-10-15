@@ -10,6 +10,8 @@ const {AgentConnection}=require('./agent-connection.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
 const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
 const {migrateUiState}=require('./ui-migration.cjs');
+const {archiveHistory}=require('./history-archive.cjs');
+const {cleanupLegacyUpdates}=require('./update-cache.cjs');
 
 app.setName('MediaSail');
 // Keep the original installation identity and data location across the rebrand.
@@ -31,12 +33,15 @@ if(!locked){app.quit();} else {
   ipcMain.handle('startup:status',event=>ownStartup(event)?startup:null);
   ipcMain.handle('startup:retry',event=>{if(ownStartup(event))void start();});
   ipcMain.handle('startup:logs',event=>{if(ownStartup(event))return shell.openPath(path.join(data,'logs'));});
+  ipcMain.handle('data:archive',async event=>{
+    if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面不能打开历史存档。'};
+    try{const directory=await archiveHistory(data,uiState.snapshot());const error=await shell.openPath(directory);if(error)throw Error(error);return {ok:true};}catch(e){report('历史存档未能打开：'+e.message);return {ok:false,error:e.message};}
+  });
   ipcMain.handle('ui-state:call',async(event,action,input)=>{
     if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面无权访问界面数据。'};
     try{
       if(action==='load')return {ok:true,data:uiState.snapshot()};
-      if(action==='set')return {ok:true,data:await uiState.change(input?.key,input?.value)};
-      if(action==='remove')return {ok:true,data:await uiState.change(input?.key,null)};
+      if(action==='set'||action==='remove'){const result=await uiState.change(input?.key,action==='remove'?null:input?.value);if(input?.key==='mediasail_selected_profile')agentConnection.selectProfile(action==='remove'?null:input?.value);return {ok:true,data:result};}
       if(action==='flush')return {ok:true,data:await uiState.flush()};
       throw new Error('不支持的界面数据操作。');
     }catch(e){report('界面数据操作失败：'+e.message);return {ok:false,error:'界面数据未能保存，请重试。'+e.message};}
@@ -46,12 +51,13 @@ if(!locked){app.quit();} else {
     try{
       report('正在准备本地工作目录…');agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;
       await uiState.open(()=>migrateUiState({data,resources,bridgeResources,report}));
+      await archiveHistory(data,uiState.snapshot());
       const work=await syncWorkspace(path.join(resources,'payload'),data);
       if(!aito)aito=new AitoController({window,data,resources,localOrigin:()=>baseUrl,outputs:path.join(work,'outputs')});
       if(quitting)return;
-      const port=await freePort(7860),gatewayPort=await freePort(37289);
-      options=environment(resources,data,work,port,gatewayPort);baseUrl=`http://127.0.0.1:${port}`;
-      agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir:path.join(bridgeResources,'agent-skill/mediasail'),executable:app.getPath('exe')});
+      const port=await freePort(7860);
+      options=environment(resources,data,work,port);baseUrl=`http://127.0.0.1:${port}`;
+      agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir:path.join(bridgeResources,'agent-skill/mediasail'),executable:app.getPath('exe'),selectedProfile:uiState.snapshot().values.mediasail_selected_profile||null});
       report('正在启动 MediaSail 和本地服务…');
       let failure='';
       supervisor=startSupervisor(bridgeResources,options,event=>{if(event.event==='error'){failure=event.message;if(ready&&!quitting)void fail(event.message);}});
@@ -63,10 +69,10 @@ if(!locked){app.quit();} else {
         if(failure)throw new Error(failure);
         if(current.exitCode!==null)throw new Error('本地服务启动失败，请查看日志后重试。');
         try{
-          const [s,g]=await Promise.all([state(baseUrl,options.env.EASEL_DESKTOP_TOKEN),fetch(`http://127.0.0.1:${gatewayPort}/readyz`,{signal:AbortSignal.timeout(2000)})]);
-          if(s.ready&&g.ok){
+          const s=await state(baseUrl,options.env.EASEL_DESKTOP_TOKEN);
+          if(s.ready){
             const api=await fetch(baseUrl+'/api/status',{signal:AbortSignal.timeout(5000)});
-            if(api.ok && (await api.json()).gateway){ready=true;agentConnection.write('ready');report('MediaSail 已就绪');await window.loadURL(baseUrl);updates?.scheduleStartupCheck();return;}
+            if(api.ok && (await api.json()).serviceReady){ready=true;agentConnection.write('ready');report('MediaSail 已就绪');await window.loadURL(baseUrl);updates?.scheduleStartupCheck();if(app.isPackaged)void cleanupLegacyUpdates({updater:updates.updater,current:app.getVersion(),report});return;}
           }
         }catch{}
         await new Promise(resolve=>setTimeout(resolve,500));

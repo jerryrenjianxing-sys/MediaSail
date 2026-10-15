@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -9,9 +10,13 @@ import urllib.request
 from urllib.parse import urlsplit
 
 def check(info):
-    found = {k: Path(info[k]).exists() for k in ("workspace", "skillDir", "python", "node", "profiles", "outputs", "tools")}
+    core = ("workspace", "skillDir", "python", "profiles", "outputs", "tools")
+    found = {k: bool(info.get(k)) and Path(info[k]).exists() for k in core}
     result = {"product": "MediaSail", "version": info["version"], "connected": False,
-              "paths": {k: info[k] for k in found}, "found": found, "baseUrl": info.get("baseUrl")}
+              "paths": {k: info.get(k) for k in found}, "found": found, "baseUrl": info.get("baseUrl"),
+              "selectedProfile": info.get("selectedProfile"),
+              "localToolsReady": all(found.values()),
+              "optional": {"node": shutil.which("node"), "ffmpeg": shutil.which("ffmpeg")}}
     try:
         url = info.get("baseUrl") or ""
         parts = urlsplit(url)
@@ -23,15 +28,17 @@ def check(info):
         if live.get("product") != "MediaSail" or live.get("instanceId") != info["instanceId"]:
             raise ValueError("服务身份已变化，请重新读取连接资料")
         result["connected"] = True
+        result["selectedProfile"] = live.get("selectedProfile", info.get("selectedProfile"))
         with opener.open(url + "/api/status", timeout=6) as response:
-            result["gateway"] = bool(json.load(response).get("gateway"))
+            status = json.load(response)
+            result["serviceReady"] = bool(status.get("serviceReady", True))
     except Exception as exc:
         result["error"] = str(exc)
-    result["ok"] = result["connected"] and all(found.values())
+    result["ok"] = result["connected"] and result["localToolsReady"] and result.get("serviceReady", False)
     return result
 
 def main():
-    parser = argparse.ArgumentParser(description="MediaSail local tools: check | python <args> | node <args>")
+    parser = argparse.ArgumentParser(description="MediaSail: check | python <args> | node <args> (optional system Node)")
     parser.add_argument("--connection", required=True)
     parser.add_argument("command", choices=("check", "python", "node"), nargs="?", default="check")
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
@@ -44,14 +51,17 @@ def main():
         print(json.dumps(result, ensure_ascii=False))
         return 0 if result["ok"] else 1
     # Only filesystem/runtime variables are exported by the desktop application.
-    if info.get("baseUrl"):
-        live = check(info)
-        if not live["connected"]:
-            raise ValueError(live.get("error", "MediaSail connection is stale"))
     env = os.environ.copy()
-    env.update(info["environment"])
+    env.update(info.get("environment") or {})
     env["EASEL_ROOT"] = info["workspace"]
-    return subprocess.call([info[args.command], *args.arguments], cwd=info["workspace"], env=env)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    # Local business calculations remain usable while the desktop service is stopped.
+    # Only HTTP operations need a live identity check. Node is an optional agent tool.
+    executable = info.get("python") if args.command == "python" else shutil.which("node")
+    if not executable:
+        raise ValueError("当前环境未找到可选 Node.js；MediaSail 业务 Python 不依赖 Node.js")
+    return subprocess.call([executable, *args.arguments], cwd=info["workspace"], env=env)
 
 if __name__ == "__main__":
     try:

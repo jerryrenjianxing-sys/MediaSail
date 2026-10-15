@@ -1,0 +1,32 @@
+{
+  "source": "assets/原始数据.json",
+  "sourceSha256": "04477A21ABFCEA97175F6175693800EE0F7E54FB3D77024AB8BEB0E8082DE308",
+  "month": "2026-09",
+  "profile": "独立验收",
+  "independentArithmetic": {
+    "postCount": 3,
+    "reach": 4000.0,
+    "likes": 170.0,
+    "comments": 32.0,
+    "saves": 153.0,
+    "shares": 20.0,
+    "interactions": 375.0,
+    "perPostErPct": [
+      18.0,
+      9.0,
+      1.5
+    ],
+    "meanPerPostErPct": 9.5,
+    "aggregateErPct": 9.375,
+    "aggregateSaveRatePct": 3.825
+  },
+  "checks": {
+    "businessReachMatches": true,
+    "businessInteractionsMatch": true,
+    "businessAverageErMatches": true,
+    "deliverableExists": true,
+    "libraryDeliverablePathMatches": true,
+    "memoryPutAndReadbackMatches": true
+  },
+  "scope": "隔离测试；未调用登录/采集/发布接口；未发送外部消息；未修改程序源码或全局配置；软件保持运行"
+}

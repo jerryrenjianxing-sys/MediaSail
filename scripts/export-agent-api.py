@@ -9,7 +9,23 @@ spec = importlib.util.spec_from_file_location("mediasail_schema", source)
 module = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = module
 spec.loader.exec_module(module)
+bridge_spec = importlib.util.spec_from_file_location("mediasail_skill_schema", root / "bridge/agent_skill.py")
+bridge_module = importlib.util.module_from_spec(bridge_spec)
+bridge_spec.loader.exec_module(bridge_module)
+bridge_module.register(module.app, {"product":"MediaSail", "schema":1,
+    "version":json.loads((root / "package.json").read_text())["version"],
+    "instanceId":"schema-example", "skillDir":str(root / "agent-skill/mediasail"),
+    "baseUrl":"http://127.0.0.1:0", "dataDir":"<dataDir>",
+    "connectionFile":"<dataDir>/agent-connection.json", "selectedProfile":None})
+# Registration must precede OpenAPI caching so distribution and identity routes
+# are exported together with the actual business backend.
+module.app.openapi_schema = None
 schema = module.app.openapi()
+required = {"/api/agent-info", "/api/platform-skill", "/api/v1/skill", "/api/status", "/api/outputs", "/api/personas"}
+if not required.issubset(schema["paths"]):
+    raise RuntimeError("Missing actual business/connection routes: " + repr(required - schema["paths"].keys()))
+if any(p.startswith("/api/chat") or p == "/api/skill" or p.startswith("/api/settings/models") for p in schema["paths"]):
+    raise RuntimeError("Retired model executor leaked into the active API schema")
 schema["info"]["title"] = "MediaSail local API"
 schema["info"]["version"] = json.loads((root / "package.json").read_text())["version"]
 destination = root / "agent-skill/mediasail/references/api-schema.json"

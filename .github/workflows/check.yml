@@ -16,8 +16,28 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - uses: astral-sh/setup-uv@v6
+      - name: Prepare pinned upstream test fixture
+        shell: pwsh
+        run: |
+          $pin=(Get-Content runtime-lock.json -Raw | ConvertFrom-Json).easel
+          git init vendor/easel
+          git -C vendor/easel config core.autocrlf false
+          git -C vendor/easel remote add origin https://github.com/ZJU-REAL/Easel.git
+          git -C vendor/easel fetch --depth 1 origin $pin
+          git -C vendor/easel checkout --detach FETCH_HEAD
+          foreach($patch in Get-ChildItem patches -Filter '*.patch') {
+            git -C vendor/easel apply $patch.FullName
+            if($LASTEXITCODE -ne 0){throw 'Pinned patch failed'}
+          }
       - shell: pwsh
         run: |
-          uv python install 3.11.15 --install-dir build/runtime/python --no-bin --no-registry
-          & build/runtime/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/launchers.py
+          uv python install 3.11.15 --install-dir build/runtime-business/python --no-bin --no-registry
+          uv pip sync --python build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe --break-system-packages --require-hashes requirements-business.lock
+          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/launchers.py
       - run: npm test
+      - shell: pwsh
+        run: |
+          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 tests/test_lite_backend.py
+          if($LASTEXITCODE -ne 0){throw 'Backend checks failed'}
+          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 tests/test_skill_helper.py
+          if($LASTEXITCODE -ne 0){throw 'Skill checks failed'}

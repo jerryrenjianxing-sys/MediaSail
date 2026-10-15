@@ -1,7 +1,7 @@
 {
   "name": "mediasail",
-  "version": "0.4.3",
-  "description": "MediaSail: desktop workspace for social media creation and AI publishing",
+  "version": "0.5.0",
+  "description": "MediaSail: profiles, operating analytics and content workspace for your Agent",
   "author": "MediaSail contributors",
   "license": "Apache-2.0",
   "private": true,
@@ -11,7 +11,7 @@
     "test": "node --test tests/*.test.cjs",
     "stage": "node scripts/stage.cjs",
     "pack": "npm run stage && electron-builder --win dir --x64 --publish never && node scripts/verify-payload.cjs",
-    "dist": "npm run pack && node scripts/prepare-installer.cjs && electron-builder --win nsis --x64 --publish never --prepackaged ../../outputs/MediaSail/win-unpacked"
+    "dist": "npm run pack && node scripts/prepare-installer.cjs && node scripts/build-installer.cjs"
   },
   "devDependencies": {
     "electron": "44.7.0",
@@ -25,7 +25,7 @@
     "asar": true,
     "electronDist": "node_modules/electron/dist",
     "directories": {
-      "output": "../../outputs/MediaSail",
+      "output": "../../outputs/MediaSail/release-0.5.0",
       "buildResources": "desktop/assets"
     },
     "files": [
@@ -38,10 +38,11 @@
         "to": "payload"
       },
       {
-        "from": "build/runtime",
+        "from": "build/runtime-business",
         "to": "runtime",
         "filter": [
-          "**/*",
+          "python/cpython-3.11.15-windows-x86_64-none/**/*",
+          "launchers/**/*",
           "!**/__pycache__/**",
           "!**/*.pyc"
         ]
@@ -100,7 +101,8 @@
     ]
   },
   "dependencies": {
-    "electron-updater": "6.8.9"
+    "electron-updater": "6.8.9",
+    "semver": "7.8.5"
   },
   "repository": {
     "type": "git",

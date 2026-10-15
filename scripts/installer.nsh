@@ -5,7 +5,7 @@
   !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-legacy-temp.nsh"
   Var legacyInstallPath
   Var mediaSailVisibleUpdate
-  !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。完整运行环境需要解压，可能持续数分钟。"
+  !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。正在替换旧程序，用户数据将保留。"
 !endif
 
 !macro customInit
@@ -78,7 +78,7 @@
   ${IfNot} ${FileExists} "$INSTDIR\MediaSail.exe"
   ${OrIfNot} ${FileExists} "$INSTDIR\resources\app.asar"
   ${OrIfNot} ${FileExists} "$INSTDIR\resources\runtime-lock.json"
-  ${OrIfNot} ${FileExists} "$INSTDIR\resources\runtime\node\node.exe"
+  ${OrIfNot} ${FileExists} "$INSTDIR\resources\runtime\python\cpython-3.11.15-windows-x86_64-none\python.exe"
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "incomplete-files"
     MessageBox MB_OK|MB_ICONSTOP "MediaSail 安装文件不完整。请保留安装包，检查磁盘空间后重新安装。" /SD IDOK
     SetErrorLevel 2

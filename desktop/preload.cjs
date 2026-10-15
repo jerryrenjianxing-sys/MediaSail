@@ -1,4 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('desktopData',{
+  openArchive:async()=>{const r=await ipcRenderer.invoke('data:archive');if(!r?.ok)throw new Error(r?.error||'无法打开历史存档。');}
+});
 contextBridge.exposeInMainWorld('desktopUiState',{
   call:async(action,input)=>{const result=await ipcRenderer.invoke('ui-state:call',action,input);if(!result.ok)throw new Error(result.error);return result.data;}
 });

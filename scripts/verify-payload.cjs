@@ -2,7 +2,7 @@ const fs=require('node:fs/promises'),path=require('node:path');
 const {safe,digest,syncWorkspace}=require('../desktop/workspace.cjs');
 (async()=>{
  const root=path.resolve(__dirname,'..');
- const payload=path.resolve(process.argv[2]||path.join(root,'../../outputs/MediaSail/win-unpacked/resources/payload'));
+ const payload=path.resolve(process.argv[2]||path.join(root,require('../package.json').build.directories.output,'win-unpacked/resources/payload'));
  const update=require('js-yaml').load(await fs.readFile(path.join(payload,'../app-update.yml'),'utf8'));
  if(update.provider!=='github'||update.owner!=='jerryrenjianxing-sys'||update.repo!=='MediaSail'||!update.updaterCacheDirName)throw new Error('Missing/invalid packaged updater configuration');
  const manifest=JSON.parse(await fs.readFile(path.join(payload,'manifest.json'),'utf8'));

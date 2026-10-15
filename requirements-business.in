@@ -1,0 +1,16 @@
+# MediaSail local service and account/analytics/publishing capabilities.
+# No generic media generation, transcription, segmentation or video frameworks.
+fastapi
+uvicorn
+pydantic
+python-multipart
+sse-starlette
+httpx
+requests
+PyYAML
+playwright
+segno
+biliup
+jieba
+snownlp
+markdown

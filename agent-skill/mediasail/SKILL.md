@@ -11,7 +11,7 @@ MediaSail 是用户的运营背景和经验中心。画像、受众、内容风�
 
 ## 接入
 
-复制说明中的 `agent-connection.json` 记录当前数据目录、服务地址、工具、内置 Python/Node 和本地 Skill 的位置。默认位于 `%LOCALAPPDATA%\ElectronEasel\agent-connection.json`；有自定义目录时以复制说明为准。
+复制说明中的 `agent-connection.json` 记录当前数据目录、服务地址、业务工具、内置 Python 和本地 Skill 的位置。默认位于 `%LOCALAPPDATA%\ElectronEasel\agent-connection.json`；有自定义目录时以复制说明为准。`selectedProfile` 是软件当前选择的运营画像提示，用户任务明确指定的对象优先，不代表其他 Agent 正在执行的任务。
 
 用辅助脚本快速了解实际状态：
 
@@ -19,15 +19,16 @@ MediaSail 是用户的运营背景和经验中心。画像、受众、内容风�
 & "<Skill目录>\scripts\mediasail.ps1" check --data-dir "<数据目录>"
 ```
 
-脚本每次重读连接文件并核对服务身份。端口会变化，不长期记住复制说明里的 URL。软件关闭时仍能查看本地资料；需要 HTTP 接口时再启动软件。内置运行环境无需另装 Python 或 Node。
+脚本每次重读连接文件并核对服务身份。端口会变化，不长期记住复制说明里的 URL。软件关闭时仍能查看本地资料和运行确定性的本地业务计算；需要 HTTP 接口时再启动软件。软件提供业务 Python，不需要 OpenClaw 或网关；通用创作工具由你按任务选择、检测和准备，不承诺内置 Node、FFmpeg、浏览器、图像或语音模型。
 
 初次接入，简单说明软件能否连接、工具资料是否找到，然后主要向用户介绍你能结合这些背景做什么；已经给了任务就继续任务。这是自然的开场建议，不是每轮触发的仪式。没有实际检查就不要声称连接成功。
 
 ## 按需查资料
 
 - 想理解用户、分析表现或积累经验：[画像与分析](references/context.md)。
+- 想查运营方法、镜头结构、平台经验及保留的业务计算：[专业方法索引](references/knowledge.md)。完整方法在工作目录 `skills/KNOWLEDGE.md`，不是固定产线。
 - 想找现成工具、调用接口、登录或发布：[工具与接口](references/tools-api.md)。完整的接口参数另见随包的 [接口结构](references/api-schema.json)。
 - 想导入素材、登记成品、让内容库显示成果：[素材与成品](references/outputs.md)。
 - 想找安装目录、修改源码、调整配置、构建或排查问题：[源码与维护](references/development.md)。
 
-这些资料说明工具在哪里、怎么使用及实际效果。浏览器登录、模型服务和各平台自身的支持范围仍以正在运行的软件为准。
+这些资料说明工具在哪里、怎么使用及实际效果。软件负责业务数据、画像、分析资料、账号、内容库与发布适配；研究、语义分析、画像增强和创作由外部 Agent 完成。浏览器登录与各平台自身的支持范围以实际运行的软件为准。

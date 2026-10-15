@@ -1,5 +1,14 @@
 # Updates and releases
 
+Version 0.5.0 keeps the same public channel and installation identity. It replaces
+the old program through its registered uninstaller before installing the smaller
+business runtime. A failed uninstall stops the upgrade; there is no broad folder
+deletion fallback. User data and platform sessions stay in their existing location.
+Old chats are copied once into `history-archive/0.5.0`, without deleting the originals.
+The new app removes only recognized obsolete versioned installers in its own updater
+cache; it keeps the current differential-update cache and user-saved installers.
+There is no automatic download/install or special recommendation label.
+
 MediaSail 0.3.0 introduces `electron-updater` 6.8.9, pinned in package-lock.json.
 The public feed is GitHub Releases in `jerryrenjianxing-sys/MediaSail`. Applications
 contain no GitHub token. They use builder-generated `resources/app-update.yml`.
@@ -20,7 +29,7 @@ current Windows build is unsigned; no Authenticode publisher certificate is
 configured. The updater attempts NSIS differential downloads using blockmaps and
 falls back to downloading the complete installer. Keep older release assets:
 the previous blockmap can be needed. A first update or large runtime change can
-require the full installer (~1.8 GB). Complete downloads are cached; after restart,
+require the full installer (0.4.3 was about 1.8 GB; 0.5.0 is smaller). Complete downloads are cached; after restart,
 checking and downloading the same version revalidates and reuses the cached file.
 Partial failed downloads may restart. Offline errors do not stop the local app.
 

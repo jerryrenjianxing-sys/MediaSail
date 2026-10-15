@@ -43,9 +43,8 @@ try:
     import bootstrap
     bootstrap.prepare(root)
     if stopping.is_set(): sys.exit(0)
-    node=Path(os.environ['EASEL_DESKTOP_NODE'])
-    command=[str(node),str(node.parent/'node_modules/openclaw/openclaw.mjs'),'--profile','easel','gateway','run','--allow-unconfigured','--bind','loopback']
-    for name,argv in [('gateway',command),('web',[sys.executable,str(Path(__file__).with_name('server.py'))])]:
+    # External Agents run in their own applications, outside this process tree.
+    for name,argv in [('web',[sys.executable,str(Path(__file__).with_name('server.py'))])]:
         stream=(logs/f'{name}.log').open('ab',buffering=0)
         proc=subprocess.Popen(argv,cwd=root,stdin=subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
         children.append((name,proc)); emit('started',service=name,pid=proc.pid)

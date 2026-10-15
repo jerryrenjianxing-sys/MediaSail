@@ -98,6 +98,13 @@
     "integrity": "sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q=="
   },
   {
+    "name": "semver",
+    "version": "7.8.5",
+    "license": "ISC",
+    "resolved": "https://registry.npmjs.org/semver/-/semver-7.8.5.tgz",
+    "integrity": "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA=="
+  },
+  {
     "name": "tiny-typed-emitter",
     "version": "2.1.0",
     "license": "MIT",

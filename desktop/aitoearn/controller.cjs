@@ -1,9 +1,8 @@
 const { WebContentsView, session, shell, net, ipcMain } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
 const { WebsiteAdapter, AitoError, HOME, ORIGIN } = require('./adapter.cjs');
-const { ImportStore, selectedFile, contained } = require('./imports.cjs');
+const { ImportStore } = require('./imports.cjs');
 
 function trustedUpload(raw) {
   const u = new URL(raw);
@@ -78,7 +77,6 @@ class AitoController {
       case 'retry':return this.store.retry(String(input?.id),input?.confirmedAbsent===true);
       case 'reconcile':return this.store.reconcile(String(input?.id));
       case 'openDraft':return this.openDraft(String(input?.id));
-      case 'cover':return this.cover(String(input?.path));
       default:throw new AitoError('不支持的桌面操作。');
     }
   }
@@ -143,22 +141,6 @@ class AitoController {
     const selection={title:job.content.title,cover:job.payload?.coverUrl};
     await this.view.webContents.executeJavaScriptInIsolatedWorld(937,[{code:`(async()=>{const s=${JSON.stringify(selection)};for(let n=0;n<30;n++){const cards=[...document.querySelectorAll('[data-testid="draftbox-draft-card"]')].filter(c=>[...c.querySelectorAll('p')].some(p=>p.textContent===s.title)&&(!s.cover||[...c.querySelectorAll('img')].some(i=>i.src.split('?')[0]===s.cover.split('?')[0])));if(cards.length===1){cards[0].scrollIntoView({block:'center'});cards[0].click();return true;}await new Promise(r=>setTimeout(r,300));}return false;})()`}]).catch(()=>false);
     return true;
-  }
-  async cover(relative){
-    if(this.store.busy())throw new AitoError('请等待发送完成。');
-    const file=await selectedFile(this.outputs,relative);
-    if(!file.mime.startsWith('video/'))throw new AitoError('请选择视频。');
-    const source=fs.realpathSync(path.resolve(this.outputs,relative));
-    const dest=path.join(path.dirname(source),`_aitoearn-cover-${file.hash.slice(0,16)}.jpg`);
-    if(!contained(fs.realpathSync(this.outputs),dest))throw new AitoError('封面路径无效。');
-    if(!fs.existsSync(dest))await new Promise((resolve,reject)=>{
-      const child=spawn(path.join(this.resources,'runtime/ffmpeg/ffmpeg.exe'),['-hide_banner','-loglevel','error','-i',source,'-frames:v','1','-vf','scale=1280:-2','-y',dest],{windowsHide:true,stdio:'ignore'});
-      this.coverTasks.add(child);
-      const timer=setTimeout(()=>{child.kill();reject(new AitoError('提取封面超时，请选择一张图片作封面。'));},45000);
-      child.on('error',()=>{this.coverTasks.delete(child);clearTimeout(timer);reject(new AitoError('封面生成失败，请手动选择图片。'));});
-      child.on('exit',code=>{this.coverTasks.delete(child);clearTimeout(timer);code===0?resolve():reject(new AitoError('此视频暂时无法生成封面，请手动选择图片。'));});
-    });
-    return path.relative(this.outputs,dest).split(path.sep).join('/');
   }
   async shutdown(){this.closed=true;clearTimeout(this.notificationTimer);this.notificationTimer=null;for(const child of this.coverTasks)child.kill();await this.store?.shutdown();for(const p of this.popups)if(!p.isDestroyed())p.destroy();if(this.view){this.window.contentView.removeChildView(this.view);if(!this.view.webContents.isDestroyed())this.view.webContents.close();this.view=null;}}
   resume(){this.closed=false;if(this.store)this.store.stopping=false;this.requested=false;this.notify();}

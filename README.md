@@ -2,113 +2,64 @@
 
 <img src="branding/MediaSail-app-icon.png" alt="MediaSail" width="112">
 
-面向内容运营的 Windows 桌面工作台：保留 Easel 的对话、素材、内容库、日历、
-模型配置与平台工作流，集成 AitoEarn 中国站的「AI 发布」，支持从 GitHub 更新。
+面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows 64 位完整安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** ·
-[更新机制](docs/UPDATES.md) · [验证记录](docs/VERIFICATION-0.4.3.md)
+**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [验证记录](docs/VERIFICATION-0.5.0.md) · [更新机制](docs/UPDATES.md)
 
-## 使用
+## 使用与连接 Agent
 
-安装 `MediaSail-0.4.3-win-x64-Setup.exe`，从桌面或开始菜单打开。
-内置 Python、独立 Node.js、OpenClaw、浏览器自动化环境及 FFmpeg，无需用户另装开发工具。
-在设置中配置自己的模型服务，在原版流程中登录平台账号。模型服务、社交平台、
-AitoEarn 和部分按需资源需要联网；模型额度和平台账号不包含在安装包中。
+安装 MediaSail-0.5.0-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-关闭窗口会隐藏到托盘，后台任务继续运行。双击托盘图标重新打开；右键选择「退出」
-会停止本软件启动的服务。有任务运行时先提醒。默认不开机自启，电脑关机或睡眠时不执行任务。
+软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
-## 连接 Agent
+画像建档、编辑、账号数据回写、采集、统计、内容库、选题、日历、平台登录和发布继续提供。画像增强、深度解释及策略创作由外部 Agent 根据完整专业方法完成。Skill 介绍真实资料、路径和工具，不规定 Agent 用什么创作工具，不要求每轮执行固定流程，也不自动安装进其他 Agent 的全局配置。
 
-0.4.3 起，启动后先显示全宽 Agent 首页，左侧「控制台」进入原有工作台，右侧「复制 Skill」粘贴给同一台电脑上的 Hermes、Codex 或其他支持本地文件和工具的 Agent。
-控制台侧栏「连接 Agent」可返回首页。首页与 MediaFlow、Media Deep Researcher 共用产品布局，
-保留紫色 MediaSail 品牌，并使用圆形扩散的亮暗切换动画；主题沿用已有持久存储。
-首次画像配置提示在进入控制台后显示。
-[首页改版验证与截图](docs/HOME-REDESIGN-2026-10-15.md)。
-MediaSail 提供画像、运营分析、素材、历史内容和工具背景，由 Agent 自主研究、策划、创作、复盘或维护软件。
-Skill 分为简短入口和按需查阅的资料，不规定固定创作流程，也不自动修改外部 Agent 的全局配置。
-
-完整 Skill 随安装包提供；连接说明包含当前本机路径，可下载整包。辅助脚本使用内置 Python/Node，
-通过 `agent-connection.json` 识别当前服务，兼容端口变化和中文路径。成品可通过现有项目元数据工具登记到内容库。
-AitoEarn 的草稿导入仍使用桌面发送面板，Skill 不宣称存在未实现的外部接口。
+完整 Skill 随软件提供，连接文件兼容端口变化与中文路径。现成业务计算可通过内置 Python 调用；通用创作环境由 Agent 自选。成品按项目目录及元数据登记，分析经验可更新回画像。内容库和画像页面可刷新查看外部更新；未保存编辑不会自动覆盖。
 
 ## AI 发布
 
-侧栏「AI 发布」内嵌 [AitoEarn 中国站](https://aitoearn.cn/zh-CN)，保留原版页面和独立登录状态。
-内容库中选择「发送到 AI 发布」，检查正文、图片顺序或单个视频与封面，选择草稿箱后创建草稿。
-支持 JPG、PNG、WebP、MP4、MOV。视频可以选封面，也可用内置 FFmpeg 提取首帧。
-只创建草稿；发布账号、平台、排期及最终发布仍在 AitoEarn 原版页面操作。
+侧栏内嵌 AitoEarn 中国站，沿用独立登录会话。内容库选择“发送到 AI 发布”，检查正文、有序图片或单个视频及现成封面，再创建草稿。最终账号、平台、排期和发布仍在官方页面完成。
 
-这是官方在线服务，不是本地部署的 AitoEarn。依赖官方浏览器插件的功能可打开外部浏览器使用。
-草稿适配器调用网站现有接口，无需另填 API Key；这不是官方承诺稳定的公开 API。
-网站接口变化时可能需要更新适配器。创建结果不明时必须先核对，重复点击不会直接重复创建。
-实现边界见 [COMPATIBILITY.md](desktop/aitoearn/COMPATIBILITY.md)。
+AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent 草稿 HTTP 接口；需要官方插件的操作沿用外部浏览器。适配使用网站现有接口，变化时可能需要更新。[兼容说明](desktop/aitoearn/COMPATIBILITY.md)。
 
-## 更新与数据
+## 更新与旧程序清理
 
-设置 →「软件更新」→「检查更新」→ 下载新版 → 重启并安装。侧栏和托盘入口也可使用。0.4.0 起，主界面就绪后自动检查版本，发现新版显示可关闭的横幅。关闭后本次运行不再提示，下次启动再检查。
-点击「查看更新」进入原更新窗口。
-不会自动下载大包，也不会在普通退出时擅自安装。先完成下载和校验，再替换程序文件。
-支持时尝试差分下载，失败则下载完整安装包；并非每次只需下载几 MB。
-0.3.3 起，安装过程显示独立进度窗口，成功后自动重新打开。从旧版升级到 0.3.3 也会显示。
-完整运行环境仍需解压，安装可能持续数分钟。聊天、草稿和界面偏好改为独立文件保存，后台换端口不影响读取。
-首次升级会备份并汇总旧端口的有效聊天，冲突内容保留为“恢复副本”，原始存储不删除。
+主页面就绪后约15秒自动检查GitHub新版，显示可关闭横幅；设置、侧栏和托盘也能检查。用户选择下载、校验、重启安装，不自动下载或安装，也不发行过渡版。
 
-原 ElectronEasel 0.1/0.2 用户需要先手动安装一次 MediaSail 0.3，之后即可使用软件内更新。
-为兼容旧版，安装身份和数据位置仍保留旧名称：
+升级沿用原安装标识和目录，先正常卸载旧程序，再安装新程序，移除旧的大型运行环境。卸载失败即停止并记录日志，不大范围删除目录兜底。新版启动后只清理本软件管理且能识别版本的过期更新安装包，保留当前差量更新缓存。GitHub旧Release和用户自行保存的安装包不删除。
 
-```text
-%LOCALAPPDATA%\ElectronEasel
-  workspace/       配置、画像、素材、内容和会话
-  home/            隔离的 OpenClaw 状态与平台浏览器数据
-  Partitions/      AitoEarn 等网页会话
-  aitoearn/        待发送内容、草稿箱选择、上传与草稿回执
-  ui-state.json   跨端口共享的聊天、草稿和界面偏好
-  ui-state-migration-0.3.3/  旧存储快照和恢复前的有效记录
-  logs/            本地服务和更新日志
-  agent-connection.json  无凭据的当前实例、路径和运行环境资料
-```
+用户数据继续在原位置；卸载默认保留。为兼容历史版本，数据目录仍使用旧技术名称：
 
-升级保留用户数据；卸载默认保留。备份时先从托盘退出，再复制整个目录。
-备份及日志可能包含私人内容和账号信息，不要上传到公开仓库。
+    %LOCALAPPDATA%/ElectronEasel
+      workspace/             画像、配置、素材、成品、分析与业务脚本
+      home/                  原平台浏览器资料与旧后台状态
+      Partitions/            AitoEarn网页登录状态
+      aitoearn/              草稿选择、上传记录和回执
+      ui-state.json          主题、画像选择、草稿等界面状态
+      history-archive/0.5.0/  旧聊天归档，原始记录也保留
+      agent-connection.json  当前实例、真实路径与画像选择提示，无密钥
+      logs/                  服务、安装和更新日志
 
-## 开发与打包
+旧聊天停止续跑，可从设置打开存档目录。用户修改的脚本、素材及已进入工作目录的旧演示内容不会为了瘦身被清除。关闭窗口留在托盘；主动退出只结束软件自己的服务和业务任务，外部Agent任务由其环境负责。
 
-基线固定为 [ZJU-REAL/Easel @ fb80ae6](https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02)。
-本仓库存放桌面适配、补丁和锁文件，构建时获取原版源码。发行页的 source.zip 还包含对应的
-Easel 源码快照与已编译前端。补丁包含 Windows 适配、模型名称兼容、AI 发布及品牌入口。
+## 开发与构建
 
-Windows x64 构建机器需要 Git、uv、PowerShell 和用于引导的 Python。
-准备与 `ffmpeg-lock.json` 一致的 Gyan FFmpeg 8.1.1 full build，运行
-`python scripts/prepare.py ffmpeg <解压后的目录>`，然后执行 `scripts/build.ps1`。
-不要在不核对版本和来源的情况下更新锁文件。构建 Python 需要 Pillow 用于 ICO 格式编码。
-构建脚本不会修改系统 Python、Node.js、OpenClaw 或 Windows 长路径策略。
+固定基线：[ZJU-REAL/Easel fb80ae6](https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02)。完整修改见 patches/easel-desktop.patch；知识整理在打包暂存区执行，不覆盖用户资料或原上游知识源。源码包包含对应源码、前端、构建脚本及依赖锁。
 
-| 部件 | 固定版本 |
+Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 scripts/build.ps1：获取固定基线、应用补丁、准备精简业务环境、构建前端、整理完整方法及业务工具、核对清单，再构建NSIS安装包。独立Node只作为构建工具，不进入发行运行环境。
+
+| 部件 | 版本 |
 |---|---|
-| MediaSail | 0.4.2 |
+| MediaSail | 0.5.0 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
-| Node.js / Python | 24.21.0 / 3.11.15 |
-| OpenClaw / FFmpeg | 2026.9.9 / 8.1.1 |
+| Python | 3.11.15 |
+| 构建用Node | 24.21.0 |
 
-`npm test` 运行自动测试；`npm run pack` 构建可运行目录并验证全部 payload 文件哈希；
-`npm run dist` 创建 NSIS 安装包、blockmap 和 latest.yml。默认产物目录位于仓库外的
-`../../outputs/MediaSail`。`python scripts/source-bundle.py` 创建匹配的源码快照。
-发布步骤见 [UPDATES.md](docs/UPDATES.md)。单纯推送源码不会触发用户端升级。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.0。
 
-## 验证与边界
+## 验证与来源
 
-测试覆盖数据升级、目录隔离、端口占用、托盘、多开唤起、AI 草稿导入，以及更新检查、
-下载校验与任务中断提醒。模拟账号与模拟模型测试不代表真实平台已发布成功。
-真实模型账号及各平台登录/发布由使用者自行验收；本仓库不提供密码、密钥或登录状态。
+发布前使用隔离测试数据与临时Windows环境，不覆盖本机日常安装。真实平台登录和公开发布由用户验收，测试不代表已在真实账号成功发布。当前发行包未配置Windows代码签名证书。
 
-当前发行包未配置 Windows 代码签名证书。只使用 loopback 本地服务，AitoEarn 网页无本地文件
-和命令执行权限。退出清理由本软件启动的进程树，不结束其他软件的进程。
-
-## 开源来源
-
-桌面适配代码使用 Apache-2.0。Easel、Electron、OpenClaw、Python、Node.js、FFmpeg 及其
-依赖分别保留原许可证，GPL/AGPL 等组件不因本仓库根许可证而改变条款。
-见 [NOTICE](NOTICE)、[LICENSE](LICENSE) 和 [第三方说明](licenses/THIRD-PARTY-NOTICES.txt)。
-MediaSail 为独立桌面发行版，不代表 Easel 或 AitoEarn 官方产品。
+桌面适配使用Apache-2.0；Easel及各组件保留原许可证、作者署名和NOTICE。Electron/Chromium、Python、Playwright及其依赖各自条款不因根许可证改变。MediaSail为独立维护的发行版，不代表Easel或AitoEarn官方产品。见[NOTICE](NOTICE)、[LICENSE](LICENSE)及[第三方清单](licenses/THIRD-PARTY-NOTICES.txt)。

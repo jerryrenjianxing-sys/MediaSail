@@ -48,16 +48,3 @@ elif sys.argv[1] == 'electron':
     with zipfile.ZipFile(archive) as z:z.extractall(ROOT/'node_modules/electron/dist')
     (ROOT/'node_modules/electron/path.txt').write_text('electron.exe')
     print('Electron verified and extracted',flush=True)
-
-elif sys.argv[1] == 'ffmpeg':
-    source = Path(sys.argv[2])
-    expected = json.loads((ROOT / 'ffmpeg-lock.json').read_text())
-    for name, checksum in expected.items():
-        assert hashlib.sha256((source / 'bin' / name).read_bytes()).hexdigest() == checksum, f'{name}: does not match pinned FFmpeg build'
-    dest = RUNTIME / 'ffmpeg'
-    dest.mkdir(parents=True, exist_ok=True)
-    for name in ['ffmpeg.exe', 'ffprobe.exe']:
-        shutil.copy2(source / 'bin' / name, dest / name)
-    shutil.copy2(source / 'LICENSE', dest / 'LICENSE')
-    shutil.copy2(source / 'README.txt', dest / 'README.txt')
-    print('Pinned FFmpeg binaries verified and copied', flush=True)

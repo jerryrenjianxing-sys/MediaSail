@@ -66,7 +66,7 @@ class Updates extends EventEmitter{
     this.installPending=true;
     try{
       if(!await this.prepareInstall())return this.snapshot();
-      this.set({phase:'installing',message:'正在打开安装进度窗口。完整运行环境需要解压，请稍候；成功后会自动重新打开。'});
+      this.set({phase:'installing',message:'正在打开安装进度窗口。正在替换旧程序，用户数据将保留；成功后会自动重新打开。'});
       this.updater.quitAndInstall(true,true);
     }catch(e){this.error(e);}finally{this.installPending=false;}
     return this.snapshot();

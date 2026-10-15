@@ -1,17 +1,33 @@
 // Isolated packaged application tests; fixture feed never offers a real installer.
 const {_electron:electron}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),cp=require('node:child_process'),assert=require('node:assert/strict');
 const version=require('../package.json').version,parts=version.split('.').map(Number),futureVersion=[parts[0],parts[1],parts[2]+1].join('.');
-const root=path.resolve(__dirname,'..'),out=path.resolve(root,'../../outputs/MediaSail'),data=path.join(root,'.test-data','Agent 接入 '+version+' '+Date.now());
+const root=path.resolve(__dirname,'..'),out=path.resolve(root,require('../package.json').build.directories.output),data=path.join(root,'.test-data','Agent 接入 '+version+' '+Date.now());
 const evidence=path.join(out,'verification-'+version);fs.mkdirSync(evidence,{recursive:true});
 const exe=process.env.EASEL_TEST_EXE||path.join(out,'win-unpacked/MediaSail.exe');
 let requests=0,offline=false;
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const server=http.createServer((req,res)=>{
  if(req.url.startsWith('/latest.yml')){requests++;if(offline){res.writeHead(503);res.end('offline fixture');return;}
  res.end("version: "+futureVersion+"\nfiles:\n  - url: MediaSail-fixture.exe\n    sha512: "+Buffer.alloc(64).toString('base64')+"\n    size: 1\npath: MediaSail-fixture.exe\nsha512: "+Buffer.alloc(64).toString('base64')+"\nreleaseDate: '2026-10-10T00:00:00.000Z'\n");return;}
  res.writeHead(404);res.end();
 });
-let app;
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
+let app,clipboardBefore=false;
+async function restoreClipboard(){if(app&&clipboardBefore){await app.evaluate(async({clipboard})=>{const items=globalThis.__agentClipboard;if(items?.length)await clipboard.write(items);else clipboard.clear();delete globalThis.__agentClipboard;});clipboardBefore=false;}}
+// Native busy-task dialogs are outside Playwright's page automation. This test
+// has no real tasks/accounts; answer only this fixture's exit prompt explicitly.
+async function closeFixture(){
+ if(!app)return;
+ const current=app;let timer;
+ try{
+  await restoreClipboard();
+  await current.evaluate(({dialog})=>{dialog.showMessageBox=async()=>({response:1,checkboxChecked:false});});
+  await Promise.race([current.close(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Isolated fixture did not exit within 15 seconds')),15000);})]);
+ }catch(error){
+  // Cleanup only the test-owned Electron process. Do not hide an exit failure.
+  await current.evaluate(({app})=>{if(!app.getPath('userData').includes('Agent 接入 '))throw Error('Refusing non-fixture exit');setTimeout(()=>app.exit(1),50);}).catch(()=>{});
+  throw error;
+ }finally{clearTimeout(timer);app=null;}
+}
 async function launch(feed){
  const env={...process.env,EASEL_DESKTOP_DATA:data};delete env.ELECTRON_RUN_AS_NODE;
  app=await electron.launch({executablePath:exe,args:[],env,timeout:30000});
@@ -23,8 +39,9 @@ async function launch(feed){
  },{feed,data});
  const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:240000});
  await page.getByRole('button',{name:'控制台',exact:true}).click();
- await page.locator('.sidebar-status').filter({hasText:'网关已连接'}).waitFor({timeout:240000});
- const welcome=page.getByRole('button',{name:'先用通用模式'});if(await welcome.isVisible())await welcome.click();
+ await page.locator('.sidebar-status').filter({hasText:'本地服务已连接'}).waitFor({timeout:240000});
+ const welcome=page.getByRole('button',{name:'稍后配置'});if(await welcome.isVisible())await welcome.click();
+ if(!clipboardBefore){await app.evaluate(async({clipboard,ClipboardItem})=>{const items=await clipboard.read();globalThis.__agentClipboard=await Promise.all(items.map(async item=>{const formats={};for(const type of item.types){const value=await item.getType(type);formats[type]=type==='electron application/bookmark'?value:new Blob([await value.arrayBuffer()],{type:value.type});}return new ClipboardItem(formats);}));});clipboardBefore=true;}
  return page;
 }
 async function helper(info,args,expected=0){
@@ -38,12 +55,12 @@ async function helper(info,args,expected=0){
  try{
   let page=await launch(feed);assert.equal(await app.evaluate(({app})=>app.getVersion()),version);
   assert.equal(await page.locator('.sidebar-nav .nav-item').first().innerText(),'连接 Agent');
-  await page.getByRole('button',{name:'连接 Agent',exact:true}).click();
+  await page.locator('.sidebar-nav').getByRole('button',{name:'连接 Agent',exact:true}).click();
   await page.getByRole('button',{name:'复制 Skill',exact:true}).click();await page.getByRole('button',{name:'已复制',exact:true}).waitFor();
   const copied=await app.evaluate(({clipboard})=>clipboard.readText());assert.match(copied,/agent-connection.json/);assert.match(copied,/初次接入/);assert.ok(copied.includes(data));
   let info=JSON.parse(fs.readFileSync(path.join(data,'agent-connection.json'),'utf8'));
   assert.equal(info.status,'ready');assert.equal(info.baseUrl,page.url().replace(/\/$/,''));
-  const connected=JSON.parse(await helper(info,['check']));assert.equal(connected.connected,true);assert.equal(connected.gateway,true);
+  const connected=JSON.parse(await helper(info,['check']));assert.equal(connected.connected,true);assert.equal(connected.serviceReady,true);
   assert.equal(JSON.parse(await(await fetch(info.baseUrl+'/api/agent-info')).text()).instanceId,info.instanceId);
   const zip=await fetch(info.baseUrl+'/api/v1/skill');assert.equal(zip.status,200);
   const zipfile=path.join(data,'skill.zip');fs.writeFileSync(zipfile,Buffer.from(await zip.arrayBuffer()));
@@ -55,7 +72,7 @@ async function helper(info,args,expected=0){
   fs.mkdirSync(path.join(info.outputs,'连接验收'),{recursive:true});fs.writeFileSync(path.join(info.outputs,'连接验收/成品.md'),'# 外部 Agent 的成品\n结合测试画像完成。');
   await helper(info,['python','skills/shared/scripts/manifest.py','meta','--topic','连接验收','--title','外部 Agent 成品','--kind','article','--status','ready','--deliverables','成品.md']);
   const tree=await(await fetch(info.baseUrl+'/api/outputs')).json();assert.ok(JSON.stringify(tree).includes('外部 Agent 成品'));
-  assert.match(await helper(info,['node','--version']),/v24/);
+  assert.equal(info.node,null,'No independent Node is bundled');
   // Real clipboard denied: the existing manual-copy dialog must provide identical instructions.
   await page.evaluate(()=>{Object.defineProperty(navigator.clipboard,'writeText',{configurable:true,value:async()=>{throw new Error('clipboard fixture denial');}});});
   await page.getByRole('button',{name:'已复制',exact:true}).click();const manual=page.getByRole('dialog');await manual.waitFor();assert.equal(await manual.getByRole('textbox',{name:'Skill',exact:true}).inputValue(),copied.replace(/\r\n/g,'\n'));await manual.getByRole('button',{name:'完成',exact:true}).click();
@@ -63,20 +80,22 @@ async function helper(info,args,expected=0){
   await page.screenshot({path:path.join(evidence,'agent-light.png'),animations:'disabled'});
   await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});await page.screenshot({path:path.join(evidence,'agent-dark.png'),animations:'disabled'});
   const panelEvent=app.waitForEvent('window',{predicate:p=>p!==page});await page.getByRole('button',{name:'查看更新',exact:true}).click();const panel=await panelEvent;await panel.locator('#headline').waitFor();assert.ok((await panel.locator('#headline').innerText()).includes(futureVersion));
+  console.log('AGENT SMOKE: close update panel');
   await panel.close();
   await page.getByRole('button',{name:'控制台',exact:true}).click();
   await page.getByRole('button',{name:'内容库',exact:true}).click();await page.getByText('外部 Agent 成品',{exact:true}).first().waitFor();
+  console.log('AGENT SMOKE: AitoEarn bounds');
   await page.getByRole('button',{name:'AI 发布',exact:true}).click();await page.getByTestId('aito-viewport').waitFor();await wait(500);
   let before=await page.getByTestId('aito-viewport').boundingBox();
   await page.getByRole('button',{name:'关闭更新提示，本次运行不再提醒'}).click();await page.locator('.desktop-update-banner').waitFor({state:'detached'});await wait(500);
   let after=await page.getByTestId('aito-viewport').boundingBox();assert.ok(after.y<before.y);
   const view=await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));return w.contentView.children.find(v=>v.webContents&&v.webContents!==w.webContents)?.getBounds();});
   assert.ok(view&&Math.abs(view.y-after.y)<=1,'Embedded AitoEarn view follows banner layout');
-  await page.getByRole('button',{name:'连接 Agent',exact:true}).click();await page.reload();await page.locator('.skill-home').waitFor();assert.equal(await page.locator('.desktop-update-banner').count(),0);
+  await page.locator('.sidebar-nav').getByRole('button',{name:'连接 Agent',exact:true}).click();await page.reload();await page.locator('.skill-home').waitFor();assert.equal(await page.locator('.desktop-update-banner').count(),0);
   await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));w.close();});
   assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:')).isVisible()),false);
   await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http:'));w.show();});assert.equal(await page.locator('.desktop-update-banner').count(),0);
-  const oldId=info.instanceId,oldUrl=info.baseUrl;await app.close();app=null;
+  const oldId=info.instanceId,oldUrl=info.baseUrl;await closeFixture();
   const closed=JSON.parse(await helper(info,['check'],1));assert.equal(closed.connected,false);assert.equal(closed.found.tools,true);
   // Stale but reachable service at the former URL must not pass the identity check.
   const occupied=http.createServer((_req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({product:'MediaSail',instanceId:'another-app'}));});await new Promise(r=>occupied.listen(Number(new URL(oldUrl).port),'127.0.0.1',r));
@@ -90,7 +109,8 @@ async function helper(info,args,expected=0){
    await page.waitForFunction(async()=> (await window.desktopUpdates.status()).phase==='error');assert.equal(await page.locator('.desktop-update-banner').count(),0);
    offline=false;await page.evaluate(()=>window.desktopUpdates.openAndCheck());await page.waitForFunction(async()=> (await window.desktopUpdates.status()).phase==='available');
   }finally{await new Promise(r=>occupied.close(r));}
-  fs.writeFileSync(path.join(evidence,'agent-result.json'),JSON.stringify({passed:true,version,date:new Date().toISOString(),automaticChecks:2,totalMetadataRequests:requests,oldUrl,newUrl:info.baseUrl,checks:['copied prompt','manual copy','full skill zip','profile read/write','manifest and content library','bundled Python/Node','light/dark','automatic banner','shared updater','dismiss across reload and tray','restart reminder','AitoEarn bounds','offline recovery','port change','stale identity rejection','offline paths']},null,2));
+  fs.writeFileSync(path.join(evidence,'agent-result.json'),JSON.stringify({passed:true,version,date:new Date().toISOString(),automaticChecks:2,totalMetadataRequests:requests,oldUrl,newUrl:info.baseUrl,checks:['copied prompt','manual copy','full skill zip','profile read/write','manifest and content library','business Python without Node/OpenClaw','light/dark','automatic banner','shared updater','dismiss across reload and tray','restart reminder','AitoEarn bounds','offline recovery','port change','stale identity rejection','offline paths']},null,2));
   console.log('AGENT AND STARTUP BANNER INTEGRATION PASSED');
- }finally{if(app)await app.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
+ }catch(error){console.error('AGENT SMOKE primary failure:',error);throw error;}
+ finally{try{await closeFixture();}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
 })().catch(e=>{console.error(e);process.exitCode=1;server.closeAllConnections();server.close();});

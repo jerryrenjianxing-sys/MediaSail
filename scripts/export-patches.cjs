@@ -1,16 +1,9 @@
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
-const root=path.resolve(__dirname,'..');
-// Preserve Git's exact UTF-8/LF patch bytes, including added frontend files.
-const bytes=cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'diff','--binary','--','web/frontend']);
-fs.writeFileSync(path.join(root,'patches/easel-ai-publish.patch'),bytes);
-cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'apply','--reverse','--check',path.join(root,'patches/easel-ai-publish.patch')]);
-console.log('Frontend patch verified against working source');
-const branding=cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'diff','--binary','--','web/static/*.html','openclaw/workspace/AGENTS.md','openclaw/workspace/SOUL.md']);
-const brandPatch=path.join(root,'patches/easel-branding.patch');
-fs.writeFileSync(brandPatch,branding);
-cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'apply','--reverse','--check',brandPatch]);
-console.log('Static-page and agent-default branding patch verified');
-// Normalize this legacy patch to Git's exact LF bytes as well, so clean LF checkouts reproduce it.
-const modelPatch=path.join(root,'patches/easel-openclaw-model-name.patch');
-fs.writeFileSync(modelPatch,cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'diff','--binary','--','web/app.py']));
-cp.execFileSync('git',['-C',path.join(root,'vendor/easel'),'apply','--reverse','--check',modelPatch]);
+const root=path.resolve(__dirname,'..'),vendor=path.join(root,'vendor/easel'),patches=path.join(root,'patches');
+const untracked=cp.execFileSync('git',['ls-files','--others','--exclude-standard','-z'],{cwd:vendor,encoding:'utf8'}).split('\0').filter(Boolean);
+if(untracked.length)cp.execFileSync('git',['add','--intent-to-add','--',...untracked],{cwd:vendor});
+const bytes=cp.execFileSync('git',['diff','--binary','HEAD','--'],{cwd:vendor,maxBuffer:30*1024*1024});
+const file=path.join(patches,'easel-desktop.patch');fs.writeFileSync(file,bytes);
+cp.execFileSync('git',['apply','--reverse','--check',file],{cwd:vendor});
+for(const old of ['easel-ai-publish.patch','easel-branding.patch','easel-openclaw-model-name.patch']){const target=path.join(patches,old);if(fs.existsSync(target))fs.unlinkSync(target);}
+console.log('Unified pinned-upstream patch verified.');

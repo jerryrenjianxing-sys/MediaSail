@@ -1,56 +1,37 @@
-MediaSail 0.3.3 — third-party notices
+MediaSail 0.5.0 — third-party notices
 
-Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02.
-Original frontend and workflows are retained. A three-line compatibility patch adds
-the model display name required by OpenClaw to the custom-provider save path.
-Desktop lifecycle, runtime isolation,
-bootstrap and packaging are separate desktop adapters. MediaSail also adds branding,
-AitoEarn draft integration and GitHub updates. Easel's root license is
-Apache-2.0. Nested components retain their individual licenses, including GPL/AGPL
-components; the root license does not replace those terms.
-Source: https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02
+Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02, Apache-2.0.
+Business workflows and professional knowledge are retained. Desktop adaptation,
+external-Agent handoff, business browser compatibility and knowledge curation
+are modifications. Nested component licenses and attribution remain applicable.
+https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02
 
-Electron 44.7.0: MIT. Chromium and other notices are in Chromium-NOTICES.html and
-the Electron distribution's LICENSES.chromium.html.
-https://github.com/electron/electron/releases/tag/v44.7.0
+Electron 44.7.0: MIT. Chromium/codec and third-party terms are preserved in
+Chromium-NOTICES.html and the Electron distribution. The shell's built-in Node
+and ffmpeg.dll are Electron components, not standalone creative tools.
+https://github.com/electron/electron
 
-Node.js 24.21.0: MIT and bundled third-party terms. See runtime/node/LICENSE.
-https://nodejs.org/dist/v24.21.0/
+electron-updater 6.8.9: MIT. Production JS dependency notices remain in app.asar.
+See ElectronUpdater-LICENSE.txt, desktop-packages.json and package-lock.json.
 
-OpenClaw 2026.9.9: MIT; plugins/dependencies retain their own licenses.
-See runtime/node/node_modules/openclaw/LICENSE and node-packages.json.
-https://github.com/openclaw/openclaw
-
-CPython 3.11.15: Python Software Foundation license and bundled library licenses.
-Portable distribution from Astral python-build-standalone, installed with uv.
-See runtime/python/cpython-3.11.15-windows-x86_64-none/LICENSE* and distribution metadata.
+CPython 3.11.15: PSF and bundled library terms. Portable distribution from
+Astral python-build-standalone. See runtime/python/*/LICENSE*.
 https://github.com/astral-sh/python-build-standalone
 
-Python dependencies: versions and hashes are pinned in requirements.lock; package
-metadata and licensing are listed in python-packages.json. Their distribution licenses
-remain alongside the packages in Lib/site-packages/*.dist-info.
-
-Playwright and Chromium: see runtime/browsers and the Python Playwright distribution.
-Browser revisions match the pinned Python Playwright version, not the Electron browser.
+Python business packages are fixed in requirements-business.lock (also copied
+as licenses/requirements.lock). Versions and terms: python-packages.json.
+Original distribution notices remain in site-packages and .dist-info folders.
+Playwright includes its private Node driver and driver licenses; account
+browser automation uses separately installed Chrome/Edge, not a bundled browser.
 https://github.com/microsoft/playwright
 
-FFmpeg 8.1.1 full build from Gyan.dev: GPLv3; enabled external libraries retain their
-licenses. See runtime/ffmpeg/LICENSE and README.txt. The binary hash is pinned in
-ffmpeg-lock.json in the source bundle. Build details are available via ffmpeg -version.
-https://www.gyan.dev/ffmpeg/builds/
-https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz
+The business runtime has no standalone OpenClaw, Node distribution, FFmpeg
+executables, media-generation frameworks or creative model weights. Historical
+source/notice references do not imply those old runtimes are shipped.
+All shipped runtime files are recorded in runtime-sha256.json.
 
-All files in this bundled runtime are recorded in runtime-sha256.json. No model
-service subscription, API credentials, or social-media accounts are included.
-
-electron-updater 6.8.9: MIT. See ElectronUpdater-LICENSE.txt and package-lock.json.
-https://github.com/electron-userland/electron-builder
-The Electron app's production dependency tree is bundled in app.asar; each package
-retains its license files. See desktop-packages.json for versions and terms.
-
-AitoEarn is loaded from its official website and is not redistributed in this package.
-
-CCL read-only LevelDB and Snappy readers: MIT, Copyright CCL Forensics.
-Pinned sources and SHA-256 values: bridge/third_party/SOURCES.json.
-These readers enumerate candidate legacy origins only; Chromium reads live values.
-License: CCL-Readers-MIT.txt.
+AitoEarn is loaded from its official website, not redistributed as a backend.
+CCL read-only LevelDB/Snappy readers: MIT, Copyright CCL Forensics.
+Source pins: bridge/third_party/SOURCES.json. License: CCL-Readers-MIT.txt.
+Homepage, Agent icons and GSAP notices remain preserved; see NOTICE,
+GSAP-NOTICE.txt, Media-Deep-Researcher-LICENSE.txt and frontend icon NOTICE.

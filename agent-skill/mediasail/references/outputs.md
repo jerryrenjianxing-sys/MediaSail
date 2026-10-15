@@ -37,8 +37,10 @@ meta 只改传入字段，保留其他字段与步骤记录。也可 --data 指�
 
 GET /api/outputs 或刷新内容库可看到项目。复查 deliverablePaths 指向实际存在的成品，避免只登记名字却没有文件。
 
-## 附件与 AI 发布
+项目登记成功意味着本地可见，不代表发布完成。发布事实包含平台、账号、时间、实际结果/URL；排期、AitoEarn 草稿、.easel.json 的状态字段分别记录自己的含义。既有不同发布路径的历史记录可能不齐，复盘前核对，不能从“成品已存在”推断“已经发布”。
 
-聊天附件接口 /api/upload 和 /api/upload/local 使用 multipart files + sessionId，返回 id/name/path，再把这些引用交给同一 sessionId 的聊天请求。把项目成果直接放进 outputs 不需要调用聊天或模型。
+## 素材导入与 AI 发布
+
+导入接口 /api/upload 和 /api/upload/local 使用 multipart files + sessionId，返回 id/name/path。sessionId 在这里是收件目录标签，不需要启动旧聊天。把项目成果直接放进 outputs 不需要调用模型；也可以使用外部 Agent 的文件操作准备项目材料。
 
 AitoEarn 导入支持文字配图片，或文字配单个视频及封面。准备好文案和有序媒体后，用户可在内容库项目成品区点击「发送到 AI 发布」，检查候选正文、图片顺序、视频及草稿箱。仅文字会保留待发送内容并提示补媒体。发送记录在数据目录 aitoearn/imports.json；它是软件维护的记录，不等同于可调用的草稿接口。当前外部 Skill 不提供伪造的 AitoEarn HTTP API。

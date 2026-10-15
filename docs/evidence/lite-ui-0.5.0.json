@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "version": "0.5.0",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.0\\win-unpacked\\MediaSail.exe",
+  "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\轻量 UI 中文 空格 0.5.0 1792061790976",
+  "testedAt": "2026-10-15T10:56:44.478Z",
+  "firstUrl": "http://127.0.0.1:7860",
+  "secondUrl": "http://127.0.0.1:54703",
+  "checks": [
+    "Actual packaged Agent home and existing animated light/dark themes",
+    "Actual connection Skill copied; original clipboard backed up for restoration",
+    "125 old sessions untouched; independent profile migrated; no chat navigation or new session",
+    "Real onboarding creates six-dimensional baseline without AI polling; selection persisted and discoverable",
+    "External API edits visible on focus; dirty edits protected; conflict cancellation and explicit reload work",
+    "Real manifest helper registration visible in original content library",
+    "Settings keeps updates and archive-directory/export entry; no chat reader/model/environment pages",
+    "Core publishing UI remains; no internal chat/model/skill-execution requests",
+    "Real restart onto different local port retains independent selection, profile changes and all 125 historical sessions"
+  ],
+  "screenshots": [
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-home-light.png",
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-home-dark.png",
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-profile-conflict-protected.png",
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-profile-updated.png",
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-content-library.png",
+    "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\verification-0.5.0\\lite-ui-1792061790976\\0.5.0-settings-updates.png"
+  ],
+  "forbiddenRequests": [],
+  "errors": [],
+  "buildResponses": [
+    {
+      "created": true,
+      "name": "新建 画像 测试",
+      "async": false,
+      "status": "baseline-ready"
+    }
+  ],
+  "usesRealPackagedApplication": true,
+  "usesRealLocalBusinessApis": true,
+  "realPlatformAccountsUsed": false,
+  "clipboardRestored": true,
+  "notes": [
+    "Fresh isolated test data; old history fixture is synthetic, not a full installer upgrade.",
+    "No installer, download-speed benchmark, real publication, or AitoEarn account test is performed."
+  ]
+}

@@ -29,11 +29,10 @@ class DesktopState:
                 await send({'type':'http.response.start','status':403,'headers':[]})
                 await send({'type':'http.response.body','body':b'Forbidden'})
                 return
-            active = self.inflight + len(original._BG_TASKS)
+            active = self.inflight
             active += sum(p.poll() is None for p in original.LOGIN_PROCESSES.values())
-            active += sum(j.get('state') == 'running' for j in original._ENV_JOBS.values())
             # These status files are written by upstream detached worker threads.
-            for directory in (original.PUBLISH_DIR, original.PROFILE_BUILD_DIR):
+            for directory in (original.PUBLISH_DIR,):
                 for file in directory.glob('*.json'):
                     try:
                         entry = json.loads(file.read_text(encoding='utf8'))
@@ -43,7 +42,14 @@ class DesktopState:
             await send({'type':'http.response.start','status':200,'headers':[(b'content-type',b'application/json')]})
             await send({'type':'http.response.body','body':body})
             return
-        tracked = scope['type'] == 'http' and scope.get('method') in ('POST','PUT','PATCH','DELETE')
+        # Account collection uses GET but still owns a browser subprocess and
+        # can be interrupted by an explicit application exit.
+        request_path = scope.get('path', '')
+        business_read = scope.get('method') == 'GET' and (
+            request_path.startswith('/api/analytics/') or
+            (request_path.startswith('/api/accounts/') and request_path.endswith('/whoami')))
+        tracked = scope['type'] == 'http' and (
+            scope.get('method') in ('POST','PUT','PATCH','DELETE') or business_read)
         if tracked: self.inflight += 1
         try: await self.app(scope, receive, send)
         finally:
