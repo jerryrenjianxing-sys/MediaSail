@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "from": "0.4.2",
+  "to": "0.4.3",
+  "startedAt": "2026-10-15T05:31:52.463Z",
+  "source": "unchanged packaged electron-updater GitHub configuration",
+  "repository": "https://github.com/jerryrenjianxing-sys/MediaSail",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\win-unpacked\\MediaSail.exe",
+  "isolatedData": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\发布 更新 0.4.3-Ekoiu5",
+  "attempts": [
+    {
+      "at": "2026-10-15T05:33:13.492Z",
+      "phase": "checking",
+      "current": "0.4.2",
+      "version": "",
+      "checkedAt": null
+    },
+    {
+      "at": "2026-10-15T05:33:16.528Z",
+      "phase": "available",
+      "current": "0.4.2",
+      "version": "0.4.3",
+      "checkedAt": 1792042396461
+    }
+  ],
+  "downloadRequested": false,
+  "installationRequested": false,
+  "baseline": {
+    "version": "0.4.2",
+    "userData": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\发布 更新 0.4.3-Ekoiu5",
+    "packaged": true,
+    "autoDownload": false,
+    "autoInstallOnAppQuit": false
+  },
+  "serviceReadyAt": "2026-10-15T05:33:13.320Z",
+  "updateState": {
+    "phase": "available",
+    "current": "0.4.2",
+    "version": "0.4.3",
+    "percent": 0,
+    "transferred": 0,
+    "total": 1787005875,
+    "bytesPerSecond": 0,
+    "message": "发现新版本 0.4.3，可以开始下载。",
+    "checkedAt": 1792042396461,
+    "bannerDismissed": false
+  },
+  "metadata": {
+    "version": "0.4.3",
+    "releaseDate": "2026-10-15T05:27:22.488Z",
+    "files": [
+      {
+        "filename": "MediaSail-0.4.3-win-x64-Setup.exe",
+        "size": 1787005875,
+        "sha512": "2C0kZwB2F6VbdVPq2pApDDmrJebfwuLDwwgGOyNdH9puS+6d4oS9bJhUMMcGP7cNxYYQQBe72KA3URnyOQjKpg=="
+      }
+    ]
+  },
+  "downloadEvents": 0,
+  "downloadedEvents": 0,
+  "verifiedAt": "2026-10-15T05:33:16.574Z",
+  "cleanupComplete": true,
+  "connectionStatusAfterExit": "stopped",
+  "completedAt": "2026-10-15T05:33:16.814Z"
+}
