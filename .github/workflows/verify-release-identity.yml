@@ -1,0 +1,72 @@
+name: Inspect genuine 0.4.3 installed file identities
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  identity:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Download and verify the genuine baseline
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows'){throw 'Disposable GitHub-hosted Windows required'}
+          $inputDirectory=Join-Path $env:RUNNER_TEMP 'mediasail-identity-input'
+          New-Item -ItemType Directory -Path $inputDirectory | Out-Null
+          gh release download v0.4.3 --repo jerryrenjianxing-sys/MediaSail --pattern MediaSail-0.4.3-win-x64-Setup.exe --dir $inputDirectory
+          if($LASTEXITCODE -ne 0){throw 'Official baseline download failed'}
+          $installer=Join-Path $inputDirectory 'MediaSail-0.4.3-win-x64-Setup.exe'
+          $hash=(Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLower()
+          $bytes=(Get-Item -LiteralPath $installer).Length
+          if($hash -ne '9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381' -or $bytes -ne 1787005875){throw 'Genuine 0.4.3 baseline identity mismatch'}
+          'Verified official installer SHA256: '+$hash
+      - name: Install without launching and record file identities
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $installer=Join-Path $env:RUNNER_TEMP 'mediasail-identity-input\MediaSail-0.4.3-win-x64-Setup.exe'
+          $target=Join-Path $env:RUNNER_TEMP 'MediaSail 官方身份 0.4.3'
+          if(Test-Path -LiteralPath $target){throw 'Expected a fresh disposable installation path'}
+          $process=Start-Process -FilePath $installer -ArgumentList @('/S',('/D='+$target)) -PassThru -Wait -WindowStyle Hidden
+          if($process.ExitCode -ne 0){throw ('Baseline installer exited '+$process.ExitCode)}
+          if(@(Get-CimInstance Win32_Process -Filter "Name='MediaSail.exe'").Count -ne 0){throw 'Identity collection must not start MediaSail'}
+          $rows=@()
+          foreach($relative in @('MediaSail.exe','Uninstall MediaSail.exe','resources\app.asar')){
+            $file=Join-Path $target $relative
+            $item=Get-Item -LiteralPath $file
+            if($item.Attributes -band [IO.FileAttributes]::ReparsePoint){throw ('Unexpected file link: '+$relative)}
+            $rows+=@{path=$relative;sha256=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLower();bytes=$item.Length;fileVersion=$item.VersionInfo.FileVersion;productVersion=$item.VersionInfo.ProductVersion}
+          }
+          $evidence=Join-Path $env:GITHUB_WORKSPACE 'release-identity-evidence'
+          New-Item -ItemType Directory -Path $evidence | Out-Null
+          $record=@{version='0.4.3';source='https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.4.3';installer=@{sha256='9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381';bytes=1787005875};installedFromVerifiedOfficialInstaller=$true;softwareStarted=$false;recordedAt=[DateTime]::UtcNow.ToString('o');files=$rows}
+          $json=ConvertTo-Json -InputObject $record -Depth 8
+          [IO.File]::WriteAllText((Join-Path $evidence 'identity.json'),$json,[Text.UTF8Encoding]::new($false))
+          Write-Output $json
+      # Upload first so the trusted uninstall hash is available before cleanup.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mediasail-official-0.4.3-file-identities
+          path: release-identity-evidence/identity.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Normally uninstall the disposable program
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows'){throw 'Disposable GitHub-hosted Windows required'}
+          $temporaryRoot=[IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\')+'\'
+          $target=[IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP 'MediaSail 官方身份 0.4.3'))
+          if(-not $target.StartsWith($temporaryRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'Unsafe disposable installation path'}
+          $uninstaller=Join-Path $target 'Uninstall MediaSail.exe'
+          if(Test-Path -LiteralPath $uninstaller){
+            $process=Start-Process -FilePath $uninstaller -ArgumentList @('/S','/KEEP_APP_DATA',('_?='+$target)) -PassThru -Wait -WindowStyle Hidden
+            if($process.ExitCode -ne 0){throw ('Disposable uninstaller exited '+$process.ExitCode)}
+          }
+          if(Test-Path -LiteralPath (Join-Path $target 'MediaSail.exe')){throw 'Disposable program still exists after normal uninstallation'}
+          'Disposable MediaSail program uninstalled; no application was launched.'
