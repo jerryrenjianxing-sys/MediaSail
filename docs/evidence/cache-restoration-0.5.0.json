@@ -1,0 +1,10 @@
+{
+  "restoredAt": "2026-10-15T11:38:02.506Z",
+  "file": "C:\\Users\\jerry\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.4.3-win-x64-Setup.exe",
+  "bytes": 1787005875,
+  "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381",
+  "sha512MatchedUpdaterRecord": true,
+  "metadataUnchanged": true,
+  "method": "Restored the obsolete installer removed by the earlier isolated UI fixture; atomic no-overwrite link from complete checked copy",
+  "userDataModified": false
+}

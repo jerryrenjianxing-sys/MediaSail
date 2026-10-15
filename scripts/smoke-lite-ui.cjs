@@ -70,7 +70,8 @@ async function closeApp() {
   await app.close(); app = null;
 }
 async function launch() {
-  const env = { ...process.env, EASEL_DESKTOP_DATA: data }; delete env.ELECTRON_RUN_AS_NODE;
+  // Electron updater resolves its cache independently of app.userData.
+  const env = { ...process.env, EASEL_DESKTOP_DATA: data, LOCALAPPDATA: path.join(data, 'test-host-local') }; delete env.ELECTRON_RUN_AS_NODE;
   app = await electron.launch({ executablePath: executable, args: [], env, timeout: 60000 });
   page = await app.firstWindow();
   page.on('pageerror', error => errors.push(error.message));

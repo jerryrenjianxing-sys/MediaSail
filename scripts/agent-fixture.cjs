@@ -2,7 +2,7 @@ const {_electron:electron}=require('playwright'),fs=require('node:fs/promises'),
 const root=path.resolve(__dirname,'..'),out=path.resolve(root,require('../package.json').build.directories.output),data=path.join(root,'.test-data','独立 Agent 0.5.0 '+Date.now());
 let app;
 (async()=>{
- const env={...process.env,EASEL_DESKTOP_DATA:data};delete env.ELECTRON_RUN_AS_NODE;
+ const env={...process.env,EASEL_DESKTOP_DATA:data,LOCALAPPDATA:path.join(data,'test-host-local')};delete env.ELECTRON_RUN_AS_NODE;
  app=await electron.launch({executablePath:path.join(out,'win-unpacked/MediaSail.exe'),args:[],env,timeout:30000});
  const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:60000});
  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().forEach(w=>w.hide()));

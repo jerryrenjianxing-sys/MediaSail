@@ -1,0 +1,46 @@
+{
+  "version": "0.5.0",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.0\\win-unpacked\\MediaSail.exe",
+  "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\启动计时0.5.0 中文 空格 1792063799521",
+  "environment": "Same local Windows computer as the preceding 0.4.3 diagnostic",
+  "samplesPerVersion": 1,
+  "installersRun": false,
+  "realPlatformAccountsUsed": false,
+  "clipboardUsed": false,
+  "baseline": {
+    "version": "0.4.3",
+    "approximateLaunchToReadyMs": 103000,
+    "measuredFrom": "Prior launch request and desktop.log ready entry; about 103 seconds, one sample",
+    "evidence": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\旧0.4.3 seed退出诊断 1792063566552\\result.json"
+  },
+  "limitations": [
+    "Each version has only one observed launch; this is not a general startup-speed promise or a controlled benchmark.",
+    "Both launches used fresh independent user-data directories, but OS/file/antivirus caches were neither cleared nor controlled.",
+    "The earlier 0.4.3 sample loaded its large OpenClaw runtime; current cache state and background system load may differ.",
+    "0.5.0 readiness is the later of real local /api/status serviceReady=true and visible Agent home, observed through Playwright.",
+    "No installer, publication, model generation, or repeated feature acceptance is performed."
+  ],
+  "launchRequestedAt": "2026-10-15T11:29:59.522Z",
+  "electronLaunchedMs": 384,
+  "identity": {
+    "pid": 31644,
+    "version": "0.5.0",
+    "exe": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.0\\win-unpacked\\MediaSail.exe",
+    "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\启动计时0.5.0 中文 空格 1792063799521"
+  },
+  "mainUrlCommittedMs": 3725,
+  "homeVisibleMs": 3751,
+  "serviceReadyObservedMs": 3764,
+  "launchToReadyMs": 3764,
+  "readyObservedAt": "2026-10-15T11:30:03.287Z",
+  "url": "http://127.0.0.1:7860/",
+  "service": {
+    "serviceReady": true,
+    "gateway": false
+  },
+  "normalCloseMs": 151,
+  "closedNormally": true,
+  "passed": true,
+  "nativeDialogs": [],
+  "finishedAt": "2026-10-15T11:30:03.461Z"
+}

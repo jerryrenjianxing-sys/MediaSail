@@ -1,0 +1,74 @@
+{
+  "version": "0.5.0",
+  "startedAt": "2026-10-15T11:40:54.827Z",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.0\\win-unpacked\\MediaSail.exe",
+  "fixture": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827",
+  "childEnvironment": {
+    "EASEL_DESKTOP_DATA": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\user-data",
+    "LOCALAPPDATA": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local"
+  },
+  "realCachePolicy": "Read-only SHA256 and size checks before and after; no file writes or metadata modifications",
+  "installersRun": false,
+  "clipboardUsed": false,
+  "realBefore": {
+    "installer": {
+      "file": "C:\\Users\\jerry\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.4.3-win-x64-Setup.exe",
+      "bytes": 1787005875,
+      "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381"
+    },
+    "metadata": {
+      "file": "C:\\Users\\jerry\\AppData\\Local\\mediasail-updater\\pending\\update-info.json",
+      "bytes": 179,
+      "sha256": "2671bea020ba7848ed8232abc72e5f7f6163b27b063166245cebdcdf1dbc4ba8"
+    }
+  },
+  "probeBefore": {
+    "obsolete": {
+      "file": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local\\mediasail-updater\\pending\\MediaSail-0.4.3-win-x64-Setup.exe",
+      "bytes": 76,
+      "sha256": "12746c86c993f8931a7bd4689b4d2b2b0fa13dd835cde308c45a8da5d3018d8c"
+    },
+    "generic": {
+      "file": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local\\mediasail-updater\\installer.exe",
+      "bytes": 77,
+      "sha256": "923db136be2cd1e256908855041ff5962bb90e8167c523249e12f73ebaf8f07e"
+    }
+  },
+  "identity": {
+    "pid": 52356,
+    "exe": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.0\\win-unpacked\\MediaSail.exe",
+    "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\user-data",
+    "localAppData": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local",
+    "version": "0.5.0"
+  },
+  "updater": {
+    "cacheDir": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local\\mediasail-updater",
+    "baseCachePath": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local"
+  },
+  "probeAfter": {
+    "obsoleteExists": false,
+    "generic": {
+      "file": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\缓存隔离验收 中文 1792064454827\\test-host-local\\mediasail-updater\\installer.exe",
+      "bytes": 77,
+      "sha256": "923db136be2cd1e256908855041ff5962bb90e8167c523249e12f73ebaf8f07e"
+    }
+  },
+  "normalCloseMs": 155,
+  "closedNormally": true,
+  "realAfter": {
+    "installer": {
+      "file": "C:\\Users\\jerry\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.4.3-win-x64-Setup.exe",
+      "bytes": 1787005875,
+      "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381"
+    },
+    "metadata": {
+      "file": "C:\\Users\\jerry\\AppData\\Local\\mediasail-updater\\pending\\update-info.json",
+      "bytes": 179,
+      "sha256": "2671bea020ba7848ed8232abc72e5f7f6163b27b063166245cebdcdf1dbc4ba8"
+    }
+  },
+  "realCacheUnchanged": true,
+  "passed": true,
+  "nativeDialogs": [],
+  "finishedAt": "2026-10-15T11:41:01.663Z"
+}

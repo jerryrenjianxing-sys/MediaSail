@@ -1,0 +1,94 @@
+{
+  "from": "0.4.3",
+  "to": "0.5.0",
+  "mode": "published",
+  "startedAt": "2026-10-15T11:31:32.469Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "unchanged 0.4.3 GitHub updater, real download and install",
+  "phase": "verified",
+  "beforeProgram": {
+    "bytes": 5194730188,
+    "files": 85326
+  },
+  "userDataBefore": {
+    "bytes": 529391864,
+    "files": 2290
+  },
+  "baselineReadyAt": "2026-10-15T11:39:26.949Z",
+  "downloadMs": 13065,
+  "updateSize": 254272473,
+  "downloadTransferred": 254272473,
+  "observation": {
+    "at": "2026-10-15T11:48:34.516Z",
+    "apps": [
+      {
+        "ProcessId": 3052,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe\" --updated"
+      },
+      {
+        "ProcessId": 8252,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe\" --type=gpu-process --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\" --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --field-trial-handle=1792,i,11395433876924121849,365006211857413404,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1796,i,4548384538397512324,624741375869661305,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1784 /prefetch:2"
+      },
+      {
+        "ProcessId": 1180,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\" --field-trial-handle=1792,i,11395433876924121849,365006211857413404,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1796,i,4548384538397512324,624741375869661305,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=1992 /prefetch:11"
+      },
+      {
+        "ProcessId": 3644,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe\" --type=renderer --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\" --app-user-model-id=org.electroneasel.desktop --app-path=\"D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\resources\\app.asar\" --enable-sandbox --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=1 --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=1304788245 --field-trial-handle=1792,i,11395433876924121849,365006211857413404,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1796,i,4548384538397512324,624741375869661305,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2568 /prefetch:1"
+      }
+    ],
+    "installers": [
+      {
+        "ProcessId": 7492,
+        "ExecutablePath": "C:\\Users\\runneradmin\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.5.0-win-x64-Setup.exe",
+        "CommandLine": "C:\\Users\\runneradmin\\AppData\\Local\\mediasail-updater\\pending\\MediaSail-0.5.0-win-x64-Setup.exe --updated /S --force-run"
+      }
+    ],
+    "windows": []
+  },
+  "visibleInstallObserved": true,
+  "installStages": [
+    "[install]\r\nstate=installing\r\ndirectory=D:\\a\\_temp\\mediasail-lite-38727854157-published\\?? ????\r\n",
+    "[install]\r\nstate=old-version-removed\r\ndirectory=D:\\a\\_temp\\mediasail-lite-38727854157-published\\?? ????\r\n",
+    "[install]\r\nstate=copying-files\r\ndirectory=D:\\a\\_temp\\mediasail-lite-38727854157-published\\?? ????\r\n",
+    "[install]\r\nstate=succeeded\r\ndirectory=D:\\a\\_temp\\mediasail-lite-38727854157-published\\?? ????\r\n"
+  ],
+  "installToRelaunchMs": 533321,
+  "installToReadyMs": 537904,
+  "retention": {
+    "version": "0.5.0",
+    "exe": "D:\\a\\_temp\\mediasail-lite-38727854157-published\\用户 自选目录\\MediaSail.exe",
+    "data": "C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel",
+    "theme": "dark",
+    "chat": true,
+    "draft": "保留的草稿",
+    "cookie": "keep"
+  },
+  "runtime": {
+    "files": 7776,
+    "playwrightPrivateNode": "python/cpython-3.11.15-windows-x86_64-none/Lib/site-packages/playwright/driver/node.exe",
+    "removed": [
+      "runtime/node",
+      "runtime/ffmpeg",
+      "runtime/browsers"
+    ]
+  },
+  "afterProgram": {
+    "bytes": 837922271,
+    "files": 8614
+  },
+  "userDataAfter": {
+    "bytes": 316078526,
+    "files": 2026
+  },
+  "startupObservedMs": 4583,
+  "reclaimedProgramBytes": 4356807917,
+  "passed": true,
+  "cleanedUp": true,
+  "finishedAt": "2026-10-15T11:48:47.823Z"
+}

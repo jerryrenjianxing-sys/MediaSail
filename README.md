@@ -58,6 +58,8 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.0。
 
+运行打包版UI验收时使用main分支最新测试脚本，并同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`。更新组件独立使用后者定位缓存，只改用户数据目录不能隔离缓存。0.5.0发布后的测试脚本已补上这一设置；安装包和业务代码未因此变动。
+
 ## 验证与来源
 
 发布前使用隔离测试数据与临时Windows环境，不覆盖本机日常安装。真实平台登录和公开发布由用户验收，测试不代表已在真实账号成功发布。当前发行包未配置Windows代码签名证书。

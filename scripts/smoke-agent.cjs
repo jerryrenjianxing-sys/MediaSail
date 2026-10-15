@@ -29,7 +29,7 @@ async function closeFixture(){
  }finally{clearTimeout(timer);app=null;}
 }
 async function launch(feed){
- const env={...process.env,EASEL_DESKTOP_DATA:data};delete env.ELECTRON_RUN_AS_NODE;
+ const env={...process.env,EASEL_DESKTOP_DATA:data,LOCALAPPDATA:path.join(data,'test-host-local')};delete env.ELECTRON_RUN_AS_NODE;
  app=await electron.launch({executablePath:exe,args:[],env,timeout:30000});
  await app.evaluate(({app,session},{feed,data})=>{
   const req=process.getBuiltinModule('node:module').createRequire(app.getAppPath()+'/package.json');

@@ -1,0 +1,15 @@
+2026-10-15T11:39:26.979Z Checking for update
+2026-10-15T11:39:26.994Z Generated new staging user ID: 6588aab3-1e23-5063-b5d3-5ee9e4ad3c29
+2026-10-15T11:39:27.580Z Found version 0.5.0 (url: MediaSail-0.5.0-win-x64-Setup.exe)
+2026-10-15T11:39:28.136Z Downloading update from MediaSail-0.5.0-win-x64-Setup.exe
+2026-10-15T11:39:28.139Z Download block maps (old: "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.4.3/MediaSail-0.4.3-win-x64-Setup.exe.blockmap", new: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.0/MediaSail-0.5.0-win-x64-Setup.exe.blockmap)
+2026-10-15T11:39:28.500Z File has 12026 changed blocks
+2026-10-15T11:39:28.525Z Full: 267,364.14 KB, To download: 248,312.96 KB (93%)
+2026-10-15T11:39:28.532Z Differential download: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.0/MediaSail-0.5.0-win-x64-Setup.exe
+2026-10-15T11:39:28.632Z Redirect to https://release-assets.githubusercontent.com/github-production-release-asset/1411559429/873fe1ab-e4b7-45a1-9c86-6ae5210a968a
+2026-10-15T11:39:40.572Z New version 0.5.0 has been downloaded to C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.5.0-win-x64-Setup.exe
+2026-10-15T11:39:41.217Z Install on explicit quitAndInstall
+2026-10-15T11:39:41.217Z Install: isSilent: true, isForceRunAfter: true
+2026-10-15T11:39:41.218Z Executing: C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.5.0-win-x64-Setup.exe with args: --updated,/S,--force-run
+2026-10-15T11:48:41.497Z Checking for update
+2026-10-15T11:48:42.088Z Update for version 0.5.0 is not available (latest version: 0.5.0, downgrade is disallowed).

@@ -1,0 +1,25 @@
+{
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.4.3\\win-unpacked\\MediaSail.exe",
+  "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\旧0.4.3 seed退出诊断 1792063566552\\用户 中文 空格",
+  "startedAt": "2026-10-15T11:26:06.552Z",
+  "diagnosticOnly": true,
+  "installersRun": false,
+  "identity": {
+    "pid": 53964,
+    "exe": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.4.3\\win-unpacked\\MediaSail.exe",
+    "data": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\work\\electroneasel\\.test-data\\旧0.4.3 seed退出诊断 1792063566552\\用户 中文 空格",
+    "version": "0.4.3"
+  },
+  "baseUrl": "http://127.0.0.1:7860",
+  "seedPassed": true,
+  "seedAt": "2026-10-15T11:27:51.894Z",
+  "nativeDialogInstrumentation": "Record native message/error box calls without displaying or approving them",
+  "closeWithin15Seconds": true,
+  "closeMs": 147,
+  "nativeDialogs": [],
+  "finishedAt": "2026-10-15T11:27:52.723Z",
+  "readyLogAt": "2026-10-15T11:27:49.378Z",
+  "readyLog": "MediaSail 已就绪",
+  "launchToReadyMs": 102826,
+  "measurementSource": "Prior isolated desktop.log; one sample, OS and file cache not controlled"
+}
