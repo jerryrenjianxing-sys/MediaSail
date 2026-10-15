@@ -4,11 +4,11 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [验证记录](docs/VERIFICATION-0.5.1.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.0 验证记录](docs/VERIFICATION-0.5.0.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
-安装 MediaSail-0.5.1-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
+当前正式版为 **0.5.0**，安装 MediaSail-0.5.0-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -28,7 +28,9 @@ AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent �
 
 升级沿用原安装标识和目录，先正常卸载旧程序，再安装新程序，移除旧的大型运行环境。卸载失败即停止并记录日志，不大范围删除目录兜底。新版启动后只清理本软件管理且能识别版本的过期更新安装包，保留当前差量更新缓存。GitHub旧Release和用户自行保存的安装包不删除。
 
-0.5.1 修复官方 0.4.3 缺少安装登记时的旁装问题：核对本机连接资料及官方程序、卸载器和应用资源身份，进入安装阶段才恢复固定登记并运行旧卸载器。无法核验或卸载失败时停止，临时登记按原状态恢复；不删除其他目录中的手动副本。
+2026-10-15 已在本机 Windows 原生环境完成 0.4.3 → 0.5.0 更新、旧运行环境清理、两次正常重启及数据核验，最终安装位置保持不变。首轮由测试工具隔离视图引起的旁装已清理，不能作为普通 Windows 启动的缺陷结论。未因此额外发布版本。
+
+主分支另有**未发行的 0.5.1 候选**，用于验证人为缺少安装登记时的恢复能力：核对官方旧程序身份，实际卸载前恢复必要登记，失败时回滚。该候选仍为 GitHub 草稿，不是最新正式版，不会被软件的检查更新发现；[候选验证记录](docs/VERIFICATION-0.5.1.md)。
 
 用户数据继续在原位置；卸载默认保留。为兼容历史版本，数据目录仍使用旧技术名称：
 
@@ -52,7 +54,7 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail | 0.5.1 |
+| MediaSail 正式版 / 当前源码候选 | 0.5.0 / 0.5.1（未发行） |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |

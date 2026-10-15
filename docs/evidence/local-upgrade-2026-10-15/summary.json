@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "version": "0.5.0",
+  "publishedExtraVersion": false,
+  "originalInstallation": "D:\\mediasail",
+  "nativeUpgrade": {
+    "reusedVerifiedInstaller": true,
+    "downloadAndValidationMs": 2036,
+    "newInstallerNetworkBytes": 0,
+    "installToRelaunchMs": 167825,
+    "installToReadyMs": 175106,
+    "parallelInstall": false
+  },
+  "firstDownload": {
+    "downloadAndValidationMs": 715388,
+    "fullInstallerBytes": 273780875,
+    "failedDifferentialObservedAtLeastBytes": 123472989,
+    "fallback": "net::ERR_CONNECTION_CLOSED",
+    "measurement": "payload lower bound; headers and metadata excluded"
+  },
+  "program": {
+    "beforeBytes": 5206208390,
+    "afterBytes": 837922271,
+    "reclaimedBytes": 4368286119
+  },
+  "cache": {
+    "beforeBytes": 2061356105,
+    "afterBytes": 548131105,
+    "beforeCapture": "after first side-installation run; not pre-upgrade"
+  },
+  "data": {
+    "bytes": 542462837,
+    "sourceSnapshot": "native snapshot after first 0.5.0 auto-launch; separate initial tool-view backup retained"
+  },
+  "oldRuntime": {
+    "node": false,
+    "ffmpeg": false,
+    "browsers": false
+  },
+  "sideInstallationPresent": false,
+  "oldUninstallerTempPresent": false,
+  "shortcutsAllPointToOriginal": true,
+  "restarts": [
+    {
+      "cycle": 1,
+      "startToHomeMs": 1636,
+      "apiStatuses": [
+        {
+          "endpoint": "/api/personas",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/outputs",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/accounts",
+          "status": 200,
+          "items": 7
+        },
+        {
+          "endpoint": "/api/schedule",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/ideas",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/analytics/platforms",
+          "status": 200,
+          "items": 7
+        }
+      ],
+      "strictFileFailures": 0,
+      "links": {
+        "baseline": 6,
+        "unchanged": 6,
+        "missing": 0,
+        "changed": 0
+      },
+      "browserCore": {
+        "baseline": 7,
+        "present": 7,
+        "missing": 0,
+        "unchanged": 3
+      },
+      "chatDigestEqual": true,
+      "changedUiKeys": [
+        "easel_whoami"
+      ],
+      "archive": {
+        "complete": true,
+        "files": 2,
+        "checksumValid": 2,
+        "checksumInvalid": 0,
+        "uiChatCount": 1,
+        "baselineChatsCopied": true
+      },
+      "cookies": {
+        "baselineKeys": 40,
+        "retainedKeys": 40,
+        "newKeys": 6,
+        "allKeysRetained": true,
+        "actualAuthenticatedSessionAcceptance": false,
+        "aitoearnBaselineCookieCount": 0
+      }
+    },
+    {
+      "cycle": 2,
+      "startToHomeMs": 1620,
+      "apiStatuses": [
+        {
+          "endpoint": "/api/personas",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/outputs",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/accounts",
+          "status": 200,
+          "items": 7
+        },
+        {
+          "endpoint": "/api/schedule",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/ideas",
+          "status": 200,
+          "items": 0
+        },
+        {
+          "endpoint": "/api/analytics/platforms",
+          "status": 200,
+          "items": 7
+        }
+      ],
+      "strictFileFailures": 0,
+      "links": {
+        "baseline": 6,
+        "unchanged": 6,
+        "missing": 0,
+        "changed": 0
+      },
+      "browserCore": {
+        "baseline": 7,
+        "present": 7,
+        "missing": 0,
+        "unchanged": 3
+      },
+      "chatDigestEqual": true,
+      "changedUiKeys": [
+        "easel_whoami"
+      ],
+      "archive": {
+        "complete": true,
+        "files": 2,
+        "checksumValid": 2,
+        "checksumInvalid": 0,
+        "uiChatCount": 1,
+        "baselineChatsCopied": true
+      },
+      "cookies": {
+        "baselineKeys": 40,
+        "retainedKeys": 40,
+        "newKeys": 6,
+        "allKeysRetained": true,
+        "actualAuthenticatedSessionAcceptance": false,
+        "aitoearnBaselineCookieCount": 0
+      }
+    }
+  ],
+  "finalCheck": {
+    "phase": "current",
+    "current": "0.5.0",
+    "message": "当前已是最新版本。"
+  },
+  "maintenanceStopped": true,
+  "completedAt": "2026-10-15T15:47:51.485Z"
+}
