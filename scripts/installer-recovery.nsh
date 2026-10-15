@@ -5,6 +5,9 @@ Var mediaSailRecoveryState
 Var mediaSailRecoveryResult
 Var mediaSailRecoveryBackup
 
+; The custom include is parsed before builder registry, logic and plugin setup.
+; Expand functions at the supported customHeader hook after those are available.
+!macro customHeader
 Function MediaSailRecoveryRun
   Pop $R8
   Delete "$mediaSailRecoveryResult"
@@ -81,6 +84,7 @@ Function MediaSailRecoveryRollback
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "recoveryRollback" "succeeded"
   ${EndIf}
 FunctionEnd
+!macroend
 
 !macro mediaSailBeforeOldUninstall
   ${If} $rootKey == "SHELL_CONTEXT"
