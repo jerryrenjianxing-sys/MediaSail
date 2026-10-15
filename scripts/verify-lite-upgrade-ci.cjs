@@ -109,7 +109,7 @@ async function verifyLockedUninstallRollback(){
   },720000,'real old-uninstaller failure and safe installer termination',2000);
   await installing;fault.actualInstallerExitCode=exitCode;fault.actualInstallerError=installError;
   assert.equal(exitCode,2,'Real candidate installer must return failure, not success');
-  assert.ok(fault.dialog.some(dialog=>dialog.confirmed),'Expected uninstall failure dialog was not observed and confirmed');
+  assert.ok(fault.dialog.some(dialog=>dialog.confirmed&&dialog.action==='confirm-uninstall-failed'),'Expected final uninstall failure dialog was not observed and confirmed');
   const stage=await installerStage();fault.installerLog=stage;assert.match(stage,/state=old-uninstall-failed/);assert.match(stage,/recoveryRollback=succeeded/);
   assert.deepEqual(registrySnapshot(),[],'Temporary registration was not rolled back to its originally missing state');
   assert.equal(owned().length,0,'A failed installation must not launch MediaSail');assert.equal(fss.existsSync(defaultExe),false);

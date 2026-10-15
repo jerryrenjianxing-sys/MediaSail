@@ -43,20 +43,25 @@ $callback=[InstallerFailureWindow+EnumProc]{param($handle,$unused)
  }
  [void][InstallerFailureWindow]::EnumChildWindows($handle,$childCallback,[IntPtr]::Zero)
  $message=($children | Where-Object {$_.class -eq 'Static'} | ForEach-Object {$_.text}) -join ' | '
- # Only the expected old-uninstaller failure is acknowledged. Recovery or copy
- # errors remain untouched and make the test fail instead of hiding a defect.
- if($message -notmatch 'Failed to uninstall old application files|\u5378\u8f7d\u65e7.*\u5931\u8d25|\u7121\u6cd5.*\u820a\u7684\u61c9\u7528'){return $true}
- $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -eq 1})
- if($buttons.Count -ne 1){throw 'Expected one fixture error OK button'}
- if(-not (Test-Path -LiteralPath $Screenshot)){
+ # The native builder tries the actual old uninstaller five times, then offers
+ # Retry/Cancel before reaching its final error handler. Cancel only that known
+ # fixture dialog; the next known uninstall-failed dialog is acknowledged with OK.
+ # Other recovery/copy errors remain untouched and make the test fail.
+ $action='';$buttonId=0;$capture=$Screenshot
+ if($message -match 'Failed to uninstall old application files|\u5378\u8f7d\u65e7.*\u5931\u8d25|\u7121\u6cd5.*\u820a\u7684\u61c9\u7528'){$action='confirm-uninstall-failed';$buttonId=1}
+ elseif($message -match 'MediaSail cannot be closed'){$action='cancel-exhausted-uninstall-retries';$buttonId=2;$capture=$Screenshot -replace '\.png$','-retry-cancel.png'}
+ else{return $true}
+ $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -eq $buttonId})
+ if($buttons.Count -ne 1){throw 'Expected one known fixture error button'}
+ if(-not (Test-Path -LiteralPath $capture)){
   $rect=[InstallerFailureWindow+Rect]::new();[void][InstallerFailureWindow]::GetWindowRect($handle,[ref]$rect)
   $bitmap=[Drawing.Bitmap]::new($rect.Right-$rect.Left,$rect.Bottom-$rect.Top)
   $graphics=[Drawing.Graphics]::FromImage($bitmap);$dc=$graphics.GetHdc()
   try{[void][InstallerFailureWindow]::PrintWindow($handle,$dc,2)}finally{$graphics.ReleaseHdc($dc)}
-  try{$bitmap.Save($Screenshot,[Drawing.Imaging.ImageFormat]::Png)}finally{$graphics.Dispose();$bitmap.Dispose()}
+  try{$bitmap.Save($capture,[Drawing.Imaging.ImageFormat]::Png)}finally{$graphics.Dispose();$bitmap.Dispose()}
  }
  $confirmed=[InstallerFailureWindow]::PostMessage($buttons[0].handle,0xF5,[IntPtr]::Zero,[IntPtr]::Zero)
- $observed.Add(@{pid=$InstallerPid;message=$message;confirmed=$confirmed;screenshot=$Screenshot})
+ $observed.Add(@{pid=$InstallerPid;message=$message;action=$action;confirmed=$confirmed;screenshot=$capture})
  return $true
 }
 [void][InstallerFailureWindow]::EnumWindows($callback,[IntPtr]::Zero)
