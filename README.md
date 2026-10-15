@@ -4,11 +4,11 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [验证记录](docs/VERIFICATION-0.5.0.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [验证记录](docs/VERIFICATION-0.5.1.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
-安装 MediaSail-0.5.0-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
+安装 MediaSail-0.5.1-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -27,6 +27,8 @@ AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent �
 主页面就绪后约15秒自动检查GitHub新版，显示可关闭横幅；设置、侧栏和托盘也能检查。用户选择下载、校验、重启安装，不自动下载或安装，也不发行过渡版。
 
 升级沿用原安装标识和目录，先正常卸载旧程序，再安装新程序，移除旧的大型运行环境。卸载失败即停止并记录日志，不大范围删除目录兜底。新版启动后只清理本软件管理且能识别版本的过期更新安装包，保留当前差量更新缓存。GitHub旧Release和用户自行保存的安装包不删除。
+
+0.5.1 修复官方 0.4.3 缺少安装登记时的旁装问题：核对本机连接资料及官方程序、卸载器和应用资源身份，进入安装阶段才恢复固定登记并运行旧卸载器。无法核验或卸载失败时停止，临时登记按原状态恢复；不删除其他目录中的手动副本。
 
 用户数据继续在原位置；卸载默认保留。为兼容历史版本，数据目录仍使用旧技术名称：
 
@@ -50,13 +52,13 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail | 0.5.0 |
+| MediaSail | 0.5.1 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.0。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.1。
 
 运行打包版UI验收时使用main分支最新测试脚本，并同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`。更新组件独立使用后者定位缓存，只改用户数据目录不能隔离缓存。0.5.0发布后的测试脚本已补上这一设置；安装包和业务代码未因此变动。
 

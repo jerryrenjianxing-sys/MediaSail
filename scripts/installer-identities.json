@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "product": "MediaSail",
+  "releases": [
+    {
+      "version": "0.4.3",
+      "installer": {
+        "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.4.3/MediaSail-0.4.3-win-x64-Setup.exe",
+        "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381"
+      },
+      "evidence": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38756506224",
+      "sha256": {
+        "executable": "08a354a7f727f49307107030888c08a05b759559cbe0b4e7389a14a8e162f5d9",
+        "uninstaller": "f03972376f35077071dc1728ade8f9fde10ba3f9c0e449a13719016c85ca7035",
+        "asar": "cf9d385f6fe1b7b2005a9d83ac1ea46006e2e83e6d1236905747e55129de1c0f"
+      }
+    }
+  ]
+}

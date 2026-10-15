@@ -1,4 +1,4 @@
-name: Verify genuine MediaSail light upgrade
+name: Verify genuine MediaSail upgrade and path recovery
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +10,27 @@ on:
           - candidate
           - published
         default: candidate
+      target_version:
+        description: Exact release version to verify (without v)
+        required: true
+        type: string
+        default: '0.5.1'
+      registration:
+        description: Preserve registration or reproduce missing registration
+        required: true
+        type: choice
+        options:
+          - missing
+          - registered
+        default: missing
+      failure_mode:
+        description: Optional real old-uninstaller failure and rollback before retry
+        required: true
+        type: choice
+        options:
+          - none
+          - locked-old-node
+        default: none
 permissions:
   # Draft releases are visible to repository writers. The token is passed only
   # to the download step, never to the installed application.
@@ -28,12 +49,15 @@ jobs:
       - name: Download genuine baseline and selected light installer
         env:
           GH_TOKEN: ${{ github.token }}
+          MEDIASAIL_TARGET_VERSION: ${{ inputs.target_version }}
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          gh release view v0.5.0 --json tagName,isDraft
+          $version=$env:MEDIASAIL_TARGET_VERSION
+          if($version -notmatch '^0\.5\.[0-9]+$'){throw 'Expected a 0.5.x target version'}
+          gh release view ('v'+$version) --json tagName,isDraft
           if($LASTEXITCODE -ne 0){throw 'Candidate release is not visible to this run'}
-          foreach($entry in @(@{Version='0.5.0';Directory='candidate'},@{Version='0.4.3';Directory='baseline'})) {
+          foreach($entry in @(@{Version=$version;Directory='candidate'},@{Version='0.4.3';Directory='baseline'})) {
             $directory=Join-Path 'release-input' $entry.Directory
             New-Item -ItemType Directory -Path $directory | Out-Null
             $name='MediaSail-'+$entry.Version+'-win-x64-Setup.exe'
@@ -51,10 +75,13 @@ jobs:
       - name: Real isolated Windows installation and retention checks
         env:
           MEDIASAIL_UPGRADE_MODE: ${{ inputs.mode }}
+          MEDIASAIL_TARGET_VERSION: ${{ inputs.target_version }}
+          MEDIASAIL_REGISTRATION: ${{ inputs.registration }}
+          MEDIASAIL_FAILURE_MODE: ${{ inputs.failure_mode }}
         run: node scripts/verify-lite-upgrade-ci.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mediasail-0.5.0-real-lite-upgrade-${{ inputs.mode }}
+          name: mediasail-${{ inputs.target_version }}-real-upgrade-${{ inputs.mode }}-${{ inputs.registration }}-${{ inputs.failure_mode }}
           path: installer-evidence/
           retention-days: 14

@@ -133,6 +133,7 @@ if(!locked){app.quit();} else {
     window.webContents.session.setPermissionRequestHandler((_wc,permission,callback)=>callback(permission==='clipboard-sanitized-write'));
     window.webContents.on('render-process-gone',()=>{if(!quitting)void fail('界面异常退出，请重试。');});
     const {autoUpdater}=require('electron-updater');
+    autoUpdater.installDirectory=path.dirname(app.getPath('exe'));
     const updateLog=message=>{try{const dir=path.join(data,'logs');fs.mkdirSync(dir,{recursive:true});fs.appendFileSync(path.join(dir,'updates.log'),new Date().toISOString()+' '+String(message)+'\n');}catch{}};
     autoUpdater.logger={info:updateLog,warn:updateLog,error:updateLog,debug:()=>{}};
     updates=new Updates({updater:autoUpdater,version:app.getVersion(),enabled:app.isPackaged,prepareInstall,recoverInstall,log:updateLog});

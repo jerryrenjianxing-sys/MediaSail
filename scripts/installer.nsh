@@ -5,6 +5,7 @@
   !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-legacy-temp.nsh"
   Var legacyInstallPath
   Var mediaSailVisibleUpdate
+  !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-recovery.nsh"
   !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。正在替换旧程序，用户数据将保留。"
 !endif
 
@@ -17,6 +18,10 @@
     SetSilent normal
     CreateDirectory "$LOCALAPPDATA\ElectronEasel\logs"
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "started"
+    WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "directory" "$INSTDIR"
+  ${EndIf}
+  Call MediaSailRecoveryProbe
+  ${If} $mediaSailRecoveryState == "verified"
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "directory" "$INSTDIR"
   ${EndIf}
   ; Recover a readable normal path after an interrupted legacy upgrade.
@@ -43,6 +48,11 @@
     !undef MUI_PAGE_CUSTOMFUNCTION_PRE
   !endif
   Function MediaSailInstFilesPre
+    ${If} $mediaSailRecoveryState == "verified"
+      ; The per-user mode page recomputes INSTDIR from the still-unmodified
+      ; registry. Restore the verified original location after that page.
+      StrCpy $INSTDIR "$mediaSailRecoveryPath"
+    ${EndIf}
     ${IfNot} ${isUpdated}
       Call instFilesPre
     ${EndIf}
@@ -87,6 +97,12 @@
 !macroend
 
 !macro customUnInstallCheck
+  ${If} $mediaSailRecoveryState == "staged"
+  ${AndIf} $R0 == 0
+  ${AndIf} ${FileExists} "$mediaSailRecoveryPath\MediaSail.exe"
+    ; Do not report a skipped or incomplete old uninstallation as success.
+    StrCpy $R0 2
+  ${EndIf}
   ${If} ${Errors}
     StrCpy $R0 2
   ${EndIf}
@@ -114,6 +130,9 @@
     ${EndIf}
   ${EndIf}
   ${If} $R0 != 0
+    Push $R0
+    Call MediaSailRecoveryRollback
+    Pop $R0
     MessageBox MB_OK|MB_ICONEXCLAMATION "$(uninstallFailed): $R0" /SD IDOK
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "old-uninstall-failed"
     SetErrorLevel 2

@@ -1,0 +1,34 @@
+{
+  "installedFromVerifiedOfficialInstaller": true,
+  "files": [
+    {
+      "bytes": 246338560,
+      "productVersion": "0.4.3.0",
+      "path": "MediaSail.exe",
+      "fileVersion": "0.4.3",
+      "sha256": "08a354a7f727f49307107030888c08a05b759559cbe0b4e7389a14a8e162f5d9"
+    },
+    {
+      "bytes": 230754,
+      "productVersion": "0.4.3",
+      "path": "Uninstall MediaSail.exe",
+      "fileVersion": "0.4.3",
+      "sha256": "f03972376f35077071dc1728ade8f9fde10ba3f9c0e449a13719016c85ca7035"
+    },
+    {
+      "bytes": 3337984,
+      "productVersion": null,
+      "path": "resources\\app.asar",
+      "fileVersion": null,
+      "sha256": "cf9d385f6fe1b7b2005a9d83ac1ea46006e2e83e6d1236905747e55129de1c0f"
+    }
+  ],
+  "installer": {
+    "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381",
+    "bytes": 1787005875
+  },
+  "version": "0.4.3",
+  "softwareStarted": false,
+  "source": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.4.3",
+  "recordedAt": "2026-10-15T15:08:03.1315986Z"
+}

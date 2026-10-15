@@ -1,6 +1,6 @@
 // Genuine installer/update acceptance. This file must never run on a user's PC.
 'use strict';
-const fs=require('node:fs/promises'),fss=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),assert=require('node:assert/strict');
+const fs=require('node:fs/promises'),fss=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),assert=require('node:assert/strict'),crypto=require('node:crypto');
 assert.equal(process.platform,'win32','Windows runner required');
 assert.equal(process.env.GITHUB_ACTIONS,'true','GitHub Actions only');
 assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted','Ephemeral GitHub-hosted runner only');
@@ -11,31 +11,117 @@ const root=path.resolve(__dirname,'..');
 assert.equal(root.toLowerCase(),path.resolve(process.env.GITHUB_WORKSPACE).toLowerCase());
 const mode=process.env.MEDIASAIL_UPGRADE_MODE||'candidate';
 assert.ok(['candidate','published'].includes(mode),'Expected candidate or published mode');
-const from='0.4.3',to='0.5.0',run=path.join(process.env.RUNNER_TEMP,'mediasail-lite-'+process.env.GITHUB_RUN_ID+'-'+mode);
+const registration=process.env.MEDIASAIL_REGISTRATION||'missing';
+assert.ok(['missing','registered'].includes(registration),'Expected missing or registered registration');
+const failureMode=process.env.MEDIASAIL_FAILURE_MODE||'none';
+assert.ok(['none','locked-old-node'].includes(failureMode),'Expected none or locked-old-node failure mode');
+if(failureMode!=='none')assert.ok(mode==='candidate'&&registration==='missing','Failure injection requires candidate/missing mode');
+const from='0.4.3',to=process.env.MEDIASAIL_TARGET_VERSION||'0.5.1';
+assert.match(to,/^0\.5\.\d+$/,'Expected exact 0.5.x target version');
+const run=path.join(process.env.RUNNER_TEMP,'mediasail-lite-'+process.env.GITHUB_RUN_ID+'-'+mode+'-'+registration+'-'+failureMode);
 const target=path.join(run,'用户 自选目录'),exe=path.join(target,'MediaSail.exe');
+const defaultTarget=path.join(process.env.LOCALAPPDATA,'Programs','MediaSail'),defaultExe=path.join(defaultTarget,'MediaSail.exe');
 const data=path.join(process.env.LOCALAPPDATA,'ElectronEasel');
-const evidence=path.join(root,'installer-evidence','lite-'+mode);
+const evidence=path.join(root,'installer-evidence','lite-'+mode+'-'+registration+'-'+failureMode);
 const baseline=path.join(root,'release-input','baseline',`MediaSail-${from}-win-x64-Setup.exe`);
 const candidate=path.join(root,'release-input','candidate',`MediaSail-${to}-win-x64-Setup.exe`);
 assert.ok(path.relative(process.env.RUNNER_TEMP,run)&&!path.relative(process.env.RUNNER_TEMP,run).startsWith('..'));
 assert.ok(!target.toLowerCase().startsWith('d:\\mediasail'));
 const {_electron:electron}=require('playwright'),{attachTestMain}=require('./test-main-inspector.cjs');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const result={from,to,mode,startedAt:new Date().toISOString(),environment:'ephemeral GitHub-hosted Windows',
+const result={from,to,mode,registration,failureMode,startedAt:new Date().toISOString(),environment:'ephemeral GitHub-hosted Windows',
  transport:mode==='published'?'unchanged 0.4.3 GitHub updater, real download and install':'verified draft installer, real NSIS /S --updated --force-run upgrade'};
 const ps=script=>cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',
  '[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); '+script],{encoding:'utf8',windowsHide:true,timeout:30000}).trim();
 const list=value=>Array.isArray(value)?value:value?[value]:[];
 const processes=()=>list(JSON.parse(ps("@(Get-CimInstance Win32_Process -Filter \"Name='MediaSail.exe'\" | Select-Object ProcessId,ExecutablePath,CommandLine) | ConvertTo-Json -Compress")||'[]'));
 const owned=()=>processes().filter(item=>item.ExecutablePath?.toLowerCase()===exe.toLowerCase());
+const defaultOwned=()=>processes().filter(item=>item.ExecutablePath?.toLowerCase()===defaultExe.toLowerCase());
 const inside=(parent,file)=>{const rel=path.relative(parent,file);return rel===''||(!rel.startsWith('..'+path.sep)&&rel!=='..'&&!path.isAbsolute(rel));};
+const quote=value=>"'"+value.replace(/'/g,"''")+"'";
+// These identities come from the unchanged org.electroneasel.desktop appId and
+// pinned electron-builder UUID namespace. No caller-supplied registry path is used.
+const identity='f524de6d-ce52-54ca-a07e-a51e0d556196';
+const registryKeys=[`Software\\${identity}`,`Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${identity}`];
+function registrySnapshot(){
+ return list(JSON.parse(ps(`$rows=@();foreach($hive in @('CurrentUser','LocalMachine')){foreach($view in @('Registry64','Registry32')){$base=[Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::$hive,[Microsoft.Win32.RegistryView]::$view);try{foreach($name in @(${registryKeys.map(quote).join(',')})){$key=$base.OpenSubKey($name);if($null -ne $key){try{$values=@{};foreach($v in $key.GetValueNames()){$values[$v]=@{kind=$key.GetValueKind($v).ToString();value=$key.GetValue($v,$null,[Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)}};$rows+=@{hive=$hive;view=$view;key=$name;values=$values;subkeys=@($key.GetSubKeyNames())}}finally{$key.Dispose()}}}}finally{$base.Dispose()}}};ConvertTo-Json -InputObject @($rows) -Depth 8 -Compress`)||'[]'));
+}
+function assertRegistration(rows,version){
+ assert.ok(rows.length,'MediaSail installation registration missing');
+ const installs=rows.filter(row=>row.key===registryKeys[0]),uninstalls=rows.filter(row=>row.key===registryKeys[1]);
+ assert.ok(installs.length&&uninstalls.length,'Both installation and uninstall keys required');
+ for(const row of rows){assert.equal(row.hive,'CurrentUser','No machine-wide MediaSail registration expected');assert.deepEqual(row.subkeys,[],'Unexpected registry children: do not mutate');}
+ for(const row of installs)assert.equal(row.values.InstallLocation?.value?.toLowerCase(),target.toLowerCase(),'Registration points to wrong installation');
+ for(const row of uninstalls){assert.equal(row.values.DisplayVersion?.value,version);assert.ok(row.values.UninstallString?.value?.toLowerCase().includes(path.join(target,'Uninstall MediaSail.exe').toLowerCase()),'Unexpected uninstaller identity');}
+}
+async function removeOnlyKnownRegistration(){
+ const saved=registrySnapshot();assertRegistration(saved,from);
+ await fs.writeFile(path.join(evidence,'baseline-installation-registration.json'),JSON.stringify(saved,null,2));
+ // Confirm the exact keys were preserved in the evidence before deleting only
+ // those HKCU keys. The disposable runner assertions above remain mandatory.
+ assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence,'baseline-installation-registration.json'),'utf8')),saved);
+ ps(`foreach($view in @('Registry64','Registry32')){$base=[Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser,[Microsoft.Win32.RegistryView]::$view);try{foreach($name in @(${registryKeys.map(quote).join(',')})){$base.DeleteSubKeyTree($name,$false)}}finally{$base.Dispose()}}`);
+ assert.deepEqual(registrySnapshot(),[],'Known installation registration was not removed');
+ result.missingRegistration={removedKeys:registryKeys,backup:'baseline-installation-registration.json',at:new Date().toISOString()};
+}
+function shortcutTargets(){
+ return list(JSON.parse(ps(`$shell=New-Object -ComObject WScript.Shell;$rows=@();foreach($directory in @([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('StartMenu'))){if(Test-Path -LiteralPath $directory){foreach($file in @(Get-ChildItem -LiteralPath $directory -Recurse -File -Filter 'MediaSail.lnk')){$shortcut=$shell.CreateShortcut($file.FullName);$rows+=@{path=$file.FullName;target=$shortcut.TargetPath}}}};ConvertTo-Json -InputObject @($rows) -Compress`)||'[]'));
+}
+async function verifyInstaller(file,version){
+ const name=path.basename(file),checks=await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8');
+ const line=checks.split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)?.replace(/^\*/,'')===name);assert.equal(line.length,1,'Unambiguous installer checksum required');
+ const expected=line[0].trim().split(/\s+/)[0].toLowerCase();assert.match(expected,/^[a-f0-9]{64}$/);
+ const hash=crypto.createHash('sha256');for await(const chunk of fss.createReadStream(file))hash.update(chunk);const actual=hash.digest('hex');assert.equal(actual,expected,'Installer hash mismatch');
+ if(version===from){assert.equal(actual,'9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381');assert.equal((await fs.stat(file)).size,1787005875);}
+ return {name,sha256:actual,bytes:(await fs.stat(file)).size};
+}
 async function until(fn,timeout,label,interval=1000){const end=Date.now()+timeout;while(Date.now()<end){const value=await fn();if(value)return value;await delay(interval);}throw Error('Timed out: '+label);}
 async function directorySize(directory){let bytes=0,files=0;for(const entry of await fs.readdir(directory,{withFileTypes:true})){const item=path.join(directory,entry.name);if(entry.isSymbolicLink())continue;if(entry.isDirectory()){const child=await directorySize(item);bytes+=child.bytes;files+=child.files;}else if(entry.isFile()){bytes+=(await fs.stat(item)).size;files++;}}return {bytes,files};}
 async function collectRuntimeFiles(directory,prefix=''){const files=[];for(const entry of await fs.readdir(directory,{withFileTypes:true})){const rel=path.posix.join(prefix,entry.name);if(entry.isDirectory())files.push(...await collectRuntimeFiles(path.join(directory,entry.name),rel));else if(entry.isFile())files.push(rel);}return files;}
-function setup(file,args){return new Promise((resolve,reject)=>{const child=cp.spawn(file,args,{windowsHide:false,windowsVerbatimArguments:true,stdio:'ignore'});const timer=setTimeout(()=>{cp.spawnSync('taskkill.exe',['/PID',String(child.pid),'/T','/F'],{windowsHide:true});reject(Error('Installer timed out'));},1800000);child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',code=>{clearTimeout(timer);code===0?resolve():reject(Error(path.basename(file)+' exited '+code));});});}
+function setup(file,args,onSpawn=()=>{}){return new Promise((resolve,reject)=>{const child=cp.spawn(file,args,{windowsHide:false,windowsVerbatimArguments:true,stdio:'ignore'});if(child.pid)onSpawn(child.pid);const timer=setTimeout(()=>{cp.spawnSync('taskkill.exe',['/PID',String(child.pid),'/T','/F'],{windowsHide:true});reject(Error('Installer timed out'));},1800000);child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',code=>{clearTimeout(timer);if(code===0)resolve();else{const error=Error(path.basename(file)+' exited '+code);error.exitCode=code;reject(error);}});});}
 function appEnvironment(){const env={};for(const key of ['SystemRoot','SYSTEMROOT','WINDIR','ComSpec','COMSPEC','SystemDrive','PATHEXT','PATH','PROCESSOR_ARCHITECTURE','NUMBER_OF_PROCESSORS','USERNAME','OS','USERPROFILE','HOME','HOMEDRIVE','HOMEPATH','APPDATA','LOCALAPPDATA','TEMP','TMP','PROGRAMFILES','PROGRAMFILES(X86)','ProgramFiles','ProgramFiles(x86)'])if(process.env[key])env[key]=process.env[key];env.PYTHONUTF8='1';env.PYTHONIOENCODING='utf-8';return env;}
 async function persist(){await fs.mkdir(evidence,{recursive:true});await fs.writeFile(path.join(evidence,'result.json'),JSON.stringify(result,null,2));for(const name of ['updates.log','desktop.log','desktop-backend.log',`installer-${to}.ini`,`installer-${to}-copy.log`])await fs.copyFile(path.join(data,'logs',name),path.join(evidence,name)).catch(()=>{});}
 async function installerStage(){try{const bytes=await fs.readFile(path.join(data,`logs/installer-${to}.ini`));return bytes[0]===255&&bytes[1]===254?bytes.subarray(2).toString('utf16le'):bytes.toString('utf8');}catch{return 'not-started';}}
+async function hashInstalledIdentity(){const rows={};for(const relative of ['MediaSail.exe','Uninstall MediaSail.exe','resources/app.asar','resources/runtime/node/node.exe']){const file=path.join(target,relative),hash=crypto.createHash('sha256');for await(const chunk of fss.createReadStream(file))hash.update(chunk);rows[relative]={sha256:hash.digest('hex'),bytes:(await fs.stat(file)).size};}return rows;}
+async function verifyLockedUninstallRollback(){
+ assert.equal(registration,'missing');assert.deepEqual(registrySnapshot(),[]);assert.equal(owned().length,0);
+ const before=await hashInstalledIdentity(),sizeBefore=await directorySize(target);
+ const ready=path.join(run,'old-node-lock-ready'),release=path.join(run,'old-node-lock-release'),lockedFile=path.join(target,'resources/runtime/node/node.exe');
+ // A real exclusive Windows file handle prevents the genuine old uninstaller
+ // from renaming its Node runtime. The holder always releases after 15 minutes.
+ const command=`$ErrorActionPreference='Stop';$handle=$null;try{$handle=[IO.File]::Open(${quote(lockedFile)},[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::None);[IO.File]::WriteAllText(${quote(ready)},'ready');$deadline=[DateTime]::UtcNow.AddMinutes(15);while(-not [IO.File]::Exists(${quote(release)}) -and [DateTime]::UtcNow -lt $deadline){Start-Sleep -Milliseconds 200}}finally{if($null -ne $handle){$handle.Dispose()}}`;
+ const holder=cp.spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',command],{windowsHide:true,stdio:'ignore'});let holderExited=false;holder.once('exit',()=>{holderExited=true;});
+ let installerPid,finished=false,exitCode=null,installError;
+ const fault={startedAt:new Date().toISOString(),lockedFile,actualInstallerExitCode:null,dialog:[]};result.uninstallFailure=fault;
+ try{
+  await until(()=>fss.existsSync(ready),15000,'exclusive old runtime lock ready');assert.equal(holderExited,false,'Lock holder exited unexpectedly');
+  const installing=setup(candidate,['/S','--updated','--force-run'],pid=>{installerPid=pid;}).then(()=>{finished=true;exitCode=0;},error=>{finished=true;exitCode=error.exitCode;installError=String(error);});
+  await until(async()=>{
+   assert.equal(holderExited,false,'Exclusive lock must remain held until the installer stops');
+   if(finished)return true;
+   assert.equal(fss.existsSync(defaultExe),false,'Failing upgrade must not create a side installation');
+   const output=cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(__dirname,'confirm-installer-fixture-error.ps1'),'-InstallerPid',String(installerPid),'-ExpectedExecutable',candidate,'-Screenshot',path.join(evidence,'uninstall-failure-dialog.png')],{encoding:'utf8',windowsHide:true,timeout:20000});
+   const observed=list(JSON.parse(output||'[]'));if(observed.length)fault.dialog.push(...observed);await persist();return finished;
+  },720000,'real old-uninstaller failure and safe installer termination',2000);
+  await installing;fault.actualInstallerExitCode=exitCode;fault.actualInstallerError=installError;
+  assert.equal(exitCode,2,'Real candidate installer must return failure, not success');
+  assert.ok(fault.dialog.some(dialog=>dialog.confirmed),'Expected uninstall failure dialog was not observed and confirmed');
+  const stage=await installerStage();fault.installerLog=stage;assert.match(stage,/state=old-uninstall-failed/);assert.match(stage,/recoveryRollback=succeeded/);
+  assert.deepEqual(registrySnapshot(),[],'Temporary registration was not rolled back to its originally missing state');
+  assert.equal(owned().length,0,'A failed installation must not launch MediaSail');assert.equal(fss.existsSync(defaultExe),false);
+  await fs.copyFile(path.join(data,`logs/installer-${to}.ini`),path.join(evidence,'failed-attempt-installer.ini'));
+  const recoveryFiles=(await fs.readdir(path.join(data,'logs'))).filter(name=>name.startsWith(`installer-${to}-recovery-`)&&name.endsWith('.json'));
+  assert.ok(recoveryFiles.length,'Real registry recovery journal missing');
+  for(const name of recoveryFiles){const value=JSON.parse((await fs.readFile(path.join(data,'logs',name),'utf8')).replace(/^\uFEFF/,''));assert.equal(value.status,'rolled-back');await fs.copyFile(path.join(data,'logs',name),path.join(evidence,'failed-attempt-'+name));}
+ }finally{
+  if(installerPid&&!finished)cp.spawnSync('taskkill.exe',['/PID',String(installerPid),'/T','/F'],{windowsHide:true});
+  await fs.writeFile(release,'release');await until(()=>holderExited,15000,'release exclusive runtime lock');
+ }
+ assert.deepEqual(await hashInstalledIdentity(),before,'Old official files must be restored unchanged after failed uninstall');
+ assert.deepEqual(await directorySize(target),sizeBefore,'Failed uninstall must restore all old program files');
+ fault.oldIdentityPreserved=before;fault.originalMissingRegistrationRestored=true;fault.lockReleased=true;fault.passed=true;fault.finishedAt=new Date().toISOString();
+ result.phase='uninstall-failure-rollback-verified';await persist();
+}
 let app,inspector;
 const main="process.mainModule.require('electron').BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'))";
 const render=code=>main+'.webContents.executeJavaScript('+JSON.stringify(code)+')';
@@ -76,6 +162,8 @@ async function observeInstall(oldPid,signal){
  return until(async()=>{
   if(signal?.aborted)throw Error('Installer observation stopped after installer completion/failure');
   const current=owned();
+  assert.equal(fss.existsSync(defaultExe),false,'Upgrade created a parallel installation in the default folder');
+  assert.equal(defaultOwned().length,0,'Upgrade launched the default-folder side installation');
   if(Date.now()-lastObservation>=2000){
    lastObservation=Date.now();
    const installers=list(JSON.parse(ps("@(Get-CimInstance Win32_Process | Where-Object { $_.Name -like '*MediaSail*Setup*' -or $_.Name -eq 'installer.exe' } | Select-Object ProcessId,ExecutablePath,CommandLine) | ConvertTo-Json -Compress")||'[]'));
@@ -106,6 +194,9 @@ async function verifyNew(launched,start){
  result.installToReadyMs=Date.now()-start;
  result.retention=await inspector.evaluate(`(async()=>{const {app,session}=process.mainModule.require('electron'),fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path');const directory=app.getPath('userData'),state=JSON.parse(fs.readFileSync(path.join(directory,'ui-state.json'),'utf8'));return {version:app.getVersion(),exe:app.getPath('exe'),data:directory,theme:state.values.easel_theme,chat:JSON.parse(state.values.easel_sessions).some(s=>s.id==='upgrade-proof'&&s.messages[0]?.content==='升级前的中文聊天'),draft:JSON.parse(state.values.easel_publish_draft).title,cookie:(await session.fromPartition('persist:aitoearn-cn').cookies.get({name:'installer-fixture'}))[0]?.value};})()`);
  assert.equal(result.retention.version,to);assert.equal(result.retention.exe.toLowerCase(),exe.toLowerCase());assert.equal(result.retention.data.toLowerCase(),data.toLowerCase());
+ result.registrationAfter=registrySnapshot();assertRegistration(result.registrationAfter,to);
+ assert.equal(fss.existsSync(defaultExe),false,'Default-folder side installation remains');
+ result.shortcuts=shortcutTargets();assert.ok(result.shortcuts.length>=2,'Desktop and Start Menu shortcuts required');for(const shortcut of result.shortcuts)assert.equal(shortcut.target.toLowerCase(),exe.toLowerCase(),'Shortcut points to side installation');
  assert.equal(result.retention.chat,true);assert.equal(result.retention.theme,'dark');assert.equal(result.retention.draft,'保留的草稿');assert.equal(result.retention.cookie,'keep');
  for(const [relative,content]of Object.entries(fixtures))assert.equal(await fs.readFile(path.join(data,relative),'utf8'),content,relative+' changed');
  const archived=JSON.parse(await fs.readFile(path.join(data,'history-archive/0.5.0/manifest.json'),'utf8'));assert.equal(archived.complete,true);
@@ -139,31 +230,48 @@ async function verifyNew(launched,start){
 }
 (async()=>{
  await fs.mkdir(evidence,{recursive:true});assert.equal(processes().length,0,'No pre-existing MediaSail process allowed');assert.equal(fss.existsSync(data),false,'Runner must have no existing user data');assert.equal(fss.existsSync(target),false);
+ assert.equal(fss.existsSync(defaultExe),false,'Runner must have no default-folder MediaSail installation');assert.deepEqual(registrySnapshot(),[],'Runner must have no pre-existing MediaSail installation registration');
  assert.ok(Number(ps('(Get-PSDrive -Name C).Free'))>28*1024**3,'Need 28 GiB free for genuine full baseline');
  assert.ok(fss.existsSync(baseline));assert.ok(fss.existsSync(candidate));
+ result.installers={baseline:await verifyInstaller(baseline,from),candidate:await verifyInstaller(candidate,to)};
  result.phase='baseline-install';await persist();
  try{
   await setup(baseline,['/S','/D='+target]);assert.ok(fss.existsSync(exe));result.beforeProgram=await directorySize(target);
+  result.registrationBefore=registrySnapshot();assertRegistration(result.registrationBefore,from);
   assert.ok(fss.existsSync(path.join(target,'resources/runtime/node/node.exe')),'Genuine heavy 0.4.3 baseline required');
   app=await electron.launch({executablePath:exe,args:[],env:appEnvironment(),timeout:60000});const page=await app.firstWindow();
   await page.waitForURL('http://127.0.0.1:*/',{timeout:240000});assert.equal(await app.evaluate(({app})=>app.getVersion()),from);
   await seed(page);result.userDataBefore=await directorySize(data);result.baselineReadyAt=new Date().toISOString();result.phase='seeded';await persist();
-  const oldPid=app.process().pid;let start,launched;
+  if(registration==='missing'){
+   await app.close();app=null;await until(()=>owned().length===0,30000,'baseline clean shutdown before removing registration');
+   await removeOnlyKnownRegistration();
+   assert.ok(fss.existsSync(exe)&&fss.existsSync(path.join(target,'Uninstall MediaSail.exe')),'Original program and uninstaller must remain untouched');
+   app=await electron.launch({executablePath:exe,args:[],env:appEnvironment(),timeout:60000});const reopened=await app.firstWindow();
+   await reopened.waitForURL('http://127.0.0.1:*/',{timeout:240000});await reopened.locator('.skill-home').waitFor({state:'visible',timeout:60000});
+   assert.equal(await app.evaluate(({app})=>app.getVersion()),from);
+   const descriptor=await until(async()=>{try{const value=JSON.parse(await fs.readFile(path.join(data,'agent-connection.json'),'utf8'));return value.version===from&&value.status==='ready'&&value.executable?.toLowerCase()===exe.toLowerCase()?value:false;}catch{return false;}},240000,'genuine old client connection descriptor');
+   result.baselineConnection={version:descriptor.version,executable:descriptor.executable,status:descriptor.status};
+   assert.deepEqual(registrySnapshot(),[],'Old client launch must not silently recreate registration');
+   result.phase='missing-registration-reproduced';await persist();
+  }
+  const oldPid=app.process().pid,activePage=await app.firstWindow();let start,launched;
   if(mode==='candidate'){
    await app.close();app=null;await until(()=>owned().length===0,30000,'baseline clean shutdown');
+   if(failureMode==='locked-old-node')await verifyLockedUninstallRollback();
    start=Date.now();result.phase='installing';await persist();
-   // The real NSIS handles its old registered uninstaller and /S compatibility.
+   // Deliberately omit /D. The unmodified old client supplied no install path;
+   // the actual new installer must recover that path and invoke the old uninstaller.
    const observation=new AbortController();
    const install=setup(candidate,['/S','--updated','--force-run']);
    try{[launched]=await Promise.all([observeInstall(oldPid,observation.signal),install]);}
    finally{observation.abort();}
   }else{
-   const event=app.waitForEvent('window',{predicate:window=>window!==page});await page.evaluate(()=>window.desktopUpdates.openAndCheck());const panel=await event;
+   const event=app.waitForEvent('window',{predicate:window=>window!==activePage});await activePage.evaluate(()=>window.desktopUpdates.openAndCheck());const panel=await event;
    let state,lastCheck=Date.now();
-   await until(async()=>{state=await page.evaluate(()=>window.desktopUpdates.status());if(state.phase==='available')return true;if(['current','error'].includes(state.phase)&&Date.now()-lastCheck>=30000){lastCheck=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('check'));}return false;},300000,'published GitHub discovery');
-   assert.equal(state.version,to);await panel.screenshot({path:path.join(evidence,'old-discovers-0.5.0.png'),animations:'disabled'});
+   await until(async()=>{state=await activePage.evaluate(()=>window.desktopUpdates.status());if(state.phase==='available')return true;if(['current','error'].includes(state.phase)&&Date.now()-lastCheck>=30000){lastCheck=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('check'));}return false;},300000,'published GitHub discovery');
+   assert.equal(state.version,to);await panel.screenshot({path:path.join(evidence,`old-discovers-${to}.png`),animations:'disabled'});
    const download=Date.now();await panel.evaluate(()=>window.mediaSailUpdate.call('download'));
-   await until(async()=>{state=await page.evaluate(()=>window.desktopUpdates.status());if(state.phase==='error')throw Error(state.message);return state.phase==='downloaded';},1200000,'genuine updater download and verification');
+   await until(async()=>{state=await activePage.evaluate(()=>window.desktopUpdates.status());if(state.phase==='error')throw Error(state.message);return state.phase==='downloaded';},1200000,'genuine updater download and verification');
    result.downloadMs=Date.now()-download;result.updateSize=state.total;result.downloadTransferred=state.transferred;
    result.phase='installing';await persist();start=Date.now();
    await panel.evaluate(()=>{void window.mediaSailUpdate.call('install');});app=null;
@@ -174,10 +282,16 @@ async function verifyNew(launched,start){
  }finally{
   inspector?.close();if(app)await Promise.race([app.close().catch(()=>{}),delay(10000)]);
   for(const item of owned().filter(item=>!item.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(item.ProcessId),'/T','/F'],{windowsHide:true});
+  for(const item of defaultOwned().filter(item=>!item.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(item.ProcessId),'/T','/F'],{windowsHide:true});
   for(const item of result.observation?.installers||[])if(item.ExecutablePath&&(inside(run,item.ExecutablePath)||inside(path.join(root,'release-input'),item.ExecutablePath)))cp.spawnSync('taskkill.exe',['/PID',String(item.ProcessId),'/T','/F'],{windowsHide:true});
   const uninstaller=path.join(target,'Uninstall MediaSail.exe');
   if(fss.existsSync(uninstaller))try{await setup(uninstaller,['/S','/KEEP_APP_DATA','_?='+target]);}catch(error){result.cleanupError=String(error);}
+  // A failing candidate may have reproduced the exact side-installation bug.
+  // Clean only that fixed current-user path on this disposable runner as well.
+  const sideUninstaller=path.join(defaultTarget,'Uninstall MediaSail.exe');
+  if(fss.existsSync(sideUninstaller))try{await setup(sideUninstaller,['/S','/KEEP_APP_DATA','_?='+defaultTarget]);}catch(error){result.sideCleanupError=String(error);}
   result.cleanedUp=!fss.existsSync(exe);result.finishedAt=new Date().toISOString();await persist();
-  if(!result.cleanedUp)process.exitCode=1;
+  result.sideInstallationCleanedUp=!fss.existsSync(defaultExe);await persist();
+  if(!result.cleanedUp||!result.sideInstallationCleanedUp)process.exitCode=1;
  }
 })().catch(error=>{console.error(error);process.exitCode=1;});
