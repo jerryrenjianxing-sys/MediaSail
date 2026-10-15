@@ -1,0 +1,233 @@
+{
+  "from": "0.4.3",
+  "to": "0.5.1",
+  "mode": "candidate",
+  "registration": "missing",
+  "failureMode": "locked-old-node",
+  "startedAt": "2026-10-15T15:42:23.796Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "verified draft installer, real NSIS /S --updated --force-run upgrade",
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.4.3-win-x64-Setup.exe",
+      "sha256": "9c2e074c9fcc3545f3ba2125636f6f545d9f7e9dbfdf30b869dbc414c65a9381",
+      "bytes": 1787005875
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.1-win-x64-Setup.exe",
+      "sha256": "aa55cd4fc308ec838b2edfe6f1bd419b8b12716fc60c371ed81c9a81fe727dc9",
+      "bytes": 273785460
+    }
+  },
+  "phase": "missing-registration-reproduced",
+  "beforeProgram": {
+    "bytes": 5194730188,
+    "files": 85326
+  },
+  "registrationBefore": [
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "values": {
+        "ShortcutName": {
+          "kind": "String",
+          "value": "MediaSail"
+        },
+        "InstallLocation": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录"
+        },
+        "KeepShortcuts": {
+          "kind": "String",
+          "value": "true"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "values": {
+        "Publisher": {
+          "kind": "String",
+          "value": "MediaSail contributors"
+        },
+        "DisplayName": {
+          "kind": "String",
+          "value": "MediaSail 0.4.3"
+        },
+        "NoRepair": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "QuietUninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+        },
+        "UninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+        },
+        "Comments": {
+          "kind": "String",
+          "value": "MediaSail: desktop workspace for social media creation and AI publishing"
+        },
+        "DisplayVersion": {
+          "kind": "String",
+          "value": "0.4.3"
+        },
+        "URLInfoAbout": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "URLUpdateInfo": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "Readme": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "NoModify": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "DisplayIcon": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe,0"
+        },
+        "EstimatedSize": {
+          "kind": "DWord",
+          "value": 3909752
+        },
+        "HelpLink": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "values": {
+        "ShortcutName": {
+          "kind": "String",
+          "value": "MediaSail"
+        },
+        "InstallLocation": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录"
+        },
+        "KeepShortcuts": {
+          "kind": "String",
+          "value": "true"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "values": {
+        "Publisher": {
+          "kind": "String",
+          "value": "MediaSail contributors"
+        },
+        "DisplayName": {
+          "kind": "String",
+          "value": "MediaSail 0.4.3"
+        },
+        "NoRepair": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "QuietUninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+        },
+        "UninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+        },
+        "Comments": {
+          "kind": "String",
+          "value": "MediaSail: desktop workspace for social media creation and AI publishing"
+        },
+        "DisplayVersion": {
+          "kind": "String",
+          "value": "0.4.3"
+        },
+        "URLInfoAbout": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "URLUpdateInfo": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "Readme": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "NoModify": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "DisplayIcon": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe,0"
+        },
+        "EstimatedSize": {
+          "kind": "DWord",
+          "value": 3909752
+        },
+        "HelpLink": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        }
+      }
+    }
+  ],
+  "userDataBefore": {
+    "bytes": 529411536,
+    "files": 2290
+  },
+  "baselineReadyAt": "2026-10-15T15:49:22.623Z",
+  "missingRegistration": {
+    "removedKeys": [
+      "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196"
+    ],
+    "backup": "baseline-installation-registration.json",
+    "at": "2026-10-15T15:49:24.890Z"
+  },
+  "baselineConnection": {
+    "version": "0.4.3",
+    "executable": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe",
+    "status": "ready"
+  },
+  "uninstallFailure": {
+    "startedAt": "2026-10-15T15:49:59.493Z",
+    "lockedFile": "D:\\a\\_temp\\mediasail-lite-38762508538-candidate-missing-locked-old-node\\用户 自选目录\\resources\\runtime\\node\\node.exe",
+    "actualInstallerExitCode": null,
+    "dialog": [
+      {
+        "message": " | MediaSail cannot be closed. \r\nPlease close it manually and click Retry to continue.",
+        "pid": 2388,
+        "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\lite-candidate-missing-locked-old-node\\uninstall-failure-dialog-retry-cancel.png",
+        "action": "cancel-exhausted-uninstall-retries",
+        "confirmed": true
+      }
+    ]
+  },
+  "error": "Error: Command failed: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File D:\\a\\MediaSail\\MediaSail\\scripts\\confirm-installer-fixture-error.ps1 -InstallerPid 2388 -ExpectedExecutable D:\\a\\MediaSail\\MediaSail\\release-input\\candidate\\MediaSail-0.5.1-win-x64-Setup.exe -Screenshot D:\\a\\MediaSail\\MediaSail\\installer-evidence\\lite-candidate-missing-locked-old-node\\uninstall-failure-dialog.png\nException calling \"EnumWindows\" with \"2\" argument(s): \"Expected one known fixture error button\"\r\nAt D:\\a\\MediaSail\\MediaSail\\scripts\\confirm-installer-fixture-error.ps1:67 char:1\r\n+ [void][InstallerFailureWindow]::EnumWindows($callback,[IntPtr]::Zero)\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException\r\n    + FullyQualifiedErrorId : RuntimeException\r\n \r\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at Object.execFileSync (node:child_process:978:15)\n    at D:\\a\\MediaSail\\MediaSail\\scripts\\verify-lite-upgrade-ci.cjs:107:20\n    at until (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-lite-upgrade-ci.cjs:82:123)\n    at async verifyLockedUninstallRollback (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-lite-upgrade-ci.cjs:103:3)\n    at async D:\\a\\MediaSail\\MediaSail\\scripts\\verify-lite-upgrade-ci.cjs:265:39",
+  "cleanedUp": false,
+  "finishedAt": "2026-10-15T15:51:35.381Z",
+  "sideInstallationCleanedUp": true
+}
