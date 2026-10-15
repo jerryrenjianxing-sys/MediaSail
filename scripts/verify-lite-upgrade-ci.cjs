@@ -64,8 +64,12 @@ async function removeOnlyKnownRegistration(){
  assert.deepEqual(registrySnapshot(),[],'Known installation registration was not removed');
  result.missingRegistration={removedKeys:registryKeys,backup:'baseline-installation-registration.json',at:new Date().toISOString()};
 }
-function shortcutTargets(){
- return list(JSON.parse(ps(`$shell=New-Object -ComObject WScript.Shell;$rows=@();foreach($directory in @([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('StartMenu'))){if(Test-Path -LiteralPath $directory){foreach($file in @(Get-ChildItem -LiteralPath $directory -Recurse -File -Filter 'MediaSail.lnk')){$shortcut=$shell.CreateShortcut($file.FullName);$rows+=@{path=$file.FullName;target=$shortcut.TargetPath}}}};ConvertTo-Json -InputObject @($rows) -Compress`)||'[]'));
+async function shortcutTargets(inspector){
+ const rows=list(JSON.parse(ps(`$shell=New-Object -ComObject WScript.Shell;$rows=@();foreach($directory in @([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('StartMenu'))){if(Test-Path -LiteralPath $directory){foreach($file in @(Get-ChildItem -LiteralPath $directory -Recurse -File -Filter 'MediaSail.lnk')){$shortcut=$shell.CreateShortcut($file.FullName);$rows+=@{path=$file.FullName;legacyComTarget=$shortcut.TargetPath}}}};ConvertTo-Json -InputObject @($rows) -Compress`)||'[]'));
+ // WScript.Shell may expose the lossy ANSI LinkInfo field for Chinese paths.
+ // Read the actual Unicode shell link through Electron as well, and retain both
+ // values plus the raw .lnk evidence rather than treating ANSI loss as a side install.
+ return inspector.evaluate(`(()=>{const {shell}=process.mainModule.require('electron');return ${JSON.stringify(rows)}.map(row=>({...row,target:shell.readShortcutLink(row.path).target}));})()`);
 }
 async function verifyInstaller(file,version){
  const name=path.basename(file),checks=await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8');
@@ -180,7 +184,7 @@ async function observeInstall(oldPid,signal){
    if(result.installStages.at(-1)!==stage)result.installStages.push(stage);
    await persist();
    const texts=windows.flatMap(w=>w.children||[]).map(c=>c.text||'');
-   if(texts.some(t=>/cannot be closed|文件复制失败|安装文件不完整|Uninstall.*failed/i.test(t)))throw Error('Installer needs intervention: '+texts.join(' | '));
+   if(texts.some(t=>/cannot be closed|文件复制失败|安装文件不完整|Uninstall.*failed|Failed to uninstall|无法确认旧版|无法恢复旧版|恢复安装登记.*未完成/i.test(t)))throw Error('Installer needs intervention: '+texts.join(' | '));
   }
   const launched=current.find(item=>item.ProcessId!==oldPid&&!item.CommandLine?.includes('--type=')&&item.CommandLine?.includes('--updated'));
   return launched||false;
@@ -196,7 +200,8 @@ async function verifyNew(launched,start){
  assert.equal(result.retention.version,to);assert.equal(result.retention.exe.toLowerCase(),exe.toLowerCase());assert.equal(result.retention.data.toLowerCase(),data.toLowerCase());
  result.registrationAfter=registrySnapshot();assertRegistration(result.registrationAfter,to);
  assert.equal(fss.existsSync(defaultExe),false,'Default-folder side installation remains');
- result.shortcuts=shortcutTargets();assert.ok(result.shortcuts.length>=2,'Desktop and Start Menu shortcuts required');for(const shortcut of result.shortcuts)assert.equal(shortcut.target.toLowerCase(),exe.toLowerCase(),'Shortcut points to side installation');
+ result.shortcuts=await shortcutTargets(inspector);assert.ok(result.shortcuts.length>=2,'Desktop and Start Menu shortcuts required');
+ for(const [index,shortcut]of result.shortcuts.entries()){await fs.copyFile(shortcut.path,path.join(evidence,`installed-shortcut-${index}.lnk`));assert.equal(shortcut.target.toLowerCase(),exe.toLowerCase(),'Unicode shortcut points to side installation');}
  assert.equal(result.retention.chat,true);assert.equal(result.retention.theme,'dark');assert.equal(result.retention.draft,'保留的草稿');assert.equal(result.retention.cookie,'keep');
  for(const [relative,content]of Object.entries(fixtures))assert.equal(await fs.readFile(path.join(data,relative),'utf8'),content,relative+' changed');
  const archived=JSON.parse(await fs.readFile(path.join(data,'history-archive/0.5.0/manifest.json'),'utf8'));assert.equal(archived.complete,true);
