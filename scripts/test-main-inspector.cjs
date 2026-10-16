@@ -1,8 +1,21 @@
 // Test-only observer for the app started by NSIS (which has no Playwright pipe).
 // The caller must verify executable ownership before passing the PID.
 const cp=require('node:child_process');
+async function signalTestInspector(pid,{signal=target=>process._debugProcess(target),timeoutMs=15000,delayMs=200}={}){
+  const deadline=Date.now()+timeoutMs;
+  for(;;){
+    try{signal(pid);return;}
+    catch(error){
+      // A freshly spawned Electron process may not have initialized Node's
+      // Windows debug shared-memory mapping yet. Retry only that startup race;
+      // the target PID and later inspector-port ownership check stay unchanged.
+      if(error.errno!==2||error.syscall!=='OpenFileMappingW'||Date.now()>=deadline)throw error;
+      await new Promise(resolve=>setTimeout(resolve,delayMs));
+    }
+  }
+}
 async function attachTestMain(pid){
-  process._debugProcess(pid);
+  await signalTestInspector(pid);
   let targets;
   const deadline=Date.now()+15000;
   while(Date.now()<deadline){try{targets=await(await fetch('http://127.0.0.1:9229/json/list')).json();if(targets.length)break;}catch{}await new Promise(r=>setTimeout(r,200));}
@@ -17,4 +30,4 @@ async function attachTestMain(pid){
     close(){ws.close();for(const request of pending.values()){clearTimeout(request.timer);request.reject(new Error('Test inspector closed'));}pending.clear();},
   };
 }
-module.exports={attachTestMain};
+module.exports={attachTestMain,signalTestInspector};
