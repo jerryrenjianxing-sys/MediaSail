@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MediaSail local API",
-    "version": "0.5.2"
+    "version": "0.5.4"
   },
   "paths": {
     "/": {
@@ -462,6 +462,88 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project}/metadata": {
+      "get": {
+        "summary": "Api Project Metadata",
+        "operationId": "api_project_metadata_api_projects__project__metadata_get",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Api Project Metadata Patch",
+        "operationId": "api_project_metadata_patch_api_projects__project__metadata_patch",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectMetadataPatch"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1790,6 +1872,25 @@
           "form"
         ],
         "title": "ProfileBuildRequest"
+      },
+      "ProjectMetadataPatch": {
+        "properties": {
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          },
+          "changes": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "changes"
+        ],
+        "title": "ProjectMetadataPatch"
       },
       "PublishRequest": {
         "properties": {

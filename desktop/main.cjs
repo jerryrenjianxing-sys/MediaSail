@@ -88,10 +88,10 @@ if(!locked){app.quit();} else {
         if(updates?.busy()||aito?.busy()||starting)throw Error('请等待更新、上传或启动完成后再更改资料库。');
         if((await state(baseUrl,options.env.EASEL_DESKTOP_TOKEN)).active!==0)throw Error('还有采集、登录或发布任务，请等任务结束再更改资料库。');
         if(await window.webContents.executeJavaScript('Boolean(window.mediaSailHasUnsavedEdits?.())'))throw Error('还有未保存的编辑或表单，请先保存或取消编辑，再更改资料库。');
-        await flushUiState();
+        if(!await flushUiState())throw Error('资料库更换已取消，请先保存或取消归档编辑。');
         await library.chooseLibrary({bootstrapRoot,targetRoot:input?.targetRoot,installDirectory:path.dirname(app.getPath('exe')),explicitDataRoot});
         await restartLibrary();return {ok:true,data:{restarting:true}};
-      }finally{libraryChanging=false;if(!quitting)await window.webContents.executeJavaScript('document.body.inert=false').catch(()=>{});}
+      }finally{libraryChanging=false;if(!quitting)await window.webContents.executeJavaScript('window.mediaSailResetClose?.();document.body.inert=false').catch(()=>{});}
     }catch(e){return {ok:false,error:e.message};}
   });
   async function restartLibrary(){
@@ -171,24 +171,25 @@ if(!locked){app.quit();} else {
     if(exitPending||quitting)return false;exitPending=true;
     try{
       if(!await confirmStop(true))return false;
-      await flushUiState();
+      if(!await flushUiState())return false;
       quitting=true;agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
-    }catch(e){await recoverInstall();throw e;}finally{exitPending=false;}
+    }catch(e){if(quitting)await recoverInstall();else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('window.mediaSailResetClose?.();document.body.inert=false').catch(()=>{});throw e;}finally{exitPending=false;}
   }
   async function recoverInstall(){quitting=false;ready=false;aito?.resume();if(selectionMode){report('更新安装未能启动。可以重试检查更新，或选择资料库后继续使用。',true);return;}report('更新安装未启动，正在恢复本地服务…');await start();}
   async function flushUiState(){
-    if(ready&&window&&!window.isDestroyed()&&window.webContents.getURL()===baseUrl+'/')await window.webContents.executeJavaScript('window.mediaSailPrepareClose?.()');
+    if(ready&&window&&!window.isDestroyed()&&window.webContents.getURL()===baseUrl+'/'&&await window.webContents.executeJavaScript('window.mediaSailPrepareClose?.()')===false)return false;
     await uiState.flush();
+    return true;
   }
   async function exit(){
     if(exitPending||quitting||updates?.installPending)return;exitPending=true;
     try{
       if(!await confirmStop())return;
-      await flushUiState();
+      if(!await flushUiState())return;
       quitting=true;agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
     }catch(e){
       if(quitting){quitting=false;ready=false;aito?.resume();await start();}
-      else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('document.body.inert=false').catch(()=>{});
+      else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('window.mediaSailResetClose?.();document.body.inert=false').catch(()=>{});
       show();dialog.showErrorBox('MediaSail 尚未退出','数据保存尚未完成，请稍后重试。'+e.message);
     }finally{exitPending=false;}
   }

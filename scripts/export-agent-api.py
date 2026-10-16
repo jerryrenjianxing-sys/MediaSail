@@ -21,7 +21,7 @@ bridge_module.register(module.app, {"product":"MediaSail", "schema":1,
 # are exported together with the actual business backend.
 module.app.openapi_schema = None
 schema = module.app.openapi()
-required = {"/api/agent-info", "/api/platform-skill", "/api/v1/skill", "/api/status", "/api/outputs", "/api/personas"}
+required = {"/api/agent-info", "/api/platform-skill", "/api/v1/skill", "/api/status", "/api/outputs", "/api/personas", "/api/projects/{project}/metadata"}
 if not required.issubset(schema["paths"]):
     raise RuntimeError("Missing actual business/connection routes: " + repr(required - schema["paths"].keys()))
 if any(p.startswith("/api/chat") or p == "/api/skill" or p.startswith("/api/settings/models") for p in schema["paths"]):

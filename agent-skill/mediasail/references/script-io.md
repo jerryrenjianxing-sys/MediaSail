@@ -9,11 +9,13 @@
 先在 outputs/春季内容/ 写好文案.md，再运行：
 
 ```powershell
-& $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manifest.py' meta --topic '春季内容' --title '春季内容方案' --kind article --status ready --profile '测试画像' --deliverables '文案.md' --summary '完成运营内容方案'
+& $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manifest.py' meta --topic '春季内容' --title '春季内容方案' --category creation --kind article --status ready --profile '测试画像' --deliverables '文案.md' --summary '完成运营内容方案'
 & $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manifest.py' read --topic '春季内容'
 ```
 
 meta 更新项目的 .easel.json，read 输出其中的 JSON。登记不创造缺失文件，不代表真实发布；成品清单顺序影响展示。GET /api/outputs 或内容库刷新应能读到项目和成品路径。
+
+`--category` 为 creation、analysis 或 reference，与 `--kind` 的体裁分开；分类不新增目录层级。status 的 draft/ready/published 是草稿、已就绪、已标记发布，后者不是平台发布凭据。软件在线且多人可能同时编辑展示信息时，可用带 revision 的项目元数据 GET/PATCH 接口，见[项目、素材与成品](outputs.md)。
 
 ## 账号快照与趋势
 
@@ -56,3 +58,11 @@ JSON 输出为可追溯的计算结果，包含排序、维度分数/总分和�
 
 review.py 沿用原口径：样本只有3条时 Top3 可包含全部、Bottom3 为空；这不表示没有低表现内容，可根据逐帖结果解释。内部评分只使用实际存在的维度，缺少维度时不能当作完整质量分。
 方法模板中的“复盘主题”和文件名是示例。实际报告放入选定项目根目录，原始数据和计算结果放 assets/，用该项目的 .easel.json 登记真实成品路径。
+
+例如报告已写到 `outputs/复盘主题/复盘报告.md` 后，可登记为运营分析：
+
+```powershell
+& $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manifest.py' meta --topic '复盘主题' --title '月度运营复盘' --category analysis --kind article --status ready --deliverables '复盘报告.md' --summary '按平台、账号和采集时间解释表现，列出下一步验证'
+```
+
+这里的 article 是文档体裁，analysis 才是项目用途；原始快照和过程数据不列为最终成品。报告保留实际来源、账号和计算口径，不把整理登记本身当作补齐了证据。

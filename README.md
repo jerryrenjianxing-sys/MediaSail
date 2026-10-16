@@ -4,19 +4,19 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.3 更新说明](docs/RELEASE-0.5.3.md) · [0.5.3 验证记录](docs/VERIFICATION-0.5.3.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.4 更新说明](docs/RELEASE-0.5.4.md) · [0.5.4 验证记录](docs/VERIFICATION-0.5.4.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前源码为 **0.5.3**：取消自动搬运资料，改为安装后首次启动直接选库。修复 0.5.2 因旧插件目录链接和失败迁移记录无法启动的问题；旧资料保留在原处。0.5.2 的业务修复沿用，0.5.1 历史草稿保留。
+当前源码为 **0.5.4**：内容库支持用途分类、搜索、画像／平台／形态／阶段筛选和归档信息编辑；旧项目保持原路径，缺用途的显示未分类。软件与 Agent 增量修改同一份项目登记，发生外部更新时提示冲突并保留编辑。0.5.3 的直接选库方式继续沿用，升级不重新选择；0.5.1 历史草稿保留。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
 画像建档、编辑、账号数据回写、采集、统计、内容库、选题、日历、平台登录和发布继续提供。画像增强、深度解释及策略创作由外部 Agent 根据完整专业方法完成。Skill 介绍真实资料、路径和工具，不规定 Agent 用什么创作工具，不要求每轮执行固定流程，也不自动安装进其他 Agent 的全局配置。
 
-完整 Skill 随软件提供，连接文件兼容端口变化与中文路径。现成业务计算可通过内置 Python 调用；通用创作环境由 Agent 自选。成品按项目目录及元数据登记，分析经验可更新回画像。内容库和画像页面可刷新查看外部更新；未保存编辑不会自动覆盖。
+完整 Skill 随软件提供，连接文件兼容端口变化与中文路径。现成业务计算可通过内置 Python 调用；通用创作环境由 Agent 自选。成品按项目目录及元数据登记，用途为创作内容、分析报告或参考资料；搜索标题、目录名、摘要和标签，不做正文全文搜索。分析经验可更新回画像。内容库和画像页面可刷新查看外部更新；未保存编辑不会自动覆盖。阶段中的“已标记发布”只是本地归档标记，不代替真实发布记录。
 
 0.5.2 的账号页面区分“已验证”“需要登录”和“暂时无法核验”，显示检查时间。抖音登录用于创作者后台，用户默认浏览器的普通主页登录不能替代核验。手动校验绕过缓存；采集失败显示原因并保留上次结果和原采集时间，不把缺失填成零。自动历史增长只比较同平台、同有效账号、同来源；无法核对稳定身份时仍展示当前有效指标，明确不能比较，不写正常快照。旧无归属资料保留，不自动归给当前账号，也不重写旧 JSONL。手工 tracker 按用户指定画像、平台和口径管理，沿用原公式。
 
@@ -65,13 +65,13 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.3；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.4；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.3。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.4。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 

@@ -848,6 +848,371 @@ index 1e73a95..b49f9f1 100644
      d = os.path.dirname(path) or "."
      os.makedirs(d, exist_ok=True)
      fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+diff --git a/skills/shared/scripts/manifest.py b/skills/shared/scripts/manifest.py
+index 4c3cb51..d1a7076 100644
+--- a/skills/shared/scripts/manifest.py
++++ b/skills/shared/scripts/manifest.py
+@@ -16,6 +16,7 @@ Schema:
+     # —— 展示头（供前端「内容库」富展示；均可选，缺省有兜底）——
+     "title":        "人类可读标题（缺省=topic）",
+     "summary":      "一句话摘要",
++    "category":     "用途：creation|analysis|reference；缺省/空串=未分类",
+     "platform":     "目标平台（小红书/知乎/抖音/…）",
+     "kind":         "产物体裁：article|xhs-note|video|cards|poster|audio|other",
+     "status":       "生命周期：draft|ready|published",
+@@ -39,7 +40,7 @@ Schema:
+ 
+ 子命令:
+   record   追加一步（新主题自动初始化；--status failed 记失败步）
+-  meta     upsert 展示头（title/platform/kind/status/tags/cover/deliverables）
++  meta     增量更新展示头；未提供的字段、步骤和其他自定义字段保持原样
+   read     打印整份 manifest
+   latest   取最近一步（可按 --layer 过滤），供下游读上游
+ 
+@@ -48,10 +49,14 @@ Schema:
+ from __future__ import annotations
+ 
+ import argparse
++import hashlib
+ import json
+ import os
++import re
++import stat
+ import sys
+ import tempfile
++import threading
+ from datetime import datetime, timezone, timedelta
+ from pathlib import Path
+ 
+@@ -67,8 +72,100 @@ STATUSES = ("done", "failed")
+ # 展示头取值域（前端富展示用；kind 决定内容库卡片图标/分组，proj_status 决定生命周期 chip）
+ KINDS = ("article", "xhs-note", "video", "cards", "poster", "audio", "other")
+ PROJECT_STATUSES = ("draft", "ready", "published")
++CATEGORIES = ("creation", "analysis", "reference")
++EDITABLE_META_FIELDS = ("title", "summary", "category", "platform", "kind", "status", "profile", "tags")
+ # 展示头可 upsert 的标量字段（列表字段 tags/deliverables 单独处理）
+-META_SCALAR_FIELDS = ("title", "summary", "platform", "kind", "status", "cover")
++META_SCALAR_FIELDS = ("title", "summary", "category", "platform", "kind", "status", "profile", "cover")
++_LOCKS: dict[str, threading.RLock] = {}
++_LOCKS_GUARD = threading.Lock()
++
++
++class ManifestError(Exception):
++    """Shared CLI/HTTP error. No caller should replace an unreadable document."""
++    def __init__(self, code: str, message: str, *, status: int = 409, current=None):
++        super().__init__(message)
++        self.code, self.status, self.current = code, status, current
++
++
++def _manifest_lock(path: Path):
++    key = os.path.normcase(str(path.absolute()))
++    with _LOCKS_GUARD:
++        return _LOCKS.setdefault(key, threading.RLock())
++
++
++def _read_raw(path: Path) -> bytes | None:
++    try:
++        info = path.lstat()
++    except FileNotFoundError:
++        return None
++    if not stat.S_ISREG(info.st_mode) or path.is_symlink():
++        raise ManifestError("unsafe_manifest", "项目登记必须是普通文件，原内容未改动。", status=403)
++    return path.read_bytes()
++
++
++def _revision(raw: bytes | None) -> str:
++    return "missing" if raw is None else hashlib.sha256(raw).hexdigest()
++
++
++def _parse(raw: bytes | None) -> dict:
++    if raw is None:
++        return {}
++    try:
++        def invalid_constant(value):
++            raise ValueError(f"JSON 包含非有限数值 {value}")
++        data = json.loads(raw.decode("utf-8-sig"), parse_constant=invalid_constant)
++    except (UnicodeError, ValueError) as error:
++        raise ManifestError("invalid_manifest", "项目登记 JSON 无法读取，原文件已保留，请修复后重试。") from error
++    if not isinstance(data, dict):
++        raise ManifestError("invalid_manifest", "项目登记 JSON 必须是对象，原文件已保留。")
++    return data
++
++
++def metadata_snapshot(path: Path) -> dict:
++    raw = _read_raw(path)
++    return {"metadata": _parse(raw), "revision": _revision(raw)}
++
++
++def _validate_changes(changes: dict, *, allow_outputs=False) -> None:
++    allowed = set(EDITABLE_META_FIELDS) | ({"cover", "deliverables"} if allow_outputs else set())
++    if not isinstance(changes, dict) or any(key not in allowed for key in changes):
++        raise ManifestError("invalid_changes", "只能修改项目登记的指定字段。", status=422)
++    for field, value in changes.items():
++        if field in {"tags", "deliverables"}:
++            valid = isinstance(value, list) and all(isinstance(item, str) for item in value)
++        else:
++            valid = isinstance(value, str)
++        if not valid:
++            raise ManifestError("invalid_changes", f"{field} 的值类型无效；清空文本用空串，清空标签用空数组。", status=422)
++    for field, choices in (("category", CATEGORIES), ("kind", KINDS), ("status", PROJECT_STATUSES)):
++        if field in changes and changes[field] not in ("", *choices):
++            raise ManifestError("invalid_changes", f"{field} 的值无效，可选：{'/'.join(choices)} 或空串。", status=422)
++
++
++def update_metadata(path: Path, changes: dict, *, revision: str | None = None,
++                    topic: str | None = None, allow_outputs=False, create_parent=True) -> dict:
++    """Merge a delta under the HTTP writer lock; check direct file edits again
++    immediately before atomic replacement. Arbitrary editors do not share this
++    process lock, so this is optimistic conflict detection, not a file database.
++    """
++    _validate_changes(changes, allow_outputs=allow_outputs)
++    if revision is not None and (not isinstance(revision, str) or
++            not re.fullmatch(r"missing|[0-9a-f]{64}", revision)):
++        raise ManifestError("invalid_revision", "缺少有效的登记版本，请重新读取后保存。", status=422)
++    with _manifest_lock(path):
++        snapshot = metadata_snapshot(path)
++        if revision is not None and revision != snapshot["revision"]:
++            raise ManifestError("revision_conflict", "项目登记已被 Agent 或其他操作修改；你的编辑仍保留，请读取最新内容后再保存。", current=snapshot)
++        if not changes:
++            return snapshot
++        data = dict(snapshot["metadata"])
++        now = _now_iso()
++        if snapshot["revision"] == "missing":
++            data.update(topic=topic or path.parent.name, created=now, steps=[])
++        data.update(changes)
++        data["updated"] = now
++        raw = atomic_write(path, data, expected_revision=snapshot["revision"], create_parent=create_parent)
++        return {"metadata": data, "revision": _revision(raw)}
+ 
+ 
+ # --------------------------------------------------------------------------- #
+@@ -88,29 +185,31 @@ def manifest_path(topic: str | None, data_override: str | None) -> Path:
+ 
+ 
+ def load(path: Path) -> dict:
+-    if not path.exists():
+-        return {}
+     try:
+-        raw = path.read_text(encoding="utf-8").strip()
+-    except OSError as e:
++        data = metadata_snapshot(path)["metadata"]
++    except (OSError, ManifestError) as e:
+         sys.exit(f"错误：无法读取 {path}：{e}")
+-    if not raw:
+-        return {}  # 空文件视作未初始化（agent 可能先建了空占位）
+-    try:
+-        data = json.loads(raw)
+-    except json.JSONDecodeError as e:
+-        sys.exit(f"错误：manifest 非合法 JSON {path}：{e}")
++    if not data:
++        return data
+     data.setdefault("steps", [])
+     return data
+ 
+ 
+-def atomic_write(path: Path, data: dict) -> None:
+-    path.parent.mkdir(parents=True, exist_ok=True)
+-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
++def atomic_write(path: Path, data: dict, *, expected_revision: str | None = None,
++                 create_parent=True) -> bytes:
++    if create_parent:
++        path.parent.mkdir(parents=True, exist_ok=True)
++    raw = (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
++    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".easel-write-", suffix=".tmp")
+     try:
+-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+-            json.dump(data, f, ensure_ascii=False, indent=2)
++        with os.fdopen(fd, "wb") as f:
++            f.write(raw)
++            f.flush()
++            os.fsync(f.fileno())
++        if expected_revision is not None and _revision(_read_raw(path)) != expected_revision:
++            raise ManifestError("revision_conflict", "项目登记在保存时已变化；原文件和你的编辑均保留，请重新读取。", current=metadata_snapshot(path))
+         os.replace(tmp, path)
++        return raw
+     except BaseException:
+         if os.path.exists(tmp):
+             os.unlink(tmp)
+@@ -126,7 +225,8 @@ def _csv(s: str | None) -> list[str]:
+ # --------------------------------------------------------------------------- #
+ def cmd_record(args) -> None:
+     path = manifest_path(args.topic, args.data)
+-    data = load(path)
++    snapshot = metadata_snapshot(path)
++    data = snapshot["metadata"]
+     now = _now_iso()
+ 
+     if not data:
+@@ -140,6 +240,8 @@ def cmd_record(args) -> None:
+     # 后续步骤补登画像（首次登记时未带 profile 的情况）
+     if args.profile and not data.get("profile"):
+         data["profile"] = args.profile
++    if not isinstance(data.setdefault("steps", []), list):
++        raise ManifestError("invalid_manifest", "项目步骤记录不是数组，原文件已保留。")
+ 
+     step = {
+         "layer": args.layer,
+@@ -152,7 +254,7 @@ def cmd_record(args) -> None:
+     }
+     data["steps"].append(step)
+     data["updated"] = now
+-    atomic_write(path, data)
++    atomic_write(path, data, expected_revision=snapshot["revision"])
+     print(json.dumps({"ok": True, "topic": data.get("topic"),
+                       "step_index": len(data["steps"]) - 1, "step": step,
+                       "path": str(path)},
+@@ -164,44 +266,20 @@ def cmd_record(args) -> None:
+ # --------------------------------------------------------------------------- #
+ def cmd_meta(args) -> None:
+     path = manifest_path(args.topic, args.data)
+-    data = load(path)
+-    now = _now_iso()
+-
+-    if not data:
+-        data = {
+-            "topic": args.topic or path.parent.name,
+-            "profile": args.profile or "",
+-            "created": now,
+-            "updated": now,
+-            "steps": [],
+-        }
+-    if args.profile and not data.get("profile"):
+-        data["profile"] = args.profile
+-
+-    # 校验取值域（给错就报，避免前端拿到脏值）
+-    if args.kind and args.kind not in KINDS:
+-        sys.exit(f"错误：--kind 需为 {'/'.join(KINDS)}，收到 {args.kind!r}")
+-    if args.status and args.status not in PROJECT_STATUSES:
+-        sys.exit(f"错误：--status 需为 {'/'.join(PROJECT_STATUSES)}，收到 {args.status!r}")
+-
+-    # 标量字段：仅合并本次传入的（None=不动，保留旧值）
+-    for field in META_SCALAR_FIELDS:
+-        val = getattr(args, field, None)
+-        if val is not None:
+-            data[field] = val
+-    # 列表字段：给了就整体替换（含空串=清空）
++    changes = {field: getattr(args, field) for field in META_SCALAR_FIELDS
++               if getattr(args, field, None) is not None}
+     if args.tags is not None:
+-        data["tags"] = _csv(args.tags)
++        changes["tags"] = _csv(args.tags)
+     if args.deliverables is not None:
+-        data["deliverables"] = _csv(args.deliverables)
+-
+-    data["updated"] = now
+-    atomic_write(path, data)
++        changes["deliverables"] = _csv(args.deliverables)
++    snapshot = update_metadata(path, changes, revision=args.if_revision,
++                               topic=args.topic, allow_outputs=True)
++    data = snapshot["metadata"]
+     header = {k: data.get(k) for k in
+-              ("title", "summary", "platform", "kind", "status", "tags", "cover", "deliverables")
++              (*META_SCALAR_FIELDS, "tags", "deliverables")
+               if k in data}
+     print(json.dumps({"ok": True, "topic": data.get("topic"), "meta": header,
+-                      "path": str(path)}, ensure_ascii=False, indent=2))
++                      "revision": snapshot["revision"], "path": str(path)}, ensure_ascii=False, indent=2))
+ 
+ 
+ # --------------------------------------------------------------------------- #
+@@ -209,6 +287,9 @@ def cmd_meta(args) -> None:
+ # --------------------------------------------------------------------------- #
+ def cmd_read(args) -> None:
+     path = manifest_path(args.topic, args.data)
++    if args.revision:
++        print(json.dumps(metadata_snapshot(path), ensure_ascii=False, indent=2))
++        return
+     data = load(path)
+     if not data:
+         sys.exit(f"错误：manifest 不存在：{path}")
+@@ -358,12 +439,14 @@ def build_parser() -> argparse.ArgumentParser:
+     m = sub.add_parser("meta", help="upsert 展示头（前端富展示用）")
+     m.add_argument("--topic", help="主题名（决定落盘目录）")
+     m.add_argument("--data", help="直接指定 manifest 路径（覆盖 --topic）")
+-    m.add_argument("--profile", help="画像名（首次登记时可带）")
++    m.add_argument("--profile", help="画像归属；仅提供此参数时更改，空串清空")
+     m.add_argument("--title", help="人类可读标题")
+     m.add_argument("--summary", help="一句话摘要")
++    m.add_argument("--category", choices=("", *CATEGORIES), help="用途 creation/analysis/reference；空串清空")
++    m.add_argument("--if-revision", help="仅在登记版本匹配时更新；先 read --revision 读取")
+     m.add_argument("--platform", help="目标平台")
+-    m.add_argument("--kind", choices=KINDS, help="产物体裁")
+-    m.add_argument("--status", choices=PROJECT_STATUSES, help="生命周期")
++    m.add_argument("--kind", choices=("", *KINDS), help="产物体裁；空串清空")
++    m.add_argument("--status", choices=("", *PROJECT_STATUSES), help="生命周期；空串清空")
+     m.add_argument("--tags", help="标签，逗号分隔（给了即整体替换）")
+     m.add_argument("--cover", help="封面文件名（项目根相对）")
+     m.add_argument("--deliverables", help="最终成品文件名，逗号分隔（给了即整体替换）")
+@@ -372,6 +455,7 @@ def build_parser() -> argparse.ArgumentParser:
+     rd = sub.add_parser("read", help="打印整份 manifest")
+     rd.add_argument("--topic")
+     rd.add_argument("--data")
++    rd.add_argument("--revision", action="store_true", help="返回 metadata 与原文件 revision，缺文件为 missing")
+     rd.set_defaults(func=cmd_read)
+ 
+     lt = sub.add_parser("latest", help="取最近一步（可按层过滤）")
+@@ -388,7 +472,13 @@ def main(argv=None) -> None:
+     args = build_parser().parse_args(argv)
+     if args.cmd == "selftest":
+         sys.exit(_selftest())
+-    args.func(args)
++    try:
++        args.func(args)
++    except (ManifestError, OSError) as error:
++        print(json.dumps({"ok": False, "code": getattr(error, "code", "manifest_io_error"),
++                          "message": str(error),
++                          **({"current": error.current} if isinstance(error, ManifestError) and error.current is not None else {})}, ensure_ascii=False), file=sys.stderr)
++        sys.exit(1)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/skills/shared/scripts/persona_gate.py b/skills/shared/scripts/persona_gate.py
+index 0010f8c..1572978 100644
+--- a/skills/shared/scripts/persona_gate.py
++++ b/skills/shared/scripts/persona_gate.py
+@@ -59,7 +59,8 @@ def cmd_check(args) -> None:
+ # --------------------------------------------------------------------------- #
+ def cmd_record(args) -> None:
+     path = mf.manifest_path(args.topic, args.data)
+-    data = mf.load(path)
++    snapshot = mf.metadata_snapshot(path)
++    data = snapshot["metadata"]
+     now = mf._now_iso()
+     if not data:
+         data = {
+@@ -69,6 +70,8 @@ def cmd_record(args) -> None:
+         }
+     if args.profile and not data.get("profile"):
+         data["profile"] = args.profile
++    if not isinstance(data.setdefault("steps", []), list):
++        raise mf.ManifestError("invalid_manifest", "项目步骤记录不是数组，原文件已保留。")
+ 
+     summary = f"人设一致性 {args.verdict}（{args.score} 分）"
+     if args.deviations:
+@@ -89,7 +92,7 @@ def cmd_record(args) -> None:
+     }
+     data["steps"].append(step)
+     data["updated"] = now
+-    mf.atomic_write(path, data)
++    mf.atomic_write(path, data, expected_revision=snapshot["revision"])
+     print(json.dumps({"ok": True, "topic": data.get("topic"), "step": step,
+                       "path": str(path)}, ensure_ascii=False, indent=2))
+ 
+@@ -179,7 +182,13 @@ def main(argv=None) -> None:
+     args = build_parser().parse_args(argv)
+     if args.cmd == "selftest":
+         sys.exit(_selftest())
+-    args.func(args)
++    try:
++        args.func(args)
++    except (mf.ManifestError, OSError) as error:
++        print(json.dumps({"ok": False, "code": getattr(error, "code", "manifest_io_error"),
++                          "message": str(error),
++                          **({"current": error.current} if isinstance(error, mf.ManifestError) and error.current is not None else {})}, ensure_ascii=False), file=sys.stderr)
++        sys.exit(1)
+ 
+ 
+ if __name__ == "__main__":
 diff --git a/skills/shared/scripts/platform_readback.py b/skills/shared/scripts/platform_readback.py
 index b493b1d..0fff2f9 100644
 --- a/skills/shared/scripts/platform_readback.py
@@ -1355,10 +1720,10 @@ index f65b8e9..d235a89 100644
              headless=True,
              args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
 diff --git a/web/app.py b/web/app.py
-index 66b3678..675475d 100644
+index 66b3678..c213d15 100644
 --- a/web/app.py
 +++ b/web/app.py
-@@ -1,18 +1,13 @@
+@@ -1,18 +1,14 @@
 -"""Easel Web — FastAPI 后端（含 SSE 流式输出）."""
 +"""MediaSail business service. Intelligence is provided by external Agents."""
  from __future__ import annotations
@@ -1375,10 +1740,11 @@ index 66b3678..675475d 100644
  import re
  import shutil
 -import socket
++import stat
  import subprocess
  import sys
  import threading
-@@ -22,7 +17,6 @@ import urllib.parse
+@@ -22,7 +18,6 @@ import urllib.parse
  import urllib.request
  import uuid
  from contextlib import asynccontextmanager
@@ -1386,7 +1752,7 @@ index 66b3678..675475d 100644
  from pathlib import Path
  
  from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
-@@ -30,7 +24,6 @@ from fastapi.middleware.cors import CORSMiddleware
+@@ -30,7 +25,6 @@ from fastapi.middleware.cors import CORSMiddleware
  from starlette.middleware.trustedhost import TrustedHostMiddleware
  from fastapi.responses import FileResponse, JSONResponse
  from pydantic import BaseModel, Field
@@ -1394,7 +1760,7 @@ index 66b3678..675475d 100644
  
  PROJECT_ROOT = Path(__file__).resolve().parents[1]
  
-@@ -39,34 +32,7 @@ if str(PROJECT_ROOT) not in sys.path:
+@@ -39,34 +33,7 @@ if str(PROJECT_ROOT) not in sys.path:
  if str(PROJECT_ROOT / "scripts") not in sys.path:
      sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
  
@@ -1430,7 +1796,7 @@ index 66b3678..675475d 100644
  
  PROFILES_DIR = PROJECT_ROOT / "profiles"
  SKILLS_DIR = PROJECT_ROOT / "skills"
-@@ -74,137 +40,24 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+@@ -74,137 +41,25 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
  
  STATIC_DIR = Path(__file__).resolve().parent / "static"
  REACT_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
@@ -1537,6 +1903,7 @@ index 66b3678..675475d 100644
 +    sys.path.insert(0, str(SHARED_SCRIPTS))
  
 +from business_browser import BrowserUnavailable, resolve_browser
++import manifest as project_manifest
  
 -def _heal_openclaw_session(sk: str) -> None:
 -    """每轮 spawn openclaw 前，清洗该会话历史里的无签名 thinking 块 + 空消息（自愈防回放失效）。
@@ -1554,19 +1921,19 @@ index 66b3678..675475d 100644
 -                      f"-{st['msgs_dropped']} empty", file=sys.stderr, flush=True)
 -    except Exception as e:
 -        print(f"[session-heal] 跳过（{e}）", file=sys.stderr, flush=True)
-+        return resolve_browser()
-+    except BrowserUnavailable as error:
-+        raise HTTPException(503, str(error)) from error
- 
- 
+-
+-
 -# 制作层/直接执行层/chat 超时统一走 easel/timeouts.py（CLI/Web/skill 三入口单一真相源）
 -
 -SHARED_SCRIPTS = PROJECT_ROOT / "skills" / "shared" / "scripts"
 -if str(SHARED_SCRIPTS) not in sys.path:
 -    sys.path.insert(0, str(SHARED_SCRIPTS))
--
++        return resolve_browser()
++    except BrowserUnavailable as error:
++        raise HTTPException(503, str(error)) from error
+ 
 -from model_registry import model_group
--
+ 
  BROWSER_PROFILES = Path.home() / ".easel-browser-profiles"
  LOGIN_DIR = OUTPUTS_DIR / "_login"
  PUBLISH_DIR = OUTPUTS_DIR / "_publish"   # 异步发布的状态/验证码文件（抖音发布可能触发短信墙）
@@ -1577,7 +1944,7 @@ index 66b3678..675475d 100644
  # 非 _ 前缀的历史系统目录（归因层数据），内容库不展示（真产物一律在项目目录内）
  SYSTEM_TOPLEVEL_DIRS = {"analytics"}
  LOGIN_TIMEOUT = 240
-@@ -324,7 +177,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -324,7 +179,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
      ) % (str(WECHAT_SKILL_SCRIPTS), WECHAT_WEB_ACCOUNT)
      try:
          proc = subprocess.run([sys.executable, "-c", code], cwd=str(WECHAT_SKILL_SCRIPTS),
@@ -1586,7 +1953,7 @@ index 66b3678..675475d 100644
      except subprocess.TimeoutExpired:
          return False, "验证超时（网络或 IP 白名单问题）"
      out = (proc.stdout or "").strip().splitlines()
-@@ -337,83 +190,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -337,83 +192,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
      return False, err[0][:200]
  
  
@@ -1670,7 +2037,7 @@ index 66b3678..675475d 100644
  TEXT_EXTS = {".txt", ".md", ".json", ".csv", ".log", ".py", ".js", ".ts", ".html", ".htm", ".css", ".xml", ".yaml", ".yml", ".srt", ".vtt"}
  IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"}
  VIDEO_EXTS = {".mp4", ".mov", ".webm", ".m4v"}
-@@ -426,7 +202,7 @@ async def _lifespan(_app: FastAPI):
+@@ -426,7 +204,7 @@ async def _lifespan(_app: FastAPI):
      _stop_mp_login_on_shutdown()
  
  
@@ -1679,7 +2046,7 @@ index 66b3678..675475d 100644
  
  def _local_ports(env_port: str) -> set[str]:
      """本机写守卫放行的端口集合：固定的 7860/7870/5173，加上 `--port`/EASEL_PORT
-@@ -485,13 +261,8 @@ async def local_write_guard(request: Request, call_next):
+@@ -485,13 +263,8 @@ async def local_write_guard(request: Request, call_next):
      ① 带 Origin（浏览器跨站发起）：Origin 必须在 _LOCAL_ORIGINS 里，否则 403。
      ② 不带 Origin（curl / 本机脚本 / 测试客户端）：要求对端来自回环地址。
  
@@ -1695,7 +2062,7 @@ index 66b3678..675475d 100644
      """
      origin = request.headers.get('origin')
      if request.url.path == '/api/clipper' and origin and re.fullmatch(r'chrome-extension://[a-p]{32}', origin):
-@@ -518,7 +289,7 @@ def list_personas() -> list[dict]:
+@@ -518,7 +291,7 @@ def list_personas() -> list[dict]:
          return []
      result = []
      for d in sorted(PROFILES_DIR.iterdir()):
@@ -1704,7 +2071,7 @@ index 66b3678..675475d 100644
              continue
          desc = ''
          identity = d / 'identity.md'
-@@ -590,35 +361,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
+@@ -590,35 +363,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
  
  
  def get_skills() -> list[dict]:
@@ -1742,7 +2109,7 @@ index 66b3678..675475d 100644
  def _proxy_env() -> dict[str, str]:
      """返回带外网代理的环境变量（保护内网直连）。"""
      env = os.environ.copy()
-@@ -663,259 +421,6 @@ def _wechat_env() -> dict[str, str]:
+@@ -663,259 +423,6 @@ def _wechat_env() -> dict[str, str]:
      return env
  
  
@@ -2002,7 +2369,71 @@ index 66b3678..675475d 100644
  def _file_kind(name: str) -> str:
      ext = Path(name).suffix.lower()
      if ext in IMAGE_EXTS:
-@@ -1066,7 +571,7 @@ async def static_file(path: str):
+@@ -961,16 +468,18 @@ def _read_project_meta(proj: Path) -> dict:
+     只取展示相关字段（不含编排 steps）。cover 解析优先级：
+     展示头声明的 cover → 首个成品媒体 → 目录内首张图/视频（兜底）。
+     """
+-    mf = proj / ".easel.json"
+-    if not mf.is_file():
+-        return {}
+     try:
+-        data = json.loads(mf.read_text(encoding="utf-8"))
+-    except Exception:
++        data = project_manifest.metadata_snapshot(proj / ".easel.json")["metadata"]
++    except (OSError, project_manifest.ManifestError):
+         return {}
+-    meta = {k: data.get(k) for k in
+-            ("title", "summary", "platform", "kind", "status", "tags", "deliverables")
+-            if data.get(k) not in (None, "", [])}
++    meta = {key: data[key] for key in
++            ("title", "summary", "category", "profile", "platform", "kind", "status", "created", "updated")
++            if isinstance(data.get(key), str) and data[key]}
++    for key in ("tags", "deliverables"):
++        if isinstance(data.get(key), list):
++            values = [value for value in data[key] if isinstance(value, str)]
++            if values:
++                meta[key] = values
+     if not meta:
+         return {}
+ 
+@@ -980,17 +489,17 @@ def _read_project_meta(proj: Path) -> dict:
+     # 封面解析
+     cover_rel = ""
+     declared = data.get("cover")
+-    if declared and (proj / declared).is_file():
++    if isinstance(declared, str) and declared and (proj / declared).is_file():
+         cover_rel = f"{proj.name}/{declared}"
+     if not cover_rel:
+-        for d in (data.get("deliverables") or []):
++        for d in meta.get("deliverables", []):
+             if _file_kind(d) in ("image", "video") and (proj / d).is_file():
+                 cover_rel = f"{proj.name}/{d}"
+                 break
+     if cover_rel:
+         meta["cover"] = cover_rel
+     # 成品路径（前端「成品区」高亮用）：解析为 outputs 相对路径，只留真实存在的
+-    meta["deliverablePaths"] = [f"{proj.name}/{d}" for d in (data.get("deliverables") or [])
++    meta["deliverablePaths"] = [f"{proj.name}/{d}" for d in meta.get("deliverables", [])
+                                 if (proj / d).is_file()]
+     return meta
+ 
+@@ -1010,6 +519,15 @@ def get_output_tree() -> list[dict]:
+         meta = _read_project_meta(e)
+         if meta:
+             node['meta'] = meta
++        # The hidden manifest is excluded from the file tree, but editing its
++        # registration is a real project update and must affect recent sorting.
++        try:
++            mf = e / project_manifest.MANIFEST_NAME
++            info = mf.lstat()
++            if stat.S_ISREG(info.st_mode) and not mf.is_symlink():
++                node['mtime'] = max(node['mtime'], info.st_mtime)
++        except OSError:
++            pass
+         items.append(node)
+     # 按最后修改时间倒序：最近产物排最前（供工作台「最近产物」与内容库时间排序）
+     return sorted(items, key=lambda x: x.get('mtime', 0), reverse=True)
+@@ -1066,7 +584,7 @@ async def static_file(path: str):
  
  @app.get("/api/status")
  async def api_status():
@@ -2011,7 +2442,7 @@ index 66b3678..675475d 100644
  
  
  @app.get("/api/personas")
-@@ -1155,909 +660,41 @@ async def api_skill_detail(name: str):
+@@ -1155,909 +673,41 @@ async def api_skill_detail(name: str):
      if full is None:
          raise HTTPException(404, f"SKILL '{name}' 不存在")
      desc, layer, body = _parse_skill_md(SKILLS_DIR / "openclaw" / full / "SKILL.md")
@@ -2945,7 +3376,7 @@ index 66b3678..675475d 100644
  
  
  def _attachment_scope(session_id: str) -> str:
-@@ -2072,1042 +709,6 @@ def _attachment_id(scope: str, path: str) -> str:
+@@ -2072,1042 +722,6 @@ def _attachment_id(scope: str, path: str) -> str:
      return hashlib.sha256(f"{scope}\0{path}".encode("utf-8")).hexdigest()[:24]
  
  
@@ -3988,7 +4419,68 @@ index 66b3678..675475d 100644
  @app.get("/api/outputs")
  def api_outputs():
      # 产物树是全量递归扫描（文件量大时单次可达数十秒）。必须是同步 handler：
-@@ -3274,11 +875,12 @@ async def api_upload_local(
+@@ -3192,6 +806,60 @@ def _is_protected(full: Path) -> bool:
+     )
+ 
+ 
++def _project_metadata_file(project: str) -> Path:
++    """Only a top-level ordinary project; never create/rename a folder here."""
++    if (not project or project.endswith((" ", ".")) or
++            re.search(r'[<>:"/\\|?*\x00-\x1f]', project) or project in {".", ".."}):
++        raise HTTPException(400, {"code": "invalid_project", "message": "请选择内容库中的单个项目。"})
++    candidate = OUTPUTS_DIR / project
++    try:
++        full = _safe_output_target(project, must_exist=False)
++    except HTTPException as error:
++        raise HTTPException(403, {"code": "invalid_project", "message": "项目必须位于内容库内。"}) from error
++    if _is_protected(full) or project.startswith((".", "_")):
++        raise HTTPException(403, {"code": "protected_project", "message": "系统目录不能作为内容库项目编辑。"})
++    try:
++        info = candidate.lstat()
++        linked = candidate.is_symlink() or getattr(info, "st_reparse_tag", 0) in {0xA0000003, 0xA000000C}
++        if not stat.S_ISDIR(info.st_mode) or linked or full.parent != OUTPUTS_DIR.resolve():
++            raise HTTPException(403, {"code": "invalid_project", "message": "项目必须是内容库中的普通一级文件夹。"})
++    except FileNotFoundError:
++        raise HTTPException(404, {"code": "project_not_found", "message": "项目已不存在，请刷新内容库。"})
++    return full / project_manifest.MANIFEST_NAME
++
++
++def _metadata_error(error: Exception):
++    if isinstance(error, project_manifest.ManifestError):
++        detail = {"code": error.code, "message": str(error)}
++        if error.current is not None:
++            detail["current"] = error.current
++        raise HTTPException(error.status, detail) from error
++    raise HTTPException(500, {"code": "metadata_io_error", "message": "项目登记无法读写，原文件未被替换；请检查权限或稍后重试。"}) from error
++
++
++class ProjectMetadataPatch(BaseModel):
++    revision: str
++    changes: dict[str, object]
++
++
++@app.get("/api/projects/{project}/metadata")
++def api_project_metadata(project: str):
++    try:
++        return project_manifest.metadata_snapshot(_project_metadata_file(project))
++    except (OSError, project_manifest.ManifestError) as error:
++        _metadata_error(error)
++
++
++@app.patch("/api/projects/{project}/metadata")
++def api_project_metadata_patch(project: str, req: ProjectMetadataPatch):
++    # Synchronous endpoint: file locking and fsync run in FastAPI's worker pool.
++    try:
++        return project_manifest.update_metadata(_project_metadata_file(project), req.changes,
++                                                revision=req.revision, topic=project, create_parent=False)
++    except (OSError, project_manifest.ManifestError) as error:
++        _metadata_error(error)
++
++
+ @app.delete("/api/output/{path:path}")
+ async def api_output_delete(path: str):
+     """删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。"""
+@@ -3274,11 +942,12 @@ async def api_upload_local(
      return {"ok": True, "files": saved}
  
  
@@ -4002,7 +4494,7 @@ index 66b3678..675475d 100644
      st = LOGIN_DIR / f'{platform}.json'
      tmp = st.with_suffix('.json.tmp')
      try:
-@@ -3291,31 +893,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+@@ -3291,31 +960,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
              pass
  
  
@@ -4062,7 +4554,7 @@ index 66b3678..675475d 100644
  
  
  def _login_status(platform: str) -> dict:
-@@ -3325,7 +931,8 @@ def _login_status(platform: str) -> dict:
+@@ -3325,7 +998,8 @@ def _login_status(platform: str) -> dict:
      if st.is_file():
          try:
              d = json.loads(st.read_text(encoding="utf-8"))
@@ -4072,7 +4564,7 @@ index 66b3678..675475d 100644
          except Exception:
              pass
      # A runner that exits before writing its status must become an actionable error,
-@@ -3351,9 +958,8 @@ def _login_status(platform: str) -> dict:
+@@ -3351,9 +1025,8 @@ def _login_status(platform: str) -> dict:
  @app.get("/api/accounts")
  async def api_accounts():
      return [
@@ -4083,7 +4575,7 @@ index 66b3678..675475d 100644
           'note': cfg.get('note', '')}
          for pf, cfg in LOGIN_RUNNERS.items()
      ]
-@@ -3372,6 +978,8 @@ async def api_login_start(platform: str):
+@@ -3372,6 +1045,8 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
@@ -4092,7 +4584,7 @@ index 66b3678..675475d 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      qr = LOGIN_DIR / f'{platform}.png'
      status = LOGIN_DIR / f'{platform}.json'
-@@ -3548,6 +1156,7 @@ async def api_mp_login_start(platform: str):
+@@ -3548,6 +1223,7 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
@@ -4100,7 +4592,7 @@ index 66b3678..675475d 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
          try:
-@@ -3579,26 +1188,57 @@ async def api_mp_login_status(platform: str):
+@@ -3579,26 +1255,57 @@ async def api_mp_login_status(platform: str):
      return {"mode": "qr", **_mp_login_status()}
  
  
@@ -4170,7 +4662,7 @@ index 66b3678..675475d 100644
      if backend == 'biliup':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
                 '--cookie', str(PROJECT_ROOT / 'cookies.json')]
-@@ -3606,44 +1246,32 @@ async def api_account_whoami(platform: str):
+@@ -3606,44 +1313,32 @@ async def api_account_whoami(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
      elif backend == 'douyin':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
@@ -4229,7 +4721,7 @@ index 66b3678..675475d 100644
  
  
  @app.post("/api/logout/{platform}")
-@@ -3715,8 +1343,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+@@ -3715,8 +1410,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
  async def api_analytics_platforms():
      """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
      return [
@@ -4240,7 +4732,7 @@ index 66b3678..675475d 100644
          for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
      ]
  
-@@ -3726,6 +1354,8 @@ async def api_analytics(platform: str):
+@@ -3726,6 +1421,8 @@ async def api_analytics(platform: str):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -4249,7 +4741,7 @@ index 66b3678..675475d 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,14 +1373,19 @@ async def api_analytics(platform: str):
+@@ -3743,14 +1440,19 @@ async def api_analytics(platform: str):
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -4271,7 +4763,7 @@ index 66b3678..675475d 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1434,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1501,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -4280,7 +4772,7 @@ index 66b3678..675475d 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1530,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1597,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -4289,7 +4781,7 @@ index 66b3678..675475d 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1579,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1646,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -4298,7 +4790,7 @@ index 66b3678..675475d 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1597,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1664,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -4307,7 +4799,7 @@ index 66b3678..675475d 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1631,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1698,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -4320,7 +4812,7 @@ index 66b3678..675475d 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1643,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1710,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -4356,7 +4848,7 @@ index 66b3678..675475d 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1668,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1735,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -4397,7 +4889,7 @@ index 66b3678..675475d 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1707,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1774,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -4410,7 +4902,7 @@ index 66b3678..675475d 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,26 +1723,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,26 +1790,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -4438,7 +4930,7 @@ index 66b3678..675475d 100644
  TREND_SOURCES: dict[str, tuple[str, str | None]] = {
      "weibo": ("https://60s.viki.moe/v2/weibo", "https://v2.xxapi.cn/api/weibohot"),
      "douyin": ("https://60s.viki.moe/v2/douyin", "https://v2.xxapi.cn/api/douyinhot"),
-@@ -4323,7 +1916,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +1983,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -4447,7 +4939,7 @@ index 66b3678..675475d 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2002,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2069,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -19663,7 +20155,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/web/frontend/src/App.tsx b/web/frontend/src/App.tsx
-index fee8255..efac7e3 100644
+index fee8255..1d1e4b9 100644
 --- a/web/frontend/src/App.tsx
 +++ b/web/frontend/src/App.tsx
 @@ -1,7 +1,7 @@
@@ -19675,7 +20167,7 @@ index fee8255..efac7e3 100644
  import SkillPage from './components/SkillPage';
  import OutputsPage from './components/OutputsPage';
  import AccountsPage from './components/AccountsPage';
-@@ -15,808 +15,129 @@ import BreakdownPage from './components/BreakdownPage';
+@@ -15,808 +15,137 @@ import BreakdownPage from './components/BreakdownPage';
  import SubNav from './components/SubNav';
  import OnboardingWizard from './components/OnboardingWizard';
  import SettingsPanel from './components/SettingsPanel';
@@ -19702,6 +20194,7 @@ index fee8255..efac7e3 100644
 +import type { OutputNode, PersonaItem } from './lib/api';
 +import { SELECTED_PROFILE_KEY, resolveSelectedProfile } from './lib/profileSelection';
 +import { useRefreshOnFocus } from './lib/useRefreshOnFocus';
++import { hasUnsavedProjectMetadata, isProjectMetadataSaving } from './lib/outputMetadata';
  
  const ONBOARDING_SEEN_KEY = 'easel_onboarding_seen';
 -
@@ -19745,6 +20238,13 @@ index fee8255..efac7e3 100644
 +  const [sendPanel, setSendPanel] = useState<{ project?: OutputNode } | null>(null);
 +  const [topic, setTopic] = useState('');
    const [outputsJump, setOutputsJump] = useState('');
++  const pageRef = useRef(currentPage); pageRef.current = currentPage;
++  const navigate = useCallback((page: Page) => {
++    if (page !== 'outputs' && pageRef.current === 'outputs' && isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再离开内容库。'); return; }
++    if (page !== 'outputs' && pageRef.current === 'outputs' && hasUnsavedProjectMetadata() &&
++      !window.confirm('内容归档信息还有未保存的修改。放弃修改并离开内容库吗？')) return;
++    setCurrentPage(page);
++  }, []);
 +  const requestSeq = useRef(0);
 +  const selectProfile = useCallback((name: string) => {
 +    selectedRef.current = name; setSelectedPersona(name);
@@ -19780,13 +20280,13 @@ index fee8255..efac7e3 100644
 +      if (!match) return;
 +      let path = match[1];
 +      try { path = decodeURIComponent(path); } catch { /* keep literal path */ }
-+      setOutputsJump(path); setCurrentPage('outputs');
++      setOutputsJump(path); navigate('outputs');
        window.history.replaceState(null, '', window.location.pathname + window.location.search);
      };
 -    window.addEventListener('hashchange', onHash);
 +    onHash(); window.addEventListener('hashchange', onHash);
      return () => window.removeEventListener('hashchange', onHash);
-   }, []);
+-  }, []);
 -  const clearOutputsJump = useCallback(() => setOutputsJump(''), []);
 -
 -  // 挂载时决定进哪个会话。规则：
@@ -20366,6 +20866,7 @@ index fee8255..efac7e3 100644
 -  }, []);
 -
 -  // 画像创建完成
++  }, [navigate]);
    const handleProfileCreated = useCallback((name: string) => {
 -    localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
 -    setShowWizard(false);
@@ -20386,9 +20887,9 @@ index fee8255..efac7e3 100644
 -
 -  // 画像删除完成：刷新列表 + 若删的是当前选中的则清空选择
 +    appStorage.setItem(ONBOARDING_SEEN_KEY, '1');
-+    setShowWizard(false); selectProfile(name); setCurrentPage('profile');
++    setShowWizard(false); selectProfile(name); navigate('profile');
 +    void reloadPersonas().catch(() => {});
-+  }, [reloadPersonas, selectProfile]);
++  }, [reloadPersonas, selectProfile, navigate]);
    const handleProfileDeleted = useCallback((name: string) => {
 -    fetchPersonas().then((list) => {
 -      setPersonas(list);
@@ -20400,7 +20901,7 @@ index fee8255..efac7e3 100644
 +    if (selectedRef.current === name) selectProfile('');
 +    void reloadPersonas().catch(() => {});
 +  }, [reloadPersonas, selectProfile]);
-+  const openAgent = () => { setTopic(''); setCurrentPage('agent'); };
++  const openAgent = () => { setTopic(''); navigate('agent'); };
 +  const clearOutputsJump = useCallback(() => setOutputsJump(''), []);
    const renderPage = () => {
      switch (currentPage) {
@@ -20463,8 +20964,8 @@ index fee8255..efac7e3 100644
 -        return <ProfilePage persona={selectedPersona} onNewProfile={() => setShowWizard(true)} onDeleted={handleProfileDeleted} />;
 -      default:
 -        return null;
-+      case 'agent': return <AgentConnectPage onDashboard={() => setCurrentPage('dashboard')} />;
-+      case 'dashboard': return <DashboardPage persona={selectedPersona} gatewayStatus={serviceStatus} onNavigate={setCurrentPage} onUseTopic={setTopic} />;
++      case 'agent': return <AgentConnectPage onDashboard={() => navigate('dashboard')} />;
++      case 'dashboard': return <DashboardPage persona={selectedPersona} gatewayStatus={serviceStatus} onNavigate={navigate} onUseTopic={setTopic} />;
 +      case 'trends': return <TrendsPage onUseTopic={setTopic} />;
 +      case 'ideas': return <IdeasPage onUseTopic={setTopic} />;
 +      case 'calendar': return <CalendarPage />;
@@ -20521,7 +21022,7 @@ index fee8255..efac7e3 100644
 -        onOpenSettings={() => setSettingsOpen(true)}
 -      />
 +    <div className={`app-layout${currentPage === 'agent' ? ' app-layout-home' : ''}`}>
-+      {currentPage !== 'agent' && <Sidebar currentPage={currentPage} onPageChange={setCurrentPage}
++      {currentPage !== 'agent' && <Sidebar currentPage={currentPage} onPageChange={navigate}
 +        personas={personas} selectedPersona={selectedPersona} onPersonaChange={selectProfile}
 +        onNewProfile={() => setShowWizard(true)} serviceStatus={serviceStatus} onOpenSettings={() => setSettingsOpen(true)} />}
        <main className="main-content">
@@ -20532,7 +21033,7 @@ index fee8255..efac7e3 100644
 -          {renderPage()}
 -        </div>
 +        <UpdateBanner />
-+        {(['trends', 'ideas', 'calendar', 'publish', 'breakdown'] as Page[]).includes(currentPage) && <SubNav current={currentPage} onNavigate={setCurrentPage} />}
++        {(['trends', 'ideas', 'calendar', 'publish', 'breakdown'] as Page[]).includes(currentPage) && <SubNav current={currentPage} onNavigate={navigate} />}
 +        <div className="page-host">{renderPage()}</div>
        </main>
 -
@@ -20570,7 +21071,7 @@ index fee8255..efac7e3 100644
 +      </div></div>}
 +      {showWizard && <OnboardingWizard onClose={() => setShowWizard(false)} onCreated={handleProfileCreated} />}
 +      {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} onConnectAgent={() => { setSettingsOpen(false); openAgent(); }} />}
-+      {sendPanel && <SendToAitoModal project={sendPanel.project} onClose={() => setSendPanel(null)} onOpenAito={() => setCurrentPage('aito')} />}
++      {sendPanel && <SendToAitoModal project={sendPanel.project} onClose={() => setSendPanel(null)} onOpenAito={() => navigate('aito')} />}
 +      {topic && <div className="overlay"><div className="modal" style={{ width: 620, maxWidth: '100%' }}>
 +        <h2>围绕这个选题创作</h2><p>{topic}</p>
 +        <AgentTaskContext title="创作任务" persona={selectedPersona} task={`围绕选题「${topic}」，结合画像与历史表现研究、策划并创作。自行选择工具，将成品登记到内容库，并回存有价值的运营结论。`} onConnectAgent={openAgent} />
@@ -21924,16 +22425,35 @@ index ed070bd..875a4b8 100644
              <button className="btn" onClick={() => (step === 0 ? onClose() : setStep(step - 1))}>
                {step === 0 ? '取消' : '上一步'}
 diff --git a/web/frontend/src/components/OutputsPage.tsx b/web/frontend/src/components/OutputsPage.tsx
-index 043dc91..6127aef 100644
+index 043dc91..ca3747a 100644
 --- a/web/frontend/src/components/OutputsPage.tsx
 +++ b/web/frontend/src/components/OutputsPage.tsx
-@@ -1,4 +1,5 @@
+@@ -1,7 +1,12 @@
  import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import type { CSSProperties } from 'react';
  import { fetchOutputs, fetchOutputContent, mediaUrl, deleteOutput } from '../lib/api';
  import type { OutputNode, OutputMeta } from '../lib/api';
-@@ -76,12 +77,13 @@ function Thumb({ f, big }: { f: OutputNode | null; big?: boolean }) {
++import { CATEGORIES, STAGES, SHAPES, EMPTY_PROJECT_FILTERS, categoryLabel, kindLabel as projectKindLabel, stageLabel, matchesProject, valuesFor, textValue, hasUnsavedProjectMetadata, isProjectMetadataSaving } from '../lib/outputMetadata';
++import type { ProjectFilters } from '../lib/outputMetadata';
++import ProjectMetadataEditor from './ProjectMetadataEditor';
++import '../styles/content-library.css';
+ import { renderMarkdown } from '../lib/sanitize';
+ import { IconOutputs, IconImage, IconVideo, IconMusic, IconFile, IconFolder, IconRefresh, IconChevron, IconTrash } from './icons';
+ 
+@@ -13,11 +18,6 @@ const FILTERS: { key: string; label: string }[] = [
+   { key: 'text', label: '文档' },
+ ];
+ 
+-const KIND_LABEL: Record<string, string> = {
+-  article: '文章', 'xhs-note': '小红书', video: '视频', cards: '卡片',
+-  poster: '海报', audio: '音频', other: '其他',
+-};
+-const STATUS_LABEL: Record<string, string> = { draft: '草稿', ready: '待发', published: '已发' };
+ const STATUS_COLOR: Record<string, string> = { draft: 'var(--text-tertiary)', ready: 'var(--amber)', published: 'var(--green)' };
+ 
+ const badge: CSSProperties = {
+@@ -76,46 +76,56 @@ function Thumb({ f, big }: { f: OutputNode | null; big?: boolean }) {
  }
  
  interface OutputsPageProps {
@@ -21948,34 +22468,197 @@ index 043dc91..6127aef 100644
    const [roots, setRoots] = useState<OutputNode[]>([]);
    const [treeError, setTreeError] = useState('');
    const [stack, setStack] = useState<string[]>([]);   // 当前所在的文件夹名称路径
-@@ -96,6 +98,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
-     fetchOutputs().then(setRoots).catch(() => setTreeError('加载产物列表失败'));
+-  const [filter, setFilter] = useState('all');
++  const [fileFilter, setFileFilter] = useState('all');
++  const [projectFilters, setProjectFilters] = useState<ProjectFilters>({ ...EMPTY_PROJECT_FILTERS });
++  const [editorProject, setEditorProject] = useState<string | null>(null);
+   const [selected, setSelected] = useState<OutputNode | null>(null);
+   const [content, setContent] = useState('');
+   const [loading, setLoading] = useState(false);
+   const reqSeq = useRef(0);
++  const treeSeq = useRef(0);
+ 
+   const load = useCallback(() => {
++    const seq = ++treeSeq.current;
+     setTreeError('');
+-    fetchOutputs().then(setRoots).catch(() => setTreeError('加载产物列表失败'));
++    fetchOutputs().then(value => { if (seq === treeSeq.current) setRoots(value); }).catch(() => { if (seq === treeSeq.current) setTreeError('加载内容库失败，现有列表已保留。'); });
    }, []);
    useEffect(() => { load(); }, [load]);
 +  useRefreshOnFocus(load);
  
    // 对话里的目录路径跳转：展开到对应层级（路径失效时 resolvePath 自动停在能到的层）
    useEffect(() => {
-@@ -203,6 +206,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
-             {m?.status && <span style={statusBadge(m.status)}>{STATUS_LABEL[m.status] || m.status}</span>}
+     if (!jumpPath) return;
++    if (isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再打开其他项目。'); onJumpHandled?.(); return; }
++    if (hasUnsavedProjectMetadata() && !window.confirm('归档信息还有未保存的修改。放弃修改并打开指定项目吗？')) { onJumpHandled?.(); return; }
++    setEditorProject(null);
+     setStack(jumpPath.split('/').filter(Boolean));
+-    setFilter('all');
++    setFileFilter('all');
+     onJumpHandled?.();
+   }, [jumpPath, onJumpHandled]);
+ 
+   const currentNodes = useMemo(() => resolvePath(roots, stack), [roots, stack]);
++  const atTop = stack.length === 0;
++  const atProjectRoot = stack.length === 1;
++  const projects = useMemo(() => roots.filter(n => n.type === 'dir'), [roots]);
+   const dirs = useMemo(
+-    () => currentNodes.filter((n) => n.type === 'dir').sort((a, b) => (b.mtime || 0) - (a.mtime || 0)),
+-    [currentNodes]);
++    () => currentNodes.filter(n => n.type === 'dir' && (!atTop || matchesProject(n, projectFilters))).sort((a, b) => (b.mtime || 0) - (a.mtime || 0)),
++    [currentNodes, atTop, projectFilters]);
++  const allFiles = useMemo(() => currentNodes.filter(n => n.type === 'file').sort((a, b) => (b.mtime || 0) - (a.mtime || 0)), [currentNodes]);
+   const files = useMemo(() => {
+-    const fs = currentNodes.filter((n) => n.type === 'file').sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+-    return filter === 'all' ? fs : fs.filter((f) => f.kind === filter);
+-  }, [currentNodes, filter]);
++    return fileFilter === 'all' ? allFiles : allFiles.filter(f => f.kind === fileFilter);
++  }, [allFiles, fileFilter]);
+ 
+-  const atTop = stack.length === 0;
+-  const atProjectRoot = stack.length === 1;
+   // 当前项目的展示头（进入项目后才有），用于「成品/素材」分区
+   const projectMeta = useMemo(
+     () => (stack.length >= 1 ? roots.find((r) => r.name === stack[0])?.meta : undefined),
+@@ -131,8 +141,23 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+     () => (hasSplit ? files.filter((f) => !deliverableSet.has(f.path)) : files),
+     [files, deliverableSet, hasSplit]);
+ 
+-  const enterDir = useCallback((name: string) => { setStack((s) => [...s, name]); setFilter('all'); }, []);
+-  const goTo = useCallback((depth: number) => { setStack((s) => s.slice(0, depth)); setFilter('all'); }, []);
++  const enterDir = useCallback((name: string) => { setStack((s) => [...s, name]); setFileFilter('all'); }, []);
++  const goTo = useCallback((depth: number) => { setStack((s) => s.slice(0, depth)); setFileFilter('all'); }, []);
++  const updateFilter = (key: keyof ProjectFilters, value: string) => setProjectFilters(old => ({ ...old, [key]: value }));
++  const clearFilters = () => setProjectFilters({ ...EMPTY_PROJECT_FILTERS });
++  const filtersActive = Object.entries(projectFilters).some(([key, value]) => value !== EMPTY_PROJECT_FILTERS[key as keyof ProjectFilters]);
++  const profileOptions = useMemo(() => valuesFor(projects, 'profile'), [projects]);
++  const platformOptions = useMemo(() => valuesFor(projects, 'platform'), [projects]);
++  const stageOptions = useMemo(() => valuesFor(projects, 'status'), [projects]);
++  const categoryChoices = [{ value: 'all', label: '全部' }, ...CATEGORIES, { value: 'uncategorized', label: '未分类' }];
++  const categoryCount = (category: string) => projects.filter(project => matchesProject(project, { ...projectFilters, category })).length;
++  const facet = (key: 'profile' | 'platform' | 'shape' | 'stage', label: string, options: { value: string; label: string }[]) => (
++    <label>{label}<select className="field" aria-label={label} value={projectFilters[key]} onChange={e => updateFilter(key, e.target.value)}>
++      <option value="all">全部{label}</option>
++      {projectFilters[key] !== 'all' && !options.some(o => o.value === projectFilters[key]) && <option value={projectFilters[key]}>{projectFilters[key] || `未指定${label}`}</option>}
++      {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
++    </select></label>
++  );
+ 
+   const remove = useCallback(async (node: OutputNode, e: React.MouseEvent) => {
+     e.stopPropagation();
+@@ -188,9 +213,9 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+     const m = d.meta;
+     const cover = coverNode(m) || firstMedia(d);
+     return (
+-      <div key={d.path} className="card card-hover gcard" onClick={() => enterDir(d.name)}>
++      <div key={d.path} className="card card-hover gcard" data-testid={atTop ? 'project-card' : undefined} data-project={atTop ? d.name : undefined} onClick={() => enterDir(d.name)}>
+         <div className="gcard-thumb">
+-          <span className="gcard-kind">{m?.kind ? (KIND_LABEL[m.kind] || m.kind) : '文件夹'}</span>
++          <span className="gcard-kind">{atTop ? projectKindLabel(m?.kind) : '文件夹'}</span>
+           <button className="gcard-del" title="删除" onClick={(e) => remove(d, e)}><IconTrash size={14} /></button>
+           {cover ? <Thumb f={cover} big /> : <div className="gcard-ph"><IconFolder size={38} /></div>}
+         </div>
+@@ -198,11 +223,18 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+           <div className="gcard-name" title={m?.title || d.name}>
+             {!m && <IconFolder size={13} />} {m?.title || d.name}
+           </div>
++          {atTop && textValue(m?.summary) && <p className="library-project-summary">{textValue(m?.summary)}</p>}
+           <div className="gcard-sub" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
++            {atTop && <span style={badge}>{categoryLabel(m?.category)}</span>}
++            {m?.profile && <span style={badge}>{m.profile}</span>}
+             {m?.platform && <span style={badge}>{m.platform}</span>}
+-            {m?.status && <span style={statusBadge(m.status)}>{STATUS_LABEL[m.status] || m.status}</span>}
++            {m?.status && <span style={statusBadge(m.status)}>{stageLabel(m.status)}</span>}
              <span>{d.fileCount ?? 0} 个文件</span>
            </div>
-+          {atTop && onSendProject && <button className="btn btn-sm" style={{ marginTop: 9 }} onClick={e => { e.stopPropagation(); onSendProject(d); }}>发送到 AI 发布</button>}
++          {atTop && <><div className="library-project-path">目录：{d.name}</div><div className="library-project-actions">
++            <button className="btn btn-sm" onClick={e => { e.stopPropagation(); setEditorProject(d.name); }}>编辑归档信息</button>
++            {onSendProject && <button className="btn btn-sm" onClick={e => { e.stopPropagation(); onSendProject(d); }}>发送到 AI 发布</button>}
++          </div></>}
          </div>
        </div>
      );
-@@ -245,7 +249,10 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -224,7 +256,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+   const empty = dirs.length === 0 && files.length === 0;
+ 
+   return (
+-    <div className="gallery-page">
++    <div className="gallery-page" data-testid="content-library">
+       <div className="gallery-head">
+         <div>
+           <h1 className="page-title">
+@@ -241,15 +273,39 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+           </h1>
+           <p className="page-subtitle">
+             {atTop
+-              ? `按项目归档，共 ${roots.length} 个项目。点项目进去看成品与素材。`
++              ? `按用途查看项目，共 ${projects.length} 个项目。分类不会移动文件。`
                : `${dirs.length} 个文件夹 · ${files.length} 个文件（可继续点开子文件夹）`}
            </p>
          </div>
 -        <button className="btn btn-sm" onClick={load}><IconRefresh size={14} /> 刷新</button>
 +        <div style={{ display: 'flex', gap: 8 }}>
++          {atProjectRoot && <button className="btn btn-sm" onClick={() => setEditorProject(stack[0])}>编辑归档信息</button>}
 +          {atProjectRoot && onSendProject && <button className="btn btn-sm btn-primary" onClick={() => { const project = roots.find(r => r.name === stack[0]); if (project) onSendProject(project); }}>发送到 AI 发布</button>}
 +          <button className="btn btn-sm" onClick={load}><IconRefresh size={14} /> 刷新</button>
 +        </div>
        </div>
  
        {treeError && <div className="notice-error">{treeError}</div>}
+ 
++      {atTop && <section className="library-controls" aria-label="内容库筛选">
++        <div className="library-categories" role="group" aria-label="用途分类">
++          {categoryChoices.map(category => <button key={category.value} className={`chip ${projectFilters.category === category.value ? 'active' : ''}`} aria-label={category.label} aria-pressed={projectFilters.category === category.value} onClick={() => updateFilter('category', category.value)}>{category.label} <span>{categoryCount(category.value)}</span></button>)}
++        </div>
++        <input className="field library-search" aria-label="搜索内容库" placeholder="搜索项目标题、目录名、摘要、标签" value={projectFilters.query} onChange={e => updateFilter('query', e.target.value)} />
++        <div className="library-facets">
++          {facet('profile', '画像', profileOptions.map(value => ({ value, label: value || '未指定画像' })))}
++          {facet('platform', '平台', platformOptions.map(value => ({ value, label: value || '未指定平台' })))}
++          {facet('shape', '形态', SHAPES)}
++          {facet('stage', '阶段', [...STAGES, { value: '', label: '未标记' }, ...stageOptions.filter(value => value && !STAGES.some(s => s.value === value)).map(value => ({ value, label: `自定义：${value}` }))])}
++        </div>
++        <div className="library-results" role="status"><span>显示 {dirs.length} / {projects.length} 个项目</span><button className="btn btn-sm" disabled={!filtersActive} onClick={clearFilters}>清空筛选</button></div>
++      </section>}
++
++      {atProjectRoot && <section className="library-detail" aria-label="项目归档信息">
++        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}><span style={badge}>{categoryLabel(projectMeta?.category)}</span><span style={badge}>{projectKindLabel(projectMeta?.kind)}</span><span style={badge}>{stageLabel(projectMeta?.status)}</span>{projectMeta?.profile && <span style={badge}>{projectMeta.profile}</span>}{projectMeta?.platform && <span style={badge}>{projectMeta.platform}</span>}</div>
++        {textValue(projectMeta?.summary) && <p>{textValue(projectMeta?.summary)}</p>}
++        <div className="foot-note">目录：{stack[0]}{projectMeta?.status === 'published' && ' · 已标记发布为归档信息，实际发布结果请核对发布记录。'}</div>
++      </section>}
++
+       {/* 项目主题标签（进入项目根时展示） */}
+       {atProjectRoot && projectMeta?.tags && projectMeta.tags.length > 0 && (
+         <div className="gallery-filters" style={{ marginBottom: 4 }}>
+@@ -263,8 +319,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+           <button className="btn btn-sm" onClick={() => goTo(stack.length - 1)}>
+             <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={13} /></span> 返回上级
+           </button>
+-          {files.length > 0 && FILTERS.map((f) => (
+-            <button key={f.key} className={`chip ${filter === f.key ? 'active' : ''}`} onClick={() => setFilter(f.key)}>{f.label}</button>
++          {FILTERS.map((f) => (
++            <button key={f.key} className={`chip ${fileFilter === f.key ? 'active' : ''}`} onClick={() => setFileFilter(f.key)}>{f.label}</button>
+           ))}
+         </div>
+       )}
+@@ -272,7 +328,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+       {empty && !treeError ? (
+         <div className="empty-state" style={{ height: 300 }}>
+           <div className="empty-icon"><IconOutputs size={44} /></div>
+-          <p>{atTop ? '还没有产物——去对话或技能库生成第一条内容吧' : '这个文件夹是空的'}</p>
++          <p>{atTop ? projects.length ? '没有符合当前筛选的项目，可清空筛选重新查看。' : '还没有项目。让你的 Agent 将成果保存到当前资料库，并登记归档信息。' : allFiles.length && fileFilter !== 'all' ? '没有符合此文件格式的内容，可切回全部。' : '这个文件夹是空的'}</p>
+         </div>
+       ) : hasSplit ? (
+         <>
+@@ -305,6 +361,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+         </div>
+       )}
+ 
++      {editorProject && <ProjectMetadataEditor key={editorProject} project={editorProject} profiles={profileOptions} platforms={platformOptions} onClose={() => setEditorProject(null)} onSaved={() => { setEditorProject(null); load(); }} />}
++
+       {selected && (
+         <div className="drawer-overlay" onClick={() => setSelected(null)}>
+           <div className="drawer" onClick={(e) => e.stopPropagation()}>
 diff --git a/web/frontend/src/components/ProfilePage.tsx b/web/frontend/src/components/ProfilePage.tsx
 index dee847e..4bc8cd7 100644
 --- a/web/frontend/src/components/ProfilePage.tsx
@@ -22178,6 +22861,134 @@ index dee847e..4bc8cd7 100644
                    onChange={(e) => setDrafts((p) => ({ ...p, [f.filename]: e.target.value }))}
                  />
                ) : (
+diff --git a/web/frontend/src/components/ProjectMetadataEditor.tsx b/web/frontend/src/components/ProjectMetadataEditor.tsx
+new file mode 100644
+index 0000000..3fbd720
+--- /dev/null
++++ b/web/frontend/src/components/ProjectMetadataEditor.tsx
+@@ -0,0 +1,122 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { ApiRequestError, fetchPersonas, fetchProjectMetadata, saveProjectMetadata } from '../lib/api';
++import type { ProjectMetadataSnapshot } from '../lib/api';
++import { CATEGORIES, KINDS, STAGES, draftFrom, metadataDelta, registerProjectEdits, projectCloseApproved, resetProjectCloseApproval } from '../lib/outputMetadata';
++import type { MetadataDraft } from '../lib/outputMetadata';
++import { registerUnsavedEdits } from '../lib/unsaved';
++import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
++
++interface Props { project: string; profiles: string[]; platforms: string[]; onClose: () => void; onSaved: () => void; }
++export default function ProjectMetadataEditor({ project, profiles, platforms, onClose, onSaved }: Props) {
++  const [base, setBase] = useState<ProjectMetadataSnapshot | null>(null);
++  const [draft, setDraft] = useState<MetadataDraft | null>(null);
++  const [external, setExternal] = useState<ProjectMetadataSnapshot | null>(null);
++  const [error, setError] = useState('');
++  const [notice, setNotice] = useState('');
++  const [reading, setReading] = useState(false);
++  const [saving, setSaving] = useState(false);
++  const [knownProfiles, setKnownProfiles] = useState<string[]>([]);
++  const operation = useRef(false), sequence = useRef(0);
++  const current = useRef({ base, draft }); current.current = { base, draft };
++  const dirty = Boolean(base && draft && Object.keys(metadataDelta(draftFrom(base.metadata), draft)).length);
++  const isDirty = () => {
++    const value = current.current;
++    return operation.current || Boolean(value.base && value.draft && Object.keys(metadataDelta(draftFrom(value.base.metadata), value.draft)).length);
++  };
++  useEffect(() => {
++    const reader = () => isDirty();
++    const remove = registerUnsavedEdits('project-metadata', reader), removeProject = registerProjectEdits(reader, () => operation.current);
++    const beforeUnload = (event: BeforeUnloadEvent) => { if (reader() && !projectCloseApproved()) { event.preventDefault(); event.returnValue = ''; } };
++    window.addEventListener('beforeunload', beforeUnload);
++    return () => { sequence.current++; remove(); removeProject(); window.removeEventListener('beforeunload', beforeUnload); };
++  }, []);
++
++  const apply = useCallback((value: ProjectMetadataSnapshot) => {
++    setBase(value); setDraft(draftFrom(value.metadata)); setExternal(null); setError(''); setNotice('');
++  }, []);
++  const read = useCallback(async () => {
++    if (operation.current) return;
++    const seq = ++sequence.current; setReading(true); setError('');
++    try {
++      const value = await fetchProjectMetadata(project);
++      if (seq !== sequence.current) return;
++      const old = current.current;
++      const changed = Boolean(old.base && old.draft && Object.keys(metadataDelta(draftFrom(old.base.metadata), old.draft)).length);
++      if (changed && old.base?.revision !== value.revision) { setExternal(value); setNotice('归档信息已有外部更新，你的未保存编辑仍然保留。'); }
++      else if (!changed) apply(value);
++      else { setExternal(null); setNotice('已核对最新版本，你的未保存编辑仍然保留。'); }
++    } catch (e) {
++      if (seq === sequence.current) setError(e instanceof Error ? e.message : '无法读取归档信息，现有内容未改动。');
++    } finally { if (seq === sequence.current) setReading(false); }
++  }, [project, apply]);
++  useEffect(() => { void read(); }, [read]);
++  useRefreshOnFocus(() => { void read(); });
++  useEffect(() => {
++    let alive = true;
++    void fetchPersonas().then(value => { if (alive) setKnownProfiles(value.map(p => p.name)); }).catch(() => { /* Suggestions are optional; the field stays editable. */ });
++    return () => { alive = false; };
++  }, []);
++
++  const close = () => {
++    if (operation.current) return;
++    if (dirty && !window.confirm('归档信息还有未保存的修改。放弃这些修改并关闭吗？')) return;
++    onClose();
++  };
++  const change = (key: keyof MetadataDraft, value: string) => { resetProjectCloseApproval(); setDraft(old => old ? { ...old, [key]: value } : old); setNotice(''); };
++  const save = async () => {
++    if (!base || !draft || operation.current || !dirty) return;
++    sequence.current++; setReading(false); operation.current = true; setSaving(true); setError(''); setNotice('');
++    try {
++      const value = await saveProjectMetadata(project, base.revision, metadataDelta(draftFrom(base.metadata), draft));
++      apply(value); onSaved();
++    } catch (e) {
++      if (e instanceof ApiRequestError && e.code === 'revision_conflict') {
++        const detail = e.detail as { current?: ProjectMetadataSnapshot };
++        if (detail.current?.metadata && typeof detail.current.revision === 'string') setExternal(detail.current);
++        setError('归档信息已被其他 Agent 或窗口修改，本次未保存；你的草稿仍然保留，请先核对最新版本。');
++      } else setError(e instanceof Error ? e.message : '保存未完成，你的草稿仍然保留。');
++    } finally { operation.current = false; setSaving(false); }
++  };
++  const reloadExternal = (keepChanges: boolean) => {
++    if (!external || !base || !draft) return;
++    if (keepChanges) {
++      const changes = metadataDelta(draftFrom(base.metadata), draft);
++      setBase(external); setDraft(draftFrom({ ...external.metadata, ...changes })); setExternal(null); setError('');
++      setNotice('已载入最新版本并保留你改过的字段。请核对后再次保存；本次尚未写入。');
++    } else if (window.confirm('载入最新归档信息会放弃当前未保存的修改，继续吗？')) apply(external);
++  };
++  const select = (key: 'category' | 'kind' | 'status', label: string, options: { value: string; label: string }[], blank: string) => (
++    <label className="metadata-field">{label}<select className="field" aria-label={label} value={draft?.[key] || ''} disabled={saving} onChange={e => change(key, e.target.value)}>
++      <option value="">{blank}</option>
++      {!!draft?.[key] && !options.some(o => o.value === draft[key]) && <option value={draft[key]}>保留原值：{draft[key]}</option>}
++      {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
++    </select></label>
++  );
++  return <div className="overlay metadata-overlay" onClick={close}>
++    <section className="modal metadata-editor" role="dialog" aria-modal="true" aria-label="编辑归档信息" onClick={e => e.stopPropagation()}>
++      <div className="metadata-heading"><div><h2>编辑归档信息</h2><p className="metadata-path">项目目录：{project}</p></div><button className="btn btn-sm" aria-label="关闭归档编辑" disabled={saving} onClick={close}>×</button></div>
++      <p className="foot-note">分类和标题只改变展示信息，不移动目录。已标记发布表示归档标记，实际发布结果请核对发布记录。</p>
++      {error && <p className="notice-error" role="alert">{error}</p>}
++      {notice && <p className="metadata-notice" role="status">{notice}</p>}
++      {external && <div className="metadata-conflict" role="status">
++        <p>检测到外部更新。当前草稿未被覆盖，也未自动重试保存。</p>
++        <button className="btn btn-sm" disabled={saving} onClick={() => reloadExternal(true)}>载入最新并保留我的修改</button>{' '}
++        <button className="btn btn-sm" disabled={saving} onClick={() => reloadExternal(false)}>放弃修改并载入最新</button>
++      </div>}
++      {!draft ? <p role="status">{reading ? '正在读取归档信息…' : '归档信息暂不可编辑，请重新读取后重试。'}</p> : <div className="metadata-fields">
++        <label className="metadata-field metadata-wide">标题<input className="field" aria-label="标题" value={draft.title} disabled={saving} placeholder={project} onChange={e => change('title', e.target.value)} /></label>
++        <label className="metadata-field metadata-wide">摘要<textarea className="field" aria-label="摘要" rows={3} value={draft.summary} disabled={saving} onChange={e => change('summary', e.target.value)} /></label>
++        {select('category', '用途', CATEGORIES, '未分类')}{select('kind', '形态', KINDS, '未指定形态')}{select('status', '阶段', STAGES, '未标记')}
++        <label className="metadata-field">画像<input className="field" aria-label="画像" list="metadata-profile-options" value={draft.profile} disabled={saving} onChange={e => change('profile', e.target.value)} /><datalist id="metadata-profile-options">{[...new Set([...profiles, ...knownProfiles])].filter(Boolean).map(value => <option key={value} value={value} />)}</datalist></label>
++        <label className="metadata-field">平台<input className="field" aria-label="平台" list="metadata-platform-options" value={draft.platform} disabled={saving} onChange={e => change('platform', e.target.value)} /><datalist id="metadata-platform-options">{platforms.filter(Boolean).map(value => <option key={value} value={value} />)}</datalist></label>
++        <label className="metadata-field metadata-wide">标签<input className="field" aria-label="标签" value={draft.tags} disabled={saving} placeholder="多个标签用逗号分隔" onChange={e => change('tags', e.target.value)} /></label>
++      </div>}
++      <div className="metadata-actions">
++        <button className="btn btn-sm" disabled={saving || reading} onClick={() => void read()}>{reading ? '正在读取…' : '重新读取'}</button>
++        <span className="foot-note">{dirty ? '有未保存的修改' : ''}</span>
++        <button className="btn" disabled={saving} onClick={close}>取消</button>
++        <button className="btn btn-primary" disabled={saving || !dirty || !draft} onClick={() => void save()}>{saving ? '正在保存…' : '保存'}</button>
++      </div>
++    </section>
++  </div>;
++}
 diff --git a/web/frontend/src/components/PublishPage.tsx b/web/frontend/src/components/PublishPage.tsx
 index c72723f..63f8a69 100644
 --- a/web/frontend/src/components/PublishPage.tsx
@@ -24238,10 +25049,44 @@ index 0000000..01f4858
 +    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..759d2ea 100644
+index 9b3d69f..3b613f4 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
-@@ -46,6 +46,7 @@ export interface SkillItem {
+@@ -6,20 +6,31 @@ function getBasePath(): string {
+ 
+ const BASE = getBasePath();
+ 
++export class ApiRequestError extends Error {
++  status: number;
++  code: string;
++  detail: unknown;
++  constructor(message: string, status: number, detail: unknown) {
++    super(message); this.name = 'ApiRequestError'; this.status = status; this.detail = detail;
++    this.code = detail && typeof detail === 'object' && 'code' in detail ? String(detail.code) : '';
++  }
++}
++
+ async function request<T>(url: string, options?: RequestInit): Promise<T> {
+   // 全部是动态应用接口（登录态/数据等），禁止浏览器 HTTP 缓存——否则 /api/accounts 等可能被启发式
+   // 缓存住旧响应（曾表现为“扫码登录后卡片仍显示未登录”）。调用方可用 options.cache 覆盖。
+   const res = await fetch(`${BASE}${url}`, { cache: 'no-store', ...options });
+   if (!res.ok) {
+     // 优先显示后端返回的实质错误信息（FastAPI 的 {detail}），而不是无意义的 "API error: 400"
+-    let detail = '';
++    let detail: unknown = '';
+     try {
+       const j = await res.json();
+       detail = (j && (j.detail || j.message)) || '';
+     } catch {
+       /* 响应体不是 JSON，忽略 */
+     }
+-    throw new Error(detail || `请求失败（${res.status} ${res.statusText}）`);
++    const message = typeof detail === 'string' ? detail : detail && typeof detail === 'object' && 'message' in detail ? String(detail.message) : '';
++    throw new ApiRequestError(message || `请求失败（${res.status} ${res.statusText}）`, res.status, detail);
+   }
+   return res.json() as Promise<T>;
+ }
+@@ -46,6 +57,7 @@ export interface SkillItem {
    layer: string;
    needsApi: boolean;
    apiConfigured: boolean;
@@ -24249,7 +25094,44 @@ index 9b3d69f..759d2ea 100644
  }
  
  export interface ApiKeySpec {
-@@ -263,7 +264,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
+@@ -86,6 +98,8 @@ export type FileKind = 'text' | 'image' | 'video' | 'audio' | 'binary';
+ export interface OutputMeta {
+   title?: string;
+   summary?: string;
++  category?: string;
++  profile?: string;
+   platform?: string;
+   kind?: string;             // article|xhs-note|video|cards|poster|audio|other
+   status?: string;           // draft|ready|published
+@@ -95,6 +109,27 @@ export interface OutputMeta {
+   deliverablePaths?: string[];  // 成品的 outputs 相对路径（后端已解析存在性）
+ }
+ 
++export interface ProjectMetadata extends Record<string, unknown> {
++  title?: string;
++  summary?: string;
++  category?: string;
++  kind?: string;
++  status?: string;
++  profile?: string;
++  platform?: string;
++  tags?: string[];
++}
++export interface ProjectMetadataSnapshot { metadata: ProjectMetadata; revision: string; }
++export type ProjectMetadataChanges = Partial<Pick<ProjectMetadata, 'title' | 'summary' | 'category' | 'kind' | 'status' | 'profile' | 'platform' | 'tags'>>;
++export function fetchProjectMetadata(project: string): Promise<ProjectMetadataSnapshot> {
++  return request(`/api/projects/${encodeURIComponent(project)}/metadata`);
++}
++export function saveProjectMetadata(project: string, revision: string, changes: ProjectMetadataChanges): Promise<ProjectMetadataSnapshot> {
++  return request(`/api/projects/${encodeURIComponent(project)}/metadata`, {
++    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision, changes }),
++  });
++}
++
+ /** 产物树节点：文件或目录（目录带 children，可无限嵌套点开）。 */
+ export interface OutputNode {
+   name: string;
+@@ -263,7 +298,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
    });
  }
  
@@ -24258,7 +25140,7 @@ index 9b3d69f..759d2ea 100644
  export function buildProfile(name: string, form: Record<string, unknown>): Promise<ProfileBuildResponse> {
    return request<ProfileBuildResponse>('/api/profile/build', {
      method: 'POST',
-@@ -364,7 +365,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
+@@ -364,7 +399,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
  }
  
  // ---- 账号登录 ----
@@ -24277,7 +25159,7 @@ index 9b3d69f..759d2ea 100644
    platform: string;
    name: string;
    backend: string;      // xhs | web | biliup | unsupported
-@@ -428,15 +439,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
+@@ -428,15 +473,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
    return request<AccountItem[]>('/api/accounts');
  }
  
@@ -24296,7 +25178,7 @@ index 9b3d69f..759d2ea 100644
  }
  
  /** 退出登录：删该平台持久化登录态。 */
-@@ -494,13 +505,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
+@@ -494,13 +539,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
  }
  
  // ---- 归因层：账号创作数据 ----
@@ -24312,7 +25194,7 @@ index 9b3d69f..759d2ea 100644
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +519,17 @@ export interface AccountAnalytics {
+@@ -508,12 +553,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -24332,12 +25214,14 @@ index 9b3d69f..759d2ea 100644
  /** 支持抓数据的平台 + 各自登录态。 */
 diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
 new file mode 100644
-index 0000000..bd91a4f
+index 0000000..1551278
 --- /dev/null
 +++ b/web/frontend/src/lib/appStorage.ts
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,55 @@
++import { hasUnsavedProjectMetadata, isProjectMetadataSaving, projectCloseApproved, approveProjectClose, resetProjectCloseApproval } from './outputMetadata';
++
 +type Snapshot = {values: Record<string, string>; migration: {sessions: number; copies: number}};
-+declare global { interface Window { desktopUiState?: {call(action: string, input?: unknown): Promise<Snapshot | boolean>}; mediaSailPrepareClose?: () => Promise<void>; } }
++declare global { interface Window { desktopUiState?: {call(action: string, input?: unknown): Promise<Snapshot | boolean>}; mediaSailPrepareClose?: () => Promise<boolean>; mediaSailResetClose?: () => void; } }
 +export const isDesktopStorage = Boolean(window.desktopUiState);
 +let values: Record<string, string> = {}, initialized = false;
 +const pending = new Set<Promise<unknown>>();
@@ -24364,9 +25248,15 @@ index 0000000..bd91a4f
 +  if (!isDesktopStorage) return;
 +  const result = await window.desktopUiState!.call('load') as Snapshot;
 +  values = Object.assign(Object.create(null), result.values); initialized = true;
++  window.mediaSailResetClose = () => { resetProjectCloseApproval(); document.body.inert = false; };
 +  window.mediaSailPrepareClose = async () => {
++    if (isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再退出或安装更新。'); return false; }
++    if (hasUnsavedProjectMetadata() && !projectCloseApproved()) {
++      if (!window.confirm('内容归档信息还有未保存的修改。放弃修改并退出或安装更新吗？')) return false;
++      approveProjectClose();
++    }
 +    document.body.inert = true;
-+    try {await flushStorage();} catch (e) {document.body.inert = false; throw e;}
++    try { await flushStorage(); return true; } catch (e) { resetProjectCloseApproval(); document.body.inert = false; throw e; }
 +  };
 +  const theme = values.easel_theme;
 +  if (theme === 'dark' || theme === 'light') {document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme;}
@@ -24476,6 +25366,88 @@ index 0000000..b302a01
 +  if (!window.desktopLibrary) throw new Error('资料库位置只能在桌面版调整。');
 +  await window.desktopLibrary.call('change', { targetRoot });
 +}
+diff --git a/web/frontend/src/lib/outputMetadata.ts b/web/frontend/src/lib/outputMetadata.ts
+new file mode 100644
+index 0000000..eb884a9
+--- /dev/null
++++ b/web/frontend/src/lib/outputMetadata.ts
+@@ -0,0 +1,76 @@
++import type { OutputMeta, OutputNode, ProjectMetadata, ProjectMetadataChanges } from './api';
++
++export const CATEGORIES = [
++  { value: 'creation', label: '创作内容' }, { value: 'analysis', label: '分析报告' }, { value: 'reference', label: '参考资料' },
++];
++export const KINDS = [
++  { value: 'article', label: '文档' }, { value: 'xhs-note', label: '图文笔记' }, { value: 'cards', label: '图文卡片' },
++  { value: 'poster', label: '海报' }, { value: 'video', label: '视频' }, { value: 'audio', label: '音频' }, { value: 'other', label: '其他' },
++];
++export const STAGES = [
++  { value: 'draft', label: '草稿' }, { value: 'ready', label: '已就绪' }, { value: 'published', label: '已标记发布' },
++];
++export const SHAPES = [
++  { value: 'graphic', label: '图文' }, { value: 'video', label: '视频' }, { value: 'audio', label: '音频' },
++  { value: 'document', label: '文档' }, { value: 'other', label: '其他形态' }, { value: 'unspecified', label: '未指定形态' },
++];
++export const textValue = (value: unknown): string => typeof value === 'string' ? value : '';
++export const categoryOf = (value: unknown): string => CATEGORIES.some(c => c.value === value) ? String(value) : 'uncategorized';
++export const categoryLabel = (value: unknown): string => CATEGORIES.find(c => c.value === value)?.label || (textValue(value) ? `自定义用途：${value}` : '未分类');
++export const stageLabel = (value: unknown): string => STAGES.find(s => s.value === value)?.label || textValue(value) || '未标记';
++export const kindLabel = (value: unknown): string => KINDS.find(k => k.value === value)?.label || textValue(value) || '未指定形态';
++export function shapeOf(value: unknown): string {
++  if (!textValue(value)) return 'unspecified';
++  if (value === 'article') return 'document';
++  if (['xhs-note', 'cards', 'poster'].includes(String(value))) return 'graphic';
++  return value === 'video' || value === 'audio' ? value : 'other';
++}
++export interface ProjectFilters { query: string; category: string; profile: string; platform: string; shape: string; stage: string; }
++export const EMPTY_PROJECT_FILTERS: ProjectFilters = { query: '', category: 'all', profile: 'all', platform: 'all', shape: 'all', stage: 'all' };
++export function matchesProject(project: OutputNode, filters: ProjectFilters): boolean {
++  const m = project.meta || {};
++  if (filters.category !== 'all' && categoryOf(m.category) !== filters.category) return false;
++  if (filters.profile !== 'all' && textValue(m.profile) !== filters.profile) return false;
++  if (filters.platform !== 'all' && textValue(m.platform) !== filters.platform) return false;
++  if (filters.shape !== 'all' && shapeOf(m.kind) !== filters.shape) return false;
++  if (filters.stage !== 'all' && textValue(m.status) !== filters.stage) return false;
++  const query = filters.query.trim().toLocaleLowerCase();
++  if (!query) return true;
++  const tags = Array.isArray(m.tags) ? m.tags.filter(t => typeof t === 'string') : [];
++  return [project.name, textValue(m.title), textValue(m.summary), ...tags].join('\n').toLocaleLowerCase().includes(query);
++}
++export function valuesFor(projects: OutputNode[], key: keyof OutputMeta): string[] {
++  return [...new Set(projects.map(p => textValue(p.meta?.[key])))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
++}
++
++const FIELDS = ['title', 'summary', 'category', 'kind', 'status', 'profile', 'platform', 'tags'] as const;
++export type MetadataDraft = Record<Exclude<typeof FIELDS[number], 'tags'>, string> & { tags: string };
++export function draftFrom(metadata: ProjectMetadata): MetadataDraft {
++  return {
++    title: textValue(metadata.title), summary: textValue(metadata.summary), category: textValue(metadata.category),
++    kind: textValue(metadata.kind), status: textValue(metadata.status), profile: textValue(metadata.profile), platform: textValue(metadata.platform),
++    tags: Array.isArray(metadata.tags) ? metadata.tags.filter(t => typeof t === 'string').join('，') : '',
++  };
++}
++export function metadataDelta(original: MetadataDraft, draft: MetadataDraft): ProjectMetadataChanges {
++  const delta: ProjectMetadataChanges = {};
++  for (const key of FIELDS) {
++    if (draft[key] === original[key]) continue;
++    if (key === 'tags') delta.tags = [...new Set(draft.tags.split(/[,，\n]/).map(t => t.trim()).filter(Boolean))];
++    else delta[key] = draft[key];
++  }
++  return delta;
++}
++
++let readProjectEdits: (() => boolean) | null = null;
++let readProjectSaving: (() => boolean) | null = null;
++let closingApproved = false;
++export function registerProjectEdits(read: () => boolean, saving: () => boolean = () => false): () => void {
++  readProjectEdits = read; readProjectSaving = saving; closingApproved = false;
++  return () => { if (readProjectEdits === read) { readProjectEdits = null; readProjectSaving = null; closingApproved = false; } };
++}
++export function hasUnsavedProjectMetadata(): boolean { return Boolean(readProjectEdits?.()); }
++export function isProjectMetadataSaving(): boolean { return Boolean(readProjectSaving?.()); }
++export function projectCloseApproved(): boolean { return closingApproved; }
++export function approveProjectClose(): void { closingApproved = true; }
++export function resetProjectCloseApproval(): void { closingApproved = false; }
 diff --git a/web/frontend/src/lib/profileSelection.test.ts b/web/frontend/src/lib/profileSelection.test.ts
 new file mode 100644
 index 0000000..75ceb61
@@ -25415,6 +26387,38 @@ index 0000000..1c6aa2b
 +.aito-compose input:not([type=checkbox]),.aito-compose select,.aito-compose textarea{width:100%;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-primary);padding:10px 12px;font:inherit;box-sizing:border-box}.aito-compose textarea{resize:vertical;line-height:1.6}.aito-compose input:focus,.aito-compose textarea:focus,.aito-compose select:focus{outline:2px solid var(--accent-start);outline-offset:1px}.aito-inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.aito-inline label{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}.aito-inline select{flex:1}
 +.aito-compose-account{padding:14px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:12px}.aito-compose-account p{margin:0;font-size:13px;color:var(--text-secondary)}.aito-image-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;max-height:280px;overflow:auto}.aito-image-option{display:flex;position:relative;flex-direction:column;gap:5px;border:1px solid var(--border);padding:8px;border-radius:8px;cursor:pointer;font-size:12px;overflow:hidden}.aito-image-option>input{position:absolute;top:12px;left:12px;width:17px;height:17px}.aito-image-option img{width:100%;height:90px;object-fit:contain;background:var(--bg)}.aito-image-option span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aito-order{display:flex;gap:6px;align-items:center}.aito-order span{flex:1;font-size:13px;overflow-wrap:anywhere}.aito-cover-preview{max-width:230px;max-height:140px;object-fit:contain;align-self:flex-start;border-radius:8px}.aito-video-preview{max-height:210px;width:100%;background:#111;border-radius:8px}
 +.aito-compose>footer{display:flex;gap:10px;align-items:center;padding:16px 24px;border-top:1px solid var(--border);flex-wrap:wrap}.aito-compose>footer span{font-size:12px;color:var(--text-secondary);flex:1;min-width:150px}.aito-compose button:disabled{opacity:.5;cursor:not-allowed}
+diff --git a/web/frontend/src/styles/content-library.css b/web/frontend/src/styles/content-library.css
+new file mode 100644
+index 0000000..9d359fd
+--- /dev/null
++++ b/web/frontend/src/styles/content-library.css
+@@ -0,0 +1,26 @@
++.library-controls,.library-detail { max-width:1160px; margin:16px auto; }
++.library-categories { display:flex; flex-wrap:wrap; gap:8px; }
++.library-search { width:100%; margin:14px 0 12px; }
++.library-facets { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; }
++.library-facets label { display:flex; flex:1 1 130px; min-width:120px; flex-direction:column; gap:6px; font-size:12px; color:var(--text-secondary); }
++.library-facets select { width:100%; }
++.library-results { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:12px 0; color:var(--text-secondary); font-size:13px; }
++.library-detail { padding:16px 18px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); overflow-wrap:anywhere; }
++.library-detail p { white-space:pre-wrap; margin:8px 0; }
++.library-project-summary { margin:7px 0; font-size:12px; color:var(--text-secondary); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
++.library-project-path { color:var(--text-tertiary); font-size:11px; overflow-wrap:anywhere; margin-top:6px; }
++.library-project-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
++.metadata-editor { width:760px; max-width:calc(100vw - 36px); max-height:calc(100vh - 40px); overflow-y:auto; }
++.metadata-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
++.metadata-heading h2 { margin:0; }
++.metadata-path { font-size:12px; color:var(--text-secondary); overflow-wrap:anywhere; }
++.metadata-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:18px 0; }
++.metadata-field { display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--text-secondary); }
++.metadata-field .field { width:100%; }
++.metadata-wide { grid-column:1/-1; }
++.metadata-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px; position:sticky; bottom:-28px; padding:14px 0; background:var(--surface); border-top:1px solid var(--border); }
++.metadata-actions > :first-child { margin-right:auto; }
++.metadata-notice { padding:10px 12px; background:var(--accent-soft); border-radius:var(--radius); }
++.metadata-conflict { padding:12px; border:1px solid var(--amber); border-radius:var(--radius); }
++.metadata-conflict p { margin:0 0 10px; }
++@media(max-width:680px) { .metadata-fields { grid-template-columns:1fr; } .library-facets label { flex-basis:calc(50% - 12px); } .metadata-editor { max-width:calc(100vw - 20px); } }
 diff --git a/web/frontend/src/styles/update-banner.css b/web/frontend/src/styles/update-banner.css
 new file mode 100644
 index 0000000..cec4e39

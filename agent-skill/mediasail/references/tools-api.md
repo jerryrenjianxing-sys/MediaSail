@@ -25,6 +25,8 @@
 | GET /api/profile/build/status/{name} | 基线创建状态，不表示 Agent 已增强 |
 | GET /api/skills、/api/skill/{name} | 可读业务/方法列表与正文；不是模型执行入口 |
 | GET /api/outputs | 内容库目录树、项目元数据与成品路径 |
+| GET /api/projects/{project}/metadata | 读取项目展示信息，返回 metadata 和 revision；project 为 URL 编码后的一级项目目录名 |
+| PATCH /api/projects/{project}/metadata | revision 与 changes；增量修改 title/summary/category/kind/status/profile/platform/tags，成功返回 metadata 和新 revision；冲突时保留待改内容再核对 |
 | GET /api/output/{path} | 读取 outputs 相对路径下的文本 |
 | GET /api/media/{path} | 读取媒体，支持 Range |
 | DELETE /api/output/{path} | 删除内容库文件或目录 |
@@ -50,6 +52,8 @@
 | GET /api/env/tools | 业务 Python、系统浏览器等可用状态；不代表预装通用创作工具 |
 
 旧聊天、模型配置和自动安装通用工具的接口已退出或返回 410，不从旧文档继续调用。删除、发布和配置保存都是实质业务操作，依用户任务使用；连接 check 本身只查看路径与连接，不会触发它们。请求超时不等于业务没有执行，已有状态接口可用于核对，尤其发布不要盲目重复。
+
+项目 `category` 可为 creation（创作内容）、analysis（分析报告）、reference（参考资料），不改变 `outputs/<项目>/` 的原路径；未填写的旧项目仍可查看。`status` 的 draft/ready/published 分别展示为草稿、已就绪、已标记发布，均不能代替真实平台发布结果。元数据接口的 revision 用于核对是否发生并发修改，读取后有变更会拒绝旧 revision 的保存；完整调用与合并说明见[项目、素材与成品](outputs.md)。
 
 ## Windows 调用
 
