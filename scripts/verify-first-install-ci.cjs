@@ -59,8 +59,8 @@ async function main(){
   assert.ok(fss.existsSync(exe));const selected=await fs.readFile(path.join(bootstrap,'library-selection.ini'),'utf8');assert.equal(/^root=(.+)$/m.exec(selected)?.[1].trim(),libraryRoot,'Real wizard library input was not committed');
   const markerBefore=JSON.parse(await fs.readFile(path.join(libraryRoot,'.mediasail-library.json'),'utf8'));assert.equal(markerBefore.owner,'nsis');assert.equal(markerBefore.state,'initializing');
   const cached=path.join(libraryRoot,'runtime','update-cache','mediasail-updater','installer.exe');assert.equal(await sha256(cached),result.installer.sha256,'Actual NSIS cache must use the selected library before first launch');result.cacheVerifiedBeforeLaunch=true;result.wizardSelectionCommitted=true;await persist();
-  assert.equal(owned().length,0,'runAfterFinish=false: first launch must be explicit');cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:appEnvironment()});
-  const connection=await readyConnection();inspector=await attachTestMain(connection.pid);result.firstReadyMs=Date.now()-started;
+  assert.equal(owned().length,0,'runAfterFinish=false: first launch must be explicit');const appStarted=Date.now(),firstLaunch=cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:appEnvironment()});assert.ok(firstLaunch.pid);result.firstLaunchPid=firstLaunch.pid;
+  const connection=await readyConnection();assert.notEqual(connection.pid,firstLaunch.pid,'Actual first-start preparation must relaunch the app');result.preparationRelaunched=true;result.readyPid=connection.pid;inspector=await attachTestMain(connection.pid);result.installToReadyMs=Date.now()-started;result.appToReadyMs=Date.now()-appStarted;
   const location=JSON.parse(await fs.readFile(path.join(bootstrap,'library-location.json'),'utf8')),canonical=JSON.parse(await fs.readFile(connection.connectionFile,'utf8')),marker=JSON.parse(await fs.readFile(path.join(libraryRoot,'.mediasail-library.json'),'utf8'));
   for(const info of [location,connection,canonical])assert.equal(info.libraryRoot?.toLowerCase(),libraryRoot.toLowerCase());assert.equal(location.state,'ready');assert.equal(marker.state,'ready');assert.equal(location.libraryId,marker.libraryId);assert.equal(canonical.instanceId,connection.instanceId);assert.equal(canonical.libraryId,connection.libraryId);assert.equal(connection.connectionFile.toLowerCase(),path.join(libraryRoot,'runtime','agent-connection.json').toLowerCase());assert.equal(connection.discoveryFile.toLowerCase(),path.join(bootstrap,'agent-connection.json').toLowerCase());
   assert.equal(connection.workspace.toLowerCase(),path.join(libraryRoot,'workspace').toLowerCase());assert.equal(connection.dataDir.toLowerCase(),path.join(libraryRoot,'runtime').toLowerCase());
@@ -81,7 +81,7 @@ async function main(){
   for(const row of owned().filter(row=>!row.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(row.ProcessId),'/T','/F'],{windowsHide:true});
   result.finishedAt=new Date().toISOString();await persist();
  }
- console.log('REAL FIRST INSTALL GUI PASSED '+JSON.stringify({version,sha256:result.installer.sha256,bytes:result.installer.bytes,installMs:result.installMs,firstReadyMs:result.firstReadyMs,libraryPageObserved:result.wizard.libraryPageObserved,normalExit:result.normalExit}));
+ console.log('REAL FIRST INSTALL GUI PASSED '+JSON.stringify({version,sha256:result.installer.sha256,bytes:result.installer.bytes,installMs:result.installMs,appToReadyMs:result.appToReadyMs,installToReadyMs:result.installToReadyMs,libraryPageObserved:result.wizard.libraryPageObserved,normalExit:result.normalExit}));
 }
 if(require.main===module)main().catch(error=>{console.error(error);process.exitCode=1;});
 module.exports={assertHostedFixture,verifyInstaller};
