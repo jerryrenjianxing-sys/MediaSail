@@ -41,13 +41,17 @@ public static class FirstInstallWindow {
  public struct Rect{public int Left,Top,Right,Bottom;}
 }
 '@
-function Window-Text([IntPtr]$handle){
+function Window-Text([IntPtr]$handle,[switch]$Strict){
  [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner);if($owner -ne $InstallerPid){throw 'Refusing text read outside the fixture PID'}
  $text=[Text.StringBuilder]::new(8192);$read=[UIntPtr]::Zero
  # Caption reads do not block on the installer while it extracts files. Edit
  # content belongs to the other process and requires the marshaled WM_GETTEXT.
  if((Window-Class $handle) -cne 'Edit'){[void][FirstInstallWindow]::GetWindowText($handle,$text,8192);return $text.ToString()}
- if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]::new([uint64]8192),$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){throw 'Fixture control WM_GETTEXT timed out'}
+ if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]::new([uint64]8192),$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){
+  if($Strict){throw 'Fixture input verification WM_GETTEXT timed out'}
+  $script:pollTextBusy=$true;$result.pollTextTimeouts=@($result.pollTextTimeouts)+@(@{at=[DateTime]::UtcNow.ToString('o');controlId=[FirstInstallWindow]::GetDlgCtrlID($handle)})
+  return ''
+ }
  return $text.ToString()
 }
 function Window-Class([IntPtr]$handle){$text=[Text.StringBuilder]::new(256);[void][FirstInstallWindow]::GetClassName($handle,$text,256);return $text.ToString()}
@@ -56,7 +60,7 @@ function Set-ControlText([IntPtr]$handle,[string]$text){
  if($owner -ne $InstallerPid -or (Window-Class $handle) -cne 'Edit' -or -not [FirstInstallWindow]::IsWindowVisible($handle) -or -not [FirstInstallWindow]::IsWindowEnabled($handle)){throw 'Refusing text write outside an enabled fixture Edit'}
  $written=[UIntPtr]::Zero
  if([FirstInstallWindow]::WriteTextMessage($handle,0x000C,[UIntPtr]::Zero,$text,3,2000,[ref]$written) -eq [IntPtr]::Zero -or $written.ToUInt64() -ne 1){throw 'Fixture control WM_SETTEXT failed or timed out'}
- if((Window-Text $handle) -cne $text){throw 'Fixture Edit did not retain the chosen Unicode path'}
+ if((Window-Text $handle -Strict) -cne $text){throw 'Fixture Edit did not retain the chosen Unicode path'}
 }
 function Save-Window([IntPtr]$handle,[string]$name){
  $rect=[FirstInstallWindow+Rect]::new();if(-not [FirstInstallWindow]::GetWindowRect($handle,[ref]$rect)){throw 'Window rectangle unavailable'}
@@ -64,7 +68,7 @@ function Save-Window([IntPtr]$handle,[string]$name){
  try{$printed=[FirstInstallWindow]::PrintWindow($handle,$dc,2)}finally{$graphics.ReleaseHdc($dc)}
  try{if(-not $printed){throw 'Actual installer window screenshot failed'};$bitmap.Save((Join-Path $EvidenceDirectory $name),[Drawing.Imaging.ImageFormat]::Png)}finally{$graphics.Dispose();$bitmap.Dispose()}
 }
-$result=@{passed=$false;installerPid=$InstallerPid;startedAt=[DateTime]::UtcNow.ToString('o');programPageObserved=$false;libraryPageObserved=$false;programInputMatched=$false;libraryInputMatched=$false;finishObserved=$false;actions=@();validationProcesses=@();lastWindows=@()}
+$result=@{passed=$false;installerPid=$InstallerPid;startedAt=[DateTime]::UtcNow.ToString('o');programPageObserved=$false;libraryPageObserved=$false;programInputMatched=$false;libraryInputMatched=$false;finishObserved=$false;actions=@();validationProcesses=@();pollTextTimeouts=@();lastWindows=@()}
 function Persist-Result{[IO.File]::WriteAllText((Join-Path $EvidenceDirectory 'wizard.json'),($result|ConvertTo-Json -Depth 12),[Text.UTF8Encoding]::new($false))}
 function Click-Control($control,[string]$action){
  [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($control.handle,[ref]$owner)
@@ -100,6 +104,7 @@ function Click-Control($control,[string]$action){
 try{
  $deadline=[DateTime]::UtcNow.AddMinutes(20);$lastSignature='';$lastChange=[DateTime]::UtcNow
  while([DateTime]::UtcNow -lt $deadline){
+  $script:pollTextBusy=$false
   if(-not (Get-Process -Id $InstallerPid -ErrorAction SilentlyContinue)){if($result.finishObserved){$result.passed=$true;break};throw 'Installer exited before the real finish page'}
   foreach($worker in @(Get-CimInstance Win32_Process -Filter ("Name='powershell.exe' AND ParentProcessId="+$InstallerPid))){
    if($worker.CommandLine -match 'installer-library\.ps1' -and $worker.CommandLine -match '-Mode\s+"?(Validate|Commit|Cache)"?' -and @($result.validationProcesses|Where-Object{$_.pid -eq $worker.ProcessId}).Count -eq 0){$result.validationProcesses+=@(@{pid=$worker.ProcessId;parentPid=$InstallerPid;mode=$Matches[1];observedAt=[DateTime]::UtcNow.ToString('o')})}
@@ -116,6 +121,7 @@ try{
    $windows.Add(@{handle=$handle;title=(Window-Text $handle);children=@($children.ToArray())});return $true
   }
   [void][FirstInstallWindow]::EnumWindows($callback,[IntPtr]::Zero)
+  if($script:pollTextBusy){Persist-Result;Start-Sleep -Milliseconds 350;continue}
   $result.lastWindows=@($windows.ToArray());Persist-Result
   foreach($window in $windows){
    $texts=($window.children|ForEach-Object{$_.text}) -join "`n"
@@ -127,7 +133,9 @@ try{
     if($result.libraryInputMatched){
      $elapsed=([DateTime]::UtcNow-[DateTime]::Parse($result.libraryClickAt)).TotalSeconds
      if($elapsed -ge 3 -and -not $result.libraryStableRetry){
-      if($edits.Count -ne 1 -or (Window-Text $edits[0].handle) -cne $LibraryRoot -or $next.text.Replace('&','') -cne 'Install'){throw 'Library page changed unexpectedly before bounded retry'}
+      $retryText=if($edits.Count -eq 1){Window-Text $edits[0].handle}else{''}
+      if($script:pollTextBusy){continue}
+      if($edits.Count -ne 1 -or $retryText -cne $LibraryRoot -or $next.text.Replace('&','') -cne 'Install'){throw 'Library page changed unexpectedly before bounded retry'}
       Save-Window $window.handle 'installer-library-stable-before-retry.png';$result.libraryStableRetry=$true;Persist-Result
       Click-Control $next 'confirm-stable-library-once-more'
      }
