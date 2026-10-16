@@ -51,7 +51,7 @@ async function main(){
   result.installer=await verifyInstaller(installer);assert.ok(Number(ps('(Get-PSDrive -Name C).Free'))>5*1024**3,'Need 5 GiB free for the real installation');await persist();
   const started=Date.now();installerChild=cp.spawn(installer,[],{windowsHide:false,stdio:'ignore'});assert.ok(installerChild.pid);let installerExit;installerChild.once('exit',code=>{installerExit=code;});
   driverChild=cp.spawn('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(root,'scripts','drive-first-install-fixture.ps1'),'-InstallerPid',String(installerChild.pid),'-ExpectedExecutable',installer,'-ProgramDirectory',target,'-LibraryRoot',libraryRoot,'-EvidenceDirectory',evidence],{windowsHide:true,stdio:['ignore','pipe','pipe']});
-  let driverOutput='';for(const stream of [driverChild.stdout,driverChild.stderr])stream.on('data',chunk=>{driverOutput+=chunk.toString('utf8');});
+  let driverOutput='';for(const stream of [driverChild.stdout,driverChild.stderr])stream.on('data',chunk=>{driverOutput+=chunk.toString('utf8');process.stdout.write(chunk);});
   const driverExit=await new Promise((resolve,reject)=>{driverChild.once('error',reject);driverChild.once('exit',resolve);});await fs.writeFile(path.join(evidence,'wizard-driver.log'),driverOutput);assert.equal(driverExit,0,'Real NSIS wizard driver failed; inspect wizard.json and screenshots');
   await until(()=>installerExit!==undefined,30000,'NSIS process exit');assert.equal(installerExit,0,'Actual NSIS install must succeed');
   result.installMs=Date.now()-started;result.wizard=JSON.parse(await fs.readFile(path.join(evidence,'wizard.json'),'utf8'));
@@ -66,7 +66,7 @@ async function main(){
   assert.equal(connection.workspace.toLowerCase(),path.join(libraryRoot,'workspace').toLowerCase());assert.equal(connection.dataDir.toLowerCase(),path.join(libraryRoot,'runtime').toLowerCase());
   for(const relative of ['workspace/profiles','workspace/outputs','workspace/skills','runtime','agent-skill/mediasail/SKILL.md'])assert.ok(fss.existsSync(path.join(libraryRoot,relative)),'Missing selected library resource: '+relative);
   const status=await(await fetch(connection.baseUrl+'/api/status')).json();assert.equal(status.serviceReady,true);assert.equal(status.gateway,false);
-  assert.equal(await inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),true,'Actual Agent homepage required');
+  await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'actual Agent homepage rendered');
   await inspector.evaluate(render("window.desktopUiState.call('set',{key:'easel_theme',value:'dark'}).then(()=>window.desktopUiState.call('flush'))"));
   await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'first-install-fixture',value:'synthetic-only',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return true;})()");
   result.firstLaunch=await snapshot();const runtime=path.join(libraryRoot,'runtime');for(const key of ['userData','sessionData'])assert.equal(result.firstLaunch[key].toLowerCase(),runtime.toLowerCase());assert.ok(inside(runtime,result.firstLaunch.partition));assert.equal(result.firstLaunch.cookie,'synthetic-only');

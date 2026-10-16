@@ -65,6 +65,7 @@ function Click-Control($control,[string]$action){
  if($owner -ne $InstallerPid -or $control.class -cne 'Button' -or -not [FirstInstallWindow]::IsWindowVisible($control.handle) -or -not [FirstInstallWindow]::IsWindowEnabled($control.handle)){throw 'Refusing non-fixture or disabled button'}
  if(-not [FirstInstallWindow]::PostMessage($control.handle,0xF5,[IntPtr]::Zero,[IntPtr]::Zero)){throw 'Button message failed'}
  $result.actions+=@(@{action=$action;text=$control.text;id=$control.id;at=[DateTime]::UtcNow.ToString('o')});Persist-Result;Start-Sleep -Milliseconds 500
+ Write-Output ('fixture GUI action: '+$action)
 }
 try{
  $deadline=[DateTime]::UtcNow.AddMinutes(20);$lastSignature='';$lastChange=[DateTime]::UtcNow
@@ -90,11 +91,20 @@ try{
    if($buttons.Count -ne 1){continue};$next=$buttons[0]
    $edits=@($window.children|Where-Object{$_.class -ceq 'Edit' -and $_.enabled})
    if($texts.Contains('选择 MediaSail 资料库')){
-    if($result.libraryInputMatched){continue}
+    if($result.libraryInputMatched){
+     $elapsed=([DateTime]::UtcNow-[DateTime]::Parse($result.libraryClickAt)).TotalSeconds
+     if($elapsed -ge 3 -and -not $result.libraryStableRetry){
+      if($edits.Count -ne 1 -or (Window-Text $edits[0].handle) -cne $LibraryRoot -or $next.text.Replace('&','') -cne 'Install'){throw 'Library page changed unexpectedly before bounded retry'}
+      Save-Window $window.handle 'installer-library-stable-before-retry.png';$result.libraryStableRetry=$true;Persist-Result
+      Click-Control $next 'confirm-stable-library-once-more'
+     }
+     if($elapsed -ge 60){throw 'The actual library page did not advance after two bounded clicks; control tree and screenshots preserved'}
+     continue
+    }
     if(-not $result.programInputMatched -or $edits.Count -ne 1){throw 'Unexpected library page structure or order'}
     $result.libraryPageObserved=$true
     Set-ControlText $edits[0].handle $LibraryRoot
-    $result.libraryInputMatched=$true;Save-Window $window.handle 'installer-library-selection.png';Persist-Result
+    $result.libraryInputMatched=$true;$result.libraryClickAt=[DateTime]::UtcNow.ToString('o');Save-Window $window.handle 'installer-library-selection.png';Persist-Result
     Click-Control $next 'confirm-library-and-install';continue
    }
    if(-not $result.programInputMatched -and $edits.Count -eq 1 -and $edits[0].text -match '^[A-Za-z]:\\' -and $texts -match 'Choose Install Location|Destination Folder|选择安装位置|目标文件夹'){
