@@ -1,0 +1,18 @@
+2026-10-16T05:38:56.517Z Checking for update
+2026-10-16T05:38:56.518Z Generated new staging user ID: 417569e9-7705-5a98-a035-c77f1749497a
+2026-10-16T05:38:57.454Z Found version 0.5.2 (url: MediaSail-0.5.2-win-x64-Setup.exe)
+2026-10-16T05:38:57.648Z Downloading update from MediaSail-0.5.2-win-x64-Setup.exe
+2026-10-16T05:38:57.650Z Download block maps (old: "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.0/MediaSail-0.5.0-win-x64-Setup.exe.blockmap", new: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.2/MediaSail-0.5.2-win-x64-Setup.exe.blockmap)
+2026-10-16T05:38:58.102Z File has 171 changed blocks
+2026-10-16T05:38:58.109Z Full: 267,535.66 KB, To download: 3,685.74 KB (1%)
+2026-10-16T05:38:58.113Z Differential download: https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.2/MediaSail-0.5.2-win-x64-Setup.exe
+2026-10-16T05:38:58.233Z Redirect to https://release-assets.githubusercontent.com/github-production-release-asset/1411559429/f6d39218-2bee-4ab0-b677-93f32a7e5ffd
+2026-10-16T05:39:00.353Z New version 0.5.2 has been downloaded to C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.5.2-win-x64-Setup.exe
+2026-10-16T05:39:00.706Z Install on explicit quitAndInstall
+2026-10-16T05:39:00.706Z Install: isSilent: true, isForceRunAfter: true
+2026-10-16T05:39:00.707Z Executing: C:\Users\runneradmin\AppData\Local\mediasail-updater\pending\MediaSail-0.5.2-win-x64-Setup.exe with args: --updated,/S,--force-run
+2026-10-16T05:43:55.960Z 旧更新缓存迁移：{"copied":[],"matched":[],"bytes":0,"skipped":["旧 blockmap 缺失或不匹配，仅迁移已核验安装包，正确 blockmap 由更新器获取","新缓存已有不同文件：installer.exe"],"errors":[]}
+2026-10-16T05:44:01.304Z Checking for update
+2026-10-16T05:44:02.293Z Update for version 0.5.2 is not available (latest version: 0.5.2, downgrade is disallowed).
+2026-10-16T05:44:05.339Z 旧更新缓存迁移：{"copied":[],"matched":[],"bytes":0,"skipped":["旧 blockmap 缺失或不匹配，仅迁移已核验安装包，正确 blockmap 由更新器获取","新缓存已有不同文件：installer.exe"],"errors":[]}
+2026-10-16T05:44:11.871Z 旧更新缓存迁移：{"copied":[],"matched":[],"bytes":0,"skipped":["旧 blockmap 缺失或不匹配，仅迁移已核验安装包，正确 blockmap 由更新器获取","新缓存已有不同文件：installer.exe"],"errors":[]}
