@@ -2,7 +2,6 @@
  [Parameter(Mandatory=$true)][int]$InstallerPid,
  [Parameter(Mandatory=$true)][string]$ExpectedExecutable,
  [Parameter(Mandatory=$true)][string]$ProgramDirectory,
- [Parameter(Mandatory=$true)][string]$LibraryRoot,
  [Parameter(Mandatory=$true)][string]$EvidenceDirectory
 )
 $ErrorActionPreference='Stop'
@@ -10,8 +9,8 @@ $ErrorActionPreference='Stop'
 if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_ENVIRONMENT -cne 'github-hosted' -or $env:RUNNER_OS -cne 'Windows' -or $env:GITHUB_RUN_ID -notmatch '^\d+$'){throw 'Ephemeral GitHub-hosted Windows only; never run on a user PC'}
 $workspace=[IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
 $fixture=[IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP ('mediasail-first-install-'+$env:GITHUB_RUN_ID)))
-$expected=[IO.Path]::GetFullPath((Join-Path $workspace 'release-input\candidate\MediaSail-0.5.2-win-x64-Setup.exe'))
-if([IO.Path]::GetFullPath($ExpectedExecutable) -ine $expected -or [IO.Path]::GetFullPath($ProgramDirectory) -ine (Join-Path $fixture '中文 程序\MediaSail') -or [IO.Path]::GetFullPath($LibraryRoot) -ine (Join-Path $fixture '中文 资料库') -or [IO.Path]::GetFullPath($EvidenceDirectory) -ine (Join-Path $workspace 'installer-evidence\first-install')){throw 'Unexpected fixture scope'}
+$expected=[IO.Path]::GetFullPath((Join-Path $workspace 'release-input\candidate\MediaSail-0.5.3-win-x64-Setup.exe'))
+if([IO.Path]::GetFullPath($ExpectedExecutable) -ine $expected -or [IO.Path]::GetFullPath($ProgramDirectory) -ine (Join-Path $fixture '中文 程序\MediaSail') -or [IO.Path]::GetFullPath($EvidenceDirectory) -ine (Join-Path $workspace 'installer-evidence\first-install')){throw 'Unexpected fixture scope'}
 $process=Get-CimInstance Win32_Process -Filter ('ProcessId='+$InstallerPid)
 if(-not $process -or $process.ExecutablePath -ine $expected){throw 'Installer PID is not the exact downloaded fixture'}
 Add-Type -AssemblyName System.Drawing
@@ -127,20 +126,13 @@ try{
   $result.lastWindows=@($windows.ToArray());Persist-Result
   foreach($window in $windows){
    $texts=($window.children|ForEach-Object{$_.text}) -join "`n"
-   if(@($window.children|Where-Object{$_.class -ceq 'msctls_progress32'}).Count -gt 0 -and $result.libraryInputMatched){if(-not (Test-Path -LiteralPath (Join-Path $EvidenceDirectory 'installer-progress.png'))){Save-Window $window.handle 'installer-progress.png'}}
+   if(@($window.children|Where-Object{$_.class -ceq 'msctls_progress32'}).Count -gt 0 -and $result.programInputMatched){if(-not (Test-Path -LiteralPath (Join-Path $EvidenceDirectory 'installer-progress.png'))){Save-Window $window.handle 'installer-progress.png'}}
    $buttons=@($window.children|Where-Object{$_.class -ceq 'Button' -and $_.id -eq 1 -and $_.enabled})
    if($buttons.Count -ne 1){continue};$next=$buttons[0]
    $edits=@($window.children|Where-Object{$_.class -ceq 'Edit' -and $_.enabled})
    if($texts.Contains('选择 MediaSail 资料库')){
-    # The navigation command has already entered the real NSIS leave callback.
-    # A snapshot captured during its validation/page transition must never
-    # trigger a second submission or be treated as a changed user selection.
-    if($result.libraryInputMatched){continue}
-    if(-not $result.programInputMatched -or $edits.Count -ne 1){throw 'Unexpected library page structure or order'}
-    $result.libraryPageObserved=$true
-    Set-ControlText $edits[0].handle $LibraryRoot
-    $result.libraryInputMatched=$true;$result.libraryClickAt=[DateTime]::UtcNow.ToString('o');Save-Window $window.handle 'installer-library-selection.png';Persist-Result
-    Click-Control $next 'confirm-library-and-install';continue
+    $result.libraryPageObserved=$true;Save-Window $window.handle 'unexpected-installer-library-selection.png';Persist-Result
+    throw 'The 0.5.3 installer must not select a user library'
    }
    if(-not $result.programInputMatched -and $edits.Count -eq 1 -and $edits[0].text -match '^[A-Za-z]:\\' -and $texts -match 'Choose Install Location|Destination Folder|选择安装位置|目标文件夹'){
     $result.programPageObserved=$true
@@ -150,7 +142,7 @@ try{
    }
    if($next.text -match 'Finish|完成|结束'){
     if($result.finishObserved){continue}
-    if(-not $result.libraryInputMatched){throw 'Finish reached without the library selection page'}
+    if(-not $result.programInputMatched){throw 'Finish reached without the program directory page'}
     $result.finishObserved=$true;Save-Window $window.handle 'installer-finish.png';Click-Control $next 'finish';continue
    }
    if(-not $result.programInputMatched -and $next.text -match 'Next|下一步|I Agree|我接受|同意'){

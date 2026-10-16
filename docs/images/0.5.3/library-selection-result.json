@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "version": "0.5.3",
+  "testedAt": "2026-10-16T09:07:26.691Z",
+  "appAsarSHA256": "95eb7b35ee97a422873c10404f8d2a725f5829a019430143fd23834a49199bc8",
+  "realPackagedApplication": true,
+  "realProcessRelaunch": true,
+  "realAccountUsed": false,
+  "publications": false,
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\直接选库 0.5.3 1792141611978",
+  "checks": [
+    "Failed pending metadata is retired; old files, partial target and dangling plugin junction are untouched",
+    "External file writes and packaged business APIs share the same real selected folder",
+    "Settings selects a fresh folder and relaunches without copying or deleting previous content",
+    "A prior connection address resolves the new library instead of returning stale content",
+    "An existing library opens unchanged and the explicit choice survives normal restart"
+  ],
+  "errors": [],
+  "scope": "Isolated packaged direct selection and Documents filesystem; no migration or real user data."
+}

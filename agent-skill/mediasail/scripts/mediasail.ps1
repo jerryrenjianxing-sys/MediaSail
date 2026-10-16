@@ -29,6 +29,7 @@ try {
         $file = $canonical
     }
     if ($canonical -ne $file -or $attempt -ge 8) { throw 'Too many connection redirects; reopen MediaSail' }
+    if ($info.status -eq 'needs-library' -or -not $info.workspace) { throw 'Choose a library in MediaSail first, then read the current connection. No old directory will be used.' }
     if (-not (Test-Path -LiteralPath $info.python)) { throw 'Bundled Python is missing; restart or repair MediaSail' }
     $env:PYTHONUTF8 = '1'; $env:PYTHONIOENCODING = 'utf-8'
     & $info.python (Join-Path $PSScriptRoot 'mediasail.py') --connection $file @forward

@@ -1,6 +1,12 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 // Public discovery metadata only. Never serialize the process environment or desktop token.
 const PATH_ENV=['PATH','HOME','USERPROFILE','HOMEDRIVE','HOMEPATH','APPDATA','LOCALAPPDATA','TEMP','TMP','PYTHONUTF8','PYTHONIOENCODING','PYTHONNOUSERSITE','PYTHONDONTWRITEBYTECODE','PYTHONPATH','EASEL_DESKTOP_WORKSPACE','EASEL_HOST_LOCALAPPDATA','EASEL_BROWSER_EXECUTABLE','EASEL_AGENT_CONNECTION_FILE','EASEL_PORT'];
+function writeDisconnectedDiscovery({file,version,executable,reason='library_not_selected'}){
+  const value={schema:1,product:'MediaSail',version,status:'needs-library',reason,needsLibrarySelection:reason==='library_not_selected',
+    instanceId:crypto.randomUUID(),pid:process.pid,executable,baseUrl:null,connectionFile:file,discoveryFile:file,
+    libraryRoot:null,libraryId:null,dataDir:null,workspace:null,skillDir:null,python:null,node:null,profiles:null,outputs:null,tools:null,selectedProfile:null,environment:{},updatedAt:new Date().toISOString()};
+  fs.mkdirSync(path.dirname(file),{recursive:true});const temporary=file+'.'+process.pid+'.tmp';fs.writeFileSync(temporary,JSON.stringify(value,null,2)+'\n','utf8');fs.renameSync(temporary,file);return value;
+}
 class AgentConnection{
   constructor(data){this.file=path.join(data,'agent-connection.json');this.data=data;this.info=null;}
   begin({version,baseUrl,options,skillDir,executable,selectedProfile=null,libraryRoot=null,libraryId=null,discoveryFile=null}){
@@ -33,4 +39,4 @@ class AgentConnection{
     try{const current=JSON.parse(fs.readFileSync(this.file,'utf8'));if(current.instanceId===this.info.instanceId)this.write('stopped');}catch{/* app shutdown must not fail because discovery metadata is unavailable */}
   }
 }
-module.exports={AgentConnection,PATH_ENV};
+module.exports={AgentConnection,PATH_ENV,writeDisconnectedDiscovery};

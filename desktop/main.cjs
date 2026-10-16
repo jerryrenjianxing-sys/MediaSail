@@ -8,12 +8,14 @@ const {acquire}=require('./single-instance.cjs');
 const {freePort,environment,startSupervisor,stopSupervisor,state}=require('./runtime.cjs');
 const {AitoController}=require('./aitoearn/controller.cjs');
 const {Updates}=require('./updates.cjs');
-const {AgentConnection}=require('./agent-connection.cjs');
+const {AgentConnection,writeDisconnectedDiscovery}=require('./agent-connection.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
 const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
 const {migrateUiState}=require('./ui-migration.cjs');
 const {archiveHistory}=require('./history-archive.cjs');
-const {cleanupLegacyUpdates,migrateLegacyUpdateCache}=require('./update-cache.cjs');
+const {cleanupLegacyUpdates}=require('./update-cache.cjs');
+const {adoptInstallerBaseline}=require('./installer-cache.cjs');
+const {assertStartupLibraryIdle,appendStartupLog}=require('./startup-recovery.cjs');
 
 app.setName('MediaSail');
 // Keep the original installation identity and data location across the rebrand.
@@ -21,20 +23,20 @@ const explicitDataRoot=process.env.EASEL_DESKTOP_DATA||null;
 const bootstrapRoot=path.resolve(process.env.EASEL_LIBRARY_BOOTSTRAP||explicitDataRoot||path.join(process.env.LOCALAPPDATA||app.getPath('appData'),'ElectronEasel'));
 const defaultLibraryRoot=path.join(app.getPath('documents'),'MediaSail资料库');
 const locationOptions={bootstrapRoot,defaultLibraryRoot,explicitDataRoot};
-const deferred=path.join(bootstrapRoot,'library-migration-deferred.json');
 let layout,bootError;
 try{
-  const defer=fs.existsSync(deferred)&&!fs.existsSync(path.join(bootstrapRoot,library.LOCATION))&&!fs.existsSync(path.join(bootstrapRoot,library.SELECTION))&&!fs.existsSync(path.join(bootstrapRoot,library.TRANSACTION));
-  layout=library.readLocation(defer?{...locationOptions,explicitDataRoot:bootstrapRoot}:locationOptions);
-}catch(e){bootError=e;layout={mode:'error',bootstrapRoot,dataRoot:path.join(bootstrapRoot,'migration-ui'),workspace:null,libraryRoot:null,needsPreparation:true};}
-const preparationMode=Boolean(layout.needsPreparation||bootError);
+  layout=library.readLocation(locationOptions);
+  if(layout.selectionError)bootError=new Error(layout.selectionError);
+}catch(e){bootError=e;layout={mode:'unselected',bootstrapRoot,workspace:null,libraryRoot:null,needsSelection:true};}
+const selectionMode=Boolean(layout.needsSelection||bootError);
 // Keep the old lock address for compatibility with a still-running 0.5.0.
 fs.mkdirSync(bootstrapRoot,{recursive:true});app.setPath('userData',bootstrapRoot);
 const locked=app.requestSingleInstanceLock();
 if(!locked){app.quit();} else {
   let window,tray,supervisor,aito,updates,updatesWindow,starting=false,quitting=false,exitPending=false,ready=false,baseUrl='',options;
-  let startup={message:'正在准备本地工作目录…',error:false};
-  const data=preparationMode?path.join(bootstrapRoot,'migration-ui'):layout.dataRoot;
+  let startup={message:selectionMode?'请选择资料库。这次选择一次，以后沿用。':'正在准备本地工作目录…',error:Boolean(bootError)};
+  if(bootError)startup.message='资料库位置暂不可用，请重新选择一个空目录或有效资料库。\n'+bootError.message;
+  const data=selectionMode?path.join(bootstrapRoot,'selection-ui'):layout.dataRoot;
   fs.mkdirSync(data,{recursive:true});app.setPath('userData',data);app.setPath('sessionData',data);
   const single=acquire({key:explicitDataRoot||process.env.EASEL_LIBRARY_BOOTSTRAP?bootstrapRoot:undefined,onRaise:()=>show()}).catch(error=>({primary:false,error,close:async()=>{}}));
   const agentConnection=new AgentConnection(data);
@@ -42,26 +44,33 @@ if(!locked){app.quit();} else {
   const resources=app.isPackaged ? process.resourcesPath : path.join(__dirname,'../build');
   const bridgeResources=app.isPackaged?resources:path.join(__dirname,'..');
   const startupUrl=pathToFileURL(path.join(__dirname,'startup.html')).href;
+  let startupLogDirectory=path.join(data,'logs');
   const show=()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}};
-  function report(message,error=false){startup={message,error};fs.mkdirSync(path.join(data,'logs'),{recursive:true});fs.appendFileSync(path.join(data,'logs/desktop.log'),new Date().toISOString()+' '+message+'\n');}
+  function report(message,error=false){startup={message,error};startupLogDirectory=appendStartupLog({data,bootstrapRoot,message})||startupLogDirectory;}
   async function fail(message){ready=false;agentConnection.stop();aito?.hide();report(message,true);if(window&&!window.isDestroyed())await window.loadURL(startupUrl);}
   const ownStartup=event=>event.sender===window?.webContents && event.senderFrame===window?.webContents.mainFrame && event.senderFrame?.url===startupUrl;
-  ipcMain.handle('startup:status',event=>ownStartup(event)?{...startup,library:preparationMode||layout.mode==='library'}:null);
-  ipcMain.handle('startup:retry',event=>{if(ownStartup(event))void (preparationMode?runPreparation():start());});
-  ipcMain.handle('startup:logs',event=>{if(ownStartup(event))return shell.openPath(path.join(data,'logs'));});
-  ipcMain.handle('startup:quit',event=>{if(ownStartup(event)){quitting=true;app.quit();}});
+  ipcMain.handle('startup:status',event=>ownStartup(event)?{...startup,needsSelection:selectionMode,canRetry:!selectionMode||Boolean(bootError),busy:libraryChanging||starting}:null);
+  ipcMain.handle('startup:retry',event=>{
+    if(!ownStartup(event)||libraryChanging)return;
+    if(!selectionMode){void start();return;}
+    if(bootError){libraryChanging=true;report('正在重新检测资料库位置…');void restartLibrary().catch(error=>report(error.message,true)).finally(()=>{libraryChanging=false;});}
+  });
+  ipcMain.handle('startup:logs',event=>{if(ownStartup(event))return shell.openPath(startupLogDirectory);});
+  ipcMain.handle('startup:quit',event=>{if(ownStartup(event))void exit();});
+  ipcMain.handle('startup:updates',event=>{if(ownStartup(event)&&updatesWindow&&!libraryChanging){updatesWindow.show();void updates.check();return true;}return false;});
   ipcMain.handle('startup:library',async(event,action)=>{
-    if(!ownStartup(event))return;
+    if(!ownStartup(event))return {ok:false,error:'此页面不能选择资料库。'};
     try{
-      if(preparing)throw Error('正在复制或核验资料，请等待当前步骤完成。');
-      if(action==='rollback'){await library.rollbackLocation({bootstrapRoot});await restartLibrary();return;}
-      if(action==='cancel'){await library.cancelPending({bootstrapRoot});await atomic(deferred,JSON.stringify({deferredAt:new Date().toISOString()}));await restartLibrary();return;}
-      const pick=await dialog.showOpenDialog(window,{title:'选择已有的 MediaSail 资料库',defaultPath:defaultLibraryRoot,properties:['openDirectory']});
-      if(pick.canceled)return;
-      await library.cancelPending({bootstrapRoot});
-      await library.queueLibraryChange({bootstrapRoot,current:layout,targetRoot:pick.filePaths[0],mode:'existing',installDirectory:path.dirname(app.getPath('exe'))});
-      await restartLibrary();
-    }catch(e){report(e.message,true);}
+      if(action!=='choose')throw Error('不支持的资料库操作。');
+      if(libraryChanging||starting||updates?.busy()||aito?.busy())throw Error('请等待当前操作完成后再选择资料库。');
+      libraryChanging=true;
+      const pick=await dialog.showOpenDialog(window,{title:'选择 MediaSail 资料库',defaultPath:defaultLibraryRoot,properties:['openDirectory','createDirectory']});
+      if(pick.canceled)return {ok:true,data:{canceled:true}};
+      await assertStartupLibraryIdle({supervisor,options,baseUrl,state});
+      await library.chooseLibrary({bootstrapRoot,targetRoot:pick.filePaths[0],installDirectory:path.dirname(app.getPath('exe')),explicitDataRoot});
+      await restartLibrary();return {ok:true,data:{restarting:true}};
+    }catch(e){report(e.message,true);return {ok:false,error:e.message};}
+    finally{libraryChanging=false;}
   });
   let libraryChanging=false;
   ipcMain.handle('library:call',async(event,action,input)=>{
@@ -80,39 +89,17 @@ if(!locked){app.quit();} else {
         if((await state(baseUrl,options.env.EASEL_DESKTOP_TOKEN)).active!==0)throw Error('还有采集、登录或发布任务，请等任务结束再更改资料库。');
         if(await window.webContents.executeJavaScript('Boolean(window.mediaSailHasUnsavedEdits?.())'))throw Error('还有未保存的编辑或表单，请先保存或取消编辑，再更改资料库。');
         await flushUiState();
-        await library.queueLibraryChange({bootstrapRoot,current:layout,targetRoot:input?.targetRoot,mode:input?.mode,installDirectory:path.dirname(app.getPath('exe')),explicitDataRoot});
+        await library.chooseLibrary({bootstrapRoot,targetRoot:input?.targetRoot,installDirectory:path.dirname(app.getPath('exe')),explicitDataRoot});
         await restartLibrary();return {ok:true,data:{restarting:true}};
       }finally{libraryChanging=false;if(!quitting)await window.webContents.executeJavaScript('document.body.inert=false').catch(()=>{});}
     }catch(e){return {ok:false,error:e.message};}
   });
-  let preparing=false;
   async function restartLibrary(){
     try{
       if(uiState.state)await uiState.flush();
-      agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;
+      agentConnection.stop();writeDisconnectedDiscovery({file:path.join(bootstrapRoot,'agent-connection.json'),version:app.getVersion(),executable:app.getPath('exe'),reason:'library_restarting'});await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;
       await updates?.shutdown();quitting=true;app.relaunch();app.quit();
     }catch(e){quitting=false;ready=false;aito?.resume();throw e;}
-  }
-  async function runPreparation(){
-    if(preparing)return;preparing=true;
-    try{
-      if(bootError){const error=bootError;bootError=null;throw error;}
-      const current=library.readLocation(locationOptions);
-      if(current.legacyNeedsPrompt){
-        const answer=await dialog.showMessageBox(window,{type:'question',title:'建立统一资料库',message:'将现有资料集中到软件与 Agent 共用的目录。',detail:'画像、内容、方法、账号资料和历史都会复制并核验，旧资料保留。请先暂停外部 Agent 写入。',buttons:['选择位置并迁移','稍后，继续使用旧位置'],defaultId:0,cancelId:1,noLink:true});
-        if(answer.response===1){await atomic(deferred,JSON.stringify({deferredAt:new Date().toISOString()}));await restartLibrary();return;}
-        const pick=await dialog.showOpenDialog(window,{title:'选择统一资料库位置',defaultPath:defaultLibraryRoot,properties:['openDirectory','createDirectory']});
-        if(pick.canceled){report('尚未选择资料库。可以重试，或取消迁移继续使用旧位置。',true);return;}
-        await library.queueLibraryChange({bootstrapRoot,current:library.readLocation({...locationOptions,explicitDataRoot:bootstrapRoot}),targetRoot:pick.filePaths[0],mode:'move',installDirectory:path.dirname(app.getPath('exe'))});
-      }
-      report('正在核对和准备统一资料库…');
-      await library.prepareLibrary({...locationOptions,installDirectory:path.dirname(app.getPath('exe')),onProgress:p=>{
-        const phase={scanning:'正在清点资料',copying:'正在复制资料',verifying:'正在核验资料',committing:'正在保存新位置',complete:'资料库已准备好'}[p.phase]||'正在准备资料库';
-        report(phase+(p.totalFiles?`\n${p.files} / ${p.totalFiles} 个文件 · ${(p.bytes/1048576).toFixed(1)} / ${(p.totalBytes/1048576).toFixed(1)} MB`:'')+'\n'+p.targetRoot);
-      }});
-      await restartLibrary();
-    }catch(e){report('资料库准备未完成，旧资料与已复制文件均保留。\n'+e.message,true);}
-    finally{preparing=false;}
   }
   ipcMain.handle('data:archive',async event=>{
     if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面不能打开历史存档。'};
@@ -128,7 +115,7 @@ if(!locked){app.quit();} else {
     }catch(e){report('界面数据操作失败：'+e.message);return {ok:false,error:'界面数据未能保存，请重试。'+e.message};}
   });
   async function start(){
-    if(starting||quitting)return;starting=true;ready=false;
+    if(selectionMode||starting||quitting)return;starting=true;ready=false;
     try{
       report('正在准备本地工作目录…');agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;
       await uiState.open(()=>migrateUiState({data,resources,bridgeResources,report}));
@@ -188,7 +175,7 @@ if(!locked){app.quit();} else {
       quitting=true;agentConnection.stop();await aito?.shutdown();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
     }catch(e){await recoverInstall();throw e;}finally{exitPending=false;}
   }
-  async function recoverInstall(){quitting=false;ready=false;aito?.resume();report('更新安装未启动，正在恢复本地服务…');await start();}
+  async function recoverInstall(){quitting=false;ready=false;aito?.resume();if(selectionMode){report('更新安装未能启动。可以重试检查更新，或选择资料库后继续使用。',true);return;}report('更新安装未启动，正在恢复本地服务…');await start();}
   async function flushUiState(){
     if(ready&&window&&!window.isDestroyed()&&window.webContents.getURL()===baseUrl+'/')await window.webContents.executeJavaScript('window.mediaSailPrepareClose?.()');
     await uiState.flush();
@@ -217,7 +204,7 @@ if(!locked){app.quit();} else {
     Menu.setApplicationMenu(null);
     window.on('close',event=>{if(!quitting){event.preventDefault();updatesWindow?.hide();window.hide();}});
     window.on('query-session-end',()=>{quitting=true;agentConnection.stop();void aito?.shutdown();supervisor?.stdin.end('shutdown\n');});
-    if(preparationMode){await window.loadURL(startupUrl);void runPreparation();return;}
+    if(selectionMode)writeDisconnectedDiscovery({file:path.join(bootstrapRoot,'agent-connection.json'),version:app.getVersion(),executable:app.getPath('exe')});
     const external=url=>{try{const u=new URL(url);if(['https:','http:'].includes(u.protocol))void shell.openExternal(url);}catch{}};
     window.webContents.setWindowOpenHandler(({url})=>{external(url);return {action:'deny'};});
     window.webContents.on('will-navigate',(event,url)=>{if(url!==startupUrl && (!baseUrl || new URL(url).origin!==baseUrl)){event.preventDefault();external(url);}});
@@ -229,11 +216,11 @@ if(!locked){app.quit();} else {
     autoUpdater.installDirectory=path.dirname(app.getPath('exe'));
     const updateLog=message=>{try{const dir=path.join(data,'logs');fs.mkdirSync(dir,{recursive:true});fs.appendFileSync(path.join(dir,'updates.log'),new Date().toISOString()+' '+String(message)+'\n');}catch{}};
     autoUpdater.logger={info:updateLog,warn:updateLog,error:updateLog,debug:()=>{}};
-    if(app.isPackaged)await migrateLegacyUpdateCache({updater:autoUpdater,legacyBase:process.env.LOCALAPPDATA,report:updateLog});
+    if(app.isPackaged&&!selectionMode)await adoptInstallerBaseline({updater:autoUpdater,bootstrapRoot,version:app.getVersion(),report:updateLog});
     updates=new Updates({updater:autoUpdater,version:app.getVersion(),enabled:app.isPackaged,prepareInstall,recoverInstall,log:updateLog});
     updatesWindow=new UpdatesWindow({updates,main:window,localOrigin:()=>baseUrl,startupUrl,data});
     tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'assets/icon.png')).resize({width:20,height:20}));
     tray.setToolTip('MediaSail');tray.setContextMenu(Menu.buildFromTemplate([{label:'打开 MediaSail',click:show},{label:'检查更新…',click:()=>{updatesWindow.show();void updates.check();}},{type:'separator'},{label:'退出',click:()=>void exit()}]));tray.on('double-click',show);
-    await window.loadURL(startupUrl);void start();
+    await window.loadURL(startupUrl);if(!selectionMode)void start();
   }).catch(e=>{dialog.showErrorBox('MediaSail 启动失败',e.message);quitting=true;app.quit();});
 }

@@ -14,7 +14,7 @@ async function write(file,value){await fs.mkdir(path.dirname(file),{recursive:tr
 async function until(test,label){for(let i=0;i<150;i++){if(await test())return;await sleep(100);}throw Error(label);}
 async function deltas(){return page.locator('.ana-overview .ana-stat-delta').allTextContents();}
 (async()=>{
- const library=await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot:libraryRoot,installDirectory:path.dirname(executable)});
+ const library=await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
  const old={platform:'xiaohongshu',name:'小红书',nickname:'合成验收',loggedIn:true,followers:900,likes:null,following:null,posts:1,metrics:[],notes:[],growth:{last:{followers:800},week:{followers:800}},fetched_at:1};
  await write(path.join(data,'ui-state.json'),{schema:1,migration:{version:'0.3.3'},values:{easel_onboarding_seen:'1',easel_theme:'light',easel_analytics:JSON.stringify({xiaohongshu:old})}});
  const env={...process.env,EASEL_LIBRARY_BOOTSTRAP:bootstrap,LOCALAPPDATA:path.join(run,'独立Local'),APPDATA:path.join(run,'独立Roaming'),PYTHONDONTWRITEBYTECODE:'1'};delete env.EASEL_DESKTOP_DATA;delete env.ELECTRON_RUN_AS_NODE;

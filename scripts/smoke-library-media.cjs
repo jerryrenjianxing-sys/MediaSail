@@ -15,7 +15,7 @@ async function until(test,message){for(let i=0;i<100;i++){if(await test())return
 (async()=>{
   assert.ok(!executable.toLowerCase().startsWith('d:\\mediasail\\'));
   await fs.access(executable);await fs.mkdir(evidence,{recursive:true});
-  const prepared=await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot:libraryRoot,installDirectory:path.dirname(executable)});
+  const prepared=await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
   const directory=path.join(prepared.workspace,'outputs',project);await fs.mkdir(directory,{recursive:true});
   // FFmpeg is used only by this developer fixture, never bundled or required by MediaSail.
   for(const [name,tail]of [[image,['-frames:v','1']],[video,['-t','0.5','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart']]]){

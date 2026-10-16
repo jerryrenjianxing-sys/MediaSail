@@ -13,18 +13,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.21.0'
-      - name: Download and verify the unchanged 0.5.2 draft installer
+      - name: Download and verify the unchanged 0.5.3 draft installer
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference='Stop'
-          $release=gh release view v0.5.2 --json tagName,isDraft,assets | ConvertFrom-Json
-          if($LASTEXITCODE -ne 0 -or $release.tagName -cne 'v0.5.2' -or -not $release.isDraft){throw 'Expected the exact 0.5.2 draft release'}
+          $release=gh release view v0.5.3 --json tagName,isDraft,assets | ConvertFrom-Json
+          if($LASTEXITCODE -ne 0 -or $release.tagName -cne 'v0.5.3' -or -not $release.isDraft){throw 'Expected the exact 0.5.3 draft release'}
           New-Item -ItemType Directory release-input/candidate | Out-Null
-          gh release download v0.5.2 --pattern MediaSail-0.5.2-win-x64-Setup.exe --pattern SHA256SUMS.txt --dir release-input/candidate
+          gh release download v0.5.3 --pattern MediaSail-0.5.3-win-x64-Setup.exe --pattern SHA256SUMS.txt --dir release-input/candidate
           if($LASTEXITCODE -ne 0){throw 'Draft installer download failed'}
-          $name='MediaSail-0.5.2-win-x64-Setup.exe'
+          $name='MediaSail-0.5.3-win-x64-Setup.exe'
           $remote=@($release.assets | Where-Object {$_.name -ceq $name})
           if($remote.Count -ne 1 -or $remote[0].digest -notmatch '^sha256:([a-f0-9]{64})$'){throw 'GitHub asset SHA256 identity required'}
           $expected=$remote[0].digest.Substring(7)
@@ -40,6 +40,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mediasail-0.5.2-first-install-gui
+          name: mediasail-0.5.3-first-install-gui
           path: installer-evidence/first-install/
           retention-days: 14

@@ -21742,10 +21742,10 @@ index f715205..f89049e 100644
          </div>
 diff --git a/web/frontend/src/components/LibrarySettings.tsx b/web/frontend/src/components/LibrarySettings.tsx
 new file mode 100644
-index 0000000..f6c0c79
+index 0000000..9f0f2ac
 --- /dev/null
 +++ b/web/frontend/src/components/LibrarySettings.tsx
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,78 @@
 +import { useCallback, useEffect, useState } from 'react';
 +import { changeLibrary, chooseLibrary, libraryStatus, openLibrary, type LibraryStatus } from '../lib/library';
 +import { hasUnsavedEdits } from '../lib/unsaved';
@@ -21754,7 +21754,7 @@ index 0000000..f6c0c79
 +  const [status, setStatus] = useState<LibraryStatus | null>(null);
 +  const [error, setError] = useState('');
 +  const [busy, setBusy] = useState(false);
-+  const [proposal, setProposal] = useState<{ mode: 'move' | 'existing'; targetRoot: string } | null>(null);
++  const [proposal, setProposal] = useState<{ targetRoot: string } | null>(null);
 +  const refresh = useCallback(async () => {
 +    setError('');
 +    try { setStatus(await libraryStatus()); }
@@ -21762,12 +21762,12 @@ index 0000000..f6c0c79
 +  }, []);
 +  useEffect(() => { if (window.desktopLibrary) void refresh(); }, [refresh]);
 +
-+  const select = async (mode: 'move' | 'existing') => {
++  const select = async () => {
 +    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，再调整资料库。'); return; }
 +    setBusy(true); setError('');
 +    try {
 +      const targetRoot = await chooseLibrary();
-+      if (targetRoot) setProposal({ mode, targetRoot });
++      if (targetRoot) setProposal({ targetRoot });
 +    } catch (e) { setError(e instanceof Error ? e.message : '未能选择目录。'); }
 +    finally { setBusy(false); }
 +  };
@@ -21775,7 +21775,7 @@ index 0000000..f6c0c79
 +    if (!proposal) return;
 +    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，当前草稿会继续保留。'); return; }
 +    setBusy(true); setError('');
-+    try { await changeLibrary(proposal.mode, proposal.targetRoot); setProposal(null); await refresh(); }
++    try { await changeLibrary(proposal.targetRoot); setProposal(null); await refresh(); }
 +    catch (e) { setError(e instanceof Error ? e.message : '资料库未能切换，原资料会继续保留。'); }
 +    finally { setBusy(false); }
 +  };
@@ -21788,8 +21788,6 @@ index 0000000..f6c0c79
 +        <strong>当前资料库</strong><p style={{ margin: '6px 0 12px', userSelect: 'text' }}>{status.libraryRoot || status.dataRoot}</p>
 +        <div className="foot-note">工作区：{status.workspace}</div>
 +        <div className="foot-note">运行资料：{status.dataRoot}</div>
-+        {status.mode === 'legacy' && <p className="foot-note">当前仍使用旧版数据位置，可迁移到方便与 Agent 共用的目录。</p>}
-+        {!!status.pending && <p role="status">上次资料库调整尚未完成，请先查看软件提示和日志；旧资料仍保留。</p>}
 +        {!!status.conflicts?.length && <details style={{ marginTop: 12 }}>
 +          <summary style={{ cursor: 'pointer' }}>有 {status.conflicts.length} 个工作文件与新版原件需要合并</summary>
 +          <p>当前工作文件保留了你的修改。可打开资料库，按以下路径查看工作文件、本地备份和新版原件，再自行比较合并。</p>
@@ -21808,17 +21806,16 @@ index 0000000..f6c0c79
 +      </div> : !error && <p role="status">正在读取资料库位置…</p>}
 +      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
 +        <button className="btn" disabled={busy || !status} onClick={() => { setError(''); void openLibrary().catch(e => setError(e instanceof Error ? e.message : '无法打开资料库。')); }}>打开资料库</button>
-+        <button className="btn" disabled={busy || !status || !!status.pending} onClick={() => void select('move')}>迁移当前资料库</button>
-+        <button className="btn" disabled={busy || !status || !!status.pending} onClick={() => void select('existing')}>打开已有资料库</button>
++        <button className="btn" disabled={busy || !status} onClick={() => void select()}>更换资料库</button>
 +        <button className="btn btn-sm" disabled={busy} onClick={() => void refresh()}>刷新位置</button>
 +      </div>
 +      {proposal && <div className="card" style={{ padding: 14, marginTop: 16, overflowWrap: 'anywhere' }} role="status">
-+        <h4 style={{ marginTop: 0 }}>{proposal.mode === 'move' ? '迁移当前资料库' : '切换到已有资料库'}</h4>
++        <h4 style={{ marginTop: 0 }}>更换资料库</h4>
 +        <p>目标目录：<span style={{ userSelect: 'text' }}>{proposal.targetRoot}</span></p>
-+        <p>{proposal.mode === 'move' ? '软件将复制并核验当前资料，成功后切换到新位置。旧资料仍保留，不会在此步骤删除。' : '软件将使用所选资料库，不合并或覆盖两个资料库；当前资料库仍保留。'}</p>
-+        <p>请先保存编辑并暂停外部 Agent 对资料库的写入。操作成功后 MediaSail 会重新启动；Agent 随后需要重新读取连接资料。</p>
++        <p>选择空目录会建立新资料库，选择已有的有效资料库会直接打开。旧资料原地保留，不会自动带入新库；新库需要重新配置画像和登录账号。</p>
++        <p>请先保存编辑并结束软件内任务。确认后 MediaSail 会重新启动，以后沿用这个位置；Agent 随后需要重新读取连接资料。</p>
 +        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-+          <button className="btn btn-primary" disabled={busy} onClick={() => void confirm()}>{busy ? '正在核验并准备重启…' : proposal.mode === 'move' ? '迁移并重启' : '切换并重启'}</button>
++          <button className="btn btn-primary" disabled={busy} onClick={() => void confirm()}>{busy ? '正在核验并准备重启…' : '使用此资料库并重启'}</button>
 +          <button className="btn" disabled={busy} onClick={() => setProposal(null)}>取消</button>
 +        </div>
 +      </div>}
@@ -24444,10 +24441,10 @@ index f6dac0a..3f048f9 100644
        {
 diff --git a/web/frontend/src/lib/library.ts b/web/frontend/src/lib/library.ts
 new file mode 100644
-index 0000000..79f4653
+index 0000000..b302a01
 --- /dev/null
 +++ b/web/frontend/src/lib/library.ts
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,31 @@
 +export interface LibraryConflict { path: string; local: string; incoming: string; working?: string; scope?: string; }
 +export interface LibraryStatus {
 +  mode: string;
@@ -24456,6 +24453,7 @@ index 0000000..79f4653
 +  workspace: string;
 +  libraryId?: string;
 +  pending?: unknown;
++  needsSelection?: boolean;
 +  defaultLibraryRoot?: string;
 +  conflicts?: LibraryConflict[];
 +}
@@ -24474,9 +24472,9 @@ index 0000000..79f4653
 +  const result = await window.desktopLibrary.call('choose') as { path: string | null };
 +  return result.path;
 +}
-+export async function changeLibrary(mode: 'move' | 'existing', targetRoot: string): Promise<void> {
++export async function changeLibrary(targetRoot: string): Promise<void> {
 +  if (!window.desktopLibrary) throw new Error('资料库位置只能在桌面版调整。');
-+  await window.desktopLibrary.call('change', { mode, targetRoot });
++  await window.desktopLibrary.call('change', { targetRoot });
 +}
 diff --git a/web/frontend/src/lib/profileSelection.test.ts b/web/frontend/src/lib/profileSelection.test.ts
 new file mode 100644

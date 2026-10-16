@@ -36,6 +36,8 @@ def connection_info(file):
 
 
 def live_info(info):
+    if info.get("status") == "needs-library" or not info.get("workspace"):
+        raise ValueError("请先在 MediaSail 选择资料库，再重新读取连接说明；不会使用旧目录。")
     url = info.get("baseUrl") or ""
     parts = urlsplit(url)
     if parts.scheme != "http" or parts.hostname != "127.0.0.1" or parts.username or parts.path not in ("", "/"):
@@ -92,6 +94,8 @@ def main():
         result = check(info)
         print(json.dumps(result, ensure_ascii=False))
         return 0 if result["ok"] else 1
+    if info.get("status") == "needs-library" or not info.get("workspace"):
+        raise ValueError("请先在 MediaSail 选择资料库，再重新读取连接说明；不会使用旧目录。")
     try:
         info = live_info(info)
     except (OSError, ValueError):

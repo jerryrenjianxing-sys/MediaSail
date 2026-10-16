@@ -1,0 +1,54 @@
+// Real packaged process changes, using only newly created synthetic Documents data.
+const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const {chromium}=require('playwright'),{attachTestMain}=require('./test-main-inspector.cjs'),library=require('../desktop/library.cjs');
+const root=path.resolve(__dirname,'..'),pkg=require('../package.json');
+const executable=path.resolve(root,pkg.build.directories.output,'win-unpacked/MediaSail.exe');
+const appAsar=path.join(path.dirname(executable),'resources/app.asar');let appAsarSHA256;
+const run=path.join(os.homedir(),'Documents','MediaSail 隔离验证','直接选库 '+pkg.version+' '+Date.now());
+const bootstrap=path.join(run,'独立定位'),first=path.join(run,'第一份 中文资料库'),second=path.join(run,'第二份 空资料库'),third=path.join(run,'已有独立资料库');
+const connection=path.join(bootstrap,'agent-connection.json'),evidence=path.join(root,'docs/images',pkg.version,'library-selection-result.json');
+const checks=[],errors=[];let observer,browser,info,child;
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms)),quote=value=>"'"+value.replace(/'/g,"''")+"'";
+const ps=script=>cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command','[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); '+script],{encoding:'utf8',windowsHide:true,timeout:20000}).trim();
+async function until(check,label,timeout=180000){const end=Date.now()+timeout;let last;while(Date.now()<end){try{const value=await check();if(value)return value;}catch(error){last=error;}await sleep(250);}throw Error(label+(last?': '+last.message:''));}
+async function json(file){return JSON.parse(await fs.readFile(file,'utf8'));}
+async function write(file,value){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,typeof value==='string'?value:JSON.stringify(value,null,2)+'\n','utf8');}
+function record(label){checks.push(label);console.log('SELECTION: '+label);}
+function verifyProcess(pid){const value=JSON.parse(ps(`Get-CimInstance Win32_Process -Filter ${quote('ProcessId='+Number(pid))} | Select-Object ProcessId,ExecutablePath | ConvertTo-Json -Compress`)||'null');assert.equal(value?.ExecutablePath?.toLowerCase(),executable.toLowerCase(),'Only this packaged fixture executable may be inspected');}
+async function ready(expected,previousPid){info=await until(async()=>{const value=await json(connection);return value.status==='ready'&&value.libraryRoot===expected&&value.pid!==previousPid&&value;},'Selected library process ready');assert.equal(info.version,pkg.version);verifyProcess(info.pid);return info;}
+async function attach(){await browser?.close().catch(()=>{});observer?.close();verifyProcess(info.pid);observer=await attachTestMain(info.pid);const port=await observer.evaluate("Number(process.mainModule.require('electron').app.commandLine.getSwitchValue('remote-debugging-port'))");assert.ok(port);browser=await chromium.connectOverCDP('http://127.0.0.1:'+port);const page=await until(()=>browser.contexts()[0]?.pages().find(page=>page.url()===info.baseUrl+'/'),'Local main page');await page.locator('.skill-home').waitFor();await page.waitForLoadState('load',{timeout:90000});return page;}
+async function stop(){if(!info)return;verifyProcess(info.pid);if(!observer)observer=await attachTestMain(info.pid);await browser?.close().catch(()=>{});browser=null;await observer.evaluate("setTimeout(()=>process.mainModule.require('electron').app.quit(),100);true");observer.close();observer=null;await until(async()=>{try{process.kill(info.pid,0);return false;}catch(error){return error.code==='ESRCH';}},'Normal fixture shutdown',45000);}
+const env={...process.env,EASEL_LIBRARY_BOOTSTRAP:bootstrap,LOCALAPPDATA:path.join(run,'独立LocalAppData'),APPDATA:path.join(run,'独立Roaming')};delete env.EASEL_DESKTOP_DATA;delete env.ELECTRON_RUN_AS_NODE;
+async function launch(){const port=await require('../desktop/runtime.cjs').freePort(0);child=cp.spawn(executable,['--remote-debugging-port='+port],{env,windowsHide:true,stdio:'ignore'});child.on('error',error=>errors.push(error.message));}
+async function change(page,target){await page.evaluate(async targetRoot=>{const value=await window.desktopLibrary.call('change',{targetRoot});if(value?.ok===false)throw Error(value.error);return value;},target).catch(error=>{if(!/Target.*closed|Execution context was destroyed|Session closed/i.test(error.message))throw error;});await browser?.close().catch(()=>{});browser=null;observer?.close();observer=null;}
+(async()=>{
+  assert.ok(executable.startsWith(path.resolve(root,pkg.build.directories.output)+path.sep));assert.notEqual(pkg.version,'0.5.2','Build the direct-selection version first');await fs.access(executable);
+  appAsarSHA256=crypto.createHash('sha256').update(await fs.readFile(appAsar)).digest('hex');
+  const failedTarget=path.join(run,'旧失败目标'),legacyFile=path.join(bootstrap,'workspace/outputs/旧报告/原件.md');
+  await write(legacyFile,'旧资料必须原地保留');await write(path.join(failedTarget,'partial.txt'),'旧目标不动');
+  const link=path.join(bootstrap,'home/.openclaw-easel/plugin-skills/browser-automation');await fs.mkdir(path.dirname(link),{recursive:true});await fs.symlink(path.join(run,'已删除旧程序/browser-automation'),link,process.platform==='win32'?'junction':'dir');const originalLink=await fs.readlink(link);
+  const failedRecord=JSON.stringify({schema:1,phase:'scanning',sourceMode:'legacy',sourceRoot:bootstrap,targetRoot:failedTarget,files:null});await write(path.join(bootstrap,library.TRANSACTION),failedRecord);
+  assert.equal(library.readLocation({bootstrapRoot:bootstrap,defaultLibraryRoot:first}).needsSelection,true);
+  const prepared=await library.chooseLibrary({bootstrapRoot:bootstrap,targetRoot:first,installDirectory:path.dirname(executable)});
+  assert.equal(await fs.readlink(link),originalLink);assert.equal(await fs.readFile(legacyFile,'utf8'),'旧资料必须原地保留');assert.equal(await fs.readFile(path.join(failedTarget,'partial.txt'),'utf8'),'旧目标不动');await assert.rejects(fs.stat(path.join(first,'workspace/outputs/旧报告/原件.md')),{code:'ENOENT'});
+  assert.equal(await fs.readFile(prepared.archivedMetadata.find(entry=>entry.from.endsWith(library.TRANSACTION)).to,'utf8'),failedRecord);
+  record('Failed pending metadata is retired; old files, partial target and dangling plugin junction are untouched');
+  await write(path.join(first,'runtime/ui-state.json'),{schema:1,migration:{version:'0.3.3',sessions:0,copies:0,sources:[]},values:{easel_sessions:'[]',easel_theme:'dark',easel_onboarding_seen:'1'}});
+  const project='外部 Agent 共用路径',relative=path.join('workspace/outputs',project,'报告.md');await write(path.join(first,relative),'# 外部 Agent 创建\n合成验收数据。');await write(path.join(first,'workspace/outputs',project,'.easel.json'),{title:project,deliverables:['报告.md']});await write(path.join(first,'workspace/profiles/共享测试画像/identity.md'),'# 合成初始画像');
+  await launch();await ready(first);let page=await attach();
+  assert.equal(await observer.evaluate("process.mainModule.require('electron').app.getPath('userData')"),path.join(first,'runtime'));
+  const report=await(await fetch(info.baseUrl+'/api/output/'+encodeURIComponent(project)+'/'+encodeURIComponent('报告.md'))).json();assert.match(report.content,/外部 Agent 创建/);
+  await fetch(info.baseUrl+'/api/persona/'+encodeURIComponent('共享测试画像')+'/file',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:'identity.md',content:'# 原生业务服务写入\n合成画像'})}).then(async response=>assert.ok(response.ok,await response.text()));assert.match(await fs.readFile(path.join(first,'workspace/profiles/共享测试画像/identity.md'),'utf8'),/原生业务服务写入/);
+  record('External file writes and packaged business APIs share the same real selected folder');
+  const custom=path.join(first,'workspace/用户自定义资料.md');await write(custom,'用户自定义资料，切换不搬动');const customSkill=path.join(first,'agent-skill/mediasail/SKILL.md');await fs.appendFile(customSkill,'\n用户自定义接入说明。\n');
+  const before=info.pid;await change(page,second);await ready(second,before);page=await attach();assert.notEqual(info.libraryId,prepared.libraryId);await assert.rejects(fs.stat(path.join(second,relative)),{code:'ENOENT'});assert.match(await fs.readFile(path.join(first,relative),'utf8'),/外部 Agent/);assert.match(await fs.readFile(custom,'utf8'),/用户自定义/);assert.match(await fs.readFile(customSkill,'utf8'),/用户自定义接入/);assert.equal(await observer.evaluate("process.mainModule.require('electron').app.getPath('sessionData')"),path.join(second,'runtime'));
+  record('Settings selects a fresh folder and relaunches without copying or deleting previous content');
+  const helper=cp.spawnSync(info.python,[path.join(info.skillDir,'scripts/mediasail.py'),'--connection',path.join(first,'runtime/agent-connection.json'),'check'],{env:{...process.env,PYTHONUTF8:'1'},encoding:'utf8',windowsHide:true});assert.equal(helper.status,0,helper.stdout+helper.stderr);assert.equal(JSON.parse(helper.stdout).paths.outputs,path.join(second,'workspace/outputs'));
+  record('A prior connection address resolves the new library instead of returning stale content');
+  const other=await library.chooseLibrary({bootstrapRoot:path.join(run,'另一定位'),targetRoot:third,installDirectory:path.dirname(executable)});await write(path.join(third,'workspace/outputs/另一库/原件.md'),'独立库内容');
+  const secondPid=info.pid;await change(page,third);await ready(third,secondPid);page=await attach();assert.equal(info.libraryId,other.libraryId);await assert.rejects(fs.stat(path.join(third,relative)),{code:'ENOENT'});assert.equal(await fs.readFile(path.join(third,'workspace/outputs/另一库/原件.md'),'utf8'),'独立库内容');
+  const last=info.pid;await stop();await launch();await ready(third,last);await attach();await stop();
+  record('An existing library opens unchanged and the explicit choice survives normal restart');
+  assert.equal(crypto.createHash('sha256').update(await fs.readFile(appAsar)).digest('hex'),appAsarSHA256,'Packaged resources stayed unchanged during acceptance');
+  await write(evidence,{passed:true,version:pkg.version,testedAt:new Date().toISOString(),appAsarSHA256,realPackagedApplication:true,realProcessRelaunch:true,realAccountUsed:false,publications:false,run,checks,errors,scope:'Isolated packaged direct selection and Documents filesystem; no migration or real user data.'});console.log('SELECTION PASSED '+evidence);
+})().catch(async error=>{errors.push(error.stack);await write(evidence,{passed:false,appAsarSHA256,run,checks,errors}).catch(()=>{});console.error(error);process.exitCode=1;}).finally(async()=>{await browser?.close().catch(()=>{});observer?.close();if(process.exitCode&&info){try{verifyProcess(info.pid);cp.spawnSync('taskkill.exe',['/PID',String(info.pid),'/T','/F'],{windowsHide:true,stdio:'ignore'});}catch{}}});

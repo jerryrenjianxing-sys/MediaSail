@@ -10,7 +10,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let app;
 async function write(file,value){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,typeof value==='string'?value:JSON.stringify(value,null,2)+'\n');}
 (async()=>{
- await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot:libraryRoot,installDirectory:path.dirname(executable)});
+ await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
  const data=path.join(libraryRoot,'runtime');
  await write(path.join(data,'ui-state.json'),{schema:1,migration:{version:'0.3.3'},values:{easel_sessions:'[]',easel_onboarding_seen:'1',mediasail_selected_profile:persona}});
  const profile={

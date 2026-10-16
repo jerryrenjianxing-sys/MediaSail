@@ -62,6 +62,14 @@ class HelperTest(unittest.TestCase):
         result=helper.check(self.info)
         self.assertFalse(result['connected']);self.assertFalse(result['ok'])
         self.assertTrue(result['localToolsReady']);self.assertEqual(result['selectedProfile'],'测试画像')
+    def test_unselected_discovery_blocks_old_canonical_and_offline_execution(self):
+        discovery=self.folder/'fixed-discovery.json'
+        discovery.write_text(json.dumps({'schema':1,'product':'MediaSail','version':'0.5.3','status':'needs-library','baseUrl':None,'workspace':None,'python':None,'selectedProfile':None,'connectionFile':str(discovery),'environment':{}}),encoding='utf-8')
+        self.connection.write_text(json.dumps({**self.info,'discoveryFile':str(discovery)}),encoding='utf-8')
+        loaded=helper.connection_info(self.connection);result=helper.check(loaded)
+        self.assertFalse(result['connected']);self.assertFalse(result['localToolsReady']);self.assertIsNone(result['selectedProfile']);self.assertIn('选择资料库',result['error'])
+        proc=subprocess.run([sys.executable,'-B','-X','utf8',str(HELPER),'--connection',str(self.connection),'python','-c','print("MUST_NOT_RUN")'],capture_output=True,text=True,encoding='utf-8')
+        self.assertNotEqual(proc.returncode,0);self.assertNotIn('MUST_NOT_RUN',proc.stdout);self.assertIn('选择资料库',proc.stdout)
     def test_discovery_mirror_follows_latest_canonical_file_and_detects_loops(self):
         runtime=self.folder/'新资料库'/'runtime';runtime.mkdir(parents=True)
         canonical=runtime/'agent-connection.json'

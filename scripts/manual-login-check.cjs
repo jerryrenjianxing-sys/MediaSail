@@ -53,7 +53,9 @@ async function verify(){
     assert.ok(['verify','retry','stop'].includes(phase),'Phase supports prepare, verify, retry, stop');
     await fs.access(result);await write(control,{action:phase,requestedAt:new Date().toISOString()});console.log(JSON.stringify({queued:true,phase,run}));return;
   }
-  await fs.access(executable);const layout=await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot,installDirectory:path.dirname(executable)});
+  await fs.access(executable);const library=require('../desktop/library.cjs');
+  const layout=phase==='prepare'?await library.chooseLibrary({bootstrapRoot:bootstrap,targetRoot:defaultLibraryRoot,installDirectory:path.dirname(executable)}):library.readLocation({bootstrapRoot:bootstrap,defaultLibraryRoot});
+  assert.ok(!layout.needsSelection,'This isolated test library must be explicitly selected for this release before reopen');
   libraryRoot=layout.libraryRoot;data=layout.dataRoot;
   if(phase==='prepare')await write(path.join(data,'ui-state.json'),{schema:1,migration:{version:'0.3.3',sessions:0,copies:0,sources:[]},values:{easel_sessions:'[]',easel_theme:'light',easel_onboarding_seen:'1'}});
   const env={...process.env,EASEL_LIBRARY_BOOTSTRAP:bootstrap,LOCALAPPDATA:path.join(run,'独立宿主 Local'),APPDATA:path.join(run,'独立宿主 Roaming')};delete env.EASEL_DESKTOP_DATA;delete env.ELECTRON_RUN_AS_NODE;

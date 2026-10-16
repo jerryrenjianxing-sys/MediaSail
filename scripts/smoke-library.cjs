@@ -52,7 +52,7 @@ async function launch(){
 }
 (async()=>{
   await fs.access(executable);await fs.mkdir(evidence,{recursive:true});
-  const prepared=await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot:libraryRoot,installDirectory:path.dirname(executable)});
+  const prepared=await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
   const preparedId=prepared.libraryId;
   await write(path.join(data,'ui-state.json'),{schema:1,migration:{version:'0.3.3',sessions:0,copies:0,sources:[]},values:{easel_sessions:'[]',easel_theme:'light',easel_onboarding_seen:'1',mediasail_selected_profile:persona}});
   for(const file of ['identity.md','audience.md','style.md','platforms.md','preferences.md','memory.md'])await write(path.join(workspace,'profiles',persona,file),'# 合成验收资料\n'+file+'\n不包含真实账号。');
@@ -82,18 +82,20 @@ async function launch(){
     await nav('画像');await page.getByRole('button',{name:'✏️ 编辑资料',exact:true}).click();
     const dimension=page.locator('.profile-dim').filter({hasText:'身份定位'}).first(),field=dimension.locator('textarea');await field.fill('尚未保存的合成画像编辑');
     assert.equal(await page.evaluate(()=>window.mediaSailHasUnsavedEdits()),true);
-    await settings();await page.getByRole('button',{name:'迁移当前资料库',exact:true}).click();await page.getByRole('alert').filter({hasText:'还有未保存的编辑或表单'}).waitFor();
-    const refusal=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{mode:'move',targetRoot});return '';}catch(e){return e.message;}},path.join(run,'不应创建的迁移目标'));
+    await settings();await page.getByRole('button',{name:'更换资料库',exact:true}).click();await page.getByRole('alert').filter({hasText:'还有未保存的编辑或表单'}).waitFor();
+    const refusal=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{targetRoot});return '';}catch(e){return e.message;}},path.join(run,'不应创建的更换目标'));
     assert.match(refusal,/未保存/);await assert.rejects(fs.access(path.join(bootstrap,'library-migration.json')),{code:'ENOENT'});
-    await shot('unsaved-migration-protected');await page.locator('.settings-close').click();assert.equal(await field.inputValue(),'尚未保存的合成画像编辑');
-    await dimension.getByRole('button',{name:'保存',exact:true}).click();await until(async()=>!await page.evaluate(()=>window.mediaSailHasUnsavedEdits()),'Saved profile clears migration guard');
+    await shot('unsaved-library-change-protected');await page.locator('.settings-close').click();assert.equal(await field.inputValue(),'尚未保存的合成画像编辑');
+    await dimension.getByRole('button',{name:'保存',exact:true}).click();await until(async()=>!await page.evaluate(()=>window.mediaSailHasUnsavedEdits()),'Saved profile clears library-change guard');
     assert.equal((await api('/api/persona/'+encodeURIComponent(persona)+'/files')).files.find(row=>row.filename==='identity.md').content,'尚未保存的合成画像编辑');
-    record('Dirty profile blocks renderer and main-process migration; draft survives; save removes guard');
+    record('Dirty profile blocks renderer and main-process library change; draft survives; save removes guard');
     await app.evaluate(({dialog},target)=>{globalThis.__librarySmokePicker=dialog.showOpenDialog;dialog.showOpenDialog=async()=>({canceled:false,filePaths:[target]});},path.join(run,'可选择的新位置'));
-    await settings();await page.getByRole('button',{name:'迁移当前资料库',exact:true}).click();await page.getByRole('button',{name:'迁移并重启',exact:true}).waitFor();await page.getByText(/请先保存编辑并暂停外部 Agent/).waitFor();
+    const originalLocation=await fs.readFile(path.join(bootstrap,'library-location.json'),'utf8');
+    await settings();await page.getByRole('button',{name:'更换资料库',exact:true}).click();await page.getByRole('button',{name:'使用此资料库并重启',exact:true}).waitFor();await page.getByText(/请先保存编辑并结束软件内任务/).waitFor();
     await page.getByRole('button',{name:'取消',exact:true}).click();await assert.rejects(fs.access(path.join(bootstrap,'library-migration.json')),{code:'ENOENT'});
+    assert.equal(await fs.readFile(path.join(bootstrap,'library-location.json'),'utf8'),originalLocation);await assert.rejects(fs.access(path.join(run,'可选择的新位置')),{code:'ENOENT'});
     await app.evaluate(({dialog})=>{dialog.showOpenDialog=globalThis.__librarySmokePicker;delete globalThis.__librarySmokePicker;});await page.locator('.settings-close').click();
-    record('Native picker bridge previews exact migration target; cancellation queues no operation');
+    record('Native picker bridge previews exact selected target; cancellation leaves the current library unchanged');
     const localBackup=path.join(data,'upgrade-backups','ui-fixture','local','skills/合成方法.md'),incoming=path.join(data,'upgrade-backups','ui-fixture','incoming','skills/合成方法.md');
     await write(localBackup,'合成本地修改');await write(incoming,'合成新版原件');
     await write(path.join(data,'installed-manifest.json.conflicts.json'),{conflicts:[{path:'skills/合成方法.md',local:localBackup,incoming}]});
@@ -104,7 +106,7 @@ async function launch(){
     const idea=await api('/api/ideas',jsonOptions({title:'合成选题基线',note:'原备注',status:'pending'}));
     await nav('工作台');await page.getByRole('button',{name:'记选题',exact:true}).click();const ideaCard=page.locator('.idea-card').filter({hasText:'合成选题基线'});await ideaCard.hover();await ideaCard.getByRole('button',{name:'编辑',exact:true}).click();
     const ideaField=page.getByPlaceholder('想做的内容 / 角度');await ideaField.fill('选题尚未保存的编辑');assert.equal(await page.evaluate(()=>window.mediaSailHasUnsavedEdits()),true);
-    const ideaBlocked=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{mode:'move',targetRoot});return '';}catch(e){return e.message;}},path.join(run,'选题不应迁移'));
+    const ideaBlocked=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{targetRoot});return '';}catch(e){return e.message;}},path.join(run,'选题不应更换'));
     assert.match(ideaBlocked,/未保存/);
     await api('/api/ideas/'+idea.id,{...jsonOptions({title:'外部改过的选题',note:'外部备注',status:'pending'}),method:'PUT'});await sleep(650);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
     await page.getByRole('status').filter({hasText:'这个选题已有外部更新'}).waitFor();assert.equal(await ideaField.inputValue(),'选题尚未保存的编辑');
@@ -112,12 +114,12 @@ async function launch(){
     const today=new Date().toLocaleDateString('en-CA'),schedule=await api('/api/schedule',jsonOptions({title:'合成排期基线',date:today,status:'draft'}));
     await nav('工作台');await page.getByRole('button',{name:'排日历',exact:true}).click();await page.locator('.cal-event').filter({hasText:'合成排期基线'}).first().click();
     const scheduleField=page.getByPlaceholder('要发什么内容');await scheduleField.fill('排期尚未保存的编辑');assert.equal(await page.evaluate(()=>window.mediaSailHasUnsavedEdits()),true);
-    const calendarBlocked=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{mode:'move',targetRoot});return '';}catch(e){return e.message;}},path.join(run,'排期不应迁移'));
+    const calendarBlocked=await page.evaluate(async targetRoot=>{try{await window.desktopLibrary.call('change',{targetRoot});return '';}catch(e){return e.message;}},path.join(run,'排期不应更换'));
     assert.match(calendarBlocked,/未保存/);
     await api('/api/schedule/'+schedule.id,{...jsonOptions({title:'外部改过的排期',date:today,status:'draft'}),method:'PUT'});await sleep(650);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
     await page.getByRole('status').filter({hasText:'这个排期已有外部更新'}).waitFor();assert.equal(await scheduleField.inputValue(),'排期尚未保存的编辑');
     page.once('dialog',dialog=>dialog.dismiss());await page.locator('.modal').getByRole('button',{name:'保存',exact:true}).click();assert.equal(await scheduleField.inputValue(),'排期尚未保存的编辑');await page.locator('.modal').getByRole('button',{name:'取消',exact:true}).click();
-    record('Idea/calendar drafts block migration and survive focus refresh and declined external-overwrite confirmation');
+    record('Idea/calendar drafts block library changes and survive focus refresh and declined external-overwrite confirmation');
     await nav('账号');const card=page.locator('.account-card').filter({has:page.locator('.account-card-name',{hasText:'抖音'})});await card.getByText('需要登录',{exact:true}).waitFor();await sleep(350);douyinState='verified';
     const forced=()=>whoamiRequests.filter(url=>url.includes('/douyin/whoami?force=1')).length;
     const before=forced();await card.getByRole('button',{name:'校验账号',exact:true}).click();await until(()=>forced()>before,'First force request observed');await card.getByText('✓ 已验证登录',{exact:true}).waitFor();douyinState='login_required';
@@ -134,7 +136,7 @@ async function launch(){
     assert.ok(views.some(url=>url.startsWith('https://aitoearn.cn/')));assert.deepEqual((await page.evaluate(()=>window.desktopAito.call('status'))).jobs,[]);
     record('AitoEarn embedded view and original toolbar/history remain; remote page replaced only with anonymous network fixture');
     assert.deepEqual(errors,[]);await close();
-    await write(path.join(evidence,'library-ui-result.json'),{passed:true,version,executable,run,libraryRoot,data,workspace,testedAt:new Date().toISOString(),checks,shots,errors,whoamiRequests,platformResponsesAreSynthetic:true,realLocalService:true,realPackagedApplication:!development,realAccountsUsed:false,publicationPerformed:false,scope:'UI and migration preflight; actual migration transaction/upgrade covered by separate tests'});
+    await write(path.join(evidence,'library-ui-result.json'),{passed:true,version,executable,run,libraryRoot,data,workspace,testedAt:new Date().toISOString(),checks,shots,errors,whoamiRequests,platformResponsesAreSynthetic:true,realLocalService:true,realPackagedApplication:!development,realAccountsUsed:false,publicationPerformed:false,scope:'Selected-library UI and library-change preflight; first selection, direct opening and upgrade covered by separate tests; no data migration performed'});
     console.log('LIBRARY UI PASSED: '+path.join(evidence,'library-ui-result.json'));
   }catch(error){if(page)await page.screenshot({path:path.join(evidence,'library-ui-failure.png'),animations:'disabled'}).catch(()=>{});await write(path.join(evidence,'library-ui-result.json'),{passed:false,version,executable,run,checks,errors,whoamiRequests,wireWhoamiRequests,error:error.stack});throw error;}
   finally{await close();}

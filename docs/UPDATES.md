@@ -162,3 +162,21 @@ The incoming installer gives only that child an extended-length TEMP/TMP path,
 then restores the parent's original values and propagates the child's result.
 This supports deep rollback paths without changing Windows long-path policy or
 persistent environment variables. The same helper covers the 0.1.0 retry.
+
+## 0.5.3 direct library selection
+
+The installer selects only the program directory. On the first 0.5.3 launch,
+choose an empty directory to create a library or a complete existing MediaSail
+library to open it. This one-time choice is recorded independently of the
+installation registry and reused by later updates. Changing the library in
+Settings switches the pointer only; it does not move files.
+
+Old AppData content and failed 0.5.2 migration records are not scanned or resumed.
+Old content stays in place and is not imported into a fresh library. Profiles
+and platform logins must be configured again in a fresh library. A missing
+selected disk produces a recovery/reselect screen, never a silent fallback.
+
+The incoming installer stages only its own verified installer baseline outside
+any old library. Once a library is selected, the app can verify and adopt that
+single current-version baseline for future differential updates. This does not
+copy old user data or old library caches.

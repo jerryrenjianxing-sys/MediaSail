@@ -2,29 +2,16 @@
 ; The old 0.1.0 uninstaller predates customUnInit. Give only that uninstaller
 ; an extended-length form of its existing, registered application directory.
 !ifndef BUILD_UNINSTALLER
-  !include nsDialogs.nsh
   !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-legacy-temp.nsh"
   Var legacyInstallPath
   Var mediaSailVisibleUpdate
-  Var mediaSailLibraryPath
-  Var mediaSailLibraryDialog
-  Var mediaSailLibraryInput
-  Var mediaSailLibraryBrowse
-  Var mediaSailLibraryResult
+  Var mediaSailCacheResult
   !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-recovery.nsh"
   !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。正在替换旧程序，用户数据将保留。"
 !endif
 
 !macro customInit
   StrCpy $mediaSailVisibleUpdate "0"
-  StrCpy $mediaSailLibraryPath ""
-  ${IfNot} ${isUpdated}
-    IfFileExists "$LOCALAPPDATA\ElectronEasel\library-location.json" mediaSailLibraryInitDone
-    IfFileExists "$LOCALAPPDATA\ElectronEasel\library-selection.ini" mediaSailLibraryInitDone
-    IfFileExists "$LOCALAPPDATA\ElectronEasel\workspace\*.*" mediaSailLibraryInitDone
-    StrCpy $mediaSailLibraryPath "$DOCUMENTS\MediaSail资料库"
-    mediaSailLibraryInitDone:
-  ${EndIf}
   ${If} ${isUpdated}
   ${AndIf} ${isForceRun}
     ; Older clients pass /S. The incoming installer owns the visible update flow.
@@ -56,56 +43,17 @@
 !macroend
 
 !macro customPageAfterChangeDir
-  Page custom MediaSailLibraryPage MediaSailLibraryLeave
-  Function MediaSailLibraryPage
-    ${If} $mediaSailLibraryPath == ""
-      Abort
-    ${EndIf}
-    !insertmacro MUI_HEADER_TEXT "选择 MediaSail 资料库" "画像、方法、工具、素材与运行资料保存在这里；升级和卸载保留。"
-    nsDialogs::Create 1018
-    Pop $mediaSailLibraryDialog
-    ${If} $mediaSailLibraryDialog == error
-      Abort
-    ${EndIf}
-    ${NSD_CreateLabel} 0 0 100% 34u "选择软件与外部 Agent 共用的资料库。程序与运行环境仍安装在上一页的位置；以后可以在设置中迁移资料库。"
-    Pop $R0
-    ${NSD_CreateDirRequest} 0 46u 82% 13u "$mediaSailLibraryPath"
-    Pop $mediaSailLibraryInput
-    ${NSD_CreateBrowseButton} 84% 46u 16% 13u "浏览…"
-    Pop $mediaSailLibraryBrowse
-    ${NSD_OnClick} $mediaSailLibraryBrowse MediaSailLibraryBrowse
-    nsDialogs::Show
-  FunctionEnd
-  Function MediaSailLibraryBrowse
-    Pop $R0
-    nsDialogs::SelectFolderDialog "选择 MediaSail 资料库" "$mediaSailLibraryPath"
-    Pop $R0
-    ${If} $R0 != error
-      ${NSD_SetText} $mediaSailLibraryInput $R0
-    ${EndIf}
-  FunctionEnd
-  Function MediaSailLibraryCheck
-    Pop $R8
+  ; The installer chooses the program directory only. The application owns the
+  ; one-time library choice and never migrates old user data.
+  Function MediaSailCacheInstaller
     InitPluginsDir
     File "/oname=$PLUGINSDIR\installer-library.ps1" "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-library.ps1"
-    StrCpy $mediaSailLibraryResult "$PLUGINSDIR\library-result.ini"
-    Delete "$mediaSailLibraryResult"
-    nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\installer-library.ps1" -Mode "$R8" -Root "$mediaSailLibraryPath" -BootstrapRoot "$LOCALAPPDATA\ElectronEasel" -InstallDirectory "$INSTDIR" -InstallerFile "$EXEPATH" -ResultFile "$mediaSailLibraryResult"'
+    StrCpy $mediaSailCacheResult "$PLUGINSDIR\installer-cache-result.ini"
+    Delete "$mediaSailCacheResult"
+    ClearErrors
+    nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$PLUGINSDIR\installer-library.ps1" -Mode "Cache" -BootstrapRoot "$LOCALAPPDATA\ElectronEasel" -Version "${VERSION}" -InstallerFile "$EXEPATH" -ResultFile "$mediaSailCacheResult"'
     Pop $R0
     Pop $R1
-  FunctionEnd
-  Function MediaSailLibraryLeave
-    ${If} $mediaSailLibraryPath == ""
-      Return
-    ${EndIf}
-    ${NSD_GetText} $mediaSailLibraryInput $mediaSailLibraryPath
-    Push "Validate"
-    Call MediaSailLibraryCheck
-    ${If} $R0 != 0
-      ReadINIStr $R1 "$mediaSailLibraryResult" "library" "message"
-      MessageBox MB_OK|MB_ICONEXCLAMATION "无法使用这个资料库位置。$\n$R1"
-      Abort
-    ${EndIf}
   FunctionEnd
   ; The default visible page sanitizes arbitrary folders, even on update.
   ; Preserve the exact registered installation path when skipping that page.
@@ -159,21 +107,9 @@
     SetErrorLevel 2
     Quit
   ${EndIf}
-  ${If} $mediaSailLibraryPath != ""
-  ${AndIfNot} ${isUpdated}
-    Push "Commit"
-    Call MediaSailLibraryCheck
-    ${If} $R0 != 0
-      ReadINIStr $R1 "$mediaSailLibraryResult" "library" "message"
-      MessageBox MB_OK|MB_ICONSTOP "资料库位置未能保存，请重新运行安装器。$\n$R1" /SD IDOK
-      SetErrorLevel 2
-      Quit
-    ${EndIf}
-  ${EndIf}
-  Push "Cache"
-  Call MediaSailLibraryCheck
+  Call MediaSailCacheInstaller
   ${If} $R0 != 0
-    ReadINIStr $R1 "$mediaSailLibraryResult" "library" "message"
+    ReadINIStr $R1 "$mediaSailCacheResult" "cache" "message"
     MessageBox MB_OK|MB_ICONSTOP "安装包缓存未能核验保存，请保留安装包并重新安装。$\n$R1" /SD IDOK
     SetErrorLevel 2
     Quit

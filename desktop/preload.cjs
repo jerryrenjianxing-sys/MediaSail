@@ -18,7 +18,8 @@ contextBridge.exposeInMainWorld('desktopUpdates',{
 contextBridge.exposeInMainWorld('desktopStartup',{
   retry:()=>ipcRenderer.invoke('startup:retry'),
   logs:()=>ipcRenderer.invoke('startup:logs'),
-  library:action=>ipcRenderer.invoke('startup:library',action),
+  library:async action=>{const result=await ipcRenderer.invoke('startup:library',action);if(!result?.ok)throw new Error(result?.error||'未能选择资料库。');return result.data;},
+  checkUpdates:()=>ipcRenderer.invoke('startup:updates'),
   quit:()=>ipcRenderer.invoke('startup:quit'),
   status:()=>ipcRenderer.invoke('startup:status')
 });
