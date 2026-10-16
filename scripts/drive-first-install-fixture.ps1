@@ -25,6 +25,7 @@ public static class FirstInstallWindow {
  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
  [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr h);
  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
+ [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,StringBuilder s,int n);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h,StringBuilder s,int n);
  [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr ReadTextMessage(IntPtr h,uint m,UIntPtr w,StringBuilder text,uint flags,uint timeout,out UIntPtr result);
  [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr WriteTextMessage(IntPtr h,uint m,UIntPtr w,string text,uint flags,uint timeout,out UIntPtr result);
@@ -37,6 +38,9 @@ public static class FirstInstallWindow {
 function Window-Text([IntPtr]$handle){
  [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner);if($owner -ne $InstallerPid){throw 'Refusing text read outside the fixture PID'}
  $text=[Text.StringBuilder]::new(8192);$read=[UIntPtr]::Zero
+ # Caption reads do not block on the installer while it extracts files. Edit
+ # content belongs to the other process and requires the marshaled WM_GETTEXT.
+ if((Window-Class $handle) -cne 'Edit'){[void][FirstInstallWindow]::GetWindowText($handle,$text,8192);return $text.ToString()}
  if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]8192,$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){throw 'Fixture control WM_GETTEXT timed out'}
  return $text.ToString()
 }
@@ -81,6 +85,7 @@ try{
   $result.lastWindows=@($windows.ToArray());Persist-Result
   foreach($window in $windows){
    $texts=($window.children|ForEach-Object{$_.text}) -join "`n"
+   if(@($window.children|Where-Object{$_.class -ceq 'msctls_progress32'}).Count -gt 0 -and $result.libraryInputMatched){if(-not (Test-Path -LiteralPath (Join-Path $EvidenceDirectory 'installer-progress.png'))){Save-Window $window.handle 'installer-progress.png'}}
    $buttons=@($window.children|Where-Object{$_.class -ceq 'Button' -and $_.id -eq 1 -and $_.enabled})
    if($buttons.Count -ne 1){continue};$next=$buttons[0]
    $edits=@($window.children|Where-Object{$_.class -ceq 'Edit' -and $_.enabled})
@@ -108,7 +113,6 @@ try{
     if($current.Count -eq 1){Click-Control $current[0] 'select-current-user';Click-Control $next 'continue-current-user';continue}
     if($texts -match 'Welcome|欢迎|License Agreement|许可协议|授权协议'){Click-Control $next 'continue-recognized-intro';continue}
    }
-   if(@($window.children|Where-Object{$_.class -ceq 'msctls_progress32'}).Count -gt 0 -and $result.libraryInputMatched){if(-not (Test-Path -LiteralPath (Join-Path $EvidenceDirectory 'installer-progress.png'))){Save-Window $window.handle 'installer-progress.png'}}
   }
   $signature=($result.lastWindows|ConvertTo-Json -Depth 10 -Compress)
   if($signature -cne $lastSignature){$lastSignature=$signature;$lastChange=[DateTime]::UtcNow}
