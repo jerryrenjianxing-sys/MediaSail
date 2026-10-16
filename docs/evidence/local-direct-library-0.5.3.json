@@ -1,0 +1,90 @@
+{
+  "version": "0.5.3",
+  "verifiedAt": "2026-10-16T09:20:27.9410756Z",
+  "method": "native Explorer-brokered Windows install; original app exited normally; startup IPC used the user-approved fixed folder; no old workspace scan",
+  "nativePackageCode": 15700,
+  "installDirectory": "D:\\mediasail",
+  "libraryRoot": "D:\\mediasail data",
+  "installerSha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+  "installerExit": 0,
+  "installerSeconds": 50.9686562,
+  "installRegistrationMatches": true,
+  "uninstallVersion": "0.5.3",
+  "shortcutTargets": [
+    "D:\\mediasail\\MediaSail.exe",
+    "D:\\mediasail\\MediaSail.exe"
+  ],
+  "defaultSideInstallation": false,
+  "oldWorkspaceStillExists": true,
+  "oldPluginJunctionStillExists": true,
+  "currentInstallerStagingRetired": true,
+  "serviceChecks": [
+    {
+      "version": "0.5.3",
+      "exe": "D:\\mediasail\\MediaSail.exe",
+      "dataDir": "D:\\mediasail data\\runtime",
+      "url": "http://127.0.0.1:7860/",
+      "phase": "inspect",
+      "verifiedAt": "2026-10-16T09:15:19.043Z",
+      "libraryRoot": "D:\\mediasail data",
+      "libraryId": "75e6f329-a4da-45bc-b1c4-8d965e4990f0",
+      "workspace": "D:\\mediasail data\\workspace",
+      "agentPathsMatch": true,
+      "serviceReady": true,
+      "profileEntryCount": 0,
+      "selectedProfile": null,
+      "home": true,
+      "aitoCookieCount": 0
+    },
+    {
+      "version": "0.5.3",
+      "exe": "D:\\mediasail\\MediaSail.exe",
+      "dataDir": "D:\\mediasail data\\runtime",
+      "url": "http://127.0.0.1:7860/",
+      "phase": "inspect",
+      "verifiedAt": "2026-10-16T09:17:27.317Z",
+      "libraryRoot": "D:\\mediasail data",
+      "libraryId": "75e6f329-a4da-45bc-b1c4-8d965e4990f0",
+      "workspace": "D:\\mediasail data\\workspace",
+      "agentPathsMatch": true,
+      "serviceReady": true,
+      "profileEntryCount": 0,
+      "selectedProfile": null,
+      "home": true,
+      "aitoCookieCount": 0
+    },
+    {
+      "version": "0.5.3",
+      "exe": "D:\\mediasail\\MediaSail.exe",
+      "dataDir": "D:\\mediasail data\\runtime",
+      "url": "http://127.0.0.1:7860/",
+      "phase": "inspect",
+      "verifiedAt": "2026-10-16T09:18:22.824Z",
+      "libraryRoot": "D:\\mediasail data",
+      "libraryId": "75e6f329-a4da-45bc-b1c4-8d965e4990f0",
+      "workspace": "D:\\mediasail data\\workspace",
+      "agentPathsMatch": true,
+      "serviceReady": true,
+      "profileEntryCount": 0,
+      "selectedProfile": null,
+      "home": true,
+      "aitoCookieCount": 0
+    }
+  ],
+  "normalExitAndRelaunchCount": 2,
+  "programBytesBefore": 838588314,
+  "programBytesAfter": 838587260,
+  "oldDataVerificationScope": "Old user data was not recursively scanned; absence of import, original data retention by operation scope, and original junction presence were checked. Exact per-file retention is separately checked on isolated fixed samples.",
+  "coverInstall": {
+    "sameInstallerSha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+    "arguments": [
+      "/S",
+      "--updated",
+      "--force-run"
+    ],
+    "exitCode": 0,
+    "seconds": 51.496558,
+    "registrationAndLibraryRetained": true,
+    "automaticRelaunchObserved": true
+  }
+}

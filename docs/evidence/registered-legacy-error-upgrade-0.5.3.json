@@ -1,0 +1,233 @@
+{
+  "from": "0.5.2",
+  "to": "0.5.3",
+  "sourceState": "legacy-error",
+  "startedAt": "2026-10-16T09:22:12.93Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "registration": "genuine baseline registration retained",
+  "transport": "verified real NSIS /S --updated --force-run; no /D override",
+  "passed": true,
+  "oldLibraryRoot": "C:\\Users\\runneradmin\\Documents\\MediaSail资料库",
+  "installers": {
+    "baseline": {
+      "version": "0.5.2",
+      "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+      "sha256": "1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed",
+      "bytes": 273956517
+    },
+    "candidate": {
+      "version": "0.5.3",
+      "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+      "sha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+      "bytes": 262989425
+    }
+  },
+  "phase": "passed",
+  "phaseAt": "2026-10-16T09:29:09.512Z",
+  "installerProcess": {
+    "pid": 2068,
+    "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+    "args": [
+      "/S",
+      "--updated",
+      "--force-run"
+    ]
+  },
+  "lastInstallerWindows": [
+    {
+      "children": [
+        {
+          "position": null,
+          "class": "Button",
+          "text": "< &Back"
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "&Next >"
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "Cancel"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "MediaSail 0.5.3 "
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "MediaSail 0.5.3"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "正在安装 MediaSail"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "正在复制文件，完成后会自动重新打开。"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "#32770",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "Show &details"
+        },
+        {
+          "position": 0,
+          "class": "msctls_progress32",
+          "text": ""
+        }
+      ],
+      "title": "MediaSail Setup "
+    }
+  ],
+  "originalFixtureFiles": 5,
+  "brokenOldManagedLinks": 1,
+  "registrationBefore": [
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38879915352\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.2"
+    },
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38879915352\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.2"
+    }
+  ],
+  "installMs": 75111,
+  "registrationAfter": [
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38879915352\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.3"
+    },
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38879915352\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.3"
+    }
+  ],
+  "libraryChoice": {
+    "actualStartupButtonClicked": true,
+    "nativePickerTitle": "选择 MediaSail 资料库",
+    "onlyPickerResultStubbed": true,
+    "cancellationKeptChoicePage": true,
+    "selectedRoot": "D:\\a\\_temp\\mediasail-direct-library-38879915352\\中文 新资料库",
+    "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\library-selection\\app-library-selection.png"
+  },
+  "currentInstallerAdopted": true,
+  "oldDataUnchanged": true,
+  "oldDataNotImported": true,
+  "oldSessionsNotImported": true,
+  "installedProgramPathRetained": true,
+  "choiceRememberedAcrossNormalRestart": true,
+  "coverInstallMs": 70089,
+  "choiceAndSessionRetainedAcrossCoverInstall": true,
+  "normalExit": true,
+  "finishedAt": "2026-10-16T09:29:10.683Z",
+  "runUrl": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38879915352",
+  "timingScope": {
+    "installMs": "Observed actual NSIS process start to successful process exit; includes read-only fixture window polling every 10s. No updater download.",
+    "coverInstallMs": "Observed actual same-version NSIS coverage installation to successful process exit with the same selected library and synthetic session retained; not a download-speed measurement.",
+    "total": "Includes genuine 0.5.2 baseline installation/first initialization, isolated failed legacy-metadata and broken-junction fixtures, two genuine 0.5.3 NSIS installs, explicit new-library choice, inspector and normal restarts."
+  },
+  "observedPhases": [
+    {
+      "phase": "baseline-install",
+      "startedAt": "2026-10-16T09:22:19.377Z",
+      "endedAt": "2026-10-16T09:26:11.102Z",
+      "observedMs": 231725
+    },
+    {
+      "phase": "baseline-first-start-to-seed",
+      "startedAt": "2026-10-16T09:26:14.275Z",
+      "endedAt": "2026-10-16T09:26:28.829Z",
+      "observedMs": 14554,
+      "scope": "Includes actual baseline ready and test inspector attachment."
+    },
+    {
+      "phase": "candidate-install",
+      "startedAt": "2026-10-16T09:26:29.796Z",
+      "endedAt": "2026-10-16T09:27:44.897Z",
+      "observedMs": 75111
+    },
+    {
+      "phase": "candidate-choice-and-restart-checks",
+      "startedAt": "2026-10-16T09:27:45.192Z",
+      "endedAt": "2026-10-16T09:27:57.683Z",
+      "observedMs": 12491,
+      "scope": "Includes actual button, canceled picker, explicit new library, relaunch, live identity, synthetic session checks and normal restart."
+    },
+    {
+      "phase": "same-version-cover-install",
+      "startedAt": "2026-10-16T09:27:57.690Z",
+      "endedAt": "2026-10-16T09:29:07.777Z",
+      "observedMs": 70089
+    }
+  ]
+}

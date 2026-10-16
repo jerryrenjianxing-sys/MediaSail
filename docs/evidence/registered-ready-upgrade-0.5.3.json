@@ -1,0 +1,97 @@
+{
+  "from": "0.5.2",
+  "to": "0.5.3",
+  "sourceState": "ready",
+  "startedAt": "2026-10-16T09:11:09.403Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "registration": "genuine baseline registration retained",
+  "transport": "verified real NSIS /S --updated --force-run; no /D override",
+  "passed": true,
+  "installers": {
+    "baseline": {
+      "version": "0.5.2",
+      "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+      "sha256": "1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed",
+      "bytes": 273956517
+    },
+    "candidate": {
+      "version": "0.5.3",
+      "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+      "sha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+      "bytes": 262989425
+    }
+  },
+  "oldLibraryRoot": "C:\\Users\\runneradmin\\Documents\\MediaSail资料库",
+  "originalFixtureFiles": 5,
+  "brokenOldManagedLinks": 1,
+  "registrationBefore": [
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38878636196\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.2"
+    },
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38878636196\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.2"
+    }
+  ],
+  "lastInstallerWindows": [],
+  "installMs": 339827,
+  "registrationAfter": [
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38878636196\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.3"
+    },
+    {
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": "D:\\a\\_temp\\mediasail-direct-library-38878636196\\中文 原安装\\MediaSail",
+      "version": null
+    },
+    {
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "location": null,
+      "version": "0.5.3"
+    }
+  ],
+  "libraryChoice": {
+    "actualStartupButtonClicked": true,
+    "nativePickerTitle": "选择 MediaSail 资料库",
+    "onlyPickerResultStubbed": true,
+    "cancellationKeptChoicePage": true,
+    "selectedRoot": "D:\\a\\_temp\\mediasail-direct-library-38878636196\\中文 新资料库",
+    "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\library-selection\\app-library-selection.png"
+  },
+  "currentInstallerAdopted": true,
+  "oldDataUnchanged": true,
+  "oldDataNotImported": true,
+  "oldSessionsNotImported": true,
+  "installedProgramPathRetained": true,
+  "choiceRememberedAcrossNormalRestart": true,
+  "coverInstallMs": 290904,
+  "choiceAndSessionRetainedAcrossCoverInstall": true,
+  "normalExit": true,
+  "finishedAt": "2026-10-16T09:25:53.745Z",
+  "runUrl": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38878636196",
+  "timingScope": {
+    "installMs": "Observed actual NSIS process start to successful process exit, including repeated read-only PowerShell window observation on the ephemeral runner. Not an updater-download or native-user-machine speed measurement.",
+    "coverInstallMs": "Observed same-version actual NSIS coverage installation to successful process exit; includes runner scheduling and fixture polling. No download time.",
+    "total": "Includes baseline installation/first initialization, synthetic test setup, two genuine NSIS installations, explicit new-library choice, inspector attachment and normal restarts."
+  }
+}

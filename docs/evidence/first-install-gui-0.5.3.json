@@ -1,0 +1,191 @@
+{
+  "version": "0.5.3",
+  "startedAt": "2026-10-16T09:14:13.942Z",
+  "environment": "fresh ephemeral GitHub-hosted Windows",
+  "method": "actual NSIS program-directory wizard; actual app library-choice button with only native picker result stubbed; no silent/path arguments or registry pre-seeding",
+  "passed": true,
+  "installer": {
+    "version": "0.5.3",
+    "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+    "sha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+    "bytes": 262989425,
+    "assetId": "RA_kwDOVCKwBc4mjRZp"
+  },
+  "installMs": 54567,
+  "wizard": {
+    "startedAt": "2026-10-16T09:14:20.0083935Z",
+    "libraryPageObserved": false,
+    "actions": [
+      {
+        "uia": null,
+        "action": "select-current-user",
+        "method": "BM_CLICK",
+        "id": 1202,
+        "at": "2026-10-16T09:14:20.933874Z",
+        "text": "Only for &me (runneradmin)",
+        "foregroundPidBefore": 7012,
+        "activationReturned": true,
+        "foregroundPidAfter": 7012
+      },
+      {
+        "uia": {
+          "controlType": "ControlType.Pane",
+          "processId": 7012,
+          "nativeWindowHandle": 196672,
+          "hasInvoke": false,
+          "controlTypeId": 50033,
+          "usable": false,
+          "isEnabled": true
+        },
+        "action": "continue-current-user",
+        "method": "Win32.WM_COMMAND.BN_CLICKED",
+        "id": 1,
+        "at": "2026-10-16T09:14:22.0192217Z",
+        "text": "&Next >",
+        "foregroundPidBefore": 7012,
+        "activationReturned": true,
+        "foregroundPidAfter": 7012
+      },
+      {
+        "uia": {
+          "controlType": "ControlType.Pane",
+          "processId": 7012,
+          "nativeWindowHandle": 196672,
+          "hasInvoke": false,
+          "controlTypeId": 50033,
+          "usable": false,
+          "isEnabled": true
+        },
+        "action": "confirm-program-directory",
+        "method": "Win32.WM_COMMAND.BN_CLICKED",
+        "id": 1,
+        "at": "2026-10-16T09:14:23.7028014Z",
+        "text": "&Install",
+        "foregroundPidBefore": 7012,
+        "activationReturned": true,
+        "foregroundPidAfter": 7012
+      },
+      {
+        "uia": {
+          "controlType": "ControlType.Pane",
+          "processId": 7012,
+          "nativeWindowHandle": 196672,
+          "hasInvoke": false,
+          "controlTypeId": 50033,
+          "usable": false,
+          "isEnabled": true
+        },
+        "action": "finish",
+        "method": "Win32.WM_COMMAND.BN_CLICKED",
+        "id": 1,
+        "at": "2026-10-16T09:15:08.2462881Z",
+        "text": "&Finish",
+        "foregroundPidBefore": 7012,
+        "activationReturned": true,
+        "foregroundPidAfter": 7012
+      }
+    ],
+    "installerPid": 7012,
+    "programInputMatched": true,
+    "libraryInputMatched": false,
+    "finishObserved": true,
+    "programPageObserved": true,
+    "validationProcesses": [
+      {
+        "pid": 8864,
+        "observedAt": "2026-10-16T09:15:04.2636373Z",
+        "parentPid": 7012,
+        "mode": "Cache"
+      }
+    ],
+    "lastWindows": [],
+    "pollTextTimeouts": [],
+    "passed": true,
+    "finishedAt": "2026-10-16T09:15:12.9555287Z",
+    "lastUiaNavigation": {
+      "controlType": "ControlType.Pane",
+      "processId": 7012,
+      "nativeWindowHandle": 196672,
+      "hasInvoke": false,
+      "controlTypeId": 50033,
+      "usable": false,
+      "isEnabled": true
+    }
+  },
+  "currentInstallerStagedWithoutLibrary": true,
+  "firstLaunchPid": 4552,
+  "libraryChoice": {
+    "actualStartupButtonClicked": true,
+    "nativePickerTitle": "选择 MediaSail 资料库",
+    "onlyPickerResultStubbed": true,
+    "cancellationKeptChoicePage": true,
+    "selectedRoot": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库",
+    "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\first-install\\app-library-selection.png"
+  },
+  "choiceRelaunched": true,
+  "readyPid": 7240,
+  "installToReadyMs": 66054,
+  "appToReadyMs": 10810,
+  "currentInstallerAdopted": true,
+  "firstLaunch": {
+    "version": "0.5.3",
+    "exe": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 程序\\MediaSail\\MediaSail.exe",
+    "userData": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime",
+    "sessionData": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime",
+    "partition": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime\\Partitions\\aitoearn-cn",
+    "url": "http://127.0.0.1:7860/",
+    "theme": "dark",
+    "cookie": "synthetic-only"
+  },
+  "registration": [
+    {
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "location": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 程序\\MediaSail",
+      "version": null
+    },
+    {
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "location": null,
+      "version": "0.5.3"
+    },
+    {
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "location": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 程序\\MediaSail",
+      "version": null
+    },
+    {
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "location": null,
+      "version": "0.5.3"
+    }
+  ],
+  "normalRestart": {
+    "version": "0.5.3",
+    "exe": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 程序\\MediaSail\\MediaSail.exe",
+    "userData": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime",
+    "sessionData": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime",
+    "partition": "D:\\a\\_temp\\mediasail-first-install-38879011147\\中文 资料库\\runtime\\Partitions\\aitoearn-cn",
+    "url": "http://127.0.0.1:7860/",
+    "theme": "dark",
+    "cookie": "synthetic-only"
+  },
+  "normalExit": true,
+  "bootstrapCanonicalMatched": true,
+  "selectedLibraryLayoutVerified": true,
+  "sessionRetainedAcrossNormalRestart": true,
+  "finishedAt": "2026-10-16T09:15:32.752Z",
+  "runUrl": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38879011147",
+  "timingScope": {
+    "installMs": "Actual NSIS process start to successful wizard/process completion; includes real current-user/program-directory/finish GUI actions.",
+    "appToReadyMs": "Observed initial app process start through inspector attachment, canceled folder selection, explicit library selection, real relaunch and live ready; not pure application startup latency.",
+    "installToReadyMs": "Combined actual installation and the observed first-run selection sequence; not a download measurement."
+  }
+}
