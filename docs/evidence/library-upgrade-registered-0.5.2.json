@@ -4,9 +4,16 @@
   "mode": "candidate",
   "registration": "registered",
   "failureMode": "none",
-  "startedAt": "2026-10-16T04:53:49.754Z",
+  "startedAt": "2026-10-16T05:20:45.030Z",
   "environment": "ephemeral GitHub-hosted Windows",
+  "appToolEnvironment": "Application and installer PATH contains only Windows system directories; runner developer tools remain installed for test orchestration.",
   "transport": "verified draft installer, real NSIS /S --updated --force-run upgrade",
+  "externalToolsInAppPath": {
+    "python.exe": false,
+    "node.exe": false,
+    "ffmpeg.exe": false,
+    "openclaw.cmd": false
+  },
   "installers": {
     "baseline": {
       "name": "MediaSail-0.5.0-win-x64-Setup.exe",
@@ -15,8 +22,8 @@
     },
     "candidate": {
       "name": "MediaSail-0.5.2-win-x64-Setup.exe",
-      "sha256": "4d79ae50ae95ba802d930451fc729c2fb8b1c416d3a37270879bed0b046fd58f",
-      "bytes": 262988667
+      "sha256": "1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed",
+      "bytes": 273956517
     }
   },
   "phase": "verified",
@@ -37,7 +44,7 @@
         },
         "InstallLocation": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录"
         },
         "KeepShortcuts": {
           "kind": "String",
@@ -65,11 +72,11 @@
         },
         "QuietUninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
         },
         "UninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
         },
         "Comments": {
           "kind": "String",
@@ -97,7 +104,7 @@
         },
         "DisplayIcon": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
         },
         "EstimatedSize": {
           "kind": "DWord",
@@ -121,7 +128,7 @@
         },
         "InstallLocation": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录"
         },
         "KeepShortcuts": {
           "kind": "String",
@@ -149,11 +156,11 @@
         },
         "QuietUninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
         },
         "UninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
         },
         "Comments": {
           "kind": "String",
@@ -181,7 +188,7 @@
         },
         "DisplayIcon": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
         },
         "EstimatedSize": {
           "kind": "DWord",
@@ -213,37 +220,37 @@
     }
   },
   "userDataBefore": {
-    "bytes": 29826041,
+    "bytes": 29826035,
     "files": 845
   },
-  "baselineReadyAt": "2026-10-16T04:54:48.155Z",
+  "baselineReadyAt": "2026-10-16T05:23:34.022Z",
   "observation": {
-    "at": "2026-10-16T04:56:01.534Z",
+    "at": "2026-10-16T05:28:52.503Z",
     "apps": [
       {
-        "ProcessId": 7300,
-        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --updated"
+        "ProcessId": 6716,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --updated"
       },
       {
-        "ProcessId": 3584,
-        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=gpu-process --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --field-trial-handle=1864,i,15855432578594180908,4882374089818292313,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1868,i,17636769497820835608,13512280304760138358,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1860 /prefetch:2"
+        "ProcessId": 4948,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=gpu-process --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --field-trial-handle=1872,i,1536203836269807654,7916774037677340410,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1876,i,3798052670013020256,14384699434671518475,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1864 /prefetch:2"
       },
       {
-        "ProcessId": 3392,
-        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --field-trial-handle=1864,i,15855432578594180908,4882374089818292313,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1868,i,17636769497820835608,13512280304760138358,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2064 /prefetch:11"
+        "ProcessId": 840,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --field-trial-handle=1872,i,1536203836269807654,7916774037677340410,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1876,i,3798052670013020256,14384699434671518475,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2016 /prefetch:11"
       },
       {
-        "ProcessId": 9568,
-        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=renderer --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --app-user-model-id=org.electroneasel.desktop --app-path=\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\resources\\app.asar\" --enable-sandbox --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=1 --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=525964366 --field-trial-handle=1864,i,15855432578594180908,4882374089818292313,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1868,i,17636769497820835608,13512280304760138358,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2656 /prefetch:1"
+        "ProcessId": 1276,
+        "ExecutablePath": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+        "CommandLine": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe\" --type=renderer --user-data-dir=\"C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\migration-ui\" --app-user-model-id=org.electroneasel.desktop --app-path=\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\resources\\app.asar\" --enable-sandbox --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=1 --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=4 --launch-time-ticks=640430131 --field-trial-handle=1872,i,1536203836269807654,7916774037677340410,262144 --enable-features=AllowWindowCaptureExclusionInRemoteSessions,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1876,i,3798052670013020256,14384699434671518475,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=2636 /prefetch:1"
       }
     ],
     "installers": [
       {
-        "ProcessId": 4608,
+        "ProcessId": 2652,
         "ExecutablePath": "D:\\a\\MediaSail\\MediaSail\\release-input\\candidate\\MediaSail-0.5.2-win-x64-Setup.exe",
         "CommandLine": "D:\\a\\MediaSail\\MediaSail\\release-input\\candidate\\MediaSail-0.5.2-win-x64-Setup.exe /S --updated --force-run"
       }
@@ -252,32 +259,32 @@
   },
   "visibleInstallObserved": true,
   "installStages": [
-    "[install]\r\nstate=installing\r\ndirectory=D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\r\n",
-    "[install]\r\nstate=old-version-removed\r\ndirectory=D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\r\n",
-    "[install]\r\nstate=copying-files\r\ndirectory=D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\r\n",
-    "[install]\r\nstate=files-copied\r\ndirectory=D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\r\n",
-    "[install]\r\nstate=succeeded\r\ndirectory=D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\r\n"
+    "[install]\r\nstate=installing\r\ndirectory=D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\r\n",
+    "[install]\r\nstate=old-version-removed\r\ndirectory=D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\r\n",
+    "[install]\r\nstate=copying-files\r\ndirectory=D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\r\n",
+    "[install]\r\nstate=files-copied\r\ndirectory=D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\r\n",
+    "[install]\r\nstate=succeeded\r\ndirectory=D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\r\n"
   ],
   "migration": {
     "confirmation": [
       {
-        "pid": 7300,
+        "pid": 6716,
         "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\library-candidate-registered-none\\migration-confirmation.png",
         "action": "choose-location-and-migrate",
         "confirmed": true
       }
     ],
-    "startedAt": "2026-10-16T04:56:05.749Z",
+    "startedAt": "2026-10-16T05:28:56.710Z",
     "selectionMethod": "Actual native confirmation, isolated folder selection supplied by test dialog response; application migration is unchanged.",
-    "finishedAt": "2026-10-16T04:56:13.634Z",
-    "relaunchedPid": 10148
+    "finishedAt": "2026-10-16T05:29:04.571Z",
+    "relaunchedPid": 9916
   },
-  "installToRelaunchMs": 84892,
-  "installToReadyMs": 90398,
+  "installToRelaunchMs": 329976,
+  "installToReadyMs": 335403,
   "retention": {
     "version": "0.5.2",
-    "exe": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-    "data": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\统一 资料库\\runtime",
+    "exe": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+    "data": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\统一 资料库\\runtime",
     "theme": "dark",
     "chat": true,
     "draft": "保留的草稿",
@@ -296,7 +303,7 @@
         },
         "InstallLocation": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录"
         },
         "KeepShortcuts": {
           "kind": "String",
@@ -324,11 +331,11 @@
         },
         "QuietUninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
         },
         "UninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
         },
         "Comments": {
           "kind": "String",
@@ -356,11 +363,11 @@
         },
         "DisplayIcon": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
         },
         "EstimatedSize": {
           "kind": "DWord",
-          "value": 821236
+          "value": 819079
         },
         "HelpLink": {
           "kind": "String",
@@ -380,7 +387,7 @@
         },
         "InstallLocation": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录"
         },
         "KeepShortcuts": {
           "kind": "String",
@@ -408,11 +415,11 @@
         },
         "QuietUninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
         },
         "UninstallString": {
           "kind": "String",
-          "value": "\"D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+          "value": "\"D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
         },
         "Comments": {
           "kind": "String",
@@ -440,11 +447,11 @@
         },
         "DisplayIcon": {
           "kind": "String",
-          "value": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
+          "value": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe,0"
         },
         "EstimatedSize": {
           "kind": "DWord",
-          "value": 821236
+          "value": 819079
         },
         "HelpLink": {
           "kind": "String",
@@ -455,14 +462,14 @@
   ],
   "shortcuts": [
     {
-      "legacyComTarget": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\\MediaSail.exe",
+      "legacyComTarget": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\\MediaSail.exe",
       "path": "C:\\Users\\runneradmin\\Desktop\\MediaSail.lnk",
-      "target": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe"
+      "target": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe"
     },
     {
-      "legacyComTarget": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\?? ????\\MediaSail.exe",
+      "legacyComTarget": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\?? ????\\MediaSail.exe",
       "path": "C:\\Users\\runneradmin\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\MediaSail.lnk",
-      "target": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe"
+      "target": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe"
     }
   ],
   "runtime": {
@@ -475,30 +482,30 @@
     ]
   },
   "afterProgram": {
-    "bytes": 838583315,
-    "files": 8656
+    "bytes": 838588314,
+    "files": 8657
   },
   "userDataAfter": {
-    "bytes": 275114535,
+    "bytes": 286083147,
     "files": 133
   },
   "libraryAfter": {
-    "bytes": 293469629,
-    "files": 885
+    "bytes": 304443131,
+    "files": 886
   },
   "preservedLegacyData": {
-    "bytes": 295878955,
+    "bytes": 306846800,
     "files": 912
   },
-  "startupObservedMs": 5506,
-  "reclaimedProgramBytes": -661044,
+  "startupObservedMs": 5427,
+  "reclaimedProgramBytes": -666043,
   "normalRestarts": [
     {
       "index": 1,
       "method": "real app.quit then unchanged installed executable",
       "version": "0.5.2",
-      "exe": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-      "data": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\统一 资料库\\runtime",
+      "exe": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+      "data": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\统一 资料库\\runtime",
       "theme": "dark",
       "profile": "验收 画像",
       "cookie": "keep"
@@ -507,8 +514,8 @@
       "index": 2,
       "method": "real app.quit then unchanged installed executable",
       "version": "0.5.2",
-      "exe": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
-      "data": "D:\\a\\_temp\\mediasail-library-38852885963-candidate-registered-none\\统一 资料库\\runtime",
+      "exe": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\用户 自选目录\\MediaSail.exe",
+      "data": "D:\\a\\_temp\\mediasail-library-38855213971-candidate-registered-none\\统一 资料库\\runtime",
       "theme": "dark",
       "profile": "验收 画像",
       "cookie": "keep"
@@ -516,6 +523,6 @@
   ],
   "passed": true,
   "cleanedUp": true,
-  "finishedAt": "2026-10-16T04:56:42.052Z",
+  "finishedAt": "2026-10-16T05:31:23.766Z",
   "sideInstallationCleanedUp": true
 }
