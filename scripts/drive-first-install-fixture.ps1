@@ -42,7 +42,9 @@ public static class FirstInstallWindow {
 }
 '@
 function Window-Text([IntPtr]$handle,[switch]$Strict){
- [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner);if($owner -ne $InstallerPid){throw 'Refusing text read outside the fixture PID'}
+ [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner)
+ if($owner -eq 0 -and -not $Strict){$script:pollTextBusy=$true;return ''}
+ if($owner -ne $InstallerPid){throw 'Refusing text read outside the fixture PID'}
  $text=[Text.StringBuilder]::new(8192);$read=[UIntPtr]::Zero
  # Caption reads do not block on the installer while it extracts files. Edit
  # content belongs to the other process and requires the marshaled WM_GETTEXT.
@@ -130,18 +132,10 @@ try{
    if($buttons.Count -ne 1){continue};$next=$buttons[0]
    $edits=@($window.children|Where-Object{$_.class -ceq 'Edit' -and $_.enabled})
    if($texts.Contains('选择 MediaSail 资料库')){
-    if($result.libraryInputMatched){
-     $elapsed=([DateTime]::UtcNow-[DateTime]::Parse($result.libraryClickAt)).TotalSeconds
-     if($elapsed -ge 3 -and -not $result.libraryStableRetry){
-      $retryText=if($edits.Count -eq 1){Window-Text $edits[0].handle}else{''}
-      if($script:pollTextBusy){continue}
-      if($edits.Count -ne 1 -or $retryText -cne $LibraryRoot -or $next.text.Replace('&','') -cne 'Install'){throw 'Library page changed unexpectedly before bounded retry'}
-      Save-Window $window.handle 'installer-library-stable-before-retry.png';$result.libraryStableRetry=$true;Persist-Result
-      Click-Control $next 'confirm-stable-library-once-more'
-     }
-     if($elapsed -ge 60){throw 'The actual library page did not advance after two bounded clicks; control tree and screenshots preserved'}
-     continue
-    }
+    # The navigation command has already entered the real NSIS leave callback.
+    # A snapshot captured during its validation/page transition must never
+    # trigger a second submission or be treated as a changed user selection.
+    if($result.libraryInputMatched){continue}
     if(-not $result.programInputMatched -or $edits.Count -ne 1){throw 'Unexpected library page structure or order'}
     $result.libraryPageObserved=$true
     Set-ControlText $edits[0].handle $LibraryRoot
