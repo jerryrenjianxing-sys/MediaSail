@@ -13,4 +13,4 @@ Windows x64 完整安装版。沿用现有安装标识和更新频道，保留�
 
 不增加内置聊天、OpenClaw、模型执行器或远程命令服务，卸载默认保留用户资料。真实抖音扫码后的关闭重开、只读采集及资料迁移已在独立测试库验证；没有公开发布内容，也未使用真实 AitoEarn 账号上传或建草稿。
 
-安装、回滚、业务和更新链路的结果及边界见 [0.5.2 验证记录](VERIFICATION-0.5.2.md)。
+安装、回滚、业务和更新链路的结果及边界见 [0.5.2 验证记录](https://github.com/jerryrenjianxing-sys/MediaSail/blob/main/docs/VERIFICATION-0.5.2.md)。

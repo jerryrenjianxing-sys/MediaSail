@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "version": "0.5.2",
+  "verifiedAt": "2026-10-16T05:36:29.2410781Z",
+  "releaseUrl": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.2",
+  "publishedAt": "2026-10-16T05:34:58Z",
+  "isLatest": true,
+  "draft": false,
+  "prerelease": false,
+  "targetCommit": "c305fdd7122c373fec145d6cac565883a2f0ec82",
+  "assetVerification": "All five GitHub server SHA256 digests and sizes matched local release artifacts before publication; unchanged installer, blockmap, update index and source digests confirmed after publication. latest.yml installer SHA512 was separately verified.",
+  "assets": [
+    {
+      "name": "latest.yml",
+      "bytes": 363,
+      "state": "uploaded",
+      "digest": "sha256:51f05b375837adb856c3bbb334f9d84a203f9ebad730991294b119416c3c8f48"
+    },
+    {
+      "name": "MediaSail-0.5.2-source.zip",
+      "bytes": 41580427,
+      "state": "uploaded",
+      "digest": "sha256:dd760f58a90de6f1164be028721ec4f56da5022ef859a81dbbabde4a14a98b48"
+    },
+    {
+      "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+      "bytes": 273956517,
+      "state": "uploaded",
+      "digest": "sha256:1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed"
+    },
+    {
+      "name": "MediaSail-0.5.2-win-x64-Setup.exe.blockmap",
+      "bytes": 284443,
+      "state": "uploaded",
+      "digest": "sha256:98e8f736529bbf76ccc3eb7ee9d330adf4a439d7b54c219563ccd9b264b3a100"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 379,
+      "state": "uploaded",
+      "digest": "sha256:4931cf715a5ecca670cda395cc8c93b381ddbfab56c69096b0f38ec5f8f8e780"
+    }
+  ],
+  "historicalDraftPreserved": "v0.5.1",
+  "historicalReleasesDeleted": false,
+  "sourceSnapshot": "Published tag c305fdd7122c373fec145d6cac565883a2f0ec82; subsequent live-update verification records are committed to main without changing published program artifacts.",
+  "blockmapValidation": {
+    "format": "gzip-compressed blockmap",
+    "version": "2",
+    "chunks": 13112,
+    "totalChunkBytes": 273956517,
+    "chunkCountsAndFinalInstallerSizeMatched": true
+  },
+  "sourceArchiveValidation": {
+    "crcVerified": true,
+    "entries": 1066,
+    "requiredImplementationAndRegressionFilesPresent": true
+  }
+}
