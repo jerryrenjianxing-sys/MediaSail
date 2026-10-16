@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "from": "0.5.4",
+  "to": "0.5.4",
+  "checkedAt": "2026-10-16T11:36:01.181Z",
+  "state": {
+    "phase": "current",
+    "current": "0.5.4",
+    "version": "",
+    "percent": 0,
+    "transferred": 0,
+    "total": 0,
+    "bytesPerSecond": 0,
+    "message": "当前已是最新版本。",
+    "checkedAt": 1792150560929,
+    "bannerDismissed": false
+  },
+  "source": "unchanged packaged GitHub electron-updater feed",
+  "downloadRequested": false,
+  "installRequested": false,
+  "isolatedLibrary": true
+}

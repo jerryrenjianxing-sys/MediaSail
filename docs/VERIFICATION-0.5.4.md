@@ -67,4 +67,8 @@
 
 Windows x64 安装包为 273,973,986 字节，约 261.3 MiB，SHA-256：`06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d`。更新索引 SHA-512、差量索引覆盖字节和源码 ZIP 完整性均在发布前核对；源码包不包含运行时连接文件、账号凭据和浏览器状态。
 
-正式发布后的资产与旧客户端检查将追加到仓库记录；不替换已正式发布的安装包和源码资产。
+正式版本于 2026-10-16 19:35:48（北京时间）发布为 [v0.5.4](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.4)。五项资产的服务器 SHA-256 均与本地一致，之前十二个版本的文件保持原样，包含未发行的 0.5.1 草稿。[资产核验记录](evidence/assets-0.5.4.json)。源码包为 54,457,092 字节，SHA-256：`67a8a90edad4d7f48cf03ab574e655ff2c3078d526900176d50bfa5e1043eff5`。
+
+正式发布后，用未修改的打包版客户端、各自隔离资料库及原 GitHub electron-updater 配置实际检查：0.5.3 返回 available、目标 0.5.4；0.5.4 返回 current、“当前已是最新版本”。两次均没有请求下载或安装，已传输字节为零；测试进程正常关闭。[旧版检查记录](evidence/content-update-0.5.3-to-0.5.4.json)、[旧版更新窗口](images/0.5.4/update-check-0.5.3.png)、[新版检查记录](evidence/content-update-0.5.4-to-0.5.4.json)、[新版更新窗口](images/0.5.4/update-check-0.5.4.png)。
+
+本节的发布后结果追加在 GitHub 仓库中，不替换已正式发布的安装包和源码资产。
