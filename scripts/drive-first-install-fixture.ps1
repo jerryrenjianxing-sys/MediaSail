@@ -34,6 +34,7 @@ public static class FirstInstallWindow {
  [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h,int m,IntPtr w,IntPtr l);
  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
  [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h,uint flags);
+ [DllImport("user32.dll")] public static extern IntPtr GetParent(IntPtr h);
  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h,out Rect r);
  [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h,IntPtr dc,uint flags);
@@ -72,16 +73,28 @@ function Click-Control($control,[string]$action){
  $dialog=[FirstInstallWindow]::GetAncestor($control.handle,2);[uint32]$dialogOwner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($dialog,[ref]$dialogOwner)
  if($dialogOwner -ne $InstallerPid -or (Window-Class $dialog) -cne '#32770'){throw 'Refusing activation outside the fixture main dialog'}
  $activated=[FirstInstallWindow]::SetForegroundWindow($dialog)
- $method='BM_CLICK'
+ $method='BM_CLICK';$uiaDetails=$null
  if($control.id -eq 1){
-  $element=[Windows.Automation.AutomationElement]::FromHandle($control.handle)
-  if($element.Current.ProcessId -ne $InstallerPid -or $element.Current.ControlType -ne [Windows.Automation.ControlType]::Button -or -not $element.Current.IsEnabled){throw 'UIAutomation target is not the enabled fixture navigation button'}
-  $pattern=$null
-  if(-not $element.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern,[ref]$pattern)){throw 'The actual fixture button does not expose InvokePattern'}
-  ([Windows.Automation.InvokePattern]$pattern).Invoke();$method='UIAutomation.InvokePattern'
+  $uiaDetails=@{usable=$false}
+  try{
+   $element=[Windows.Automation.AutomationElement]::FromHandle($control.handle);$current=$element.Current;$pattern=$null
+   $uiaDetails=@{processId=$current.ProcessId;controlTypeId=$current.ControlType.Id;controlType=$current.ControlType.ProgrammaticName;isEnabled=$current.IsEnabled;nativeWindowHandle=$current.NativeWindowHandle;hasInvoke=$element.TryGetCurrentPattern([Windows.Automation.InvokePattern]::Pattern,[ref]$pattern)}
+   $uiaDetails.usable=$uiaDetails.processId -eq $InstallerPid -and $uiaDetails.controlTypeId -eq [Windows.Automation.ControlType]::Button.Id -and $uiaDetails.isEnabled -and $uiaDetails.hasInvoke
+  }catch{$uiaDetails=@{usable=$false;providerError=$_.Exception.Message}}
+  $result.lastUiaNavigation=$uiaDetails;Persist-Result
+  if($uiaDetails.usable){([Windows.Automation.InvokePattern]$pattern).Invoke();$method='UIAutomation.InvokePattern'}
+  else{
+   # Hosted Windows may not expose a reliable UIA provider in this session.
+   # This is the same real NSIS navigation command emitted by BN_CLICKED. The
+   # actual parent, HWND, owner PID, button class/ID and enabled state remain
+   # mandatory, and the caller still waits for the real page to change.
+   if([FirstInstallWindow]::GetParent($control.handle) -ne $dialog -or [FirstInstallWindow]::GetDlgCtrlID($control.handle) -ne 1){throw 'Refusing navigation command outside the actual fixture button parent'}
+   if(-not [FirstInstallWindow]::PostMessage($dialog,0x0111,[IntPtr]::new([int]1),$control.handle)){throw 'Fixture BN_CLICKED navigation command failed'}
+   $method='Win32.WM_COMMAND.BN_CLICKED'
+  }
  }elseif(-not [FirstInstallWindow]::PostMessage($control.handle,0xF5,[IntPtr]::Zero,[IntPtr]::Zero)){throw 'Fixture radio button message failed'}
  $after=[FirstInstallWindow]::GetForegroundWindow();[uint32]$afterOwner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($after,[ref]$afterOwner)
- $result.actions+=@(@{action=$action;method=$method;text=$control.text;id=$control.id;foregroundPidBefore=$beforeOwner;foregroundPidAfter=$afterOwner;activationReturned=$activated;at=[DateTime]::UtcNow.ToString('o')});Persist-Result;Start-Sleep -Milliseconds 500
+ $result.actions+=@(@{action=$action;method=$method;uia=$uiaDetails;text=$control.text;id=$control.id;foregroundPidBefore=$beforeOwner;foregroundPidAfter=$afterOwner;activationReturned=$activated;at=[DateTime]::UtcNow.ToString('o')});Persist-Result;Start-Sleep -Milliseconds 500
  Write-Output ('fixture GUI action: '+$action)
 }
 try{
