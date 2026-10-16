@@ -1,0 +1,44 @@
+{
+  "version": "0.5.2",
+  "testedAt": "2026-10-16T05:18:57.6151693Z",
+  "installerBytes": 273956517,
+  "installerSHA256": "1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed",
+  "unpackedProgram": {
+    "files": 8660,
+    "bytes": 838736441
+  },
+  "groups": {
+    "resources/runtime": {
+      "bytes": 409129593,
+      "files": 7817
+    },
+    "resources/payload": {
+      "bytes": 18355448,
+      "files": 731
+    },
+    "resources/agent-skill": {
+      "bytes": 94691,
+      "files": 11
+    },
+    "resources/bridge": {
+      "bytes": 49057,
+      "files": 9
+    },
+    "resources/licenses": {
+      "bytes": 21972263,
+      "files": 15
+    }
+  },
+  "electronAndShellBytes": 389135389,
+  "userDataIncluded": false,
+  "measurement": "All regular files in the clean final win-unpacked after packaging. User library and updater cache are measured separately in native installation evidence.",
+  "bytecodeFiles": 0,
+  "installedProgramBytes": 838588314,
+  "installedProgramFiles": 8657,
+  "installedProgramMeasurement": "Final 1f7d9b2d installer, real Windows 0.5.0 to 0.5.2 NSIS upgrade. See library-upgrade-registered-0.5.2.json; user data and managed installer cache excluded.",
+  "programChangeFrom050Bytes": 666043,
+  "programSpaceReclaimedFrom050Bytes": 0,
+  "fixtureLibraryBytes": 304443131,
+  "fixtureLegacySourcePreservedBytes": 306846800,
+  "fixtureDataMeasurement": "Synthetic upgrade fixture only; these library totals include a full current installer cache and are not the user's personal data size. The old source remains intentionally preserved."
+}

@@ -4,13 +4,13 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.2 候选说明](docs/RELEASE-0.5.2.md) · [0.5.2 验证进度](docs/VERIFICATION-0.5.2.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.2 更新说明](docs/RELEASE-0.5.2.md) · [0.5.2 验证记录](docs/VERIFICATION-0.5.2.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
-当前正式版为 **0.5.0**，安装 MediaSail-0.5.0-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
+从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前源码为 **0.5.2 候选，尚未正式发布**：建立软件与 Agent 共享的统一资料库，修复抖音创作者后台核验、分析快照归属和外部调用说明。下方资料库描述适用于该候选；真实安装、真实扫码和正式更新的完成情况以候选验证记录为准。0.5.1 继续保留为历史草稿，不是已发布正式版。
+当前源码为 **0.5.2**：建立软件与 Agent 共享的统一资料库，修复抖音创作者后台核验、分析快照归属和外部调用说明。真实安装、扫码及正式更新的结果见版本验证记录。0.5.1 继续保留为历史草稿，不是已发布正式版。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -18,7 +18,7 @@
 
 完整 Skill 随软件提供，连接文件兼容端口变化与中文路径。现成业务计算可通过内置 Python 调用；通用创作环境由 Agent 自选。成品按项目目录及元数据登记，分析经验可更新回画像。内容库和画像页面可刷新查看外部更新；未保存编辑不会自动覆盖。
 
-0.5.2 的账号页面区分“已验证”“需要登录”和“暂时无法核验”，显示检查时间。抖音登录用于创作者后台，用户默认浏览器的普通主页登录不能替代核验。手动校验绕过缓存；采集失败显示原因并保留上次结果和原采集时间，不把缺失填成零。新抖音快照记录账号与来源，只和同账号、同来源比较；旧资料保留，不自动归给当前账号。
+0.5.2 的账号页面区分“已验证”“需要登录”和“暂时无法核验”，显示检查时间。抖音登录用于创作者后台，用户默认浏览器的普通主页登录不能替代核验。手动校验绕过缓存；采集失败显示原因并保留上次结果和原采集时间，不把缺失填成零。自动历史增长只比较同平台、同有效账号、同来源；无法核对稳定身份时仍展示当前有效指标，明确不能比较，不写正常快照。旧无归属资料保留，不自动归给当前账号，也不重写旧 JSONL。手工 tracker 按用户指定画像、平台和口径管理，沿用原公式。
 
 ## AI 发布
 
@@ -63,15 +63,15 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 正式版 / 当前源码候选 | 0.5.0 / 0.5.2（未发行）；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.2；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。候选产物在仓库外 ../../outputs/MediaSail/release-0.5.2。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.2。
 
-运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。0.5.2 将更新缓存放入当前 runtime，并只复制经过核验的旧软件缓存；尚不能据此推断真实安装升级已经验收通过。
+运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。0.5.2 将更新缓存放入当前 runtime，并只复制经过核验的旧软件缓存；真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 
 ## 验证与来源
 
