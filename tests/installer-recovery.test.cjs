@@ -67,6 +67,11 @@ test('installer stages recovery immediately before native uninstall and rolls ba
  assert.match(template,/mediaSailBeforeOldUninstall/);
  const nsis=fs.readFileSync(path.join(root,'scripts/installer-recovery.nsh'),'utf8');
  assert.match(nsis,/Function MediaSailRecoveryProbe/);assert.match(nsis,/Function MediaSailRecoveryStage/);assert.match(nsis,/Function MediaSailRecoveryRollback/);
+ // System::Call .r9 writes $9. A mismatched $R9 produced the same "true"
+ // journal for separate installers and blocked a genuine retry after rollback.
+ const pidJournal=nsis.match(/GetCurrentProcessId\(\) i \.r(\d+)'[\s\S]*?StrCpy \$mediaSailRecoveryBackup "([^"\r\n]+)"/);
+ assert.ok(pidJournal,'PID-backed recovery journal is required');
+ assert.ok(pidJournal[2].endsWith('-$'+pidJournal[1]+'.json'),'Recovery journal must use the actual System plug-in PID register');
  const installer=fs.readFileSync(path.join(root,'scripts/installer.nsh'),'utf8');
  assert.match(installer,/Call MediaSailRecoveryProbe/);assert.match(installer,/StrCpy \$INSTDIR "\$mediaSailRecoveryPath"/);assert.match(installer,/Call MediaSailRecoveryRollback/);
  assert.doesNotMatch(nsis,/RMDir\s+\/r/i);

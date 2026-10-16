@@ -34,7 +34,9 @@ Function MediaSailRecoveryProbe
   CreateDirectory "$LOCALAPPDATA\ElectronEasel\logs"
   StrCpy $mediaSailRecoveryResult "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}-recovery.ini"
   System::Call 'kernel32::GetCurrentProcessId() i .r9'
-  StrCpy $mediaSailRecoveryBackup "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}-recovery-$R9.json"
+  ; System plug-in r9 is the NSIS $9 register, not $R9. Each installer process
+  ; needs its own journal so a successful rollback does not block the next try.
+  StrCpy $mediaSailRecoveryBackup "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}-recovery-$9.json"
   StrCpy $mediaSailRecoveryPath ""
   Push "Probe"
   Call MediaSailRecoveryRun
