@@ -19,8 +19,15 @@ public class InstallerFailureWindow {
  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr h,EnumProc callback,IntPtr value);
  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h,out uint pid);
  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+ [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr h);
  [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr h);
  [DllImport("user32.dll")] public static extern IntPtr GetParent(IntPtr h);
+ [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+ [DllImport("user32.dll")] public static extern IntPtr SetActiveWindow(IntPtr h);
+ [DllImport("user32.dll")] public static extern IntPtr GetActiveWindow();
+ [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+ [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint from,uint to,bool attach);
+ [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,StringBuilder text,int count);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h,StringBuilder text,int count);
  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
@@ -28,6 +35,14 @@ public class InstallerFailureWindow {
  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h,out Rect rect);
  [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h,IntPtr dc,uint flags);
  public struct Rect { public int Left,Top,Right,Bottom; }
+ public static bool ActivateDialog(IntPtr h) {
+  uint owner; uint target=GetWindowThreadProcessId(h,out owner),current=GetCurrentThreadId();
+  bool attached=current!=target && AttachThreadInput(current,target,true);
+  try {
+   SetForegroundWindow(h); SetActiveWindow(h);
+   return GetForegroundWindow()==h || GetActiveWindow()==h;
+  } finally { if(attached) AttachThreadInput(current,target,false); }
+ }
 }
 '@
 $observed=[System.Collections.Generic.List[object]]::new()
@@ -51,11 +66,13 @@ $callback=[InstallerFailureWindow+EnumProc]{param($handle,$unused)
  # Retry/Cancel before reaching its final error handler. Cancel only that known
  # fixture dialog; the next known uninstall-failed dialog is acknowledged with OK.
  # Other recovery/copy errors remain untouched and make the test fail.
- $action='';$buttonId=0;$capture=$Screenshot
- if($message -match 'Failed to uninstall old application files|\u5378\u8f7d\u65e7.*\u5931\u8d25|\u7121\u6cd5.*\u820a\u7684\u61c9\u7528'){$action='confirm-uninstall-failed';$buttonId=1}
- elseif($message -match 'MediaSail cannot be closed'){$action='cancel-exhausted-uninstall-retries';$buttonId=2;$capture=$Screenshot -replace '\.png$','-retry-cancel.png'}
+ $action='';$buttonIds=@();$buttonText='';$capture=$Screenshot
+ if($message -match 'Failed to uninstall old application files|\u5378\u8f7d\u65e7.*\u5931\u8d25|\u7121\u6cd5.*\u820a\u7684\u61c9\u7528'){$action='confirm-uninstall-failed';$buttonIds=@(1,2);$buttonText='OK'}
+ elseif($message -match 'MediaSail cannot be closed'){$action='cancel-exhausted-uninstall-retries';$buttonIds=@(2);$buttonText='Cancel';$capture=$Screenshot -replace '\.png$','-retry-cancel.png'}
  else{return $true}
- $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -eq $buttonId -and $_.visible -and $_.enabled -and $_.direct})
+ # The actual NSIS error box on the English Windows runner exposes its OK
+ # button as ID 2. Match its exact label as well as the bounded known IDs.
+ $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -in $buttonIds -and ($_.text -replace '&','').Trim() -eq $buttonText -and $_.visible -and $_.enabled -and $_.direct})
  if($buttons.Count -ne 1){
   # Dialog controls can disappear between the two native enumeration calls.
   # Record the observation and let the caller poll again; never click a hidden
@@ -70,8 +87,16 @@ $callback=[InstallerFailureWindow+EnumProc]{param($handle,$unused)
   try{[void][InstallerFailureWindow]::PrintWindow($handle,$dc,2)}finally{$graphics.ReleaseHdc($dc)}
   try{$bitmap.Save($capture,[Drawing.Imaging.ImageFormat]::Png)}finally{$graphics.Dispose();$bitmap.Dispose()}
  }
- $confirmed=[InstallerFailureWindow]::PostMessage($buttons[0].handle,0xF5,[IntPtr]::Zero,[IntPtr]::Zero)
- $observed.Add(@{pid=$InstallerPid;message=$message;action=$action;confirmed=$confirmed;screenshot=$capture})
+ # BM_CLICK may be ignored for an inactive dialog. Attach only to this verified
+ # fixture window's input queue for activation, then detach before posting.
+ # A successful PostMessage alone is not evidence that the button was accepted.
+ $activated=[InstallerFailureWindow]::ActivateDialog($handle)
+ $queued=$false
+ if($activated){$queued=[InstallerFailureWindow]::PostMessage($buttons[0].handle,0xF5,[IntPtr]::Zero,[IntPtr]::Zero)}
+ $deadline=[DateTime]::UtcNow.AddMilliseconds(1500)
+ while($queued -and [InstallerFailureWindow]::IsWindow($handle) -and [InstallerFailureWindow]::IsWindowVisible($handle) -and [InstallerFailureWindow]::IsWindow($buttons[0].handle) -and [DateTime]::UtcNow -lt $deadline){Start-Sleep -Milliseconds 50}
+ $confirmed=$queued -and (-not [InstallerFailureWindow]::IsWindow($handle) -or -not [InstallerFailureWindow]::IsWindowVisible($handle) -or -not [InstallerFailureWindow]::IsWindow($buttons[0].handle))
+ $observed.Add(@{pid=$InstallerPid;message=$message;action=$action;activated=$activated;queued=$queued;confirmed=$confirmed;button=@{id=$buttons[0].id;text=$buttons[0].text};screenshot=$capture})
  return $true
 }
 [void][InstallerFailureWindow]::EnumWindows($callback,[IntPtr]::Zero)
