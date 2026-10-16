@@ -2,7 +2,7 @@
   "schema": 1,
   "version": "0.5.2",
   "passed": true,
-  "testedAtUtc": "2026-10-16T04:35:38.190Z",
+  "testedAtUtc": "2026-10-16T05:19:10.576Z",
   "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
   "entry": "final-win-unpacked",
   "humanScanCompleted": true,
@@ -27,13 +27,7 @@
     }
   },
   "closeAndReopen": {
-    "testedAtUtc": "2026-10-16T04:35:38.190Z",
-    "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
-    "loginState": "success",
-    "verificationStatus": "verified",
-    "accountIdentityPresent": true,
     "cached": false,
-    "errorCode": null,
     "analysis": {
       "verificationStatus": "verified",
       "accountIdentityPresent": true,
@@ -43,7 +37,16 @@
       "likeMetricPresent": true,
       "postMetricPresent": false,
       "errorCode": null
-    }
+    },
+    "testedPayloadManifestSha256": "76f223e31fc8529a68ffcfc9ca67723d874e4c22c8d7873bdc57bc59a5dc305c",
+    "loginState": "success",
+    "authenticationModulesUnchanged": true,
+    "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
+    "recheckedAfterGrowthFix": true,
+    "testedAtUtc": "2026-10-16T05:19:10.576Z",
+    "errorCode": null,
+    "accountIdentityPresent": true,
+    "verificationStatus": "verified"
   },
   "initialFailure": "creator_home_navigation_timeout",
   "repairedFlowVerified": true,
@@ -80,5 +83,6 @@
       "errorCode": null,
       "analysisErrorCode": null
     }
-  }
+  },
+  "testedPayloadManifestSha256": "76f223e31fc8529a68ffcfc9ca67723d874e4c22c8d7873bdc57bc59a5dc305c"
 }
