@@ -1,0 +1,45 @@
+name: Verify MediaSail first install GUI
+on:
+  workflow_dispatch:
+permissions:
+  # The exact candidate is still a draft. This token is used only by gh download.
+  contents: write
+jobs:
+  first-install:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Download and verify the unchanged 0.5.2 draft installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $release=gh release view v0.5.2 --json tagName,isDraft,assets | ConvertFrom-Json
+          if($LASTEXITCODE -ne 0 -or $release.tagName -cne 'v0.5.2' -or -not $release.isDraft){throw 'Expected the exact 0.5.2 draft release'}
+          New-Item -ItemType Directory release-input/candidate | Out-Null
+          gh release download v0.5.2 --pattern MediaSail-0.5.2-win-x64-Setup.exe --pattern SHA256SUMS.txt --dir release-input/candidate
+          if($LASTEXITCODE -ne 0){throw 'Draft installer download failed'}
+          $name='MediaSail-0.5.2-win-x64-Setup.exe'
+          $remote=@($release.assets | Where-Object {$_.name -ceq $name})
+          if($remote.Count -ne 1 -or $remote[0].digest -notmatch '^sha256:([a-f0-9]{64})$'){throw 'GitHub asset SHA256 identity required'}
+          $expected=$remote[0].digest.Substring(7)
+          $lines=@(Get-Content -LiteralPath release-input/candidate/SHA256SUMS.txt -Encoding UTF8 | Where-Object {$_ -match ('^[a-fA-F0-9]{64}\s+\*?'+[regex]::Escape($name)+'$')})
+          if($lines.Count -ne 1 -or ($lines[0] -split '\s+')[0].ToLowerInvariant() -cne $expected){throw 'Unambiguous pinned release checksum required'}
+          $asset=Get-Item -LiteralPath ('release-input/candidate/'+$name)
+          if($asset.Length -ne $remote[0].size -or (Get-FileHash -LiteralPath $asset.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expected){throw 'Unchanged candidate identity mismatch'}
+          'MEDIASAIL_INSTALLER_SHA256='+$expected | Out-File -LiteralPath $env:GITHUB_ENV -Append -Encoding utf8
+          'MEDIASAIL_INSTALLER_BYTES='+$remote[0].size | Out-File -LiteralPath $env:GITHUB_ENV -Append -Encoding utf8
+          'MEDIASAIL_INSTALLER_ASSET_ID='+$remote[0].id | Out-File -LiteralPath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Drive the actual first-install wizard and verify the selected library
+        run: node scripts/verify-first-install-ci.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediasail-0.5.2-first-install-gui
+          path: installer-evidence/first-install/
+          retention-days: 14
