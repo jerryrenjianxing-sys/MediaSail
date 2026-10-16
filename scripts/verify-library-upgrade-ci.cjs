@@ -213,7 +213,8 @@ async function completeMigration(launched){
  await inspector.evaluate(`(()=>{const {dialog}=process.mainModule.require('electron'),original=dialog.showOpenDialog;dialog.showOpenDialog=async function(...args){const options=args.at(-1);if(options?.title==='选择统一资料库位置')return {canceled:false,filePaths:[${JSON.stringify(libraryRoot)}]};return original.apply(this,args);};return true;})()`);
  let confirmation;await until(async()=>{
   const observed=list(JSON.parse(cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(__dirname,'confirm-library-fixture.ps1'),'-ApplicationPid',String(initialPid),'-ExpectedExecutable',exe,'-Screenshot',path.join(evidence,'migration-confirmation.png')],{encoding:'utf8',windowsHide:true,timeout:20000})||'[]'));
-  if(observed.length){confirmation=observed;return true;}return false;
+  if(observed.length){result.lastMigrationConfirmation=observed;await persist();}
+  if(observed.some(item=>item.confirmed===true)){confirmation=observed;return true;}return false;
  },120000,'actual first-start migration confirmation');
  result.migration={confirmation,startedAt:new Date().toISOString(),selectionMethod:'Actual native confirmation, isolated folder selection supplied by test dialog response; application migration is unchanged.'};
  await inspector.evaluate(`(async()=>{const fs=process.mainModule.require('node:fs'),{BrowserWindow}=process.mainModule.require('electron'),w=BrowserWindow.getAllWindows()[0];const image=await w.webContents.capturePage();fs.writeFileSync(${JSON.stringify(path.join(evidence,'migration-progress.png'))},image.toPNG());return true;})()`).catch(()=>{});
