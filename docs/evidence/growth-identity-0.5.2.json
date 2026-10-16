@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "version": "0.5.2",
+  "entry": "source-regression-and-production-frontend-build",
+  "packagedRetestRequired": true,
+  "realPlatformRequests": false,
+  "realAccountUsed": false,
+  "pythonSuite": { "passed": 50, "failed": 0 },
+  "nodeSuite": { "passed": 87, "failed": 0 },
+  "frontendTypecheckAndProductionBuild": true,
+  "offlineSelftests": ["account_stats", "bili_login", "weixin_mp_stats"],
+  "checks": [
+    "Every automatic comparison requires verified platform, stable account ID and source, excluding foreign accounts, sources, platforms, unowned legacy and future rows",
+    "Unknown or logged-out collections and current counts without a stable identity never add normal snapshots",
+    "Partial current counts remain available without replacing missing values by zero",
+    "All accepted new observations append without rewriting legacy JSONL bytes, including CRLF and a missing trailing newline",
+    "Bilibili reuses only the already fetched authenticated nav mid, never a stale cookie ID; no new platform endpoint was added",
+    "WeChat current counts without a stable ID do not borrow its historical baseline",
+    "Dashboard suppresses old unclassified cache deltas, malformed identity fields and a different currently verified account"
+  ],
+  "growthMetadata": ["growthStatus", "growthReason"],
+  "unchangedAuthenticationModulesComparedWithPreviousPackagedPayload": ["creator_auth.py", "douyin_publish.py"],
+  "manualTrackerBoundary": "Tracker remains a user/Agent-provided profile and platform dataset, not an automatically authenticated platform-account history; its arithmetic was not changed."
+}

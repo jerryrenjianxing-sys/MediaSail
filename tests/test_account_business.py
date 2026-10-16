@@ -185,7 +185,7 @@ class BrowserLock(unittest.TestCase):
 class AccountSnapshots(unittest.TestCase):
     def test_foreign_legacy_and_different_source_are_not_growth_baselines(self):
         current = {"ts": 100000, "followers": 15, "likes": None, "posts": 2,
-                   "accountId": "a", "source": auth.DOUYIN_SOURCE}
+                   "accountId": "a", "source": auth.DOUYIN_SOURCE, "platform": "douyin", "verificationStatus": "verified"}
         history = [dict(current, ts=1, followers=999, accountId="b"),
                    {"ts": 2, "followers": 888},
                    dict(current, ts=3, followers=777, source="public-page"),
@@ -230,7 +230,7 @@ class AccountSnapshots(unittest.TestCase):
             original = '{"ts":1,"followers":99}'
             history.write_text(original, encoding="utf8")
             stats.record_snapshot("douyin", {"ts": 2, "followers": 10, "verificationStatus": "verified",
-                "accountId": "a", "source": auth.DOUYIN_SOURCE})
+                "accountId": "a", "source": auth.DOUYIN_SOURCE, "platform": "douyin"})
             self.assertTrue(history.read_bytes().startswith(original.encode()))
             self.assertEqual(len(stats.load_history("douyin")), 2)
 

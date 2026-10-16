@@ -25,6 +25,8 @@ meta 更新项目的 .easel.json，read 输出其中的 JSON。登记不创造�
 
 snapshot 写入 outputs/_analytics/snapshots/<profile>/<platform>/<date>.json，返回状态及保存信息；trend 从已有快照计算增长和有效日期。样本少时会提示，两个点不应解释为可靠的长期趋势。total_likes 也要注明原平台口径，不能把“获赞与收藏”改名成纯点赞。
 
+这是按用户/Agent 自选数据口径登记的手工工具，不自动核验平台账号。画像与 platform 用于组织样本；登记前自行确认账号、来源和日期一致，换号或改口径时分开记录，不能将它冒充自动采集的身份校验。
+
 ## 月度复盘计算
 
 先在 `outputs/复盘主题/assets/输入数据.json` 准备 UTF-8 JSON 文件，字段可以缺失：

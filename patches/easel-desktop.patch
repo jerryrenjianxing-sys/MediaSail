@@ -104,10 +104,10 @@ index a7016c7..ea4e94f 100644
  DEFAULT_FOLLOWER = PROJECT_ROOT / "outputs" / "_analytics" / "follower-log.json"
  LEGACY_DATA = PROJECT_ROOT / "outputs" / "publish-log.json"
 diff --git a/skills/shared/scripts/account_stats.py b/skills/shared/scripts/account_stats.py
-index 8d336d0..073b1cb 100644
+index 8d336d0..2cdfa37 100644
 --- a/skills/shared/scripts/account_stats.py
 +++ b/skills/shared/scripts/account_stats.py
-@@ -18,8 +18,11 @@ import re
+@@ -18,11 +18,14 @@ import re
  import sys
  import time
  from pathlib import Path
@@ -118,8 +118,13 @@ index 8d336d0..073b1cb 100644
 -PROJECT_ROOT = Path(__file__).resolve().parents[3]
 +PROJECT_ROOT = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
  ANALYTICS_DIR = PROJECT_ROOT / "outputs" / "_analytics"
- # 分层保留：近 KEEP_FULL_DAYS 天全部变化一条不丢；90~DAILY_DAYS 天每天≤1条；更老每周≤1条。
- # 既留住 日/周/月/年 对比所需的老基线，又让总量恒定在几百条(几十KB)、用多年不膨胀。
+-# 分层保留：近 KEEP_FULL_DAYS 天全部变化一条不丢；90~DAILY_DAYS 天每天≤1条；更老每周≤1条。
+-# 既留住 日/周/月/年 对比所需的老基线，又让总量恒定在几百条(几十KB)、用多年不膨胀。
++# 保留原 compact 纯函数及阈值供离线口径核对；自动采集现只追加已核验
++# 身份的样本，不再稀疏化或重写无法确认归属的历史文件。
+ KEEP_FULL_DAYS = 90
+ DAILY_DAYS = 400
+ 
 @@ -235,6 +238,7 @@ def _delta(cur, base):
  
  def growth_windows(history: list[dict], current: dict) -> dict:
@@ -128,26 +133,65 @@ index 8d336d0..073b1cb 100644
      now = current["ts"]
      specs = {"last": None, "day": 86400, "week": 7 * 86400, "month": 30 * 86400, "year": 365 * 86400}
      out: dict = {}
-@@ -256,6 +260,18 @@ def growth_windows(history: list[dict], current: dict) -> dict:
+@@ -256,6 +260,57 @@ def growth_windows(history: list[dict], current: dict) -> dict:
      return out
  
  
 +def matching_history(history: list[dict], current: dict) -> list[dict]:
-+    """Legacy rows stay readable, but cannot be assigned to a new identity."""
-+    history = [row for row in history if isinstance(row, dict)]
-+    if current.get("accountId") or current.get("source"):
-+        if not current.get("accountId") or not current.get("source"):
-+            return []
-+        history = [row for row in history if row.get("accountId") == current["accountId"]
-+                   and row.get("source") == current["source"]]
++    """Only verified, same-platform/account/source observations are comparable."""
++    identity = snapshot_identity(current)
++    if identity is None:
++        return []
++    history = [row for row in history if isinstance(row, dict) and snapshot_identity(row) == identity]
 +    return sorted((row for row in history if isinstance(row.get("ts"), (int, float))
 +                   and row["ts"] <= current.get("ts", float("inf"))), key=lambda row: row["ts"])
++
++
++def snapshot_identity(snap: dict):
++    """Identity must come from the collector, never a nickname or browser path."""
++    account = snap.get("accountId")
++    if (snap.get("verificationStatus") != "verified" or snap.get("loggedIn") is False
++            or snap.get("error") or snap.get("errorCode")
++            or isinstance(account, bool) or not isinstance(account, (str, int))):
++        return None
++    account = str(account).strip()
++    platform, source = snap.get("platform"), snap.get("source")
++    if not account or not isinstance(platform, str) or not platform.strip() or not isinstance(source, str) or not source.strip():
++        return None
++    return platform, account, source
++
++
++def attach_growth(result: dict, platform: str, *, source: str, now: int | None = None) -> dict:
++    """Keep current/partial counts, but persist and compare only proven identities.
++
++    Unknown historical JSONL lines remain byte-for-byte; they cannot be inferred
++    to belong to the account now using the same browser directory.
++    """
++    now = int(time.time()) if now is None else now
++    result.update({"platform": platform, "source": result.get("source") or source,
++                   "accountId": result.get("accountId"), "fetched_at": now})
++    snap = {key: result.get(key) for key in ("platform", "source", "accountId", "verificationStatus", "checkedAt", "loggedIn", "error", "errorCode", "followers", "likes", "posts", "reads")}
++    snap["ts"] = now
++    history = load_history(platform)
++    result["growth"] = growth_windows(history, snap)
++    if snapshot_identity(snap) is None:
++        result["growthStatus"] = "identity_unverified"
++        result["growthReason"] = "尚未核验稳定账号编号与采集来源；当前指标可查看，不计算历史增长或登记账号快照。"
++    elif not matching_history(history, snap):
++        result["growthStatus"] = "no_history"
++        result["growthReason"] = "暂无同平台、同账号、同来源的可核验历史快照；旧无归属记录保留，不作为增长基线。"
++    else:
++        result["growthStatus"] = "available"
++        result["growthReason"] = ""
++    if snapshot_identity(snap) is not None and any(snap.get(key) is not None for key in ("followers", "likes", "posts")):
++        record_snapshot(platform, snap)
++    return result
 +
 +
  def _history_path(platform: str) -> Path:
      return ANALYTICS_DIR / f"{platform}.jsonl"
  
-@@ -277,8 +293,13 @@ def load_history(platform: str) -> list[dict]:
+@@ -277,8 +332,13 @@ def load_history(platform: str) -> list[dict]:
  
  def append_snapshot(platform: str, snap: dict) -> None:
      ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
@@ -163,25 +207,31 @@ index 8d336d0..073b1cb 100644
  
  
  def _local_day(ts: int):
-@@ -322,7 +343,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
+@@ -320,15 +380,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
+ 
+ 
  def record_snapshot(platform: str, snap: dict) -> None:
-     """数据较上一条有变化才追加；写入前做分层保留 compaction（老数据自动稀疏化，文件永不膨胀）。"""
+-    """数据较上一条有变化才追加；写入前做分层保留 compaction（老数据自动稀疏化，文件永不膨胀）。"""
++    """Append verified observations without rewriting any historical bytes."""
++    if snap.get("platform") != platform or snapshot_identity(snap) is None:
++        return
      h = load_history(platform)
 -    if not should_record(h, snap):
 +    if platform == "douyin" and (snap.get("verificationStatus") != "verified"
 +            or not snap.get("accountId") or snap.get("source") != creator_auth.DOUYIN_SOURCE):
-+        return
+         return
+-    h.append(snap)
+-    h = compact(h, snap["ts"])
+-    ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
+-    body = "\n".join(json.dumps(x, ensure_ascii=False) for x in h)
+-    _history_path(platform).write_text(body + ("\n" if body else ""), encoding="utf-8")
 +    if not should_record(matching_history(h, snap), snap):
 +        return
-+    if snap.get("accountId"):
-+        # Preserve historical rows byte-for-byte. They may belong to another
-+        # account/source or have unknown provenance; never relabel or compact
-+        # them as part of a successful new-account collection.
-+        append_snapshot(platform, snap)
-         return
-     h.append(snap)
-     h = compact(h, snap["ts"])
-@@ -349,7 +379,7 @@ def _proxy(platform: str, explicit: str | None, disable: bool | None) -> str | N
++    append_snapshot(platform, snap)
+ 
+ 
+ # --------------------------------------------------------------------------- #
+@@ -349,7 +410,7 @@ def _proxy(platform: str, explicit: str | None, disable: bool | None) -> str | N
      return os.environ.get("https_proxy") or os.environ.get("http_proxy") or os.environ.get("EASEL_PROXY")
  
  
@@ -190,7 +240,7 @@ index 8d336d0..073b1cb 100644
      from playwright.sync_api import sync_playwright
      cfg = PLATFORMS[platform]
      r = {"nickname": "", "followers": None, "likes": None, "following": None,
-@@ -368,17 +398,27 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -368,17 +429,27 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      try:
          with sync_playwright() as p:
              if platform == "xiaohongshu":
@@ -220,7 +270,7 @@ index 8d336d0..073b1cb 100644
                  ov, d = cfg["overview"], cfg.get("overview_dir", "after")
                  mets = cfg.get("metrics", [])
                  manchor = cfg.get("metrics_anchor")
-@@ -403,8 +443,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -403,8 +474,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                          pass
                  if clicked:
                      lines = _poll_stable(page, _sig, 6000)   # 点「累计」后重新等稳定
@@ -231,7 +281,7 @@ index 8d336d0..073b1cb 100644
                      r["logged_in"] = False
                  r["followers"] = num_by_label(lines, ov["followers"], d)
                  r["likes"] = num_by_label(lines, ov["likes"], d)
-@@ -412,6 +452,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -412,6 +483,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                  r["posts"] = num_by_label(lines, cfg.get("posts_labels", ["笔记数", "作品数", "内容数", "视频数"]), d)
                  r["metrics"] = metrics_with_vs(lines, cfg.get("metrics", []), manchor)[:8]
                  r["nickname"] = extract_nickname(lines, ov, cfg.get("uid_anchor", ""))
@@ -240,7 +290,7 @@ index 8d336d0..073b1cb 100644
                  # 昵称优先用专用选择器（视频号文本锚点不稳：概览是「关注者1」同行，锚不到昵称）
                  nsel = cfg.get("nickname_selector")
                  if nsel:
-@@ -452,6 +494,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -452,6 +525,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      return r
  
  
@@ -260,7 +310,7 @@ index 8d336d0..073b1cb 100644
  def _has_body(page) -> bool:
      try:
          return page.query_selector("body") is not None
-@@ -778,9 +833,9 @@ def cmd_check(_a) -> int:
+@@ -778,9 +864,9 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -272,30 +322,110 @@ index 8d336d0..073b1cb 100644
              ok = bool(path and Path(path).exists())
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
-@@ -800,9 +855,14 @@ def cmd_fetch(a) -> int:
+@@ -799,12 +885,7 @@ def cmd_fetch(a) -> int:
+     s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable))
  
      now = int(time.time())
-     snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
-+    verification = {k: s[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode", "message", "source") if k in s}
-+    if a.platform == "douyin":
-+        snap.update({"accountId": s.get("accountId"), "source": creator_auth.DOUYIN_SOURCE,
-+                     "verificationStatus": s.get("verificationStatus"), "checkedAt": s.get("checkedAt")})
-     history = load_history(a.platform)
-     growth = growth_windows(history, snap)
+-    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
+-    history = load_history(a.platform)
+-    growth = growth_windows(history, snap)
 -    if any(snap[k] is not None for k in ("followers", "likes", "posts")):
-+    eligible = a.platform != "douyin" or (s.get("verificationStatus") == "verified" and bool(s.get("accountId")))
-+    if eligible and any(snap[k] is not None for k in ("followers", "likes", "posts")):
-         record_snapshot(a.platform, snap)
- 
+-        record_snapshot(a.platform, snap)
+-
++    verification = {k: s[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode", "message", "source") if k in s}
      out = {
-@@ -818,6 +878,7 @@ def cmd_fetch(a) -> int:
+         "platform": a.platform, "name": PLATFORMS[a.platform]["name"],
+         "nickname": s["nickname"], "loggedIn": s["logged_in"],
+@@ -817,8 +898,10 @@ def cmd_fetch(a) -> int:
+             {"key": "likes", "label": "获赞与收藏" if a.platform == "xiaohongshu" else "获赞", "value": s["likes"]},
              {"key": "following", "label": "关注", "value": s["following"]},
          ],
-         "growth": growth, "fetched_at": now,
+-        "growth": growth, "fetched_at": now,
++        "fetched_at": now,
 +        **verification,
      }
++    attach_growth(out, a.platform, source=f"{a.platform}-creator", now=now)
      print(json.dumps(out, ensure_ascii=False))
      return 0
+ 
+@@ -869,7 +952,9 @@ def cmd_selftest(_a) -> int:
+     hist = [{"ts": now - 40 * 86400, "followers": 10, "likes": 5, "posts": 1},   # >month
+             {"ts": now - 5 * 86400, "followers": 20, "likes": 8, "posts": 2},    # >day,>week? 5d: >day, <week
+             {"ts": now - 0.5 * 86400, "followers": 28, "likes": 9, "posts": 2}]  # last
+-    cur = {"ts": now, "followers": 30, "likes": 10, "posts": 3}
++    identity = {"platform": "douyin", "accountId": "selftest-account", "source": creator_auth.DOUYIN_SOURCE, "verificationStatus": "verified"}
++    hist = [dict(row, **identity) for row in hist]
++    cur = {"ts": now, "followers": 30, "likes": 10, "posts": 3, **identity}
+     g = growth_windows(hist, cur)
+     assert g["last"]["followers"] == 2                       # 30-28
+     assert g["day"]["followers"] == 10                       # vs 5d 前(<=now-1d 最近) =20 → 10
+diff --git a/skills/shared/scripts/bili_login.py b/skills/shared/scripts/bili_login.py
+index 8d64019..51e43b2 100644
+--- a/skills/shared/scripts/bili_login.py
++++ b/skills/shared/scripts/bili_login.py
+@@ -188,36 +188,48 @@ def _api(url: str, cookie: str, timeout: int = 15) -> dict:
+ 
+ def cmd_whoami(a) -> int:
+     """真校验登录态 + 昵称/头像（调 B站 nav API），输出单行 JSON（供 Web 后端解析）。"""
+-    result = {"loggedIn": False, "name": "", "avatar": ""}
++    result = {"loggedIn": False, "name": "", "avatar": "", "accountId": None, "source": "bilibili-member"}
+     cookie_file = Path(a.cookie).expanduser() if a.cookie else DEFAULT_COOKIE
+     cookie, _mid = _load_cookie(cookie_file)
+     if cookie:
+         try:
+             nav = (_api("https://api.bilibili.com/x/web-interface/nav", cookie).get("data") or {})
+             if nav.get("isLogin"):
+-                result = {"loggedIn": True, "name": (nav.get("uname") or "")[:40],
+-                          "avatar": nav.get("face") or ""}
++                result.update({"loggedIn": True, "name": (nav.get("uname") or "")[:40],
++                               "avatar": nav.get("face") or "", "accountId": _verified_mid(nav)})
+         except Exception as e:  # noqa: BLE001 — whoami 永远输出 JSON
+             result["error"] = str(e)
+     print(json.dumps(result, ensure_ascii=False))
+     return 0
+ 
+ 
++def _verified_mid(nav: dict):
++    """Reuse the authenticated nav response, not a cookie's potentially old ID."""
++    mid = nav.get("mid")
++    if nav.get("isLogin") and not isinstance(mid, bool) and isinstance(mid, (str, int)) and str(mid).isdigit() and int(mid) > 0:
++        return str(mid)
++    return None
++
++
+ def cmd_stats(a) -> int:
+     """抓 B站创作数据（粉丝/关注/获赞/总播放/投稿数），输出单行 JSON（对齐 account_stats 结构）。"""
++    import account_stats
+     cookie_file = Path(a.cookie).expanduser() if a.cookie else DEFAULT_COOKIE
+     cookie, mid = _load_cookie(cookie_file)
+     r = {"platform": "bilibili", "name": "B站", "nickname": "", "loggedIn": False,
+          "followers": None, "likes": None, "following": None, "posts": None,
+          "metrics": [], "notes": [],
+-         "growth": {"last": {"followers": 0, "likes": 0, "posts": None, "since_days": 0.0},
+-                    "day": None, "week": None, "month": None, "year": None},
++         "accountId": None, "source": "bilibili-member",
+          "fetched_at": int(time.time())}
+     if not cookie:
++        account_stats.attach_growth(r, "bilibili", source="bilibili-member", now=r["fetched_at"])
+         print(json.dumps(r, ensure_ascii=False)); return 0
+     try:
+         nav = (_api("https://api.bilibili.com/x/web-interface/nav", cookie).get("data") or {})
+         r["loggedIn"] = bool(nav.get("isLogin"))
++        r["accountId"] = _verified_mid(nav)
++        if r["accountId"]:
++            r["verificationStatus"] = "verified"
+         r["nickname"] = (nav.get("uname") or "")[:40]
+         mid = mid or int(nav.get("mid") or 0)
+         stat = (_api("https://api.bilibili.com/x/web-interface/nav/stat", cookie).get("data") or {})
+@@ -262,6 +274,8 @@ def cmd_stats(a) -> int:
+         r["notes"] = notes
+     except Exception as e:  # noqa: BLE001
+         r["error"] = str(e)
++        r["verificationStatus"] = "unknown"
++    account_stats.attach_growth(r, "bilibili", source="bilibili-member", now=r["fetched_at"])
+     print(json.dumps(r, ensure_ascii=False))
+     return 0
+ 
 diff --git a/skills/shared/scripts/business_browser.py b/skills/shared/scripts/business_browser.py
 new file mode 100644
 index 0000000..ae08227
@@ -945,7 +1075,7 @@ index a3a73fa..8c6c4fc 100644
                  args=LAUNCH_ARGS + ["--no-proxy-server"])
              page = browser.pages[0] if browser.pages else browser.new_page()
 diff --git a/skills/shared/scripts/weixin_mp_stats.py b/skills/shared/scripts/weixin_mp_stats.py
-index f2b8d4a..0a01676 100644
+index f2b8d4a..4e3b10e 100644
 --- a/skills/shared/scripts/weixin_mp_stats.py
 +++ b/skills/shared/scripts/weixin_mp_stats.py
 @@ -19,6 +19,7 @@ import re
@@ -965,7 +1095,17 @@ index f2b8d4a..0a01676 100644
  LOGIN_DIR = PROJECT_ROOT / "outputs" / "_login"
  PROFILE_NAME = "WeixinMpProfile"
  MP_HOME = "https://mp.weixin.qq.com/"
-@@ -156,7 +157,7 @@ def _launch(p, headed, base, proxy):
+@@ -45,6 +46,9 @@ EMPTY = {
+     "reads": None, "metrics": [], "notes": [], "overview": [],
+     "period_metrics": {},
+     "growth": {"last": None, "day": None, "week": None, "month": None, "year": None},
++    "growthStatus": "identity_unverified",
++    "growthReason": "尚未核验稳定账号编号与采集来源；当前指标可查看，不计算历史增长或登记账号快照。",
++    "accountId": None, "source": "wechat-mp",
+     "fetched_at": "",
+ }
+ 
+@@ -156,7 +160,7 @@ def _launch(p, headed, base, proxy):
      if proxy:
          kw["proxy"] = {"server": proxy}
      try:
@@ -974,6 +1114,32 @@ index f2b8d4a..0a01676 100644
      except Exception:
          _unlock_profile(lock)
          raise
+@@ -529,24 +533,12 @@ def _apply_nickname(page, result):
+ 
+ def _attach_growth(result):
+     import account_stats
+-    now = int(time.time())
+-    snap = {
+-        "ts": now,
+-        "followers": result.get("followers"),
+-        "likes": result.get("likes"),
+-        "posts": result.get("posts"),
+-        "reads": result.get("reads"),
+-    }
+-    history = account_stats.load_history("wechat-oa")
+-    result["growth"] = account_stats.growth_windows(history, snap)
+-    if not result.get("error") and any(snap.get(k) is not None for k in ("followers", "likes", "posts")):
+-        account_stats.record_snapshot("wechat-oa", snap)
++    account_stats.attach_growth(result, "wechat-oa", source="wechat-mp")
+     result["overview"] = [
+         {"key": "followers", "label": "粉丝", "value": result.get("followers")},
+         {"key": "posts", "label": "已发表", "value": result.get("posts")},
+         {"key": "likes", "label": "点赞", "value": result.get("likes")},
+     ]
+-    result["fetched_at"] = now
+     result["following"] = None
+ 
+ 
 diff --git a/skills/shared/scripts/xhs_comment.py b/skills/shared/scripts/xhs_comment.py
 index 84de337..f46fa55 100644
 --- a/skills/shared/scripts/xhs_comment.py
@@ -21225,7 +21391,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..a89ce30 100644
+index 135c4fc..fed1fb0 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,4 +1,6 @@
@@ -21236,16 +21402,17 @@ index 135c4fc..a89ce30 100644
  import {
    fetchTrends, fetchSchedule, fetchOutputs, fetchAccounts, fetchIdeas,
    fetchAnalyticsPlatforms, fetchAccountAnalytics,
-@@ -8,7 +10,7 @@ import type {
+@@ -8,7 +10,8 @@ import type {
    AnalyticsPlatform, AccountAnalytics, AccountWhoami,
  } from '../lib/api';
  import type { Page } from './Sidebar';
 -import { getWhoamiCache, verifyStale } from '../lib/whoami';
 +import { currentVerification, getWhoamiCache, verifyStale } from '../lib/whoami';
++import { canShowGrowth, unavailableGrowthReason } from '../lib/analytics';
  import {
    IconFire, IconCalendar, IconOutputs, IconChat, IconSkills, IconAccounts,
    IconIdea, IconPublish,
-@@ -48,13 +50,15 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -48,13 +51,15 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
    const [anaPlats, setAnaPlats] = useState<AnalyticsPlatform[]>([]);
    const [anaSel, setAnaSel] = useState('');
    const [anaData, setAnaData] = useState<Record<string, AccountAnalytics | 'loading' | 'error'>>(() => {
@@ -21263,7 +21430,7 @@ index 135c4fc..a89ce30 100644
      fetchTrends('weibo,douyin', 6).then((d) => setTrends(d.trends)).catch(() => {});
      fetchSchedule().then(setSchedule).catch(() => {});
      fetchOutputs().then(setOutputs).catch(() => {});
-@@ -63,31 +67,43 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -63,31 +68,43 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
      fetchAnalyticsPlatforms().then((ps) => {
        setAnaPlats(ps);
        const cache = getWhoamiCache();
@@ -21317,7 +21484,7 @@ index 135c4fc..a89ce30 100644
    };
  
    const hour = new Date().getHours();
-@@ -98,10 +114,10 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -98,10 +115,10 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 5);
    const recent = outputs.slice(0, 5);
    const pendingIdeas = ideas.filter((i) => i.status === 'pending');
@@ -21330,7 +21497,7 @@ index 135c4fc..a89ce30 100644
      { label: '看热点', page: 'trends', Icon: IconFire },
      { label: '拆爆款', page: 'breakdown', Icon: IconSkills },
      { label: '记选题', page: 'ideas', Icon: IconIdea },
-@@ -121,10 +137,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -121,10 +138,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
        <div className="dash-hero">
          <h1 className="page-title" style={{ fontSize: 26 }}>{greet} 👋</h1>
          <p className="page-subtitle">
@@ -21344,7 +21511,7 @@ index 135c4fc..a89ce30 100644
          <div className="dash-quick">
            {quick.map((q) => (
              <button key={q.page} className="dash-quick-btn" onClick={() => onNavigate(q.page)}>
-@@ -202,7 +219,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -202,7 +220,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
              <span><IconOutputs size={16} /> 最近产物</span>
              <button className="dash-more" onClick={() => onNavigate('outputs')}>内容库 →</button>
            </div>
@@ -21353,7 +21520,7 @@ index 135c4fc..a89ce30 100644
            {recent.map((g) => (
              <div key={g.name} className="dash-output" onClick={() => onNavigate('outputs')}>
                <span className="dash-output-name">{g.meta?.title || g.name}</span>
-@@ -216,11 +233,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -216,11 +234,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
            <div className="dash-card-head">
              <span><IconAccounts size={16} /> 创作数据</span>
              {anaSel && anaData[anaSel] && anaData[anaSel] !== 'loading' && (
@@ -21367,7 +21534,7 @@ index 135c4fc..a89ce30 100644
              if (anaPlats.length === 0) return <div className="dash-empty">加载中 / 需配置代理</div>;
              if (logged.length === 0) {
                return (
-@@ -238,16 +255,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -238,16 +256,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                  <div className="ana-plats">
                    {logged.map((p) => (
                      <button key={p.platform} className={`chip ${anaSel === p.platform ? 'active' : ''}`}
@@ -21389,13 +21556,33 @@ index 135c4fc..a89ce30 100644
 +                </div>}
 +                {d && typeof d === 'object' && <div className="ana-wins-note">
 +                  上次采集：{new Date(d.fetched_at * 1000).toLocaleString()}
-+                  {d.accountId ? ` · 账号 ${d.accountId}` : ' · 旧缓存账号归属未核验'}
++                  {d.accountId ? ` · 账号 ${d.accountId}` : d.growthStatus ? ' · 账号归属未核验' : ' · 旧缓存账号归属未核验'}
 +                  {currentVerification(whoamiMap[anaSel], anaPlats.find((p) => p.platform === anaSel) || {}).verificationStatus !== 'verified' ? ' · 当前登录尚未通过校验' : ''}
 +                </div>}
                  {d && d !== 'loading' && d !== 'error' && (!d.loggedIn ? (
                    <div className="dash-empty" onClick={() => onNavigate('accounts')} style={{ cursor: 'pointer' }}>
                      该平台登录态已失效，去账号页重登 →
-@@ -286,7 +311,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -259,7 +285,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+                       <div className="ana-id">{d.nickname ? `@${d.nickname}` : d.name}</div>
+                       <div className="ana-overview">
+                         {([['粉丝', 'followers'], ['获赞', 'likes'], ['关注', 'following']] as const).map(([label, key]) => {
+-                          const w = d.growth?.[anaWin] ?? null;
++                          const w = canShowGrowth(d, whoamiMap[anaSel]) ? d.growth?.[anaWin] ?? null : null;
+                           const g = w ? growthInfo(w[key as 'followers' | 'likes']) : null;
+                           return (
+                             <div key={key} className="ana-stat">
+@@ -278,15 +304,16 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+                         ))}
+                       </div>
+                       <div className="ana-wins-note">
+-                        {d.growth?.[anaWin]?.since_days != null
++                        {canShowGrowth(d, whoamiMap[anaSel]) && d.growth?.[anaWin]?.since_days != null
+                           ? `对比 ${d.growth[anaWin]!.since_days} 天前的快照`
+-                          : '暂无该时段历史快照，多刷新几次即可积累对比'}
++                          : !canShowGrowth(d, whoamiMap[anaSel]) ? unavailableGrowthReason(d)
++                          : '暂无该时段同账号、同来源的历史快照'}
+                       </div>
+                     </div>
  
                      {/* 近7日平台指标 + 环比 */}
                      <div className="ana-col ana-col-metrics">
@@ -24032,8 +24219,29 @@ index 0000000..219c2e8
 +  return { projectPath: project.path, title: project.meta?.title || project.name, body: project.meta?.summary || '', textPath: texts.length === 1 ? texts[0].path : '',
 +    images, video: videos.length === 1 ? videos[0] : '', cover: /\.(png|jpe?g|webp)$/i.test(project.meta?.cover || '') ? project.meta!.cover! : '', mode, files };
 +}
+diff --git a/web/frontend/src/lib/analytics.ts b/web/frontend/src/lib/analytics.ts
+new file mode 100644
+index 0000000..01f4858
+--- /dev/null
++++ b/web/frontend/src/lib/analytics.ts
+@@ -0,0 +1,15 @@
++import type { AccountAnalytics, AccountWhoami } from './api';
++
++/** Legacy cache deltas have no verified comparison contract and stay hidden. */
++export function canShowGrowth(data: AccountAnalytics, current?: AccountWhoami): boolean {
++  if (data.growthStatus !== 'available' || data.verificationStatus !== 'verified' || typeof data.platform !== 'string' || !data.platform ||
++      typeof data.accountId !== 'string' || !data.accountId.trim() || typeof data.source !== 'string' || !data.source.trim() || data.errorCode) return false;
++  if (current?.verificationStatus === 'verified' && current.accountId && current.accountId !== data.accountId) return false;
++  return true;
++}
++
++export function unavailableGrowthReason(data: AccountAnalytics): string {
++  return data.growthReason || (data.growthStatus === 'available'
++    ? '当前账号与这份历史结果不同；请刷新后查看对应账号的增长。'
++    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
++}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..83895aa 100644
+index 9b3d69f..759d2ea 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -46,6 +46,7 @@ export interface SkillItem {
@@ -24107,7 +24315,7 @@ index 9b3d69f..83895aa 100644
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +519,15 @@ export interface AccountAnalytics {
+@@ -508,12 +519,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -24117,6 +24325,8 @@ index 9b3d69f..83895aa 100644
    notes: { title: string; url: string; cover?: string; stat?: string }[];
    growth: Record<'last' | 'day' | 'week' | 'month' | 'year',
      { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
++  growthStatus?: 'available' | 'no_history' | 'identity_unverified';
++  growthReason?: string;
    fetched_at: number;
 +  metrics_title?: string;
 +  source?: string;
