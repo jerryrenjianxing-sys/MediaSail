@@ -105,6 +105,41 @@ class HelperTest(unittest.TestCase):
             self.assertEqual(value['cwd'],str(work));self.assertEqual(value['root'],str(work))
             self.assertEqual(value['home'],live['environment']['HOME'])
         finally: server.shutdown();server.server_close()
+    def test_old_canonical_uses_current_discovery_even_while_offline(self):
+        old_dir = self.folder/'旧资料库'/'runtime';old_dir.mkdir(parents=True)
+        old = old_dir/'agent-connection.json'
+        new_dir = self.folder/'当前资料库'/'runtime';new_dir.mkdir(parents=True)
+        new = new_dir/'agent-connection.json'
+        current = {**self.info, 'workspace':str(new_dir.parent/'workspace'),
+                   'connectionFile':str(new), 'discoveryFile':str(self.connection),
+                   'libraryId':'current-library', 'baseUrl':None}
+        new.write_text(json.dumps(current),encoding='utf-8')
+        self.connection.write_text(json.dumps(current),encoding='utf-8')
+        old.write_text(json.dumps({**self.info,'connectionFile':str(old),
+                                  'discoveryFile':str(self.connection),'libraryId':'old-library'}),encoding='utf-8')
+        self.assertEqual(helper.connection_info(old)['workspace'],current['workspace'])
+        new.unlink()
+        with self.assertRaises(FileNotFoundError):
+            helper.connection_info(old)
+    @unittest.skipUnless(os.name == 'nt', 'PowerShell wrapper is Windows-only')
+    def test_powershell_old_canonical_follows_discovery_before_python(self):
+        old_dir=self.folder/'旧库'/'runtime';old_dir.mkdir(parents=True)
+        old=old_dir/'agent-connection.json'
+        work=self.folder/'当前库'/'workspace';work.mkdir(parents=True)
+        current_file=work.parent/'runtime'/'agent-connection.json';current_file.parent.mkdir()
+        current={**self.info,'workspace':str(work),'connectionFile':str(current_file),
+                 'discoveryFile':str(self.connection),'libraryId':'new-library'}
+        current_file.write_text(json.dumps(current),encoding='utf-8')
+        self.connection.write_text(json.dumps(current),encoding='utf-8')
+        old.write_text(json.dumps({**self.info,'connectionFile':str(old),
+                    'discoveryFile':str(self.connection),'python':str(self.folder/'missing.exe')}),encoding='utf-8')
+        script=work/'位置.py'
+        script.write_text('import os,json;print(json.dumps({"cwd":os.getcwd()}))',encoding='utf-8')
+        result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass',
+             '-File',str(HELPER.with_suffix('.ps1')),'python','--data-dir',str(old_dir),str(script)],
+             capture_output=True,text=True,encoding='utf-8')
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(json.loads(result.stdout)['cwd'],str(work))
     @unittest.skipUnless(os.name == 'nt', 'PowerShell wrapper is Windows-only')
     def test_powershell_wrapper_follows_mirror_before_selecting_python(self):
         work=self.folder/'新资料库'/'workspace';work.mkdir(parents=True)

@@ -14,13 +14,20 @@ def connection_info(file):
     """Follow the discovery mirror to its current canonical connection file."""
     seen = set()
     file = Path(file).resolve()
+    use_discovery = True
     for _ in range(8):
-        if file in seen:
-            raise ValueError("连接资料出现循环，请重新打开 MediaSail")
-        seen.add(file)
         info = json.loads(file.read_text(encoding="utf-8-sig"))
         if not isinstance(info, dict) or info.get("schema") != 1 or info.get("product") != "MediaSail":
             raise ValueError("Unsupported connection file")
+        if use_discovery:
+            use_discovery = False
+            discovery = Path(info.get("discoveryFile") or file).resolve()
+            if discovery != file:
+                file = discovery
+                continue
+        if file in seen:
+            raise ValueError("连接资料出现循环，请重新打开 MediaSail")
+        seen.add(file)
         canonical = Path(info.get("connectionFile") or file).resolve()
         if canonical == file:
             return info

@@ -12,12 +12,18 @@ for ($i=0; $i -lt $taskArgs.Count; $i++) {
 try {
     $file = Join-Path $dataDir 'agent-connection.json'
     $visited = @{}
+    $useDiscovery = $true
     for ($attempt=0; $attempt -lt 8; $attempt++) {
         $file = [IO.Path]::GetFullPath($file)
-        if ($visited.ContainsKey($file)) { throw 'Connection file redirect loop; reopen MediaSail' }
-        $visited[$file] = $true
         $info = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json
         if ($info.product -ne 'MediaSail' -or $info.schema -ne 1) { throw 'Not a compatible MediaSail connection file' }
+        if ($useDiscovery) {
+            $useDiscovery = $false
+            $discovery = if ($info.discoveryFile) { [IO.Path]::GetFullPath([string]$info.discoveryFile) } else { $file }
+            if ($discovery -ne $file) { $file = $discovery; continue }
+        }
+        if ($visited.ContainsKey($file)) { throw 'Connection file redirect loop; reopen MediaSail' }
+        $visited[$file] = $true
         $canonical = if ($info.connectionFile) { [IO.Path]::GetFullPath([string]$info.connectionFile) } else { $file }
         if ($canonical -eq $file) { break }
         $file = $canonical

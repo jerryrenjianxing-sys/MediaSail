@@ -6,8 +6,8 @@
 
 | 检查 | 本轮结果 | 边界 |
 | --- | --- | --- |
-| Node 全套测试 | 83 / 83 通过 | 资料库迁移、错误恢复、文件修改保留、安装器选择/缓存、更新状态、AitoEarn 既有行为等隔离样本 |
-| Python unittest 全套 | 43 / 43 通过 | 账号 API 5、业务 15、品牌迁移 4、轻量后端 12、Skill helper 7；不使用真实平台账号 |
+| Node 全套测试 | 86 / 86 通过 | 资料库迁移、错误恢复、文件修改保留、安装器选择/缓存、更新状态、AitoEarn 既有行为等隔离样本 |
+| Python unittest 全套 | 45 / 45 通过 | 账号 API 5、业务 15、品牌迁移 4、轻量后端 12、Skill helper 9；不使用真实平台账号 |
 | 保留业务 CLI 帮助 | 41 / 41 通过 | 隔离 HOME/workspace，阻断网络连接，逐个执行 `--help`；支持模块不冒充独立 CLI |
 | 原业务离线自检 | account_stats、douyin_publish 通过 | 解析、公式和流程约定；不是实际后台采集或发布 |
 | 连接与业务样本 | 通过 | 真实 PowerShell wrapper 追踪镜像到正式文件、中文空格路径、在线采用全部新路径、离线 manifest/tracker/review 计算与登记 |
@@ -22,7 +22,7 @@
 
 缓存测试使用真实 `DownloadedUpdateHelper` 验证迁入的原始 pending 元数据可复用，覆盖 SHA 不符、其他产品、路径穿越、目录链接、已有新缓存冲突、复制中断与重试。旧缓存保留；结构或身份无法核验的差量基线不迁移，不宣称清理完成。
 
-复跑入口为 `npm test`，以及业务 Python 的 `-X utf8 -B -m unittest discover -s tests -p 'test_*.py' -v`。帮助检查使用当前 `knowledge-policy.cjs` 保留名单中含 argparse CLI 的脚本；本轮无平台联网。
+复跑入口为 `npm test`，以及业务 Python 的 `-X utf8 -B -m unittest discover -s tests -p 'test_*.py' -v`。帮助检查使用当前 `knowledge-policy.cjs` 保留名单中含 argparse CLI 的脚本；该组帮助检查禁网。
 
 ## 已完成：打包程序的隔离界面与切库检查
 
@@ -35,6 +35,12 @@
 - 方法与工具的升级冲突可展开查看实际工作文件、备份及新版原件；选题和日历保留未保存表单，外部更新出现时明确提示。
 
 [真实切库记录](images/0.5.2/library-migration-result.json) 使用打包程序完成中文空格目录下的迁移、自动重新启动和打开已有资料库。核对业务接口与外部文件操作读写同一目录；自定义脚本、Skill、主题和原目录保留；发现入口追踪新路径和新进程，切库不合并原库，正常退出重开后位置保持。该项不代替 NSIS 安装升级验收。
+
+最后一轮补测同时从旧库的正式连接文件和旧 Skill 的 PowerShell 入口调用：两者都会先追踪固定发现入口，再采用新库的路径。新库不可用时停止，不能默默继续写旧库。Python 和 PowerShell 回归以及打包程序真实切库已验证。
+
+[独立 Agent 验收](evidence/external-agent-0.5.2.json) 使用无产品实现上下文的独立 Agent，仅凭复制说明找到六维画像，运行原 tracker 计算、创作正文与小结、回写经验和登记成品。root 随后在打包程序内容库读回核对。样本为虚构数据；两点趋势与里程碑输出属于保留原公式的解释边界，Agent 没有把它当作可靠的时间预测。项目归属从原 manifest 核对，列表接口只输出展示字段。
+
+[媒体验证](evidence/library-media-0.5.2.json) 使用中文空格文件名的合成图片和视频，实际预览解码及媒体 API 哈希一致；AitoEarn 复用最终打包的文件选择与流式读取代码，离线承接视频 17 块，长度和哈希一致，没有真实上传。
 
 [首页浅色](images/0.5.2/home-light.png) · [首页深色](images/0.5.2/home-dark.png) · [资料库浅色](images/0.5.2/settings-library-light.png) · [资料库深色](images/0.5.2/settings-library-dark.png) · [内容库](images/0.5.2/content-library.png) · [未保存编辑保护](images/0.5.2/unsaved-migration-protected.png) · [采集失败保留旧结果](images/0.5.2/analysis-last-result-preserved.png)
 
@@ -50,6 +56,10 @@
 
 用户在专用隔离窗口扫码。首次收尾导航出现 `ERR_CONNECTION_TIMED_OUT`，软件记录 unknown；之后手动强制校验和只读采集取得有效身份且账号一致。已据此修复有限重试和加载未完成时的真实后台接口核验。修复后的收尾及关闭重开实际验证通过，whoami 为 verified、分析账号相同，缺失指标保持缺失。安全摘要见 [真实登录记录](evidence/manual-login-0.5.2.json)；原始身份、指标和登录资料仅在本机独立库，未进入仓库。未进行真实 AitoEarn 上传或公开发布。
 
+另使用最终 `app.asar` 中的资料库模块真实复制并校验该扫码库，再从新位置启动最终程序：迁移前后强制身份校验均为 verified、同账号，分析账号一致，旧平台资料完整保留。该测试使用真实迁移模块和真实文件，不经迁移 UI；UI 切库的进程重启在前述合成样本另测。
+
 模拟响应证明本地分支行为，不能保证平台现有网页接口永久稳定。新版本不自动接管用户默认浏览器资料，不以普通主站可看主页代替后台登录证明。
 
-旧无归属的分析记录、原平台资料、AitoEarn 会话、用户文件及历史 Release 均按兼容方案保留。此次没有修改另一任务正在维护的真实画像；公开记录和截图只使用合成样本。真实升级和真实平台验收的结果须在执行后另行补记。
+已将用户指定的 Codex 私有目录报告项目单独核对后补入正在使用的原生内容库：20 个文件、71,743 字节，逐项 SHA256 一致、原件保留，项目和正文经原生服务读回。没有合并整个私有工作区、改画像或覆盖不同内容。具体清单与恢复记录仅留本机，仓库仅保留 [安全汇总](evidence/scoped-report-import-0.5.2.json)。
+
+旧无归属的分析记录、原平台资料、AitoEarn 会话、用户文件及历史 Release 均按兼容方案保留。此次没有修改另一任务正在维护的真实画像；公开记录和截图只使用合成样本。

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "version": "0.5.2",
+  "passed": true,
+  "testedAtUtc": "2026-10-16T04:36:41.115Z",
+  "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
+  "realPackagedApplication": true,
+  "syntheticMediaOnly": true,
+  "actualLibraryMediaApiHashesMatch": true,
+  "imagePreviewDecoded": true,
+  "videoPreviewMetadataDecoded": true,
+  "chineseAndSpacePaths": true,
+  "aitoSelectedMediaHashesMatch": true,
+  "aitoStreamReadPathsMatchLibrary": true,
+  "videoStreamChunks": 17,
+  "streamLengthAndHashMatch": true,
+  "uploadTransport": "offline writable fixture around the frozen packaged streaming code",
+  "outboundUploads": 0,
+  "realAccountUsed": false,
+  "publicationPerformed": false
+}

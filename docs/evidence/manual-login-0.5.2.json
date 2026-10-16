@@ -2,7 +2,8 @@
   "schema": 1,
   "version": "0.5.2",
   "passed": true,
-  "testedAtUtc": "2026-10-16T04:28:15.192Z",
+  "testedAtUtc": "2026-10-16T04:35:38.190Z",
+  "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
   "entry": "final-win-unpacked",
   "humanScanCompleted": true,
   "networkMocksUsed": false,
@@ -26,6 +27,8 @@
     }
   },
   "closeAndReopen": {
+    "testedAtUtc": "2026-10-16T04:35:38.190Z",
+    "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
     "loginState": "success",
     "verificationStatus": "verified",
     "accountIdentityPresent": true,
@@ -44,5 +47,38 @@
   },
   "initialFailure": "creator_home_navigation_timeout",
   "repairedFlowVerified": true,
-  "realIdentityAndMetricsExported": false
+  "realIdentityAndMetricsExported": false,
+  "migration": {
+    "method": "final-packaged-library-module-queueLibraryChange-and-prepareLibrary-followed-by-final-EXE-launch",
+    "uiMigrationUsed": false,
+    "testedAtUtc": "2026-10-16T04:46:53.711Z",
+    "testedAppAsarSha256": "af563b3039722cbff8f833f3d76c63fe3ad2052a81b6ab5cbfb732e81889c428",
+    "networkMocksUsed": false,
+    "publicationPerformed": false,
+    "dailyInstallationUsed": false,
+    "sourceAndTargetPlatformFilesMatchedBeforeLaunch": true,
+    "sourcePlatformFilesPreserved": true,
+    "oldLibraryPreserved": true,
+    "sameAccountAfterMigration": true,
+    "connectionUsesNewLibrary": true,
+    "normalExit": true,
+    "before": {
+      "verificationStatus": "verified",
+      "cached": false,
+      "accountIdentityPresent": true,
+      "analysisVerificationStatus": "verified",
+      "analysisSameAccount": true,
+      "errorCode": null,
+      "analysisErrorCode": null
+    },
+    "after": {
+      "verificationStatus": "verified",
+      "cached": false,
+      "accountIdentityPresent": true,
+      "analysisVerificationStatus": "verified",
+      "analysisSameAccount": true,
+      "errorCode": null,
+      "analysisErrorCode": null
+    }
+  }
 }

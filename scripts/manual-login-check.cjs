@@ -9,8 +9,9 @@ const testBase=path.join(os.homedir(),'Documents','MediaSail 隔离验证');
 const run=path.resolve(value('--run')||path.join(testBase,'手动扫码 '+version+' '+Date.now()));
 const executable=path.resolve(process.env.EASEL_TEST_EXE||path.join(root,require('../package.json').build.directories.output,'win-unpacked/MediaSail.exe'));
 const development=path.basename(executable).toLowerCase()==='electron.exe';
-const bootstrap=path.join(run,'独立 定位资料'),libraryRoot=path.join(run,'独立 登录验收资料库');
-const data=path.join(libraryRoot,'runtime'),control=path.join(run,'control.json'),result=path.join(run,'manual-login-status.json');
+const bootstrap=path.join(run,'独立 定位资料'),defaultLibraryRoot=path.join(run,'独立 登录验收资料库');
+let libraryRoot=defaultLibraryRoot,data=path.join(libraryRoot,'runtime');
+const control=path.join(run,'control.json'),result=path.join(run,'manual-login-status.json');
 function inside(base,file){const relative=path.relative(base,file);return relative&&!relative.startsWith('..'+path.sep)&&relative!=='..'&&!path.isAbsolute(relative);}
 assert.ok(inside(testBase,run),'Only a dedicated Documents test directory is allowed');
 for(const forbidden of ['D:\\mediasail',path.join(process.env.LOCALAPPDATA||os.tmpdir(),'Programs/MediaSail')])assert.ok(!inside(path.resolve(forbidden),executable)&&path.resolve(forbidden).toLowerCase()!==executable.toLowerCase(),'Refusing daily installation');
@@ -34,7 +35,7 @@ async function verify(){
   let login;
   await until(async()=>{login=await api('/api/login/douyin/status');return ['success','error','expired'].includes(login.state);},'Login is still waiting for human action',45000);
   let identity=await api('/api/accounts/douyin/whoami?force=1');
-  for(let attempt=0;identity.errorCode==='PROFILE_BUSY'&&attempt<6;attempt++){await sleep(2000);identity=await api('/api/accounts/douyin/whoami?force=1');}
+  for(let attempt=0;String(identity.errorCode||'').toLowerCase()==='profile_busy'&&attempt<6;attempt++){await sleep(2000);identity=await api('/api/accounts/douyin/whoami?force=1');}
   const safe={phase:'verified',reopened:phase==='reopen',finalized:phase==='finalize',entry:development?'repository-electron':'packaged',loginState:login.state,verificationStatus:identity.verificationStatus,
     checkedAt:identity.checkedAt,accountIdentityPresent:Boolean(identity.accountId),errorCode:identity.errorCode||null,cached:identity.cached};
   if(identity.verificationStatus==='verified'){
@@ -45,13 +46,15 @@ async function verify(){
       fetchedAt:analysis.fetched_at,errorCode:analysis.errorCode||null};
   }
   await status(safe);
+  if(identity.verificationStatus!=='verified'||!safe.analysis?.sameVerifiedAccount)throw Error('登录验收尚未通过：'+(identity.errorCode||identity.verificationStatus));
 }
 (async()=>{
   if(!['prepare','reopen','finalize'].includes(phase)){
     assert.ok(['verify','retry','stop'].includes(phase),'Phase supports prepare, verify, retry, stop');
     await fs.access(result);await write(control,{action:phase,requestedAt:new Date().toISOString()});console.log(JSON.stringify({queued:true,phase,run}));return;
   }
-  await fs.access(executable);await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot:libraryRoot,installDirectory:path.dirname(executable)});
+  await fs.access(executable);const layout=await require('../desktop/library.cjs').prepareLibrary({bootstrapRoot:bootstrap,defaultLibraryRoot,installDirectory:path.dirname(executable)});
+  libraryRoot=layout.libraryRoot;data=layout.dataRoot;
   if(phase==='prepare')await write(path.join(data,'ui-state.json'),{schema:1,migration:{version:'0.3.3',sessions:0,copies:0,sources:[]},values:{easel_sessions:'[]',easel_theme:'light',easel_onboarding_seen:'1'}});
   const env={...process.env,EASEL_LIBRARY_BOOTSTRAP:bootstrap,LOCALAPPDATA:path.join(run,'独立宿主 Local'),APPDATA:path.join(run,'独立宿主 Roaming')};delete env.EASEL_DESKTOP_DATA;delete env.ELECTRON_RUN_AS_NODE;
   app=await electron.launch({executablePath:executable,args:development?[root]:[],env,timeout:60000});page=await app.firstWindow();
@@ -59,10 +62,12 @@ async function verify(){
   info=JSON.parse(await fs.readFile(path.join(data,'agent-connection.json'),'utf8'));
   assert.equal(info.libraryRoot,libraryRoot);assert.equal(info.environment.HOME,path.join(data,'home'));
   assert.equal(await app.evaluate(({app})=>app.getPath('userData')),data);
-  await page.getByRole('button',{name:'控制台',exact:true}).click();await page.locator('.sidebar-nav').getByRole('button',{name:'账号',exact:true}).click();
-  await page.locator('.account-card-name').filter({hasText:'抖音'}).waitFor();
+  // A read-only reopen does not need to mount the accounts page, whose automatic
+  // background checks could compete with the explicit verification of this profile.
   if(phase==='finalize')await api('/api/login/douyin',{method:'POST'});
   if(phase==='reopen'||phase==='finalize'){await verify();await app.close();app=null;return;}
+  await page.getByRole('button',{name:'控制台',exact:true}).click();await page.locator('.sidebar-nav').getByRole('button',{name:'账号',exact:true}).click();
+  await page.locator('.account-card-name').filter({hasText:'抖音'}).waitFor();
   await startQr();
   const deadline=Date.now()+2*60*60*1000;
   while(Date.now()<deadline&&app){

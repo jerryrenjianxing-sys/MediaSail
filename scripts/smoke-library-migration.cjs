@@ -48,7 +48,10 @@ async function launch(){debugPort=await require('../desktop/runtime.cjs').freePo
   assert.equal(await observer.evaluate("process.mainModule.require('electron').app.getPath('sessionData')"),path.join(second,'runtime'));
   record('Settings IPC closes owned services, migrates verified files, and actually relaunches at new runtime/session directory');
   assert.equal((await json(path.join(bootstrap,'library-location.json'))).libraryRoot,second);await assert.rejects(fs.access(path.join(bootstrap,'library-migration.json')),{code:'ENOENT'});
-  const helper=cp.spawnSync(info.python,[path.join(info.skillDir,'scripts/mediasail.py'),'--connection',connection,'check'],{env:{...process.env,PYTHONUTF8:'1'},encoding:'utf8',windowsHide:true});assert.equal(helper.status,0,helper.stdout+helper.stderr);const found=JSON.parse(helper.stdout);assert.equal(found.connected,true);assert.equal(found.paths.outputs,path.join(second,'workspace/outputs'));
+  for(const entry of [connection,path.join(first,'runtime/agent-connection.json')]){
+    const helper=cp.spawnSync(info.python,[path.join(info.skillDir,'scripts/mediasail.py'),'--connection',entry,'check'],{env:{...process.env,PYTHONUTF8:'1'},encoding:'utf8',windowsHide:true});assert.equal(helper.status,0,helper.stdout+helper.stderr);const found=JSON.parse(helper.stdout);assert.equal(found.connected,true);assert.equal(found.paths.outputs,path.join(second,'workspace/outputs'));
+  }
+  const oldWrapper=cp.spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(first,'agent-skill/mediasail/scripts/mediasail.ps1'),'check','--data-dir',path.join(first,'runtime')],{encoding:'utf8',windowsHide:true});assert.equal(oldWrapper.status,0,oldWrapper.stdout+oldWrapper.stderr);assert.equal(JSON.parse(oldWrapper.stdout).paths.outputs,path.join(second,'workspace/outputs'));
   record('Old discovery address resolves current library after port and process change');
   const otherBootstrap=path.join(run,'临时另库定位');const other=await library.prepareLibrary({bootstrapRoot:otherBootstrap,defaultLibraryRoot:third,installDirectory:path.dirname(executable)});
   await write(path.join(third,'workspace/outputs/另一库的报告/不同.md'),'独立库，不得与原库合并。');

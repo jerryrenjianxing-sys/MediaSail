@@ -25,17 +25,29 @@ public static class FirstInstallWindow {
  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
  [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr h);
  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
- [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,StringBuilder s,int n);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h,StringBuilder s,int n);
- [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern bool SetWindowText(IntPtr h,string text);
+ [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr ReadTextMessage(IntPtr h,uint m,UIntPtr w,StringBuilder text,uint flags,uint timeout,out UIntPtr result);
+ [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr WriteTextMessage(IntPtr h,uint m,UIntPtr w,string text,uint flags,uint timeout,out UIntPtr result);
  [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h,int m,IntPtr w,IntPtr l);
  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h,out Rect r);
  [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h,IntPtr dc,uint flags);
  public struct Rect{public int Left,Top,Right,Bottom;}
 }
 '@
-function Window-Text([IntPtr]$handle){$text=[Text.StringBuilder]::new(8192);[void][FirstInstallWindow]::GetWindowText($handle,$text,8192);return $text.ToString()}
+function Window-Text([IntPtr]$handle){
+ [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner);if($owner -ne $InstallerPid){throw 'Refusing text read outside the fixture PID'}
+ $text=[Text.StringBuilder]::new(8192);$read=[UIntPtr]::Zero
+ if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]8192,$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){throw 'Fixture control WM_GETTEXT timed out'}
+ return $text.ToString()
+}
 function Window-Class([IntPtr]$handle){$text=[Text.StringBuilder]::new(256);[void][FirstInstallWindow]::GetClassName($handle,$text,256);return $text.ToString()}
+function Set-ControlText([IntPtr]$handle,[string]$text){
+ [uint32]$owner=0;[void][FirstInstallWindow]::GetWindowThreadProcessId($handle,[ref]$owner)
+ if($owner -ne $InstallerPid -or (Window-Class $handle) -cne 'Edit' -or -not [FirstInstallWindow]::IsWindowVisible($handle) -or -not [FirstInstallWindow]::IsWindowEnabled($handle)){throw 'Refusing text write outside an enabled fixture Edit'}
+ $written=[UIntPtr]::Zero
+ if([FirstInstallWindow]::WriteTextMessage($handle,0x000C,[UIntPtr]::Zero,$text,3,2000,[ref]$written) -eq [IntPtr]::Zero -or $written.ToUInt64() -ne 1){throw 'Fixture control WM_SETTEXT failed or timed out'}
+ if((Window-Text $handle) -cne $text){throw 'Fixture Edit did not retain the chosen Unicode path'}
+}
 function Save-Window([IntPtr]$handle,[string]$name){
  $rect=[FirstInstallWindow+Rect]::new();if(-not [FirstInstallWindow]::GetWindowRect($handle,[ref]$rect)){throw 'Window rectangle unavailable'}
  $bitmap=[Drawing.Bitmap]::new($rect.Right-$rect.Left,$rect.Bottom-$rect.Top);$graphics=[Drawing.Graphics]::FromImage($bitmap);$dc=$graphics.GetHdc()
@@ -76,13 +88,13 @@ try{
     if($result.libraryInputMatched){continue}
     if(-not $result.programInputMatched -or $edits.Count -ne 1){throw 'Unexpected library page structure or order'}
     $result.libraryPageObserved=$true
-    if(-not [FirstInstallWindow]::SetWindowText($edits[0].handle,$LibraryRoot) -or (Window-Text $edits[0].handle) -cne $LibraryRoot){throw 'Library edit did not retain the chosen Unicode path'}
+    Set-ControlText $edits[0].handle $LibraryRoot
     $result.libraryInputMatched=$true;Save-Window $window.handle 'installer-library-selection.png';Persist-Result
     Click-Control $next 'confirm-library-and-install';continue
    }
    if(-not $result.programInputMatched -and $edits.Count -eq 1 -and $edits[0].text -match '^[A-Za-z]:\\' -and $texts -match 'Choose Install Location|Destination Folder|选择安装位置|目标文件夹'){
     $result.programPageObserved=$true
-    if(-not [FirstInstallWindow]::SetWindowText($edits[0].handle,$ProgramDirectory) -or (Window-Text $edits[0].handle) -cne $ProgramDirectory){throw 'Program edit did not retain the chosen Unicode path'}
+    Set-ControlText $edits[0].handle $ProgramDirectory
     $result.programInputMatched=$true;Save-Window $window.handle 'installer-program-selection.png';Persist-Result
     Click-Control $next 'confirm-program-directory';continue
    }
