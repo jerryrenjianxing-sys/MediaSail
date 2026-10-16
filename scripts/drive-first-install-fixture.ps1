@@ -109,7 +109,7 @@ try{
     $result.finishObserved=$true;Save-Window $window.handle 'installer-finish.png';Click-Control $next 'finish';continue
    }
    if(-not $result.programInputMatched -and $next.text -match 'Next|下一步|I Agree|我接受|同意'){
-    $current=@($window.children|Where-Object{$_.class -ceq 'Button' -and $_.text -match 'Only for me|仅为我|仅为当前用户|只为我|仅当前用户'})
+    $current=@($window.children|Where-Object{$_.class -ceq 'Button' -and $_.text.Replace('&','') -match 'Only for me|仅为我|仅为当前用户|只为我|仅当前用户'})
     if($current.Count -eq 1){Click-Control $current[0] 'select-current-user';Click-Control $next 'continue-current-user';continue}
     if($texts -match 'Welcome|欢迎|License Agreement|许可协议|授权协议'){Click-Control $next 'continue-recognized-intro';continue}
    }
