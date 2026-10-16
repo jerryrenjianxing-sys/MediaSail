@@ -41,7 +41,7 @@ function Window-Text([IntPtr]$handle){
  # Caption reads do not block on the installer while it extracts files. Edit
  # content belongs to the other process and requires the marshaled WM_GETTEXT.
  if((Window-Class $handle) -cne 'Edit'){[void][FirstInstallWindow]::GetWindowText($handle,$text,8192);return $text.ToString()}
- if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]8192,$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){throw 'Fixture control WM_GETTEXT timed out'}
+ if([FirstInstallWindow]::ReadTextMessage($handle,0x000D,[UIntPtr]::new([uint64]8192),$text,3,2000,[ref]$read) -eq [IntPtr]::Zero){throw 'Fixture control WM_GETTEXT timed out'}
  return $text.ToString()
 }
 function Window-Class([IntPtr]$handle){$text=[Text.StringBuilder]::new(256);[void][FirstInstallWindow]::GetClassName($handle,$text,256);return $text.ToString()}
