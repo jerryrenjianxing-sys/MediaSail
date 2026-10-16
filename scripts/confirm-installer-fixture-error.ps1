@@ -19,6 +19,8 @@ public class InstallerFailureWindow {
  [DllImport("user32.dll")] public static extern bool EnumChildWindows(IntPtr h,EnumProc callback,IntPtr value);
  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h,out uint pid);
  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
+ [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr h);
+ [DllImport("user32.dll")] public static extern IntPtr GetParent(IntPtr h);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,StringBuilder text,int count);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetClassName(IntPtr h,StringBuilder text,int count);
  [DllImport("user32.dll")] public static extern int GetDlgCtrlID(IntPtr h);
@@ -38,11 +40,13 @@ $callback=[InstallerFailureWindow+EnumProc]{param($handle,$unused)
  $childCallback=[InstallerFailureWindow+EnumProc]{param($child,$unused2)
   $text=[Text.StringBuilder]::new(2048);$kind=[Text.StringBuilder]::new(256)
   [void][InstallerFailureWindow]::GetWindowText($child,$text,2048);[void][InstallerFailureWindow]::GetClassName($child,$kind,256)
-  $children.Add(@{handle=$child;text=$text.ToString();class=$kind.ToString();id=[InstallerFailureWindow]::GetDlgCtrlID($child)})
+  $children.Add(@{handle=$child;text=$text.ToString();class=$kind.ToString();id=[InstallerFailureWindow]::GetDlgCtrlID($child);visible=[InstallerFailureWindow]::IsWindowVisible($child);enabled=[InstallerFailureWindow]::IsWindowEnabled($child);direct=([InstallerFailureWindow]::GetParent($child) -eq $handle)})
   return $true
  }
  [void][InstallerFailureWindow]::EnumChildWindows($handle,$childCallback,[IntPtr]::Zero)
- $message=($children | Where-Object {$_.class -eq 'Static'} | ForEach-Object {$_.text}) -join ' | '
+ # EnumChildWindows also includes hidden controls and descendants of the NSIS
+ # main window. They are not the currently displayed native message box.
+ $message=($children | Where-Object {$_.class -eq 'Static' -and $_.visible -and $_.direct} | ForEach-Object {$_.text}) -join ' | '
  # The native builder tries the actual old uninstaller five times, then offers
  # Retry/Cancel before reaching its final error handler. Cancel only that known
  # fixture dialog; the next known uninstall-failed dialog is acknowledged with OK.
@@ -51,8 +55,14 @@ $callback=[InstallerFailureWindow+EnumProc]{param($handle,$unused)
  if($message -match 'Failed to uninstall old application files|\u5378\u8f7d\u65e7.*\u5931\u8d25|\u7121\u6cd5.*\u820a\u7684\u61c9\u7528'){$action='confirm-uninstall-failed';$buttonId=1}
  elseif($message -match 'MediaSail cannot be closed'){$action='cancel-exhausted-uninstall-retries';$buttonId=2;$capture=$Screenshot -replace '\.png$','-retry-cancel.png'}
  else{return $true}
- $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -eq $buttonId})
- if($buttons.Count -ne 1){throw 'Expected one known fixture error button'}
+ $buttons=@($children | Where-Object {$_.class -eq 'Button' -and $_.id -eq $buttonId -and $_.visible -and $_.enabled -and $_.direct})
+ if($buttons.Count -ne 1){
+  # Dialog controls can disappear between the two native enumeration calls.
+  # Record the observation and let the caller poll again; never click a hidden
+  # or unrelated control merely because its numeric ID happens to match.
+  $observed.Add(@{pid=$InstallerPid;message=$message;action='waiting-for-known-error-button';confirmed=$false;controls=@($children | ForEach-Object {@{text=$_.text;class=$_.class;id=$_.id;visible=$_.visible;enabled=$_.enabled;direct=$_.direct}})})
+  return $true
+ }
  if(-not (Test-Path -LiteralPath $capture)){
   $rect=[InstallerFailureWindow+Rect]::new();[void][InstallerFailureWindow]::GetWindowRect($handle,[ref]$rect)
   $bitmap=[Drawing.Bitmap]::new($rect.Right-$rect.Left,$rect.Bottom-$rect.Top)
