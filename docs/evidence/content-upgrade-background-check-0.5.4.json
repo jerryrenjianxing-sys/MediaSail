@@ -1,0 +1,51 @@
+{
+  "from": "0.5.3",
+  "to": "0.5.4",
+  "passed": false,
+  "startedAt": "2026-10-16T11:08:50.068Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "genuine NSIS /S --updated --force-run, no /D update override",
+  "syntheticDataOnly": true,
+  "publications": 0,
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+      "sha256": "5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+      "bytes": 262989425
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.4-win-x64-Setup.exe",
+      "sha256": "06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d",
+      "bytes": 273973986
+    }
+  },
+  "phase": "normal-restarts",
+  "lastInstallerWindows": [],
+  "baselineCacheVerified": true,
+  "installMs": 213269,
+  "registrationAfter": [
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-38891782339\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.4",
+      "location": null
+    },
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-38891782339\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.4",
+      "location": null
+    }
+  ],
+  "originalFilesRetained": 10,
+  "librarySelectionRetained": true,
+  "currentInstallerCacheVerified": true,
+  "aitoSessionRetained": true,
+  "categoryPatchPreservedOtherMetadata": true,
+  "error": "Error: Timed out: normal exit\n    at until (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-content-upgrade-ci.cjs:19:199)\n    at async quit (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-content-upgrade-ci.cjs:41:169)\n    at async main (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-content-upgrade-ci.cjs:84:82)",
+  "finishedAt": "2026-10-16T11:16:44.281Z"
+}
