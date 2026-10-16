@@ -1,0 +1,137 @@
+{
+  "product": "MediaSail",
+  "version": "0.5.4",
+  "testedAt": "2026-10-16T11:00:53.745Z",
+  "scope": "Synthetic isolated acceptance library obtained only from copied connection instructions; no daily library or real social account used",
+  "method": "Read packaged Skill and its context/outputs/script-io/tools-api references, check live identity, use distributed helper and actual local business/metadata/profile APIs",
+  "connection": {
+    "connected": true,
+    "localToolsReady": true,
+    "version": "0.5.4",
+    "instanceId": "022e1ecf-94cc-46c7-9720-69be33665e2f",
+    "libraryId": "16a0a59a-ab2b-4d33-814b-307ab8d628ba",
+    "foundProfile": "外部 Agent 验收画像"
+  },
+  "business": {
+    "tool": "skills/openclaw/skill-data-tracker/scripts/track.py",
+    "operations": [
+      "snapshot",
+      "snapshot",
+      "trend followers",
+      "trend total_likes"
+    ],
+    "synthetic": true,
+    "pointCount": 2,
+    "followers": {
+      "before": 100,
+      "after": 125,
+      "growth": 25,
+      "growthRatePct": 25
+    },
+    "cumulativeLikes": {
+      "before": 180,
+      "after": 230,
+      "growth": 50,
+      "growthRatePct": 27.77777777777778
+    },
+    "sampleWarningPreserved": true,
+    "datesArtificiallyAssigned": true,
+    "noTrendAttributionOrPredictionClaimed": true
+  },
+  "projects": [
+    {
+      "directory": "十分钟早餐咖啡图文方案20261016",
+      "title": "十分钟早餐咖啡｜原创图文文案",
+      "category": "creation",
+      "kind": "xhs-note",
+      "status": "draft",
+      "profile": "外部 Agent 验收画像",
+      "platform": "xiaohongshu",
+      "tags": [
+        "早餐咖啡",
+        "上班族",
+        "原创文案",
+        "合成验收"
+      ],
+      "deliverables": [
+        {
+          "path": "十分钟早餐咖啡图文方案20261016/正文.md",
+          "bytes": 1050,
+          "sha256": "3e93634f431335bde5c987c3d4ef45e2141eb6b5c7c243ba2a4df7dc3b8b03e1",
+          "apiReadBack": true
+        },
+        {
+          "path": "十分钟早餐咖啡图文方案20261016/图文分镜.md",
+          "bytes": 695,
+          "sha256": "bd802e6b67c32a4d4bc421ea000f331be45cfa44a6c1cd0979cb12af9b2bcc45",
+          "apiReadBack": true
+        }
+      ],
+      "visibleThroughOutputsApi": true
+    },
+    {
+      "directory": "早餐咖啡合成样本复盘20261016",
+      "title": "早餐咖啡｜合成经营样本复盘",
+      "category": "analysis",
+      "kind": "article",
+      "status": "ready",
+      "profile": "外部 Agent 验收画像",
+      "platform": "xiaohongshu",
+      "tags": [
+        "合成样本",
+        "小样本复盘",
+        "业务计算已核对"
+      ],
+      "deliverables": [
+        {
+          "path": "早餐咖啡合成样本复盘20261016/复盘报告.md",
+          "bytes": 2014,
+          "sha256": "5d33b79b72b6e36871a6e583e6f455fcef7f2507d61086e8aa501ae10a0bbd46",
+          "apiReadBack": true
+        }
+      ],
+      "visibleThroughOutputsApi": true
+    }
+  ],
+  "metadataPatch": {
+    "changedFields": [
+      "summary",
+      "tags"
+    ],
+    "revisionChanged": true,
+    "preservedFields": [
+      "topic",
+      "created",
+      "steps",
+      "title",
+      "category",
+      "platform",
+      "kind",
+      "status",
+      "profile",
+      "deliverables"
+    ],
+    "oldRevisionHttpStatus": 409,
+    "conflictPreservedBytes": true,
+    "summary": "已核对：合成粉丝+25（25%）、累计获赞+50（27.78%）；仅2个点，不据此归因或预测",
+    "tags": [
+      "合成样本",
+      "小样本复盘",
+      "业务计算已核对"
+    ]
+  },
+  "memory": {
+    "file": "profiles/外部 Agent 验收画像/memory.md",
+    "savedVia": "PUT /api/persona/{name}/file",
+    "originalSampleTextPreserved": true,
+    "otherFiveDimensionsContentUnchanged": true,
+    "appendReadBack": true,
+    "verificationScope": "Compared original and retained text with CRLF/LF and trailing-newline normalization; no byte-prefix guarantee claimed",
+    "afterSha256": "d8b86967f4545b4219c69e3e33d00d02279148bb2e0985c6fe84ba2c61cfb06a"
+  },
+  "noPlatformLoginOrPublishing": true,
+  "productSourceUnchanged": true,
+  "hostLeftRunning": true,
+  "uiVerification": "Parent agent to inspect independently",
+  "passed": true
+}

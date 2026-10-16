@@ -1,0 +1,31 @@
+{
+  "version": "0.5.4",
+  "passed": true,
+  "checkedAt": "2026-10-16T11:05:18.588Z",
+  "syntheticDataOnly": true,
+  "realPackagedUi": true,
+  "realService": true,
+  "matchingFileApiAndUi": true,
+  "projects": [
+    {
+      "name": "十分钟早餐咖啡图文方案20261016",
+      "title": "十分钟早餐咖啡｜原创图文文案",
+      "category": "creation",
+      "profile": "外部 Agent 验收画像",
+      "deliverables": [
+        "正文.md",
+        "图文分镜.md"
+      ]
+    },
+    {
+      "name": "早餐咖啡合成样本复盘20261016",
+      "title": "早餐咖啡｜合成经营样本复盘",
+      "category": "analysis",
+      "profile": "外部 Agent 验收画像",
+      "deliverables": [
+        "复盘报告.md"
+      ]
+    }
+  ],
+  "publicationPerformed": false
+}
