@@ -22,7 +22,7 @@ async function sha256(file){const hash=crypto.createHash('sha256');for await(con
 async function verifyInstaller(file,env=process.env){
  assert.match(env.MEDIASAIL_INSTALLER_SHA256||'',/^[a-f0-9]{64}$/,'GitHub asset digest required');
  assert.match(env.MEDIASAIL_INSTALLER_BYTES||'',/^\d+$/,'GitHub asset byte count required');
- assert.match(env.MEDIASAIL_INSTALLER_ASSET_ID||'',/^RA_\w+$/,'GitHub asset identity required');
+ assert.match(env.MEDIASAIL_INSTALLER_ASSET_ID||'',/^RA_[A-Za-z0-9_-]+$/,'GitHub asset identity required');
  const name=path.basename(file),lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)?.replace(/^\*/,'')===name);
  assert.equal(lines.length,1,'Unambiguous checksum required');assert.equal(lines[0].trim().split(/\s+/)[0].toLowerCase(),env.MEDIASAIL_INSTALLER_SHA256);
  const actual=await sha256(file);assert.equal(actual,env.MEDIASAIL_INSTALLER_SHA256);assert.equal((await fs.stat(file)).size,Number(env.MEDIASAIL_INSTALLER_BYTES));
