@@ -5,6 +5,11 @@ on:
       version:
         required: true
         type: string
+      base_version:
+        description: Existing official release used only to transport identical installer bytes
+        required: true
+        type: string
+        default: '0.3.3'
 permissions:
   contents: write
 jobs:
@@ -21,17 +26,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
+          BASE_VERSION: ${{ inputs.base_version }}
         run: |
           $ErrorActionPreference='Stop'
           if($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+$'){throw 'Invalid version'}
+          if($env:BASE_VERSION -notmatch '^\d+\.\d+\.\d+$'){throw 'Invalid base version'}
           New-Item -ItemType Directory courier | Out-Null
           $tag='v'+$env:RELEASE_VERSION
           $name='MediaSail-'+$env:RELEASE_VERSION+'-win-x64-Setup.exe'
-          gh release download v0.3.3 --pattern MediaSail-0.3.3-win-x64-Setup.exe --dir courier
+          $base='MediaSail-'+$env:BASE_VERSION+'-win-x64-Setup.exe'
+          gh release download ('v'+$env:BASE_VERSION) --pattern $base --dir courier
           if($LASTEXITCODE -ne 0){throw 'Base download failed'}
           gh release download $tag --pattern upload-courier.json.gz --dir courier
           if($LASTEXITCODE -ne 0){throw 'Courier download failed'}
-          node scripts/release-courier.cjs apply courier/upload-courier.json.gz courier/MediaSail-0.3.3-win-x64-Setup.exe ('courier/'+$name)
+          node scripts/release-courier.cjs apply courier/upload-courier.json.gz ('courier/'+$base) ('courier/'+$name)
           if($LASTEXITCODE -ne 0){throw 'Reconstruction verification failed'}
           gh release upload $tag ('courier/'+$name)
           if($LASTEXITCODE -ne 0){throw 'Installer upload failed'}

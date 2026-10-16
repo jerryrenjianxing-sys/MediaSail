@@ -1,0 +1,218 @@
+{
+  "version": "0.5.2",
+  "testedAt": "2026-10-16T04:20:46.202469+00:00",
+  "python": "3.11.15",
+  "isolatedHomeAndWorkspace": true,
+  "pythonSocketConnectionsBlocked": true,
+  "realAccountsUsed": false,
+  "publicationPerformed": false,
+  "checked": 41,
+  "passed": 41,
+  "results": [
+    {
+      "path": "skills/shared/scripts/account_stats.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/bili_login.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/calendar_ops.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/content_guard.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/manifest.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/output_paths.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/persona_gate.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/weixin_mp_stats.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/wordcount.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/xhs_comment.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/xhs_publish.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/zhihu_answer.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/zhihu_comments_fetch.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/web_publisher.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/shared/scripts/douyin_publish.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/asset-manager/scripts/assets.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/template-library/scripts/templates.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/roi-calculator/scripts/calc.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-bilibili-upload/scripts/bili_upload.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-comment-insights/scripts/comment_insights.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-content-postmortem/scripts/aggregate.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-cross-platform-publish/scripts/publish_dispatch.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-data-tracker/scripts/track.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-event-calendar/scripts/lunar.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-news-intelligence/scripts/daily_briefing.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-news-intelligence/scripts/fetch_news.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-post-scorer/scripts/score.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-publish-analytics/scripts/analyze.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-publish-log/scripts/log.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-publish-notify/scripts/notify.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-publish-scheduler/scripts/publish_queue.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-rss-aggregator/scripts/rss_digest.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-short-link/scripts/shortlink.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-social-performance-review/scripts/review.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/ai_score.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/html_converter.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/image_handler.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/multi_publish.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/newspic_build.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/publish.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    },
+    {
+      "path": "skills/openclaw/skill-wechat-publisher/scripts/wechat_api.py",
+      "exitCode": 0,
+      "helpAvailable": true
+    }
+  ]
+}

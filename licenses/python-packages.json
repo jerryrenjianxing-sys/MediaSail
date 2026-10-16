@@ -111,6 +111,16 @@
     ]
   },
   {
+    "name": "beautifulsoup4",
+    "version": "4.14.3",
+    "license": "MIT License",
+    "source": null,
+    "projectUrls": [
+      "Download, https://www.crummy.com/software/BeautifulSoup/bs4/download/",
+      "Homepage, https://www.crummy.com/software/BeautifulSoup/bs4/"
+    ]
+  },
+  {
     "name": "biliup",
     "version": "1.2.9",
     "license": null,
@@ -574,6 +584,15 @@
     "license": "Apache 2.0",
     "source": "http://www.grantjenks.com/docs/sortedcontainers/",
     "projectUrls": []
+  },
+  {
+    "name": "soupsieve",
+    "version": "2.10",
+    "license": "MIT",
+    "source": null,
+    "projectUrls": [
+      "Homepage, https://github.com/facelessuser/soupsieve"
+    ]
   },
   {
     "name": "sse-starlette",

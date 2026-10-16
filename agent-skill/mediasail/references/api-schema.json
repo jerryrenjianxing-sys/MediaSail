@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MediaSail local API",
-    "version": "0.5.0"
+    "version": "0.5.2"
   },
   "paths": {
     "/": {
@@ -876,7 +876,7 @@
     "/api/accounts/{platform}/whoami": {
       "get": {
         "summary": "Api Account Whoami",
-        "description": "真校验登录态 + 读昵称/头像（起 headless 浏览器，数秒）。前端开页后台调用以自愈假阳性。\n带 TTL 进程内缓存（避免账号页+工作台重复起浏览器）；确认已登录则回写标记，令快速路径自愈。",
+        "description": "校验当前账号；force=1 绕过缓存。未知与未登录分别返回，不清除浏览器资料。",
         "operationId": "api_account_whoami_api_accounts__platform__whoami_get",
         "parameters": [
           {
@@ -886,6 +886,16 @@
             "schema": {
               "type": "string",
               "title": "Platform"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Force"
             }
           }
         ],

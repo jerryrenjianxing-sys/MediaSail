@@ -42,6 +42,19 @@ test('unregistered update recovery validates identities and Unicode paths withou
  Reject{Assert-RecoveryDirectory (Join-Path $env:WINDIR 'not-created\\application') $data}
  foreach($folder in @('UserProfile','DesktopDirectory','MyDocuments','LocalApplicationData','ApplicationData','CommonApplicationData','ProgramFiles','ProgramFilesX86','CommonProgramFiles','CommonProgramFilesX86','Programs','CommonPrograms','StartMenu','CommonStartMenu')){$protected=[Environment]::GetFolderPath([Environment+SpecialFolder]$folder);if($protected){Reject{Assert-RecoveryDirectory $protected $data}}}
  Reject{Assert-RecoveryDirectory (Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs') $data}
+ # A migrated library keeps a complete public discovery mirror at the old path.
+ $library=Join-Path $data '完整资料库';$runtime=Join-Path $library 'runtime';[IO.Directory]::CreateDirectory($runtime)|Out-Null
+ $libraryId='installer-fixture-library-id'
+ $location=@{schema=1;product='MediaSail';state='ready';libraryRoot=$library;libraryId=$libraryId}
+ [IO.File]::WriteAllText((Join-Path $data 'library-location.json'),($location|ConvertTo-Json),[Text.Encoding]::UTF8)
+ [IO.File]::WriteAllText((Join-Path $library '.mediasail-library.json'),(@{schema=1;product='MediaSail';state='ready';libraryId=$libraryId}|ConvertTo-Json),[Text.Encoding]::UTF8)
+ $migrated=$connection.Clone();$migrated.dataDir=$runtime;$migrated.libraryRoot=$library;$migrated.libraryId=$libraryId;$migrated.instanceId='fixture-instance';$migrated.connectionFile=Join-Path $runtime 'agent-connection.json'
+ [IO.File]::WriteAllText($migrated.connectionFile,($migrated|ConvertTo-Json),[Text.Encoding]::UTF8)
+ [IO.File]::WriteAllText($descriptor,($migrated|ConvertTo-Json),[Text.Encoding]::UTF8)
+ $migratedCandidate=Get-RecoveryCandidate $descriptor $identities
+ if($migratedCandidate.directory -cne $program){throw 'Migrated library changed installation recovery'}
+ $migrated.libraryId='wrong-library';[IO.File]::WriteAllText($descriptor,($migrated|ConvertTo-Json),[Text.Encoding]::UTF8);Reject{Get-RecoveryCandidate $descriptor $identities}
+ $migrated.libraryId=$libraryId;$migrated.instanceId='different-instance';[IO.File]::WriteAllText($descriptor,($migrated|ConvertTo-Json),[Text.Encoding]::UTF8);Reject{Get-RecoveryCandidate $descriptor $identities}
  $ResultFile=Join-Path $data 'result.ini';Write-RecoveryResult 'verified' $candidate ''
  $ini=[IO.File]::ReadAllText($ResultFile);if(-not $ini.Contains('directory='+$program) -or -not $ini.Contains('version='+$version)){throw 'Broken NSIS result format'}
  'IDENTITY, PARTIAL REGISTRATION, TAMPERING, ROOT AND UNICODE CHECKS PASSED'`);

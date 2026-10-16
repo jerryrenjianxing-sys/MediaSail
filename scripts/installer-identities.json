@@ -14,6 +14,19 @@
         "uninstaller": "f03972376f35077071dc1728ade8f9fde10ba3f9c0e449a13719016c85ca7035",
         "asar": "cf9d385f6fe1b7b2005a9d83ac1ea46006e2e83e6d1236905747e55129de1c0f"
       }
+    },
+    {
+      "version": "0.5.0",
+      "installer": {
+        "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.0/MediaSail-0.5.0-win-x64-Setup.exe",
+        "sha256": "13d2946e4e9bab7faa31d0714d73ad83401d44c3543c9c2aed5822138bc2f0d6"
+      },
+      "evidence": "docs/LOCAL-UPGRADE-2026-10-15.md",
+      "sha256": {
+        "executable": "93fcb81d775f1648a3c3e8ef82d6cbb3715260827fc10cd3e06f0c957dc33d83",
+        "uninstaller": "e7a1c8081d6c58fba363b87a26bba56677697610dd31f4f0204dcdfa3ddaff32",
+        "asar": "26e773626f1f1ce65fda96e17150ff30174abc5dfcc6f62c5b48a73fd661b620"
+      }
     }
   ]
 }

@@ -4,17 +4,21 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.0 验证记录](docs/VERIFICATION-0.5.0.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.2 候选说明](docs/RELEASE-0.5.2.md) · [0.5.2 验证进度](docs/VERIFICATION-0.5.2.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 当前正式版为 **0.5.0**，安装 MediaSail-0.5.0-win-x64-Setup.exe。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
+
+当前源码为 **0.5.2 候选，尚未正式发布**：建立软件与 Agent 共享的统一资料库，修复抖音创作者后台核验、分析快照归属和外部调用说明。下方资料库描述适用于该候选；真实安装、真实扫码和正式更新的完成情况以候选验证记录为准。0.5.1 继续保留为历史草稿，不是已发布正式版。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
 画像建档、编辑、账号数据回写、采集、统计、内容库、选题、日历、平台登录和发布继续提供。画像增强、深度解释及策略创作由外部 Agent 根据完整专业方法完成。Skill 介绍真实资料、路径和工具，不规定 Agent 用什么创作工具，不要求每轮执行固定流程，也不自动安装进其他 Agent 的全局配置。
 
 完整 Skill 随软件提供，连接文件兼容端口变化与中文路径。现成业务计算可通过内置 Python 调用；通用创作环境由 Agent 自选。成品按项目目录及元数据登记，分析经验可更新回画像。内容库和画像页面可刷新查看外部更新；未保存编辑不会自动覆盖。
+
+0.5.2 的账号页面区分“已验证”“需要登录”和“暂时无法核验”，显示检查时间。抖音登录用于创作者后台，用户默认浏览器的普通主页登录不能替代核验。手动校验绕过缓存；采集失败显示原因并保留上次结果和原采集时间，不把缺失填成零。新抖音快照记录账号与来源，只和同账号、同来源比较；旧资料保留，不自动归给当前账号。
 
 ## AI 发布
 
@@ -32,17 +36,22 @@ AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent �
 
 主分支另有**未发行的 0.5.1 候选**，用于验证人为缺少安装登记时的恢复能力：核对官方旧程序身份，实际卸载前恢复必要登记，失败时回滚。该候选仍为 GitHub 草稿，不是最新正式版，不会被软件的检查更新发现；[候选验证记录](docs/VERIFICATION-0.5.1.md)。
 
-用户数据继续在原位置；卸载默认保留。为兼容历史版本，数据目录仍使用旧技术名称：
+### 0.5.2 统一资料库
 
-    %LOCALAPPDATA%/ElectronEasel
-      workspace/             画像、配置、素材、成品、分析与业务脚本
-      home/                  原平台浏览器资料与旧后台状态
-      Partitions/            AitoEarn网页登录状态
-      aitoearn/              草稿选择、上传记录和回执
-      ui-state.json          主题、画像选择、草稿等界面状态
-      history-archive/0.5.0/  旧聊天归档，原始记录也保留
-      agent-connection.json  当前实例、真实路径与画像选择提示，无密钥
-      logs/                  服务、安装和更新日志
+新安装默认建议“文档/MediaSail资料库”，也可选择本地磁盘内的专用目录。旧版升级先提示选择位置并复制核验，允许稍后继续使用旧位置；迁移确认前后都保留旧资料。设置中的“资料库”显示实际路径，可迁移或切换已有资料库。迁移要求先保存编辑、结束软件业务任务并暂停外部写入；发现变化或出错会停止提交，保留现场并提供恢复入口。
+
+    MediaSail资料库/
+      workspace/              配置、画像、素材、成品、分析、运营方法与业务脚本
+        profiles/             六维画像与经验
+        outputs/              项目、成品、系统分析与发布记录
+        skills/               保留的业务工具与完整专业方法
+      agent-skill/mediasail/   可写 Skill、参考资料与连接辅助脚本
+      runtime/                浏览器资料、AitoEarn 会话、界面状态、历史存档、日志与更新缓存
+        agent-connection.json 当前实例及全部真实路径，无密钥
+
+软件与 Agent 直接使用同一份 workspace。用户修改的方法、脚本与 Skill 保持生效；新版也有修改时保存两份并提示合并。`%LOCALAPPDATA%/ElectronEasel` 保留为兼容旧版的定位入口，发现镜像里的 `connectionFile` 指向当前资料库的正式连接文件。移动位置或端口变化后，辅助脚本会重读并核对实例，不需要另建一套 Agent 工作副本。
+
+旧版平台资料、AitoEarn 分区、发送记录和旧聊天存档迁入 runtime 对应位置，不转移到用户默认浏览器。卸载默认保留资料库和旧数据；不删除用户自行保存的安装包。已选资料库暂不可用时明确提示，不自动创建空库冒充原库。
 
 旧聊天停止续跑，可从设置打开存档目录。用户修改的脚本、素材及已进入工作目录的旧演示内容不会为了瘦身被清除。关闭窗口留在托盘；主动退出只结束软件自己的服务和业务任务，外部Agent任务由其环境负责。
 
@@ -54,15 +63,15 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 正式版 / 当前源码候选 | 0.5.0 / 0.5.1（未发行） |
+| MediaSail 正式版 / 当前源码候选 | 0.5.0 / 0.5.2（未发行）；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.1。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。候选产物在仓库外 ../../outputs/MediaSail/release-0.5.2。
 
-运行打包版UI验收时使用main分支最新测试脚本，并同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`。更新组件独立使用后者定位缓存，只改用户数据目录不能隔离缓存。0.5.0发布后的测试脚本已补上这一设置；安装包和业务代码未因此变动。
+运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。0.5.2 将更新缓存放入当前 runtime，并只复制经过核验的旧软件缓存；尚不能据此推断真实安装升级已经验收通过。
 
 ## 验证与来源
 

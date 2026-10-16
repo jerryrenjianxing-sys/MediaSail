@@ -30,11 +30,11 @@
 | DELETE /api/output/{path} | 删除内容库文件或目录 |
 | POST /api/upload、/api/upload/local | multipart files 与 sessionId；写入收件目录，返回 files 中 id/name/path，不接受本地路径字符串 |
 | GET /api/upload/limits | 普通上传上限 |
-| GET /api/accounts | 平台支持与登录标记 |
+| GET /api/accounts | 平台支持与最近已知核验状态，旧成功标记不是实时在线证明 |
 | POST /api/login/{platform} | 使用系统 Chrome/Edge 打开真实平台登录 |
 | GET /api/login/{platform}/status | 登录状态、二维码等 |
 | POST /api/login/{platform}/sms | code；提交验证码 |
-| GET /api/accounts/{platform}/whoami | 实际校验账号，可能联网 |
+| GET /api/accounts/{platform}/whoami | 实际校验账号，可能联网；force=1 手动绕过缓存 |
 | POST /api/logout/{platform} | 退出平台账号 |
 | GET /api/analytics/platforms | 可分析平台与登录标记 |
 | GET /api/analytics/{platform} | 真实采集并更新快照；可能启动浏览器，并非纯缓存 |
@@ -56,16 +56,19 @@
 DataDir 和 SkillHelper 使用复制说明中的实际绝对路径。中文、空格路径作为独立参数传递，不拼接 shell 命令：
 
 ```powershell
-$DataDir = 'C:\Users\某用户\AppData\Local\ElectronEasel'
-$SkillHelper = 'D:\应用目录\resources\agent-skill\mediasail\scripts\mediasail.ps1'
+$DataDir = '<复制说明中的运行数据目录或发现入口所在目录>'
+$SkillHelper = '<skillDir>\scripts\mediasail.ps1'
 & $SkillHelper check --data-dir $DataDir
 $info = Get-Content -LiteralPath (Join-Path $DataDir 'agent-connection.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if ($info.connectionFile) { $info = Get-Content -LiteralPath $info.connectionFile -Raw -Encoding UTF8 | ConvertFrom-Json }
 Invoke-RestMethod ($info.baseUrl + '/api/personas')
 $payload = @{title='春季选题';note='结合受众反馈对比两个角度';source='external-agent'} | ConvertTo-Json
 Invoke-RestMethod ($info.baseUrl + '/api/ideas') -Method Post -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($payload))
 ```
 
 辅助脚本为子进程设置工作目录和隔离运行环境，不修改外部 Agent 的全局配置。脚本每次读取最新连接文件；check 连接失败时仍报告找到的本地路径，python 命令仍可运行本地计算。Node 命令只寻找可选系统 Node，不是软件必要依赖，不自动安装。
+
+抖音 whoami 和采集响应保留 `loggedIn`，同时提供 `verificationStatus`（verified/login_required/unknown）、`accountId`、`checkedAt`（Unix 秒）、`errorCode` 和 `message`。以三态和检查时间理解结果；unknown 时界面可显示明确标注的 lastKnown 历史身份，不能把它当本次校验成功。平台正在登录/发布时 `profile_busy` 表示资料占用，稍后重试，不另开同资料浏览器。登录收尾会关闭扫码浏览器、重开核验持久会话后才报告 success。
 
 ## 基线响应
 

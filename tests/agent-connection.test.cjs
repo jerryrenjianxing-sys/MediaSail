@@ -16,3 +16,15 @@ test('discovery is atomic, secret-free, changes instance/port, and cannot stop a
   assert.equal(fs.readdirSync(data).filter(f=>f.endsWith('.tmp')).length,0);
  }finally{fs.rmSync(data,{recursive:true,force:true});}
 });
+
+test('an old library cannot replace the discovery mirror of the new library on exit',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'MediaSail libraries '));
+ try{
+  const mirror=path.join(root,'bootstrap','agent-connection.json');
+  const args={version:'0.5.2',baseUrl:'http://127.0.0.1:11111',options:{python:'python.exe',env:{EASEL_DESKTOP_WORKSPACE:path.join(root,'workspace')}},skillDir:'skill',executable:'MediaSail.exe',discoveryFile:mirror};
+  const old=new AgentConnection(path.join(root,'old'));old.begin({...args,libraryId:'old-library'});
+  const next=new AgentConnection(path.join(root,'next'));next.begin({...args,libraryId:'next-library'});
+  old.stop();assert.equal(JSON.parse(fs.readFileSync(mirror,'utf8')).libraryId,'next-library');
+  assert.equal(JSON.parse(fs.readFileSync(mirror,'utf8')).connectionFile,next.file);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "version": "0.5.2",
+  "testedAt": "2026-10-16T04:31:16.916Z",
+  "realPackagedApplication": true,
+  "realProcessRelaunch": true,
+  "realAccountUsed": false,
+  "publications": false,
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\真实切库 0.5.2 1792125043765",
+  "checks": [
+    "File writer and packaged business API read/write the same ordinary Documents directory",
+    "Settings IPC closes owned services, migrates verified files, and actually relaunches at new runtime/session directory",
+    "Old discovery address resolves current library after port and process change",
+    "Open-existing performs a real restart without merging or deleting the previous library",
+    "Selected library persists through an additional normal exit and restart"
+  ],
+  "errors": [],
+  "scope": "Local packaged process and physical Documents paths; NSIS upgrade is verified separately on Windows runner."
+}

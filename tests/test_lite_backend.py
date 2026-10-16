@@ -165,10 +165,14 @@ class LocalBusiness(unittest.IsolatedAsyncioTestCase):
     async def test_no_browser_fails_before_login_and_keeps_core_service(self):
         with patch.object(self.web, 'resolve_browser', side_effect=business_browser.BrowserUnavailable('未找到 Chrome 或 Edge')):
             for method, path in [('POST', '/api/login/douyin'), ('GET', '/api/analytics/douyin'),
-                                 ('GET', '/api/accounts/zhihu/whoami'), ('POST', '/api/accounts/wechat-oa/mp-login')]:
+                                 ('POST', '/api/accounts/wechat-oa/mp-login')]:
                 response = await self.client.request(method, path)
                 self.assertEqual(response.status_code, 503, response.text)
                 self.assertIn('Chrome', response.json()['detail'])
+            verification = await self.client.get('/api/accounts/zhihu/whoami')
+            self.assertEqual(verification.status_code, 200, verification.text)
+            self.assertEqual(verification.json()['verificationStatus'], 'unknown')
+            self.assertEqual(verification.json()['errorCode'], 'BROWSER_UNAVAILABLE')
             self.assertTrue((await self.client.get('/api/status')).json()['serviceReady'])
 
 

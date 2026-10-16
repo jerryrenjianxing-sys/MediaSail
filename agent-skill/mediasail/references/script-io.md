@@ -2,6 +2,8 @@
 
 所有示例通过 mediasail.ps1 python 运行，cwd 是连接资料的 workspace，EASEL_ROOT 同步指向该目录。脚本的 --help 是当前参数契约；读写文件可使用引号包裹的中文或空格路径。本页例子不联网、不调用模型、不使用真实账号。
 
+`$SkillHelper`、`$DataDir` 和 `$info` 使用 [工具与接口](tools-api.md) 的 Windows 示例，从本机最新连接资料取得实际值；先建立对应项目及 assets 目录再写文件，示例主题名可按任务替换。
+
 ## 项目登记
 
 先在 outputs/春季内容/ 写好文案.md，再运行：
@@ -25,7 +27,7 @@ snapshot 写入 outputs/_analytics/snapshots/<profile>/<platform>/<date>.json，
 
 ## 月度复盘计算
 
-先准备 UTF-8 JSON 文件，字段可以缺失：
+先在 `outputs/复盘主题/assets/输入数据.json` 准备 UTF-8 JSON 文件，字段可以缺失：
 
 ```json
 {
@@ -39,7 +41,7 @@ snapshot 写入 outputs/_analytics/snapshots/<profile>/<platform>/<date>.json，
 JSON 输出为可追溯的计算结果，包含排序、维度分数/总分和缺值警告。互动率优先 reach→impressions→views；付费推广帖另行标记/剔除后比较有机基准。缺 benchmark/previous/plan 时对应维度降级，剩余权重归一；不是强制80分才可交付。
 
 ```powershell
-& $SkillHelper python --data-dir $DataDir 'skills/openclaw/skill-social-performance-review/scripts/review.py' score --input 'outputs/复盘主题/输入数据.json' | Set-Content -LiteralPath (Join-Path $info.outputs '复盘主题/计算结果.json') -Encoding UTF8
+& $SkillHelper python --data-dir $DataDir 'skills/openclaw/skill-social-performance-review/scripts/review.py' score --input 'outputs/复盘主题/assets/输入数据.json' | Set-Content -LiteralPath (Join-Path $info.outputs '复盘主题/assets/计算结果.json') -Encoding UTF8
 ```
 
 完整月报仍需 Agent 结合业务解释 Top/Bottom、内容支柱、格式、hook、节奏与下月行动。可以用其他工具复现相同口径，不必固定调用脚本。具体参数以当前脚本 --help 为准。

@@ -43,7 +43,7 @@ index 491e3e9..5a0edee 100644
  真碰到一时不趁手的工具或拿不到的数据，就实话实说卡在哪、再给个能走的替代路子。
  
 diff --git a/skills/openclaw/skill-data-tracker/scripts/track.py b/skills/openclaw/skill-data-tracker/scripts/track.py
-index 008f4ba..6d31fe0 100644
+index 008f4ba..e9deb5d 100644
 --- a/skills/openclaw/skill-data-tracker/scripts/track.py
 +++ b/skills/openclaw/skill-data-tracker/scripts/track.py
 @@ -26,7 +26,7 @@ from pathlib import Path
@@ -55,6 +55,33 @@ index 008f4ba..6d31fe0 100644
  SNAP_ROOT = PROJECT_ROOT / "outputs" / "_analytics" / "snapshots"
  LEGACY_SNAP_ROOT = PROJECT_ROOT / "outputs" / "analytics" / "snapshots"
  
+@@ -109,7 +109,7 @@ def cmd_snapshot(args) -> None:
+     # 与最近一条历史快照对比 delta（排除同日的旧值）
+     last = None
+     for s in reversed(prev):
+-        if s.get("date") != d:
++        if s.get("platform") == args.platform and s.get("date", "") < d:
+             last = s
+             break
+     deltas = {}
+@@ -134,6 +134,8 @@ def cmd_trend(args) -> None:
+     snaps = load_snapshots(profile)
+     if args.platform:
+         snaps = [s for s in snaps if s.get("platform") == args.platform]
++    elif len({s.get("platform") for s in snaps}) > 1:
++        sys.exit("错误：该画像含多个平台，请通过 --platform 指定平台后再计算趋势")
+     # 时间窗口
+     if args.since:
+         snaps = [s for s in snaps if s.get("date", "") >= args.since]
+@@ -212,6 +214,8 @@ def cmd_lifecycle(args) -> None:
+     snaps = load_snapshots(profile)
+     if args.platform:
+         snaps = [s for s in snaps if s.get("platform") == args.platform]
++    elif len({s.get("platform") for s in snaps}) > 1:
++        sys.exit("错误：该画像含多个平台，请通过 --platform 指定平台后再分析生命周期")
+     metric = args.metric
+ 
+     # 找目标帖子的发布日期与逐日指标
 diff --git a/skills/openclaw/skill-publish-analytics/scripts/analyze.py b/skills/openclaw/skill-publish-analytics/scripts/analyze.py
 index a7016c7..ea4e94f 100644
 --- a/skills/openclaw/skill-publish-analytics/scripts/analyze.py
@@ -77,21 +104,93 @@ index a7016c7..ea4e94f 100644
  DEFAULT_FOLLOWER = PROJECT_ROOT / "outputs" / "_analytics" / "follower-log.json"
  LEGACY_DATA = PROJECT_ROOT / "outputs" / "publish-log.json"
 diff --git a/skills/shared/scripts/account_stats.py b/skills/shared/scripts/account_stats.py
-index 8d336d0..07aad7e 100644
+index 8d336d0..073b1cb 100644
 --- a/skills/shared/scripts/account_stats.py
 +++ b/skills/shared/scripts/account_stats.py
-@@ -18,8 +18,9 @@ import re
+@@ -18,8 +18,11 @@ import re
  import sys
  import time
  from pathlib import Path
 +from business_browser import launch_persistent_context, resolve_browser
++from profile_lock import ProfileLock
++import creator_auth
  
 -PROJECT_ROOT = Path(__file__).resolve().parents[3]
 +PROJECT_ROOT = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
  ANALYTICS_DIR = PROJECT_ROOT / "outputs" / "_analytics"
  # 分层保留：近 KEEP_FULL_DAYS 天全部变化一条不丢；90~DAILY_DAYS 天每天≤1条；更老每周≤1条。
  # 既留住 日/周/月/年 对比所需的老基线，又让总量恒定在几百条(几十KB)、用多年不膨胀。
-@@ -368,14 +369,14 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -235,6 +238,7 @@ def _delta(cur, base):
+ 
+ def growth_windows(history: list[dict], current: dict) -> dict:
+     """多窗口增长：last=对上一条快照；day/week/month/year=对不晚于(now-窗口)的最近快照。无基线→None。"""
++    history = matching_history(history, current)
+     now = current["ts"]
+     specs = {"last": None, "day": 86400, "week": 7 * 86400, "month": 30 * 86400, "year": 365 * 86400}
+     out: dict = {}
+@@ -256,6 +260,18 @@ def growth_windows(history: list[dict], current: dict) -> dict:
+     return out
+ 
+ 
++def matching_history(history: list[dict], current: dict) -> list[dict]:
++    """Legacy rows stay readable, but cannot be assigned to a new identity."""
++    history = [row for row in history if isinstance(row, dict)]
++    if current.get("accountId") or current.get("source"):
++        if not current.get("accountId") or not current.get("source"):
++            return []
++        history = [row for row in history if row.get("accountId") == current["accountId"]
++                   and row.get("source") == current["source"]]
++    return sorted((row for row in history if isinstance(row.get("ts"), (int, float))
++                   and row["ts"] <= current.get("ts", float("inf"))), key=lambda row: row["ts"])
++
++
+ def _history_path(platform: str) -> Path:
+     return ANALYTICS_DIR / f"{platform}.jsonl"
+ 
+@@ -277,8 +293,13 @@ def load_history(platform: str) -> list[dict]:
+ 
+ def append_snapshot(platform: str, snap: dict) -> None:
+     ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
+-    with _history_path(platform).open("a", encoding="utf-8") as f:
+-        f.write(json.dumps(snap, ensure_ascii=False) + "\n")
++    with _history_path(platform).open("ab+") as f:
++        f.seek(0, 2)
++        if f.tell():
++            f.seek(-1, 2)
++            if f.read(1) != b"\n":
++                f.write(b"\n")
++        f.write((json.dumps(snap, ensure_ascii=False) + "\n").encode("utf-8"))
+ 
+ 
+ def _local_day(ts: int):
+@@ -322,7 +343,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
+ def record_snapshot(platform: str, snap: dict) -> None:
+     """数据较上一条有变化才追加；写入前做分层保留 compaction（老数据自动稀疏化，文件永不膨胀）。"""
+     h = load_history(platform)
+-    if not should_record(h, snap):
++    if platform == "douyin" and (snap.get("verificationStatus") != "verified"
++            or not snap.get("accountId") or snap.get("source") != creator_auth.DOUYIN_SOURCE):
++        return
++    if not should_record(matching_history(h, snap), snap):
++        return
++    if snap.get("accountId"):
++        # Preserve historical rows byte-for-byte. They may belong to another
++        # account/source or have unknown provenance; never relabel or compact
++        # them as part of a successful new-account collection.
++        append_snapshot(platform, snap)
+         return
+     h.append(snap)
+     h = compact(h, snap["ts"])
+@@ -349,7 +379,7 @@ def _proxy(platform: str, explicit: str | None, disable: bool | None) -> str | N
+     return os.environ.get("https_proxy") or os.environ.get("http_proxy") or os.environ.get("EASEL_PROXY")
+ 
+ 
+-def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
++def _scrape_unlocked(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
+     from playwright.sync_api import sync_playwright
+     cfg = PLATFORMS[platform]
+     r = {"nickname": "", "followers": None, "likes": None, "following": None,
+@@ -368,17 +398,27 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      try:
          with sync_playwright() as p:
              if platform == "xiaohongshu":
@@ -99,6 +198,9 @@ index 8d336d0..07aad7e 100644
 +                # 与发布/登录共用浏览器选择和同一套启动参数；禁图版 Chromium 会把创作中心打回登录页。
                  _clear_stale_chrome_locks(profile)
                  ctx = _xhs_launch(p, headed, base, proxy)
++            elif platform == "douyin":
++                from douyin_publish import _launch as _douyin_launch
++                ctx = _douyin_launch(p, headed, base, proxy)
              else:
                  kwargs = dict(headless=not headed, locale="zh-CN", args=LAUNCH_ARGS)
                  if proxy:
@@ -108,7 +210,57 @@ index 8d336d0..07aad7e 100644
              page = ctx.pages[0] if ctx.pages else ctx.new_page()
              try:
                  page.goto(cfg["url"], wait_until="domcontentloaded", timeout=30000)
-@@ -778,9 +779,9 @@ def cmd_check(_a) -> int:
++                if platform == "douyin":
++                    verification = creator_auth.verify_douyin(page)
++                    r.update(verification)
++                    r["source"] = creator_auth.DOUYIN_SOURCE
++                    r["logged_in"] = verification["loggedIn"]
++                    if verification["verificationStatus"] != "verified":
++                        return r
+                 ov, d = cfg["overview"], cfg.get("overview_dir", "after")
+                 mets = cfg.get("metrics", [])
+                 manchor = cfg.get("metrics_anchor")
+@@ -403,8 +443,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+                         pass
+                 if clicked:
+                     lines = _poll_stable(page, _sig, 6000)   # 点「累计」后重新等稳定
+-                if re.search(r"(passport|/login)", page.url or "") or \
+-                   page.query_selector('button:has-text("扫码登录"), [class*="login-btn"]'):
++                if platform != "douyin" and (re.search(r"(passport|/login)", page.url or "") or \
++                   page.query_selector('button:has-text("扫码登录"), [class*="login-btn"]')):
+                     r["logged_in"] = False
+                 r["followers"] = num_by_label(lines, ov["followers"], d)
+                 r["likes"] = num_by_label(lines, ov["likes"], d)
+@@ -412,6 +452,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+                 r["posts"] = num_by_label(lines, cfg.get("posts_labels", ["笔记数", "作品数", "内容数", "视频数"]), d)
+                 r["metrics"] = metrics_with_vs(lines, cfg.get("metrics", []), manchor)[:8]
+                 r["nickname"] = extract_nickname(lines, ov, cfg.get("uid_anchor", ""))
++                if platform == "douyin":
++                    r["nickname"] = verification["name"]
+                 # 昵称优先用专用选择器（视频号文本锚点不稳：概览是「关注者1」同行，锚不到昵称）
+                 nsel = cfg.get("nickname_selector")
+                 if nsel:
+@@ -452,6 +494,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+     return r
+ 
+ 
++def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
++    if platform != "douyin":
++        return _scrape_unlocked(platform, headed, base, proxy)
++    try:
++        with ProfileLock(_profile_dir(platform, base)):
++            return _scrape_unlocked(platform, headed, base, proxy)
++    except Exception as error:
++        verification = creator_auth.failure(error)
++        return {"nickname": "", "followers": None, "likes": None, "following": None,
++                "posts": None, "metrics": [], "notes": [], "logged_in": False,
++                "source": creator_auth.DOUYIN_SOURCE, **verification}
++
++
+ def _has_body(page) -> bool:
+     try:
+         return page.query_selector("body") is not None
+@@ -778,9 +833,9 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -120,6 +272,30 @@ index 8d336d0..07aad7e 100644
              ok = bool(path and Path(path).exists())
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
+@@ -800,9 +855,14 @@ def cmd_fetch(a) -> int:
+ 
+     now = int(time.time())
+     snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
++    verification = {k: s[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode", "message", "source") if k in s}
++    if a.platform == "douyin":
++        snap.update({"accountId": s.get("accountId"), "source": creator_auth.DOUYIN_SOURCE,
++                     "verificationStatus": s.get("verificationStatus"), "checkedAt": s.get("checkedAt")})
+     history = load_history(a.platform)
+     growth = growth_windows(history, snap)
+-    if any(snap[k] is not None for k in ("followers", "likes", "posts")):
++    eligible = a.platform != "douyin" or (s.get("verificationStatus") == "verified" and bool(s.get("accountId")))
++    if eligible and any(snap[k] is not None for k in ("followers", "likes", "posts")):
+         record_snapshot(a.platform, snap)
+ 
+     out = {
+@@ -818,6 +878,7 @@ def cmd_fetch(a) -> int:
+             {"key": "following", "label": "关注", "value": s["following"]},
+         ],
+         "growth": growth, "fetched_at": now,
++        **verification,
+     }
+     print(json.dumps(out, ensure_ascii=False))
+     return 0
 diff --git a/skills/shared/scripts/business_browser.py b/skills/shared/scripts/business_browser.py
 new file mode 100644
 index 0000000..ae08227
@@ -196,19 +372,65 @@ index 0000000..ae08227
 +    kwargs.pop("channel", None)
 +    kwargs["executable_path"] = str(resolve_browser())
 +    return chromium.launch_persistent_context(str(profile), **kwargs)
+diff --git a/skills/shared/scripts/creator_auth.py b/skills/shared/scripts/creator_auth.py
+new file mode 100644
+index 0000000..1b5a96f
+--- /dev/null
++++ b/skills/shared/scripts/creator_auth.py
+@@ -0,0 +1,37 @@
++"""Explicit creator-session results; a public profile is not proof of access."""
++from __future__ import annotations
++
++import time
++
++import platform_readback
++from profile_lock import ProfileBusyError
++
++DOUYIN_SOURCE = "douyin-creator"
++
++
++def result(status="unknown", *, account=None, error_code="", message=""):
++    account = account or {}
++    account_id = str(account.get("platform_account_id") or "").strip()
++    if status == "verified" and not account_id:
++        status, error_code, message = "unknown", "identity_missing", "后台响应缺少账号身份，暂时无法核验"
++    verified = status == "verified"
++    return {"loggedIn": verified, "verificationStatus": status,
++            "accountId": account_id if verified else None,
++            "checkedAt": int(time.time()), "errorCode": error_code, "message": message,
++            "name": str(account.get("display_name") or "") if verified else "",
++            "avatar": str(account.get("avatar") or "") if verified else ""}
++
++
++def failure(error):
++    if isinstance(error, platform_readback.LoginRequiredError):
++        return result("login_required", error_code="login_required", message="抖音创作者后台未登录，请在账号页重新登录")
++    if isinstance(error, ProfileBusyError):
++        return result(error_code="profile_busy", message=str(error))
++    return result(error_code="verification_failed", message="暂时无法核验抖音创作者后台：" + str(error)[:240])
++
++
++def verify_douyin(page, **request_options):
++    try:
++        return result("verified", account=platform_readback.read_douyin_account(page, **request_options))
++    except Exception as error:
++        return failure(error)
 diff --git a/skills/shared/scripts/douyin_publish.py b/skills/shared/scripts/douyin_publish.py
-index ba699d3..58720cb 100644
+index ba699d3..c9ecb93 100644
 --- a/skills/shared/scripts/douyin_publish.py
 +++ b/skills/shared/scripts/douyin_publish.py
-@@ -25,6 +25,7 @@ import random
+@@ -25,6 +25,10 @@ import random
  import sys
  import time
  from pathlib import Path
++from urllib.parse import urlsplit
 +from business_browser import launch_persistent_context, resolve_browser
++from profile_lock import ProfileLock
++import creator_auth
  
  sys.path.insert(0, str(Path(__file__).resolve().parent))
  import login_state  # noqa: E402
-@@ -72,7 +73,7 @@ SELECTORS = {
+@@ -72,7 +76,7 @@ SELECTORS = {
      "toast": 'span[class*="semi-toast-content-text"]',
  }
  PROFILE_NAME = "DouyinProfile"
@@ -217,7 +439,7 @@ index ba699d3..58720cb 100644
  DEFAULT_QR_OUT = PROJECT_ROOT / "outputs" / "_login" / "douyin.png"
  
  # 短信验证墙的多步流程选择器（跨引擎，逐个 query_selector 尝试；真机首次跑后据 dump 校准）。
-@@ -158,7 +159,7 @@ def _launch(p, headed: bool, base: str | None, proxy: str | None):
+@@ -158,7 +162,7 @@ def _launch(p, headed: bool, base: str | None, proxy: str | None):
      kwargs = dict(headless=not headed, locale="zh-CN", args=args)
      if proxy:
          kwargs["proxy"] = {"server": proxy}
@@ -226,7 +448,7 @@ index ba699d3..58720cb 100644
  
  
  def _wait_ready(page, timeout_ms: int = 15000) -> None:
-@@ -937,11 +938,11 @@ def cmd_check(_a) -> int:
+@@ -937,18 +941,18 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -240,6 +462,374 @@ index ba699d3..58720cb 100644
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
      print(f"登录态目录：{_profile_dir(None)}")
+     return 0 if ok else 3
+ 
+ 
+-def cmd_login(a) -> int:
++def _run_login(a) -> int:
+     try:
+         from playwright.sync_api import sync_playwright
+     except Exception as e:
+@@ -978,8 +982,8 @@ def cmd_login(a) -> int:
+                 _die(f"打开 {HOME_URL} 失败：{e}", 1)
+             page.wait_for_timeout(1000)
+             if _logged_in(page):
+-                login_state.write_status(sf, "success", "已登录")
+-                print("✅ 抖音已登录（登录态在持久化目录）")
++                login_state.write_status(sf, "verifying", "正在确认登录保存状态…")
++                print("正在核验抖音创作者后台登录保存状态")
+                 return 0
+             # 抖音登录默认可能是「验证码登录」tab，二维码在「扫码登录」tab 下——先切过去
+             try:
+@@ -1001,8 +1005,8 @@ def cmd_login(a) -> int:
+                 # 无二维码：可能未出码前就直接走了短信验证（风控）
+                 if _verify_wall(page):
+                     if _handle_sms(page, sf, qr_out, code_file):
+-                        login_state.write_status(sf, "success", "登录成功（含短信验证）")
+-                        print("✅ 抖音登录成功（含短信验证），登录态已持久化")
++                        login_state.write_status(sf, "verifying", "正在确认登录保存状态…")
++                        print("短信步骤完成，正在核验登录保存状态")
+                         try:
+                             qr_out.unlink()
+                         except OSError:
+@@ -1033,8 +1037,8 @@ def cmd_login(a) -> int:
+             last_shot = time.time()
+             while time.time() < deadline:
+                 if _logged_in(page):
+-                    login_state.write_status(sf, "success", "登录成功")
+-                    print("✅ 抖音登录成功，登录态已持久化")
++                    login_state.write_status(sf, "verifying", "正在确认登录保存状态…")
++                    print("正在核验抖音创作者后台登录保存状态")
+                     try:
+                         qr_out.unlink()
+                     except OSError:
+@@ -1042,8 +1046,8 @@ def cmd_login(a) -> int:
+                     return 0
+                 if _verify_wall(page):
+                     if _handle_sms(page, sf, qr_out, code_file):
+-                        login_state.write_status(sf, "success", "登录成功（含短信验证）")
+-                        print("✅ 抖音登录成功（含短信验证），登录态已持久化")
++                        login_state.write_status(sf, "verifying", "正在确认登录保存状态…")
++                        print("短信步骤完成，正在核验登录保存状态")
+                         try:
+                             qr_out.unlink()
+                         except OSError:
+@@ -1079,8 +1083,8 @@ def cmd_login(a) -> int:
+             # 绝不把前端晾在 verifying/中途态上无限转圈（真机实测的坑）。
+             try:
+                 if _logged_in(page):
+-                    login_state.write_status(sf, "success", "登录成功")
+-                    print("✅ 抖音登录成功（异常后复查确认），登录态已持久化")
++                    login_state.write_status(sf, "verifying", "正在确认登录保存状态…")
++                    print("页面已恢复，正在核验登录保存状态")
+                     try:
+                         qr_out.unlink()
+                     except OSError:
+@@ -1095,6 +1099,68 @@ def cmd_login(a) -> int:
+             ctx.close()
+ 
+ 
++def _verify_persisted_login(a):
++    """The QR context has closed. Verify the same saved profile once reopened."""
++    from playwright.sync_api import sync_playwright
++    with sync_playwright() as p:
++        ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
++        try:
++            page = ctx.pages[0] if ctx.pages else ctx.new_page()
++            deadline = time.monotonic() + 45
++            def remaining(limit):
++                value = min(limit, int((deadline - time.monotonic()) * 1000))
++                if value <= 0:
++                    raise TimeoutError("创作者后台登录核验超时，请稍后重试校验账号")
++                return value
++            def transient(error):
++                return any(word in str(error) for word in (
++                    "ERR_CONNECTION_TIMED_OUT", "ERR_CONNECTION_CLOSED", "ERR_CONNECTION_RESET",
++                    "ERR_NETWORK_CHANGED", "Timeout", "timeout", "timed out"))
++            for attempt, timeout in enumerate((30000, 15000)):
++                try:
++                    page.goto(HOME_URL, wait_until="domcontentloaded", timeout=remaining(timeout))
++                    break
++                except Exception as error:
++                    # A fresh browser can hit a transient connection timeout
++                    # immediately after scanning. Retry the read-only page once
++                    # within roughly the former 45-second navigation budget.
++                    if attempt or not transient(error):
++                        raise
++                    landed = urlsplit(str(page.url or ""))
++                    if landed.scheme == "https" and landed.hostname == "creator.douyin.com":
++                        # DOM readiness can time out after the origin has loaded.
++                        # Its authenticated API is stronger evidence than a
++                        # missing button or an unfinished resource waterfall.
++                        status = creator_auth.verify_douyin(page, timeout_ms=remaining(5000), evaluate_retries=1)
++                        if status["verificationStatus"] != "unknown" or not transient(status.get("message")):
++                            return status
++                    print("创作者后台连接暂时超时，正在重试一次…", file=sys.stderr)
++                    page.wait_for_timeout(remaining(1200))
++            return creator_auth.verify_douyin(page, timeout_ms=remaining(15000), evaluate_retries=1)
++        finally:
++            ctx.close()
++
++
++def cmd_login(a) -> int:
++    sf = getattr(a, "status_file", None)
++    try:
++        with ProfileLock(_profile_dir(a.profile_base)):
++            code = _run_login(a)
++            if code:
++                return code
++            verification = _verify_persisted_login(a)
++    except Exception as error:
++        verification = creator_auth.failure(error)
++    # Both Chromium contexts have closed and the profile lock is released
++    # before success becomes visible to the UI's immediate whoami request.
++    verified = verification["verificationStatus"] == "verified"
++    message = (verification["name"] or "抖音创作者后台已登录") if verified else verification["message"]
++    login_state.write_status(sf, "success" if verified else "error", message,
++                             **{k: verification[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode")})
++    print(json.dumps(verification, ensure_ascii=False))
++    return 0 if verified else 4
++
++
+ def _plan_lines(kind, title, desc, media, tags):
+     tab = "发布视频" if kind == "video" else "发布图文"
+     over = "  ⚠️超限" if len(title) > TITLE_MAX else ""
+@@ -1151,7 +1217,7 @@ def _readback_verify(p, a, title: str, since_ms: int | None = None,
+         return platform_readback.ReadbackResult(outcome="readback_error", error=str(e))
+ 
+ 
+-def _publish(a, kind: str) -> int:
++def _publish_unlocked(a, kind: str) -> int:
+     if not a.title:
+         _die("--title 必填")
+     if len(a.title) > TITLE_MAX:
+@@ -1195,8 +1261,11 @@ def _publish(a, kind: str) -> int:
+         try:
+             page.goto(HOME_URL, wait_until="domcontentloaded")
+             _wait_ready(page)
+-            if not _logged_in(page):
+-                _die("未登录，请先 `login` 扫码")
++            verification = creator_auth.verify_douyin(page)
++            if verification["verificationStatus"] != "verified":
++                login_state.write_status(sf, "error", verification["message"],
++                    **{k: verification[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode")})
++                _die(verification["message"], 6 if verification["verificationStatus"] == "login_required" else 5)
+             # 发前快照：记录当前作品 id 集，读回时用于排除旧作品
+             snapshot_ids = platform_readback.capture_douyin_snapshot(page)
+             _go_upload(page)
+@@ -1311,6 +1380,19 @@ def _publish(a, kind: str) -> int:
+     _die(f"发布未确认成功（{reason}；见截图/日志）", 5)
+ 
+ 
++def _publish(a, kind: str) -> int:
++    if not a.exec:
++        return _publish_unlocked(a, kind)
++    try:
++        with ProfileLock(_profile_dir(a.profile_base)):
++            return _publish_unlocked(a, kind)
++    except Exception as error:
++        verification = creator_auth.failure(error)
++        login_state.write_status(getattr(a, "status_file", None), "error", verification["message"],
++            **{k: verification[k] for k in ("verificationStatus", "accountId", "checkedAt", "errorCode")})
++        _die(verification["message"], 5)
++
++
+ def cmd_publish(a) -> int:
+     return _publish(a, "imagetext")
+ 
+@@ -1320,53 +1402,12 @@ def cmd_publish_video(a) -> int:
+ 
+ 
+ def cmd_whoami(a) -> int:
+-    """真校验登录态 + 读昵称/头像，输出单行 JSON（供 Web 后端解析）。
+-    复用 _logged_in（无二维码 + 有「高清发布」）。昵称/头像选择器 best-effort，登录后需校验。"""
++    """Verify creator identity, rather than infer login from a page button."""
+     try:
+-        from playwright.sync_api import sync_playwright
+-    except Exception as e:
+-        print(json.dumps({"loggedIn": False, "name": "", "avatar": "", "error": f"playwright:{e}"}))
+-        return 0
+-    result = {"loggedIn": False, "name": "", "avatar": ""}
+-    try:
+-        with sync_playwright() as p:
+-            ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
+-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+-            try:
+-                page.goto(HOME_URL, wait_until="domcontentloaded")
+-                try:
+-                    page.wait_for_selector(SELECTORS["hd_publish"], timeout=4000)
+-                except Exception:
+-                    pass
+-                logged = _logged_in(page)
+-                result["loggedIn"] = logged
+-                if logged:
+-                    # 昵称/头像用**稳定锚点**取，不靠随机 class（真机校准 2026-08）：
+-                    # 头像 src 路径含 aweme-avatar 稳定；昵称是「抖音号：」上一行的非数字文本。
+-                    try:
+-                        page.wait_for_timeout(1500)  # 主页头像/昵称异步渲染
+-                        na = page.evaluate(
+-                            r"""() => {
+-                                const av = document.querySelector('img[src*="aweme-avatar"]')
+-                                       || document.querySelector('img[src*="douyinpic.com/aweme"]');
+-                                let name = '', avatar = av ? av.src : '';
+-                                const all = [...document.querySelectorAll('*')].filter(
+-                                    e => e.children.length === 0 && (e.textContent || '').trim());
+-                                const ai = all.findIndex(e => /抖音号[:：]/.test(e.textContent));
+-                                if (ai > 0) for (let j = ai - 1; j >= 0 && j >= ai - 4; j--) {
+-                                    const t = (all[j].textContent || '').trim();
+-                                    if (t && !/^[\d,]+$/.test(t) && t.length <= 40) { name = t; break; }
+-                                }
+-                                return {name, avatar};
+-                            }""")
+-                        result["name"] = (na.get("name") or "")[:40]
+-                        result["avatar"] = na.get("avatar") or ""
+-                    except Exception:
+-                        pass
+-            finally:
+-                ctx.close()
+-    except Exception as e:  # noqa: BLE001 — whoami 永远输出 JSON
+-        result["error"] = str(e)
++        with ProfileLock(_profile_dir(a.profile_base)):
++            result = _verify_persisted_login(a)
++    except Exception as error:
++        result = creator_auth.failure(error)
+     print(json.dumps(result, ensure_ascii=False))
+     return 0
+ 
+diff --git a/skills/shared/scripts/login_state.py b/skills/shared/scripts/login_state.py
+index 1e73a95..b49f9f1 100644
+--- a/skills/shared/scripts/login_state.py
++++ b/skills/shared/scripts/login_state.py
+@@ -39,11 +39,16 @@ def read_sms_code(path: str | None) -> str:
+     return code
+ 
+ 
+-def write_status(path: str | None, state: str, message: str = "", qr: str = "") -> None:
++def write_status(path: str | None, state: str, message: str = "", qr: str = "", **verification) -> None:
+     """原子写登录状态。path 为空则跳过（CLI 直跑不需要文件时）。"""
+     if not path:
+         return
+     data = {"state": state, "message": message, "qr": qr, "ts": int(time.time())}
++    # Optional identity evidence is additive; old platform runners keep the
++    # same state-file contract and do not need to supply these fields.
++    for key in ("verificationStatus", "accountId", "checkedAt", "errorCode"):
++        if key in verification:
++            data[key] = verification[key]
+     d = os.path.dirname(path) or "."
+     os.makedirs(d, exist_ok=True)
+     fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+diff --git a/skills/shared/scripts/platform_readback.py b/skills/shared/scripts/platform_readback.py
+index b493b1d..0fff2f9 100644
+--- a/skills/shared/scripts/platform_readback.py
++++ b/skills/shared/scripts/platform_readback.py
+@@ -244,7 +244,7 @@ def read_douyin_works(page, *, limit: int = 20, evaluate_retries: int = 3) -> li
+     return works
+ 
+ 
+-def read_douyin_account(page) -> dict[str, Any]:
++def read_douyin_account(page, *, timeout_ms: int = 15000, evaluate_retries: int = 2) -> dict[str, Any]:
+     """读创作者中心当前登录账号身份（uid/昵称/粉丝）——「我是谁」接口。
+ 
+     读当前账号（user/info, aid=1128）：
+@@ -259,11 +259,17 @@ def read_douyin_account(page) -> dict[str, Any]:
+         page.goto(DOUYIN_MANAGE_URL, wait_until="domcontentloaded")
+         page.wait_for_timeout(1500)
+     result = _navigation_safe_evaluate(
+-        page, _JS_FETCH_JSON, [DOUYIN_PROFILE_API, 15000], retries=2)
++        page, _JS_FETCH_JSON, [DOUYIN_PROFILE_API, timeout_ms], retries=evaluate_retries)
+     if not isinstance(result, dict):
+         raise RuntimeError(f"账号读取返回结构异常：{type(result).__name__}")
+     if result.get("fetchError"):
+         raise RuntimeError(f"账号读取请求失败：{result['fetchError']}")
++    http_status = int(result.get("httpStatus") or 0)
++    if http_status == 401:
++        raise LoginRequiredError("账号读取 HTTP 401")
++    if http_status >= 400:
++        # 403 may be a risk challenge rather than an expired session.
++        raise RuntimeError(f"账号读取 HTTP {http_status}")
+     body = result.get("body")
+     if not isinstance(body, dict):
+         raise RuntimeError(f"账号读取响应非 JSON（HTTP {result.get('httpStatus')}）")
+@@ -291,6 +297,7 @@ def read_douyin_account(page) -> dict[str, Any]:
+         "username": str(user.get("unique_id") or user.get("short_id") or "").strip() or None,
+         "fans_count": _num(user.get("follower_count")),
+         "work_count": _num(user.get("aweme_count")),
++        "avatar": user.get("avatar_url") if isinstance(user.get("avatar_url"), str) else "",
+     }
+ 
+ 
+diff --git a/skills/shared/scripts/profile_lock.py b/skills/shared/scripts/profile_lock.py
+new file mode 100644
+index 0000000..4801a10
+--- /dev/null
++++ b/skills/shared/scripts/profile_lock.py
+@@ -0,0 +1,66 @@
++"""Cross-process ownership of a single MediaSail browser profile.
++
++The lock is advisory and only coordinates our business scripts. It never kills
++another browser or removes Chromium's own locks.
++"""
++from __future__ import annotations
++
++import os
++import time
++from pathlib import Path
++
++
++class ProfileBusyError(TimeoutError):
++    pass
++
++
++class ProfileLock:
++    def __init__(self, profile: Path, timeout: float = 20):
++        self.path = Path(profile) / ".easel.lock"
++        self.timeout = timeout
++        self.fd = None
++
++    def acquire(self):
++        self.path.parent.mkdir(parents=True, exist_ok=True)
++        deadline = time.monotonic() + self.timeout
++        while True:
++            try:
++                self.fd = os.open(str(self.path), os.O_CREAT | os.O_RDWR)
++                os.lseek(self.fd, 0, os.SEEK_SET)
++                if os.name == "nt":
++                    import msvcrt
++                    msvcrt.locking(self.fd, msvcrt.LK_NBLCK, 1)
++                else:
++                    import fcntl
++                    fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
++                os.lseek(self.fd, 0, os.SEEK_SET)
++                os.write(self.fd, f"{os.getpid()}\n".encode("ascii"))
++                return self
++            except OSError as error:
++                if self.fd is not None:
++                    os.close(self.fd)
++                    self.fd = None
++                if time.monotonic() >= deadline:
++                    raise ProfileBusyError("该平台正在登录或操作，请稍后重试") from error
++                time.sleep(min(0.2, max(0, deadline - time.monotonic())))
++
++    def release(self):
++        if self.fd is None:
++            return
++        try:
++            os.lseek(self.fd, 0, os.SEEK_SET)
++            if os.name == "nt":
++                import msvcrt
++                msvcrt.locking(self.fd, msvcrt.LK_UNLCK, 1)
++            else:
++                import fcntl
++                fcntl.flock(self.fd, fcntl.LOCK_UN)
++        finally:
++            os.close(self.fd)
++            self.fd = None
++
++    def __enter__(self):
++        return self.acquire()
++
++    def __exit__(self, *_):
++        self.release()
 diff --git a/skills/shared/scripts/web_publisher.py b/skills/shared/scripts/web_publisher.py
 index a3a73fa..8c6c4fc 100644
 --- a/skills/shared/scripts/web_publisher.py
@@ -599,7 +1189,7 @@ index f65b8e9..d235a89 100644
              headless=True,
              args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
 diff --git a/web/app.py b/web/app.py
-index 66b3678..781f78c 100644
+index 66b3678..675475d 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,13 @@
@@ -798,10 +1388,10 @@ index 66b3678..781f78c 100644
 -                      f"-{st['msgs_dropped']} empty", file=sys.stderr, flush=True)
 -    except Exception as e:
 -        print(f"[session-heal] 跳过（{e}）", file=sys.stderr, flush=True)
--
 +        return resolve_browser()
 +    except BrowserUnavailable as error:
 +        raise HTTPException(503, str(error)) from error
+ 
  
 -# 制作层/直接执行层/chat 超时统一走 easel/timeouts.py（CLI/Web/skill 三入口单一真相源）
 -
@@ -810,7 +1400,7 @@ index 66b3678..781f78c 100644
 -    sys.path.insert(0, str(SHARED_SCRIPTS))
 -
 -from model_registry import model_group
- 
+-
  BROWSER_PROFILES = Path.home() / ".easel-browser-profiles"
  LOGIN_DIR = OUTPUTS_DIR / "_login"
  PUBLISH_DIR = OUTPUTS_DIR / "_publish"   # 异步发布的状态/验证码文件（抖音发布可能触发短信墙）
@@ -3232,7 +3822,102 @@ index 66b3678..781f78c 100644
  @app.get("/api/outputs")
  def api_outputs():
      # 产物树是全量递归扫描（文件量大时单次可达数十秒）。必须是同步 handler：
-@@ -3372,6 +973,8 @@ async def api_login_start(platform: str):
+@@ -3274,11 +875,12 @@ async def api_upload_local(
+     return {"ok": True, "files": saved}
+ 
+ 
+-def _write_login_marker(platform: str, state: str, message: str = '') -> None:
++def _write_login_marker(platform: str, state: str, message: str = '', **verification) -> None:
+     """回写登录标记 outputs/_login/<平台>.json（与 login_state.write_status 同格式，原子写）。
+     whoami 真校验确认已登录后调用 → _account_logged_in 的快速路径此后自愈并持久。"""
+     LOGIN_DIR.mkdir(parents=True, exist_ok=True)
+     data = {"state": state, "message": message, "qr": "", "ts": int(time.time())}
++    data.update(verification)
+     st = LOGIN_DIR / f'{platform}.json'
+     tmp = st.with_suffix('.json.tmp')
+     try:
+@@ -3291,31 +893,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+             pass
+ 
+ 
++def _account_state(platform: str, cfg: dict) -> dict:
++    """Cheap status never promotes a cookie/old success marker to a live verification."""
++    now = time.time()
++    with _WHOAMI_LOCK:
++        hit = _WHOAMI_CACHE.get(platform)
++    if hit and now - hit[0] < WHOAMI_TTL:
++        return {**hit[1], 'cached': True}
++    marker_name = 'wechat-oa-mp' if cfg.get('backend') == 'wechat-oa' else platform
++    try:
++        marker = json.loads((LOGIN_DIR / f'{marker_name}.json').read_text(encoding='utf-8'))
++    except (OSError, ValueError):
++        marker = {}
++    status = marker.get('verificationStatus')
++    checked = marker.get('checkedAt') or 0
++    if status in ('verified', 'login_required') and isinstance(checked, (int, float)) and 0 <= now - checked < WHOAMI_TTL:
++        return {'loggedIn': status == 'verified', 'verificationStatus': status,
++                'accountId': marker.get('accountId'), 'checkedAt': checked, 'cached': True,
++                'name': marker.get('name') or '', 'avatar': marker.get('avatar') or '',
++                'errorCode': marker.get('errorCode') or '', 'message': marker.get('message') or ''}
++    result = {'loggedIn': False, 'verificationStatus': 'unknown', 'accountId': None,
++            'checkedAt': None, 'cached': False, 'name': '', 'avatar': '',
++            'errorCode': 'NOT_VERIFIED', 'message': '尚未校验当前登录状态。'}
++    if status == 'verified':
++        result['lastKnown'] = {k: marker.get(k) for k in ('accountId', 'name', 'avatar', 'checkedAt')}
++    return result
++
++
+ def _account_logged_in(platform: str, cfg: dict) -> bool:
+-    """尽力判断某平台是否已登录。
+-    浏览器平台的登录态只有启动浏览器才真能知道（profile 里总有 Cookies 文件，存在≠已登录，
+-    会误报），故这里只信「本流程最近一次登录成功」——即 status.json == success。
+-    biliup 的 cookies.json 只有登录成功才生成，可直接判。"""
+-    backend = cfg['backend']
+-    if backend == 'unsupported':
+-        return False
+-    if backend == 'biliup':
+-        return (PROJECT_ROOT / 'cookies.json').is_file()
+-    if backend == 'wechat-oa':
+-        # 发布+数据都走「后台会话」→ 以 mp 后台登录成功为准；AppID 凭证作为兜底（旧配置）
+-        try:
+-            if _mp_login_status().get('state') == 'success':
+-                return True
+-        except Exception:
+-            pass
+-        return _wechat_has_credentials()
+-    st = LOGIN_DIR / f'{platform}.json'
+-    if st.is_file():
+-        try:
+-            return json.loads(st.read_text(encoding="utf-8")).get('state') == 'success'
+-        except Exception:
+-            return False
+-    return False
++    return _account_state(platform, cfg)['verificationStatus'] == 'verified'
+ 
+ 
+ def _login_status(platform: str) -> dict:
+@@ -3325,7 +931,8 @@ def _login_status(platform: str) -> dict:
+     if st.is_file():
+         try:
+             d = json.loads(st.read_text(encoding="utf-8"))
+-            data = {'state': d.get('state', 'unknown'), 'message': d.get('message', '')}
++            data = {'state': d.get('state', 'unknown'), 'message': d.get('message', ''),
++                    **{k: d[k] for k in ('verificationStatus', 'accountId', 'checkedAt', 'errorCode') if k in d}}
+         except Exception:
+             pass
+     # A runner that exits before writing its status must become an actionable error,
+@@ -3351,9 +958,8 @@ def _login_status(platform: str) -> dict:
+ @app.get("/api/accounts")
+ async def api_accounts():
+     return [
+-        {'platform': pf, 'name': cfg['name'], 'backend': cfg['backend'],
++        {**_account_state(pf, cfg), 'platform': pf, 'name': cfg['name'], 'backend': cfg['backend'],
+          'supported': cfg['backend'] != 'unsupported',
+-         'loggedIn': _account_logged_in(pf, cfg),
+          'note': cfg.get('note', '')}
+         for pf, cfg in LOGIN_RUNNERS.items()
+     ]
+@@ -3372,6 +978,8 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
@@ -3241,7 +3926,7 @@ index 66b3678..781f78c 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      qr = LOGIN_DIR / f'{platform}.png'
      status = LOGIN_DIR / f'{platform}.json'
-@@ -3548,6 +1151,7 @@ async def api_mp_login_start(platform: str):
+@@ -3548,6 +1156,7 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
@@ -3249,25 +3934,147 @@ index 66b3678..781f78c 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
          try:
-@@ -3594,6 +1198,8 @@ async def api_account_whoami(platform: str):
-         acc = _wechat_web_account()
-         return {'loggedIn': _account_logged_in(platform, cfg),
-                 'name': acc.get('name', '') or '微信公众号', 'avatar': ''}
-+    if backend != 'biliup':
-+        _require_business_browser()
-     # 命中未过期缓存直接返回
+@@ -3579,26 +1188,57 @@ async def api_mp_login_status(platform: str):
+     return {"mode": "qr", **_mp_login_status()}
+ 
+ 
++def _verification_result(raw: dict) -> dict:
++    status = raw.get('verificationStatus')
++    if status not in ('verified', 'login_required', 'unknown'):
++        status = 'unknown' if raw.get('error') or raw.get('errorCode') or 'loggedIn' not in raw else (
++            'verified' if raw.get('loggedIn') else 'login_required')
++    if raw.get('error'):
++        status = 'unknown'
++    checked = raw.get('checkedAt')
++    if not isinstance(checked, (int, float)) or checked <= 0:
++        checked = int(time.time())
++    return {'loggedIn': status == 'verified', 'verificationStatus': status,
++            'accountId': str(raw['accountId']) if raw.get('accountId') is not None else None,
++            'checkedAt': checked, 'cached': False, 'name': raw.get('name') or raw.get('nickname') or '',
++            'avatar': raw.get('avatar') or '', 'errorCode': raw.get('errorCode') or ('VERIFY_FAILED' if status == 'unknown' else ''),
++            'message': raw.get('message') or ('暂时无法验证账号，请重试。' if status == 'unknown' else
++                                           '需要重新登录。' if status == 'login_required' else '')}
++
++
++def _save_verification(platform: str, data: dict) -> dict:
++    previous = _account_state(platform, LOGIN_RUNNERS[platform])
++    if data['verificationStatus'] == 'unknown':
++        last = previous if previous.get('verificationStatus') == 'verified' else previous.get('lastKnown')
++        if last:
++            data['lastKnown'] = {k: last.get(k) for k in ('accountId', 'name', 'avatar', 'checkedAt')}
++    else:
++        marker = 'wechat-oa-mp' if LOGIN_RUNNERS[platform].get('backend') == 'wechat-oa' else platform
++        fields = {k: data[k] for k in ('verificationStatus', 'accountId', 'checkedAt', 'name', 'avatar', 'errorCode')}
++        _write_login_marker(marker, 'success' if data['loggedIn'] else 'expired', data['message'], **fields)
++    with _WHOAMI_LOCK:
++        _WHOAMI_CACHE[platform] = (time.time(), data)
++    return data
++
++
+ @app.get("/api/accounts/{platform}/whoami")
+-async def api_account_whoami(platform: str):
+-    """真校验登录态 + 读昵称/头像（起 headless 浏览器，数秒）。前端开页后台调用以自愈假阳性。
+-    带 TTL 进程内缓存（避免账号页+工作台重复起浏览器）；确认已登录则回写标记，令快速路径自愈。"""
++async def api_account_whoami(platform: str, force: bool = False):
++    """校验当前账号；force=1 绕过缓存。未知与未登录分别返回，不清除浏览器资料。"""
+     cfg = LOGIN_RUNNERS.get(platform)
+     if not cfg:
+         raise HTTPException(404, '未知平台')
+     backend = cfg['backend']
+     if backend == 'unsupported':
+-        return {'loggedIn': False, 'name': '', 'avatar': ''}
+-    if backend == 'wechat-oa':
+-        # 不起浏览器：以 mp 后台会话/AppID 配置判断（见 _account_logged_in），名字取配置账号名
+-        acc = _wechat_web_account()
+-        return {'loggedIn': _account_logged_in(platform, cfg),
+-                'name': acc.get('name', '') or '微信公众号', 'avatar': ''}
+-    # 命中未过期缓存直接返回
++        return _verification_result({'errorCode': 'UNSUPPORTED', 'message': '该平台暂不支持账号校验。'})
      with _WHOAMI_LOCK:
          hit = _WHOAMI_CACHE.get(platform)
-@@ -3611,7 +1217,7 @@ async def api_account_whoami(platform: str):
+-    if hit and (time.time() - hit[0]) < WHOAMI_TTL:
+-        return hit[1]
++    if not force and hit and (time.time() - hit[0]) < WHOAMI_TTL and hit[1]['verificationStatus'] != 'unknown':
++        return {**hit[1], 'cached': True}
++    if backend != 'biliup':
++        try:
++            _require_business_browser()
++        except HTTPException as error:
++            return _save_verification(platform, _verification_result({'errorCode': 'BROWSER_UNAVAILABLE', 'message': str(error.detail)}))
+     if backend == 'biliup':
+         cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
+                '--cookie', str(PROJECT_ROOT / 'cookies.json')]
+@@ -3606,44 +1246,32 @@ async def api_account_whoami(platform: str):
+         cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
+     elif backend == 'douyin':
+         cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
++    elif backend == 'wechat-oa':
++        cmd = [sys.executable, str(SHARED_SCRIPTS / 'weixin_mp_stats.py'), 'whoami', '--no-proxy']
+     else:
+         cmd = [sys.executable, str(SHARED_SCRIPTS / 'web_publisher.py'), 'whoami',
                 '--platform', cfg['wp']]
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
 -                                       capture_output=True, text=True, timeout=150)
 +                                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=150)
      except subprocess.TimeoutExpired:
-         raise HTTPException(504, '校验超时（浏览器起不来或网络慢）')
-     data = {'loggedIn': False, 'name': '', 'avatar': ''}
-@@ -3726,6 +1332,8 @@ async def api_analytics(platform: str):
+-        raise HTTPException(504, '校验超时（浏览器起不来或网络慢）')
+-    data = {'loggedIn': False, 'name': '', 'avatar': ''}
+-    confident = False   # 是否拿到「可信」校验结论（子进程正常跑出 JSON 且无 error 字段）
++        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_TIMEOUT', 'message': '校验超时，请检查网络后重试。'}))
++    except OSError:
++        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_FAILED', 'message': '账号校验程序未能启动，请查看日志后重试。'}))
++    raw = {}
+     for line in reversed((proc.stdout or '').strip().splitlines()):
+         line = line.strip()
+         if line.startswith('{'):
+             try:
+-                d = json.loads(line)
+-                data = {'loggedIn': bool(d.get('loggedIn')), 'name': d.get('name') or '', 'avatar': d.get('avatar') or ''}
+-                # 有 error 字段 = 校验本身失败（浏览器起不来/网络抖动/崩溃），不是可信的「未登录」结论
+-                confident = not d.get('error')
+-                break
++                candidate = json.loads(line)
++                if isinstance(candidate, dict):
++                    raw = candidate
++                    break
+             except Exception:
+                 continue
+-    if not confident:
+-        # 校验失败/无有效输出 → **不缓存、不删标记**，返回「上次已知」登录态（读标记）。
+-        # 避免一次校验抖动就把已登录卡片翻成「未登录」并缓存 10 分钟；下次校验(缓存未写)会自动重试恢复。
+-        return {'loggedIn': _account_logged_in(platform, cfg), 'name': '', 'avatar': ''}
+-    with _WHOAMI_LOCK:
+-        _WHOAMI_CACHE[platform] = (time.time(), data)
+-    # 回写标记：确认已登录 → 快速路径（/api/accounts、/api/analytics/platforms）此后也正确；
+-    # biliup 走 cookies.json 判定，不用标记文件。
+-    if backend != 'biliup':
+-        if data['loggedIn']:
+-            _write_login_marker(platform, 'success', data.get('name') or '')
+-        else:
+-            try:
+-                (LOGIN_DIR / f'{platform}.json').unlink()
+-            except OSError:
+-                pass
+-    return data
++    if proc.returncode != 0 or not raw:
++        raw = {'errorCode': 'VERIFY_FAILED', 'message': '账号校验未完成，请查看日志或重试。'}
++    return _save_verification(platform, _verification_result(raw))
+ 
+ 
+ @app.post("/api/logout/{platform}")
+@@ -3715,8 +1343,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+ async def api_analytics_platforms():
+     """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
+     return [
+-        {"platform": pf, "name": LOGIN_RUNNERS.get(pf, {}).get("name", pf),
+-         "loggedIn": _account_logged_in(pf, LOGIN_RUNNERS.get(pf, {}))}
++        {**_account_state(pf, LOGIN_RUNNERS.get(pf, {})),
++         "platform": pf, "name": LOGIN_RUNNERS.get(pf, {}).get("name", pf)}
+         for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
+     ]
+ 
+@@ -3726,6 +1354,8 @@ async def api_analytics(platform: str):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -3276,7 +4083,7 @@ index 66b3678..781f78c 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,7 +1351,7 @@ async def api_analytics(platform: str):
+@@ -3743,14 +1373,19 @@ async def api_analytics(platform: str):
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -3285,7 +4092,20 @@ index 66b3678..781f78c 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, "抓取超时（浏览器起不来或网络慢）")
      for line in reversed((proc.stdout or "").strip().splitlines()):
-@@ -3799,7 +1407,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+         line = line.strip()
+         if line.startswith("{"):
+             try:
+-                return json.loads(line)
++                data = json.loads(line)
++                if not isinstance(data, dict):
++                    continue
++                raw = data if proc.returncode == 0 else {'errorCode': 'COLLECTION_FAILED', 'message': '采集程序未正常完成，请重试。'}
++                verification = _save_verification(platform, _verification_result(raw))
++                return {**data, **verification, 'name': data.get('name') or LOGIN_RUNNERS[platform]['name']}
+             except Exception:
+                 continue
+     detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
+@@ -3799,7 +1434,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -3294,7 +4114,7 @@ index 66b3678..781f78c 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1503,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1530,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -3303,7 +4123,7 @@ index 66b3678..781f78c 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1552,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1579,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -3312,7 +4132,7 @@ index 66b3678..781f78c 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1570,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1597,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -3321,7 +4141,7 @@ index 66b3678..781f78c 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1604,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1631,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -3334,7 +4154,7 @@ index 66b3678..781f78c 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1616,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1643,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -3370,7 +4190,7 @@ index 66b3678..781f78c 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1641,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1668,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -3411,7 +4231,7 @@ index 66b3678..781f78c 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1680,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1707,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -3424,7 +4244,7 @@ index 66b3678..781f78c 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,26 +1696,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,26 +1723,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -3452,7 +4272,7 @@ index 66b3678..781f78c 100644
  TREND_SOURCES: dict[str, tuple[str, str | None]] = {
      "weibo": ("https://60s.viki.moe/v2/weibo", "https://v2.xxapi.cn/api/weibohot"),
      "douyin": ("https://60s.viki.moe/v2/douyin", "https://v2.xxapi.cn/api/douyinhot"),
-@@ -4323,7 +1889,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +1916,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -3461,7 +4281,7 @@ index 66b3678..781f78c 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +1975,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2002,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -19593,6 +20413,160 @@ index fee8255..efac7e3 100644
      </div>
    );
  }
+diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
+index 42545b5..5d75421 100644
+--- a/web/frontend/src/components/AccountsPage.tsx
++++ b/web/frontend/src/components/AccountsPage.tsx
+@@ -5,7 +5,8 @@ import {
+   saveCredentials, getCredentials, startMpLogin, mpLoginStatus,
+ } from '../lib/api';
+ import type { AccountItem, AccountWhoami } from '../lib/api';
+-import { getWhoamiCache, setWhoamiCache, verifyStale } from '../lib/whoami';
++import { currentVerification, getWhoamiCache, setWhoamiCache, unknownVerification, verifyStale } from '../lib/whoami';
++import { registerUnsavedEdits } from '../lib/unsaved';
+ 
+ type QRState = {
+   platform: string;
+@@ -61,6 +62,9 @@ export default function AccountsPage() {
+   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+   const aliveRef = useRef(true);
+   const qrPlatformRef = useRef('');   // 当前登录中的平台，供 submitSms 稳定引用
++  const dirtyForm = useRef(false);
++  dirtyForm.current = Boolean(cred && (credForm.appId || credForm.appSecret || credForm.author)) || Boolean(smsCode) || credBusy || smsBusy;
++  useEffect(() => registerUnsavedEdits('account-form', () => dirtyForm.current), []);
+ 
+   useEffect(() => {
+     aliveRef.current = true;
+@@ -70,25 +74,27 @@ export default function AccountsPage() {
+   // 真校验某平台登录态 + 拉昵称/头像（后端起浏览器，数秒）；手动「校验账号」或登录成功后调
+   const runWhoami = useCallback((platform: string) => {
+     setWhoami((w) => ({ ...w, [platform]: 'loading' }));
+-    accountWhoami(platform)
++    accountWhoami(platform, true)
+       .then((r) => { if (aliveRef.current) { setWhoami((w) => ({ ...w, [platform]: r })); setWhoamiCache(platform, r); } })
+-      .catch(() => {
+-        if (aliveRef.current) setWhoami((w) => { const n = { ...w }; delete n[platform]; return n; });
++      .catch((error) => {
++        const r = unknownVerification(error instanceof Error ? error.message : '账号校验失败，请重试。', getWhoamiCache()[platform]);
++        if (aliveRef.current) { setWhoami((w) => ({ ...w, [platform]: r })); setWhoamiCache(platform, r); }
+       });
+   }, []);
+ 
+   // 打开页面：拉「快」状态（读 status.json，不起浏览器），随后后台自愈——对缓存缺失/过期的
+   // 浏览器平台逐个真校验（whoami），结果到了刷新 UI，并令陈旧的假阴性缓存被真值覆盖。
+-  const load = useCallback(() => {
++  const load = useCallback((force = false) => {
+     setErr('');
+     fetchAccounts()
+       .then((list) => {
+         if (!aliveRef.current) return;
+         setAccounts(list);
+         const targets = list
+-          .filter((a) => a.supported && a.backend !== 'biliup')
++          .filter((a) => a.supported)
+           .map((a) => a.platform);
+         verifyStale(targets, {
++          force,
+           alive: () => aliveRef.current,
+           onUpdate: (platform, r) => setWhoami((w) => ({ ...w, [platform]: r })),
+         });
+@@ -225,9 +231,6 @@ export default function AccountsPage() {
+           if (['success', 'expired', 'error'].includes(s.state)) {
+             stopPoll();
+             if (s.state === 'success') {
+-              // 像快手一样“内存态立即翻”：wechat-oa 的 effLoggedIn 只看 a.loggedIn，这里直接把它乐观置 true，
+-              // 卡片瞬间变「已登录」，不必等 load() 那趟网络往返（后面 load() 再对账兜底）。
+-              setAccounts((list) => list.map((x) => x.platform === a.platform ? { ...x, loggedIn: true } : x));
+               setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
+               setWhoamiCache(a.platform, null);
+               runWhoami(a.platform);
+@@ -249,7 +252,7 @@ export default function AccountsPage() {
+     try {
+       await logoutAccount(a.platform);
+       // 内存态立即翻未登录（同登录路径），不等 load() 回来
+-      setAccounts((list) => list.map((x) => x.platform === a.platform ? { ...x, loggedIn: false } : x));
++      setAccounts((list) => list.map((x) => x.platform === a.platform ? { ...x, loggedIn: false, verificationStatus: 'login_required', checkedAt: Date.now() / 1000 } : x));
+       setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
+       setWhoamiCache(a.platform, null);
+       load();
+@@ -260,20 +263,19 @@ export default function AccountsPage() {
+     }
+   }, [load]);
+ 
+-  // 卡片真实登录态：whoami 权威（已返回则以它为准，自愈假阳性），否则用后端 last-known。
+-  // 公众号(wechat-oa)例外：后端查 mp 会话即真值(快且权威)，直接用它，避免浏览器里过期的 whoami 缓存把已登录盖成未登录。
+-  const effLoggedIn = (a: AccountItem): boolean => {
+-    if (a.backend === 'wechat-oa') return a.loggedIn;
++  const accountState = (a: AccountItem) => {
+     const w = whoami[a.platform];
+-    if (w && w !== 'loading') return w.loggedIn;
+-    return a.loggedIn;
++    return currentVerification(w && w !== 'loading' ? w : undefined, a);
++  };
++  const effLoggedIn = (a: AccountItem): boolean => {
++    return accountState(a).verificationStatus === 'verified';
+   };
+ 
+   const badge = (a: AccountItem) => {
+     if (!a.supported) return <span className="badge">待重写</span>;
+     if (whoami[a.platform] === 'loading') return <span className="badge">校验中…</span>;
+-    if (effLoggedIn(a)) return <span className="badge badge-ok">✓ 已登录</span>;
+-    return <span className="badge">未登录</span>;
++    if (effLoggedIn(a)) return <span className="badge badge-ok">✓ 已验证登录</span>;
++    return <span className="badge">{accountState(a).verificationStatus === 'login_required' ? '需要登录' : '暂未验证'}</span>;
+   };
+ 
+   return (
+@@ -282,11 +284,11 @@ export default function AccountsPage() {
+         <div>
+           <h1 className="page-title">账号登录 Accounts</h1>
+           <p className="page-subtitle">
+-            用手机 App 扫码登录，登录态本地持久化，之后发布免登。<br />
+-            ⚠️ 平台可能对机房/代理 IP 判风险导致二维码弹不出，需干净/家宽 IP，或在正常网络登录后拷贝登录态目录。
++            发布和采集使用 MediaSail 保存的账号会话，平台可能要求重新扫码或验证。<br />
++            普通抖音网页已登录，不代表创作者后台已通过验证；校验失败会保留本地登录资料。
+           </p>
+         </div>
+-        <button className="btn btn-sm" onClick={load}>⟳ 刷新</button>
++        <button className="btn btn-sm" onClick={() => load(true)}>⟳ 刷新并校验</button>
+       </div>
+ 
+       {err && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 12 }}>{err}</div>}
+@@ -299,6 +301,7 @@ export default function AccountsPage() {
+           const w = whoami[a.platform];
+           const info = w && w !== 'loading' ? w : null;
+           const logged = effLoggedIn(a);
++          const status = accountState(a);
+           return (
+             <div key={a.platform} className="card account-card" style={{ opacity: a.supported ? 1 : 0.6 }}>
+               <div className="account-card-head">
+@@ -315,6 +318,9 @@ export default function AccountsPage() {
+               {!logged && (
+                 <div className="account-card-note">{a.note ? a.note : `后端：${a.name}`}</div>
+               )}
++              {status.message && <div className="account-card-note" role="status">{status.message}</div>}
++              {status.lastKnown?.name && !logged && <div className="account-card-note">上次验证账号：{status.lastKnown.name}</div>}
++              {status.checkedAt != null && <div className="account-card-note">最近校验：{new Date(status.checkedAt * 1000).toLocaleString()}{status.cached ? '（缓存）' : ''}</div>}
+ 
+               <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
+                 {logged ? (
+@@ -332,12 +338,15 @@ export default function AccountsPage() {
+                   </>
+                 ) : (
+                   // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
+-                  <button
++                  <><button
+                     className={`btn btn-block ${a.supported ? 'btn-primary' : ''}`}
+                     disabled={!a.supported || busy === a.platform || busy === a.platform + ':mp'}
+                     onClick={() => (a.backend === 'wechat-oa' ? handleMpLogin(a) : handleLogin(a))}>
+                     {(busy === a.platform || busy === a.platform + ':mp') ? '启动中…' : '登录'}
+                   </button>
++                  <button className="btn btn-sm" disabled={!a.supported || w === 'loading' || busy === a.platform || busy === a.platform + ':mp'} onClick={() => runWhoami(a.platform)}>
++                    {w === 'loading' ? '校验中…' : '校验账号'}
++                  </button></>
+                 )}
+               </div>
+             </div>
 diff --git a/web/frontend/src/components/AgentConnectPage.tsx b/web/frontend/src/components/AgentConnectPage.tsx
 new file mode 100644
 index 0000000..4bd7f26
@@ -20140,16 +21114,35 @@ index 6fcd5d0..c782a20 100644
 +  </div>;
  }
 diff --git a/web/frontend/src/components/CalendarPage.tsx b/web/frontend/src/components/CalendarPage.tsx
-index e5418f6..c8dfe77 100644
+index e5418f6..34fc202 100644
 --- a/web/frontend/src/components/CalendarPage.tsx
 +++ b/web/frontend/src/components/CalendarPage.tsx
-@@ -1,4 +1,5 @@
- import { useState, useEffect, useCallback, useMemo } from 'react';
+@@ -1,4 +1,6 @@
+-import { useState, useEffect, useCallback, useMemo } from 'react';
++import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
++import { registerUnsavedEdits } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import { fetchSchedule, createSchedule, updateSchedule, deleteSchedule, fetchScheduleContext } from '../lib/api';
  import type { ScheduleItem, ScheduleInput, ScheduleContext } from '../lib/api';
  import { IconCalendar, IconTrash, IconChevron } from './icons';
-@@ -45,6 +46,7 @@ export default function CalendarPage() {
+@@ -39,12 +41,23 @@ export default function CalendarPage() {
+   const [ctx, setCtx] = useState<ScheduleContext | null>(null);
+   const [showSuggest, setShowSuggest] = useState(true);
+   const [dayView, setDayView] = useState<string | null>(null);   // 展开查看某天全部（date，null=关闭）
++  const [error, setError] = useState('');
++  const [externalUpdate, setExternalUpdate] = useState(false);
++  const baseline = useRef<ScheduleItem | null>(null);
++  const current = useRef({ form, saving, editing });
++  current.current = { form, saving, editing };
++  const signature = (item: ScheduleItem | undefined | null) => item ? JSON.stringify(Object.keys(EMPTY).map(key => item[key as keyof ScheduleItem] ?? EMPTY[key as keyof ScheduleInput])) : '';
++  useEffect(() => registerUnsavedEdits('calendar', () => Boolean(current.current.form) || current.current.saving), []);
+ 
+   const load = useCallback(() => {
+-    fetchSchedule().then(setItems).catch(() => {});
++    fetchSchedule().then(fresh => {
++      setItems(fresh);
++      if (current.current.form && current.current.editing) setExternalUpdate(signature(fresh.find(row => row.id === current.current.editing!.id)) !== signature(baseline.current));
++    }).catch(() => {});
      fetchScheduleContext(14).then(setCtx).catch(() => {});
    }, []);
    useEffect(() => { load(); }, [load]);
@@ -20157,7 +21150,43 @@ index e5418f6..c8dfe77 100644
  
    const visible = useMemo(
      () => (filter === 'all' ? items : items.filter((it) => kindOf(it) === filter)),
-@@ -132,6 +134,7 @@ export default function CalendarPage() {
+@@ -71,11 +84,12 @@ export default function CalendarPage() {
+   }, [cursor]);
+ 
+   const openNew = (date: string) => {
++    baseline.current = null; setExternalUpdate(false); setError('');
+     setDayView(null);
+     setEditing(null);
+     setForm({ ...EMPTY, date, kind: filter === 'event' ? 'event' : 'content' });
+   };
+-  const openEdit = (it: ScheduleItem) => { setDayView(null); setEditing(it); setForm({ ...EMPTY, ...it }); };
++  const openEdit = (it: ScheduleItem) => { baseline.current = it; setExternalUpdate(false); setError(''); setDayView(null); setEditing(it); setForm({ ...EMPTY, ...it }); };
+   const close = () => { setForm(null); setEditing(null); };
+ 
+   // 单条 chip（活动=色条，内容=按状态上色的圆点），日历格与当天详情共用
+@@ -105,12 +119,18 @@ export default function CalendarPage() {
+ 
+   const save = async () => {
+     if (!form || !form.title.trim() || !form.date) return;
+-    setSaving(true);
++    setSaving(true); setError('');
+     try {
+-      if (editing) await updateSchedule(editing.id, form);
++      if (editing) {
++        const latest = (await fetchSchedule()).find(row => row.id === editing.id);
++        if (!latest) { setError('该排期已被外部删除，当前编辑仍保留。'); return; }
++        if (signature(latest) !== signature(baseline.current) && !window.confirm('这个排期已有外部更新。使用当前编辑覆盖吗？取消会保留草稿。')) { setExternalUpdate(true); return; }
++        await updateSchedule(editing.id, form);
++      }
+       else await createSchedule(form);
+       close(); load();
+-    } finally { setSaving(false); }
++    } catch (e) { setError(e instanceof Error ? e.message : '保存失败，当前草稿已保留。'); }
++    finally { setSaving(false); }
+   };
+   const remove = async () => {
+     if (!editing) return;
+@@ -132,6 +152,7 @@ export default function CalendarPage() {
            <p className="page-subtitle">每天各平台发什么一目了然——发布自动落库，可记录排期与平台活动。</p>
          </div>
          <div className="cal-nav">
@@ -20165,6 +21194,15 @@ index e5418f6..c8dfe77 100644
            <button className="btn btn-sm" onClick={() => shift(-1)}><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={14} /></span></button>
            <button className="btn btn-sm" onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}>本月</button>
            <span className="cal-month">{monthLabel}</span>
+@@ -223,6 +244,8 @@ export default function CalendarPage() {
+               <h3 style={{ margin: 0 }}>{editing ? '编辑' : '新增'}{isEvent ? '平台活动' : '排期'}</h3>
+               <button className="icon-btn" onClick={close}>×</button>
+             </div>
++            {externalUpdate && <p role="status">这个排期已有外部更新，当前草稿已保留；保存前会再次核对。</p>}
++            {error && <p role="alert" style={{ color: 'var(--red)' }}>{error}</p>}
+             <label className="field-label">类型</label>
+             <div style={{ display: 'flex', gap: 7 }}>
+               <button className={`chip ${!isEvent ? 'active' : ''}`}
 diff --git a/web/frontend/src/components/ChatPage.tsx b/web/frontend/src/components/ChatPage.tsx
 index 0f5c8ed..1a6ae7b 100644
 --- a/web/frontend/src/components/ChatPage.tsx
@@ -20187,7 +21225,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..b73b885 100644
+index 135c4fc..a89ce30 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,4 +1,6 @@
@@ -20198,7 +21236,16 @@ index 135c4fc..b73b885 100644
  import {
    fetchTrends, fetchSchedule, fetchOutputs, fetchAccounts, fetchIdeas,
    fetchAnalyticsPlatforms, fetchAccountAnalytics,
-@@ -48,13 +50,13 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -8,7 +10,7 @@ import type {
+   AnalyticsPlatform, AccountAnalytics, AccountWhoami,
+ } from '../lib/api';
+ import type { Page } from './Sidebar';
+-import { getWhoamiCache, verifyStale } from '../lib/whoami';
++import { currentVerification, getWhoamiCache, verifyStale } from '../lib/whoami';
+ import {
+   IconFire, IconCalendar, IconOutputs, IconChat, IconSkills, IconAccounts,
+   IconIdea, IconPublish,
+@@ -48,13 +50,15 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
    const [anaPlats, setAnaPlats] = useState<AnalyticsPlatform[]>([]);
    const [anaSel, setAnaSel] = useState('');
    const [anaData, setAnaData] = useState<Record<string, AccountAnalytics | 'loading' | 'error'>>(() => {
@@ -20206,6 +21253,8 @@ index 135c4fc..b73b885 100644
 +    try { return JSON.parse(appStorage.getItem('easel_analytics') || '{}'); } catch { return {}; }
    });
    const [anaWin, setAnaWin] = useState<'last' | 'day' | 'week' | 'month' | 'year'>('week');
++  const [anaLoading, setAnaLoading] = useState<Record<string, boolean>>({});
++  const [anaError, setAnaError] = useState<Record<string, string>>({});
    // whoami 自愈：登录态以真实 profile 为准（与账号页共享 localStorage 缓存）
    const [whoamiMap, setWhoamiMap] = useState<Record<string, AccountWhoami>>(() => getWhoamiCache());
  
@@ -20214,7 +21263,25 @@ index 135c4fc..b73b885 100644
      fetchTrends('weibo,douyin', 6).then((d) => setTrends(d.trends)).catch(() => {});
      fetchSchedule().then(setSchedule).catch(() => {});
      fetchOutputs().then(setOutputs).catch(() => {});
-@@ -77,6 +79,8 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -63,31 +67,43 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+     fetchAnalyticsPlatforms().then((ps) => {
+       setAnaPlats(ps);
+       const cache = getWhoamiCache();
+-      const isLog = (p: AnalyticsPlatform) => p.loggedIn || !!cache[p.platform]?.loggedIn;
++      const isLog = (p: AnalyticsPlatform) => currentVerification(cache[p.platform], p).verificationStatus === 'verified';
+       const first = ps.find(isLog);
+-      if (first) setAnaSel((s) => s || first.platform);
++      setAnaSel((s) => s || first?.platform || ps[0]?.platform || '');
+       // 开页后台自愈：对非 API 式的归因平台真校验（whoami），刷新登录态；
+       // B 站走 cookie、公众号走凭证/官方 API 判定，都不起浏览器。
+-      const API_BASED = new Set(['bilibili', 'wechat-oa']);
+-      verifyStale(ps.filter((p) => !API_BASED.has(p.platform)).map((p) => p.platform), {
++      verifyStale(ps.map((p) => p.platform), {
+         onUpdate: (platform, r) => {
+           setWhoamiMap((m) => ({ ...m, [platform]: r }));
+-          if (r.loggedIn) setAnaSel((s) => s || platform);
++          if (r.verificationStatus === 'verified') setAnaSel((s) => s || platform);
+         },
        });
      }).catch(() => {});
    }, []);
@@ -20222,18 +21289,40 @@ index 135c4fc..b73b885 100644
 +  useRefreshOnFocus(refresh);
  
    const runAna = (platform: string) => {
++    if (anaLoading[platform]) return;
      setAnaSel(platform);
-@@ -84,7 +88,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+-    setAnaData((d) => ({ ...d, [platform]: 'loading' }));
++    setAnaLoading((d) => ({ ...d, [platform]: true }));
++    setAnaError((d) => ({ ...d, [platform]: '' }));
      fetchAccountAnalytics(platform)
-       .then((r) => setAnaData((d) => {
+-      .then((r) => setAnaData((d) => {
++      .then((r) => {
++        setWhoamiMap((m) => ({ ...m, [platform]: { ...r, name: r.nickname || r.name, avatar: '' } }));
++        const hasData = [r.followers, r.likes, r.posts, r.following].some((v) => v != null) || !!r.metrics?.length || !!r.notes?.length;
++        if (r.verificationStatus !== 'verified' || !hasData) {
++          setAnaError((d) => ({ ...d, [platform]: r.message || (r.verificationStatus === 'login_required' ? '需要到账号页重新登录。' : '本次未取得可核验数据，请重试。') }));
++          return;
++        }
++        setAnaData((d) => {
          const next = { ...d, [platform]: r };
 -        try { localStorage.setItem('easel_analytics', JSON.stringify(next)); } catch { /* quota */ }
 +        try { appStorage.setItem('easel_analytics', JSON.stringify(next)); } catch { /* quota */ }
          return next;
-       }))
-       .catch(() => setAnaData((d) => ({ ...d, [platform]: 'error' as const })));
-@@ -101,7 +105,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
-   const loggedIn = accounts.filter((a) => a.loggedIn).length;
+-      }))
+-      .catch(() => setAnaData((d) => ({ ...d, [platform]: 'error' as const })));
++        });
++      })
++      .catch((error) => setAnaError((d) => ({ ...d, [platform]: error instanceof Error ? error.message : '本次读取失败，请重试。' })))
++      .finally(() => setAnaLoading((d) => ({ ...d, [platform]: false })));
+   };
+ 
+   const hour = new Date().getHours();
+@@ -98,10 +114,10 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+     .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 5);
+   const recent = outputs.slice(0, 5);
+   const pendingIdeas = ideas.filter((i) => i.status === 'pending');
+-  const loggedIn = accounts.filter((a) => a.loggedIn).length;
++  const loggedIn = accounts.filter((a) => currentVerification(whoamiMap[a.platform], a).verificationStatus === 'verified').length;
  
    const quick: { label: string; page: Page; Icon: typeof IconChat }[] = [
 -    { label: '开始对话', page: 'chat', Icon: IconChat },
@@ -20241,7 +21330,7 @@ index 135c4fc..b73b885 100644
      { label: '看热点', page: 'trends', Icon: IconFire },
      { label: '拆爆款', page: 'breakdown', Icon: IconSkills },
      { label: '记选题', page: 'ideas', Icon: IconIdea },
-@@ -121,10 +125,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -121,10 +137,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
        <div className="dash-hero">
          <h1 className="page-title" style={{ fontSize: 26 }}>{greet} 👋</h1>
          <p className="page-subtitle">
@@ -20255,7 +21344,7 @@ index 135c4fc..b73b885 100644
          <div className="dash-quick">
            {quick.map((q) => (
              <button key={q.page} className="dash-quick-btn" onClick={() => onNavigate(q.page)}>
-@@ -202,7 +207,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -202,7 +219,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
              <span><IconOutputs size={16} /> 最近产物</span>
              <button className="dash-more" onClick={() => onNavigate('outputs')}>内容库 →</button>
            </div>
@@ -20264,6 +21353,57 @@ index 135c4fc..b73b885 100644
            {recent.map((g) => (
              <div key={g.name} className="dash-output" onClick={() => onNavigate('outputs')}>
                <span className="dash-output-name">{g.meta?.title || g.name}</span>
+@@ -216,11 +233,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+           <div className="dash-card-head">
+             <span><IconAccounts size={16} /> 创作数据</span>
+             {anaSel && anaData[anaSel] && anaData[anaSel] !== 'loading' && (
+-              <button className="dash-more" onClick={() => runAna(anaSel)}>刷新 →</button>
++              <button className="dash-more" disabled={anaLoading[anaSel]} onClick={() => runAna(anaSel)}>{anaLoading[anaSel] ? '读取中…' : '刷新 →'}</button>
+             )}
+           </div>
+           {(() => {
+-            const logged = anaPlats.filter((p) => p.loggedIn || whoamiMap[p.platform]?.loggedIn);
++            const logged = anaPlats;
+             if (anaPlats.length === 0) return <div className="dash-empty">加载中 / 需配置代理</div>;
+             if (logged.length === 0) {
+               return (
+@@ -238,16 +255,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+                 <div className="ana-plats">
+                   {logged.map((p) => (
+                     <button key={p.platform} className={`chip ${anaSel === p.platform ? 'active' : ''}`}
+-                      onClick={() => runAna(p.platform)}>{p.name}</button>
++                      disabled={anaLoading[p.platform]} onClick={() => runAna(p.platform)}>{p.name}</button>
+                   ))}
+                 </div>
+-                {!d && <div className="dash-empty">点上方平台查看该账号数据</div>}
+-                {d === 'loading' && (
++                {!d && !anaLoading[anaSel] && !anaError[anaSel] && <div className="dash-empty">点上方平台读取已登录账号的数据；需要登录时会明确提示。</div>}
++                {(d === 'loading' || anaLoading[anaSel]) && (
+                   <div className="loading" style={{ padding: '28px 0' }}><div className="spinner" />抓取中…（起浏览器，约数秒）</div>
+                 )}
+                 {d === 'error' && (
+                   <div className="dash-empty" style={{ color: 'var(--red)' }}>抓取失败（未登录 / 需真机校准），点平台重试</div>
+                 )}
++                {anaError[anaSel] && <div className="dash-empty" role="status" style={{ color: 'var(--red)' }}>
++                  本次刷新未成功：{anaError[anaSel]}{d && typeof d === 'object' ? ' 下方保留上次采集结果。' : ''}
++                </div>}
++                {d && typeof d === 'object' && <div className="ana-wins-note">
++                  上次采集：{new Date(d.fetched_at * 1000).toLocaleString()}
++                  {d.accountId ? ` · 账号 ${d.accountId}` : ' · 旧缓存账号归属未核验'}
++                  {currentVerification(whoamiMap[anaSel], anaPlats.find((p) => p.platform === anaSel) || {}).verificationStatus !== 'verified' ? ' · 当前登录尚未通过校验' : ''}
++                </div>}
+                 {d && d !== 'loading' && d !== 'error' && (!d.loggedIn ? (
+                   <div className="dash-empty" onClick={() => onNavigate('accounts')} style={{ cursor: 'pointer' }}>
+                     该平台登录态已失效，去账号页重登 →
+@@ -286,7 +311,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+ 
+                     {/* 近7日平台指标 + 环比 */}
+                     <div className="ana-col ana-col-metrics">
+-                      <div className="ana-sub">近 7 日 · 环比</div>
++                      <div className="ana-sub">{d.metrics_title || '平台提供的指标 · 环比'}</div>
+                       {(d.metrics ?? []).length === 0 ? (
+                         <div className="dash-empty">该平台未提供近 7 日指标</div>
+                       ) : (
 diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
 new file mode 100644
 index 0000000..a9603e3
@@ -20326,24 +21466,67 @@ index c151628..26b4f2e 100644
  
    render() {
 diff --git a/web/frontend/src/components/IdeasPage.tsx b/web/frontend/src/components/IdeasPage.tsx
-index f715205..e68cfb0 100644
+index f715205..f89049e 100644
 --- a/web/frontend/src/components/IdeasPage.tsx
 +++ b/web/frontend/src/components/IdeasPage.tsx
-@@ -1,4 +1,5 @@
- import { useState, useEffect, useCallback, useMemo } from 'react';
+@@ -1,4 +1,6 @@
+-import { useState, useEffect, useCallback, useMemo } from 'react';
++import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
++import { registerUnsavedEdits } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule } from '../lib/api';
  import type { Idea, IdeaInput } from '../lib/api';
  import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
-@@ -23,6 +24,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -20,9 +22,21 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+   const [form, setForm] = useState<IdeaInput | null>(null);
+   const [editId, setEditId] = useState<string | null>(null);
+   const [toast, setToast] = useState('');
++  const [saving, setSaving] = useState(false);
++  const [error, setError] = useState('');
++  const [externalUpdate, setExternalUpdate] = useState(false);
++  const baseline = useRef<Idea | null>(null);
++  const current = useRef({ form, saving, editId });
++  current.current = { form, saving, editId };
++  const signature = (idea: Idea | undefined | null) => idea ? JSON.stringify([idea.title, idea.note ?? '', idea.source ?? '', idea.status]) : '';
++  useEffect(() => registerUnsavedEdits('ideas', () => Boolean(current.current.form) || current.current.saving), []);
  
-   const load = useCallback(() => { fetchIdeas().then(setIdeas).catch(() => {}); }, []);
+-  const load = useCallback(() => { fetchIdeas().then(setIdeas).catch(() => {}); }, []);
++  const load = useCallback(() => { fetchIdeas().then(fresh => {
++    setIdeas(fresh);
++    if (current.current.form && current.current.editId) setExternalUpdate(signature(fresh.find(row => row.id === current.current.editId)) !== signature(baseline.current));
++  }).catch(() => {}); }, []);
    useEffect(() => { load(); }, [load]);
 +  useRefreshOnFocus(load);
  
    const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
    const byStatus = useMemo(() => {
-@@ -53,7 +55,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -31,12 +45,21 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+     return g;
+   }, [ideas]);
+ 
+-  const openNew = () => { setEditId(null); setForm({ ...EMPTY }); };
+-  const openEdit = (it: Idea) => { setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status }); };
++  const openNew = () => { baseline.current = null; setExternalUpdate(false); setError(''); setEditId(null); setForm({ ...EMPTY }); };
++  const openEdit = (it: Idea) => { baseline.current = it; setExternalUpdate(false); setError(''); setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status }); };
+   const save = async () => {
+     if (!form || !form.title.trim()) return;
+-    if (editId) await updateIdea(editId, form); else await createIdea(form);
+-    setForm(null); setEditId(null); load();
++    setSaving(true); setError('');
++    try {
++      if (editId) {
++        const latest = (await fetchIdeas()).find(row => row.id === editId);
++        if (!latest) { setError('该选题已被外部删除，当前编辑仍保留。'); return; }
++        if (signature(latest) !== signature(baseline.current) && !window.confirm('这个选题已有外部更新。使用当前编辑覆盖吗？取消会保留草稿。')) { setExternalUpdate(true); return; }
++        await updateIdea(editId, form);
++      } else await createIdea(form);
++      setForm(null); setEditId(null); load();
++    } catch (e) { setError(e instanceof Error ? e.message : '保存失败，当前草稿已保留。'); }
++    finally { setSaving(false); }
+   };
+   const advance = async (it: Idea) => { await updateIdea(it.id, { ...it, status: NEXT[it.status] }); load(); };
+   const remove = async (it: Idea) => { await deleteIdea(it.id); load(); };
+@@ -53,7 +76,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
            <h1 className="page-title"><IconIdea size={21} /> 选题库</h1>
            <p className="page-subtitle">攒住每一个灵感——从热点收藏或手动新增，推进到「做内容」再进日历。</p>
          </div>
@@ -20352,6 +21535,111 @@ index f715205..e68cfb0 100644
        </div>
  
        <div className="kanban">
+@@ -95,6 +118,8 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+               <h3 style={{ margin: 0 }}>{editId ? '编辑选题' : '新建选题'}</h3>
+               <button className="icon-btn" onClick={() => setForm(null)}>×</button>
+             </div>
++            {externalUpdate && <p role="status">这个选题已有外部更新，当前草稿已保留；保存前会再次核对。</p>}
++            {error && <p role="alert" style={{ color: 'var(--red)' }}>{error}</p>}
+             <label className="field-label">选题 *</label>
+             <input className="field" value={form.title} autoFocus placeholder="想做的内容 / 角度"
+               onChange={(e) => setForm({ ...form, title: e.target.value })} />
+@@ -113,7 +138,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+             </div>
+             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+               <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>
+-              <button className="btn btn-sm btn-primary" onClick={save} disabled={!form.title.trim()}>保存</button>
++              <button className="btn btn-sm btn-primary" onClick={save} disabled={saving || !form.title.trim()}>{saving ? '保存中…' : '保存'}</button>
+             </div>
+           </div>
+         </div>
+diff --git a/web/frontend/src/components/LibrarySettings.tsx b/web/frontend/src/components/LibrarySettings.tsx
+new file mode 100644
+index 0000000..f6c0c79
+--- /dev/null
++++ b/web/frontend/src/components/LibrarySettings.tsx
+@@ -0,0 +1,81 @@
++import { useCallback, useEffect, useState } from 'react';
++import { changeLibrary, chooseLibrary, libraryStatus, openLibrary, type LibraryStatus } from '../lib/library';
++import { hasUnsavedEdits } from '../lib/unsaved';
++
++export default function LibrarySettings() {
++  const [status, setStatus] = useState<LibraryStatus | null>(null);
++  const [error, setError] = useState('');
++  const [busy, setBusy] = useState(false);
++  const [proposal, setProposal] = useState<{ mode: 'move' | 'existing'; targetRoot: string } | null>(null);
++  const refresh = useCallback(async () => {
++    setError('');
++    try { setStatus(await libraryStatus()); }
++    catch (e) { setError(e instanceof Error ? e.message : '无法读取资料库位置。'); }
++  }, []);
++  useEffect(() => { if (window.desktopLibrary) void refresh(); }, [refresh]);
++
++  const select = async (mode: 'move' | 'existing') => {
++    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，再调整资料库。'); return; }
++    setBusy(true); setError('');
++    try {
++      const targetRoot = await chooseLibrary();
++      if (targetRoot) setProposal({ mode, targetRoot });
++    } catch (e) { setError(e instanceof Error ? e.message : '未能选择目录。'); }
++    finally { setBusy(false); }
++  };
++  const confirm = async () => {
++    if (!proposal) return;
++    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，当前草稿会继续保留。'); return; }
++    setBusy(true); setError('');
++    try { await changeLibrary(proposal.mode, proposal.targetRoot); setProposal(null); await refresh(); }
++    catch (e) { setError(e instanceof Error ? e.message : '资料库未能切换，原资料会继续保留。'); }
++    finally { setBusy(false); }
++  };
++
++  return <section className="st-sec active" aria-label="资料库设置">
++    <h3>资料库</h3>
++    <p>画像、内容、素材、分析、日历、方法与工具，以及本软件保存的配置和登录资料，都使用同一个资料库。把当前连接说明交给 Agent，它可以在这里协作。</p>
++    {!window.desktopLibrary ? <p className="foot-note">网页版不能调整本机资料库位置，请在 MediaSail 桌面版设置中操作。</p> : <>
++      {status ? <div className="card" style={{ padding: 14, overflowWrap: 'anywhere' }}>
++        <strong>当前资料库</strong><p style={{ margin: '6px 0 12px', userSelect: 'text' }}>{status.libraryRoot || status.dataRoot}</p>
++        <div className="foot-note">工作区：{status.workspace}</div>
++        <div className="foot-note">运行资料：{status.dataRoot}</div>
++        {status.mode === 'legacy' && <p className="foot-note">当前仍使用旧版数据位置，可迁移到方便与 Agent 共用的目录。</p>}
++        {!!status.pending && <p role="status">上次资料库调整尚未完成，请先查看软件提示和日志；旧资料仍保留。</p>}
++        {!!status.conflicts?.length && <details style={{ marginTop: 12 }}>
++          <summary style={{ cursor: 'pointer' }}>有 {status.conflicts.length} 个工作文件与新版原件需要合并</summary>
++          <p>当前工作文件保留了你的修改。可打开资料库，按以下路径查看工作文件、本地备份和新版原件，再自行比较合并。</p>
++          {status.conflicts.map((conflict, index) => {
++            const isSkill = conflict.scope === 'agent-skill' || conflict.incoming.replace(/\\/g, '/').includes('/upgrade-backups/agent-skill/');
++            const base = isSkill ? `${status.libraryRoot}/agent-skill/mediasail` : status.workspace;
++            const working = conflict.working || `${base}/${conflict.path}`;
++            return <div className="card" key={`${conflict.path}-${index}`} style={{ padding: 12, marginTop: 8, userSelect: 'text' }}>
++              <strong>{conflict.path}</strong>
++              <p>当前工作文件：{working}</p>
++              <p>本地修改备份：{conflict.local}</p>
++              <p>新版原件：{conflict.incoming}</p>
++            </div>;
++          })}
++        </details>}
++      </div> : !error && <p role="status">正在读取资料库位置…</p>}
++      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
++        <button className="btn" disabled={busy || !status} onClick={() => { setError(''); void openLibrary().catch(e => setError(e instanceof Error ? e.message : '无法打开资料库。')); }}>打开资料库</button>
++        <button className="btn" disabled={busy || !status || !!status.pending} onClick={() => void select('move')}>迁移当前资料库</button>
++        <button className="btn" disabled={busy || !status || !!status.pending} onClick={() => void select('existing')}>打开已有资料库</button>
++        <button className="btn btn-sm" disabled={busy} onClick={() => void refresh()}>刷新位置</button>
++      </div>
++      {proposal && <div className="card" style={{ padding: 14, marginTop: 16, overflowWrap: 'anywhere' }} role="status">
++        <h4 style={{ marginTop: 0 }}>{proposal.mode === 'move' ? '迁移当前资料库' : '切换到已有资料库'}</h4>
++        <p>目标目录：<span style={{ userSelect: 'text' }}>{proposal.targetRoot}</span></p>
++        <p>{proposal.mode === 'move' ? '软件将复制并核验当前资料，成功后切换到新位置。旧资料仍保留，不会在此步骤删除。' : '软件将使用所选资料库，不合并或覆盖两个资料库；当前资料库仍保留。'}</p>
++        <p>请先保存编辑并暂停外部 Agent 对资料库的写入。操作成功后 MediaSail 会重新启动；Agent 随后需要重新读取连接资料。</p>
++        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
++          <button className="btn btn-primary" disabled={busy} onClick={() => void confirm()}>{busy ? '正在核验并准备重启…' : proposal.mode === 'move' ? '迁移并重启' : '切换并重启'}</button>
++          <button className="btn" disabled={busy} onClick={() => setProposal(null)}>取消</button>
++        </div>
++      </div>}
++    </>}
++    {error && <p role="alert" style={{ color: 'var(--red)' }}>{error}</p>}
++    <p className="foot-note">软件程序和运行环境仍在安装目录；卸载软件默认保留资料库。登录资料可能包含敏感信息，请按自己的需求管理目录权限和备份。</p>
++  </section>;
++}
 diff --git a/web/frontend/src/components/OnboardingWizard.tsx b/web/frontend/src/components/OnboardingWizard.tsx
 index ed070bd..875a4b8 100644
 --- a/web/frontend/src/components/OnboardingWizard.tsx
@@ -20505,10 +21793,10 @@ index 043dc91..6127aef 100644
  
        {treeError && <div className="notice-error">{treeError}</div>}
 diff --git a/web/frontend/src/components/ProfilePage.tsx b/web/frontend/src/components/ProfilePage.tsx
-index dee847e..8b77fe6 100644
+index dee847e..4bc8cd7 100644
 --- a/web/frontend/src/components/ProfilePage.tsx
 +++ b/web/frontend/src/components/ProfilePage.tsx
-@@ -1,7 +1,9 @@
+@@ -1,7 +1,10 @@
 -import { useState, useEffect } from 'react';
 +import { useState, useEffect, useCallback, useRef } from 'react';
  import { fetchPersonaFiles, savePersonaFile, deletePersona, fetchAccountAnalytics } from '../lib/api';
@@ -20516,10 +21804,33 @@ index dee847e..8b77fe6 100644
  import { renderMarkdown } from '../lib/sanitize';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
 +import AgentTaskContext from './AgentTaskContext';
++import { registerUnsavedEdits } from '../lib/unsaved';
  
  // 粉丝量级：把粉丝数映射成人话档位（画像里“粉丝量级”一栏要的是量级而非精确值）
  function fanTier(n: number): string {
-@@ -53,6 +55,7 @@ interface ProfilePageProps {
+@@ -20,16 +23,16 @@ const WX_START = '<!-- wechat-oa:auto:start -->';
+ const WX_END = '<!-- wechat-oa:auto:end -->';
+ 
+ function buildWechatBlock(a: AccountAnalytics): string {
+-  const fans = a.followers ?? 0;
+-  const posts = a.posts ?? 0;
+-  const reads = a.likes ?? 0;
++  const fans = a.followers;
++  const posts = a.posts;
++  const reads = a.reads;
+   const tops = [...new Set(a.notes.map((n) => n.title).filter(Boolean))].slice(0, 3);
+   const stamp = new Date().toLocaleString('zh-CN', { hour12: false });
+   const lines = [
+     `### 微信公众号（自动抓取 · ${stamp}）`,
+     '',
+-    `- **粉丝量级**：${fans}（${fanTier(fans)}）`,
+-    `- **内容形式**：图文推文（公众号文章）；已发表 ${posts} 篇${reads ? `，累计阅读 ${reads}` : ''}`,
++    `- **粉丝量级**：${fans == null ? '本次未取得' : `${fans}（${fanTier(fans)}）`}`,
++    `- **内容形式**：图文推文（公众号文章）；${posts == null ? '本次未取得已发表篇数' : `已发表 ${posts} 篇`}${reads == null ? '' : `，累计阅读 ${reads}`}`,
+   ];
+   if (a.metrics?.length) {
+     lines.push(`- **后台数据**：${a.metrics.map((m) => `${m.label} ${m.value}`).join(' · ')}`);
+@@ -53,6 +56,7 @@ interface ProfilePageProps {
    persona: string;
    onNewProfile: () => void;
    onDeleted: (name: string) => void;
@@ -20527,7 +21838,7 @@ index dee847e..8b77fe6 100644
  }
  
  const DIM_META: Record<string, { label: string; icon: string }> = {
-@@ -64,7 +67,7 @@ const DIM_META: Record<string, { label: string; icon: string }> = {
+@@ -64,7 +68,7 @@ const DIM_META: Record<string, { label: string; icon: string }> = {
    'memory.md': { label: '经验沉淀', icon: '🧠' },
  };
  
@@ -20536,7 +21847,7 @@ index dee847e..8b77fe6 100644
    const [files, setFiles] = useState<PersonaFile[]>([]);
    const [drafts, setDrafts] = useState<Record<string, string>>({});
    const [editing, setEditing] = useState(false);
-@@ -74,31 +77,59 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -74,31 +78,63 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
    const [deleting, setDeleting] = useState(false);
    const [toast, setToast] = useState('');
    const [fetchingWx, setFetchingWx] = useState(false);
@@ -20548,6 +21859,10 @@ index dee847e..8b77fe6 100644
 +  currentPersona.current = persona;
 +  const loadSeq = useRef(0);
 +  const hasUnsavedDrafts = files.some(f => (drafts[f.filename] ?? '') !== f.content);
++  const operation = useRef(false);
++  operation.current = Boolean(savingFile) || fetchingWx;
++  useEffect(() => registerUnsavedEdits('profile', () => operation.current || snapshot.current.files.some(
++    file => (snapshot.current.drafts[file.filename] ?? '') !== file.content)), []);
 +  const applyFiles = (next: PersonaFile[]) => {
 +    setFiles(next); setDrafts(Object.fromEntries(next.map(f => [f.filename, f.content]))); setExternalFiles(null);
 +  };
@@ -20613,13 +21928,15 @@ index dee847e..8b77fe6 100644
        showToast(`已保存 ${DIM_META[filename]?.label || filename} ✓`);
      } catch (e) {
        showToast(e instanceof Error ? e.message : '保存失败');
-@@ -113,13 +144,18 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -113,17 +149,22 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
      setFetchingWx(true);
      try {
        const a = await fetchAccountAnalytics('wechat-oa');
+-      if (!a.loggedIn) {
+-        showToast('公众号后台未登录：请先到「账号」页扫码登录后再抓取');
 +      if (currentPersona.current !== persona) return;
-       if (!a.loggedIn) {
-         showToast('公众号后台未登录：请先到「账号」页扫码登录后再抓取');
++      if (a.verificationStatus !== 'verified') {
++        showToast(a.message || (a.verificationStatus === 'login_required' ? '公众号后台需要登录：请先到账号页扫码' : '暂时无法核验公众号后台，请重试'));
          return;
        }
 -      const base = files.find((f) => f.filename === filename)?.content ?? '';
@@ -20633,7 +21950,12 @@ index dee847e..8b77fe6 100644
        // 同步更新 files（视图）与 drafts（若正在编辑也一致），无需手动保存
        setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: merged } : f));
        setDrafts((p) => ({ ...p, [filename]: merged }));
-@@ -164,9 +200,11 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+-      showToast(`已抓取并更新画像（粉丝 ${a.followers ?? 0}，已发表 ${a.posts ?? 0} 篇）✓`);
++      showToast('已将本次取得的公众号数据更新到画像 ✓');
+     } catch (e) {
+       showToast(e instanceof Error ? `抓取失败：${e.message}` : '抓取失败（可能未登录或平台改版）');
+     } finally {
+@@ -164,9 +205,11 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        <div className="profile-head">
          <div>
            <h1 className="page-title">{persona}</h1>
@@ -20646,7 +21968,7 @@ index dee847e..8b77fe6 100644
            <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={() => setEditing((v) => !v)}>
              {editing ? '完成编辑' : '✏️ 编辑资料'}
            </button>
-@@ -178,6 +216,8 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -178,6 +221,8 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        </div>
  
        {error && <div style={{ color: 'var(--red)', fontSize: 14, marginTop: 12 }}>{error}</div>}
@@ -20655,7 +21977,7 @@ index dee847e..8b77fe6 100644
  
        {loading ? (
          <div className="loading"><div className="spinner" />加载中…</div>
-@@ -191,7 +231,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -191,7 +236,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                  <div className="profile-dim-title">{meta.icon} {meta.label}</div>
                  <div style={{ display: 'flex', gap: 8 }}>
                    {f.filename === 'platforms.md' && (
@@ -20664,7 +21986,7 @@ index dee847e..8b77fe6 100644
                        title="用已登录的公众号后台会话抓取粉丝/内容数据，写入本栏（与数据中心同源）"
                        onClick={() => handleFetchWechat(f.filename)}>
                        {fetchingWx ? '抓取中…' : '📊 抓取公众号数据'}
-@@ -210,6 +250,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -210,6 +255,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                    className="field"
                    style={{ minHeight: 150, fontFamily: "'SF Mono','Consolas',monospace", fontSize: 13 }}
                    value={drafts[f.filename] ?? ''}
@@ -20673,7 +21995,7 @@ index dee847e..8b77fe6 100644
                  />
                ) : (
 diff --git a/web/frontend/src/components/PublishPage.tsx b/web/frontend/src/components/PublishPage.tsx
-index c72723f..76962e9 100644
+index c72723f..63f8a69 100644
 --- a/web/frontend/src/components/PublishPage.tsx
 +++ b/web/frontend/src/components/PublishPage.tsx
 @@ -1,15 +1,15 @@
@@ -20723,7 +22045,7 @@ index c72723f..76962e9 100644
    const draft0 = loadPublishDraft();
    const [title, setTitle] = useState(draft0.title);
    const [body, setBody] = useState(draft0.body);
-@@ -51,11 +43,6 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -51,15 +43,10 @@ export default function PublishPage({ persona }: PublishPageProps) {
    const [editing, setEditing] = useState<string | null>(null);
    const [copied, setCopied] = useState('');
    const [toast, setToast] = useState('');
@@ -20735,9 +22057,19 @@ index c72723f..76962e9 100644
    // 发布相关
    const [accounts, setAccounts] = useState<AccountItem[]>([]);
    const [mediaFiles, setMediaFiles] = useState<OutputFile[]>([]);
-@@ -73,10 +60,9 @@ export default function PublishPage({ persona }: PublishPageProps) {
-     savePublishDraft({ title, body, platforms, overrides, tags });
-   }, [title, body, platforms, overrides, tags]);
+-  const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
++  const [selectedMedia, setSelectedMedia] = useState<string[]>(draft0.selectedMedia || []);
+   const [showPicker, setShowPicker] = useState(false);
+   const [pub, setPub] = useState<Record<string, PubState>>({});
+   const [publishing, setPublishing] = useState(false);
+@@ -70,13 +57,12 @@ export default function PublishPage({ persona }: PublishPageProps) {
+ 
+   // 草稿持久化：任何改动即写 localStorage，切页/刷新回来都在
+   useEffect(() => {
+-    savePublishDraft({ title, body, platforms, overrides, tags });
+-  }, [title, body, platforms, overrides, tags]);
++    savePublishDraft({ title, body, platforms, overrides, tags, selectedMedia });
++  }, [title, body, platforms, overrides, tags, selectedMedia]);
  
 -  useEffect(() => () => adaptCtl.current?.abort(), []);   // 离开页面中止流
  
@@ -21022,10 +22354,10 @@ index 0000000..a60b5d1
 +  </div>;
 +}
 diff --git a/web/frontend/src/components/SettingsPanel.tsx b/web/frontend/src/components/SettingsPanel.tsx
-index 68eccd3..fb7ea21 100644
+index 68eccd3..3425179 100644
 --- a/web/frontend/src/components/SettingsPanel.tsx
 +++ b/web/frontend/src/components/SettingsPanel.tsx
-@@ -1,880 +1,61 @@
+@@ -1,880 +1,64 @@
 -import { useCallback, useEffect, useRef, useState } from 'react';
 -import { createPortal } from 'react-dom';
 -import type { Dispatch, SetStateAction } from 'react';
@@ -21074,10 +22406,11 @@ index 68eccd3..fb7ea21 100644
 +import { useEffect, useState } from 'react';
 +import { appStorage } from '../lib/appStorage';
 +import SoftwareUpdates from './SoftwareUpdates';
++import LibrarySettings from './LibrarySettings';
 +import { IconSlidersHorizontal, IconEllipsis } from './settingsIcons';
 +
 +declare global { interface Window { desktopData?: { openArchive(): Promise<void> }; } }
-+type Sec = 'business' | 'updates' | 'history';
++type Sec = 'business' | 'library' | 'updates' | 'history';
 +type HistorySession = { id: string; title?: string; persona?: string; messages?: unknown[] };
 +function historySnapshot(): HistorySession[] {
 +  try { const data: unknown = JSON.parse(appStorage.getItem('easel_sessions') || '[]'); return Array.isArray(data) ? data.filter(row => row && typeof row.id === 'string') : []; }
@@ -21615,22 +22948,24 @@ index 68eccd3..fb7ea21 100644
 -              )}
 +  return <div className="settings-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
 +    <div className="settings-panel" role="dialog" aria-modal="true" aria-label="设置">
-+      <div className="settings-head"><div><h2 className="settings-title">设置</h2><div className="settings-sub">业务资料 · 软件更新 · 历史存档</div></div><button className="settings-close" onClick={onClose} title="关闭（Esc）">✕</button></div>
++      <div className="settings-head"><div><h2 className="settings-title">设置</h2><div className="settings-sub">业务资料 · 资料库 · 软件更新 · 历史存档</div></div><button className="settings-close" onClick={onClose} title="关闭（Esc）">✕</button></div>
 +      <div className="settings-body">
 +        <nav className="settings-nav">
 +          <button className={`snav${sec === 'business' ? ' active' : ''}`} onClick={() => setSec('business')}><IconSlidersHorizontal size={16} />业务资料</button>
++          <button className={`snav${sec === 'library' ? ' active' : ''}`} onClick={() => setSec('library')}><span aria-hidden="true">▣</span>资料库</button>
 +          {window.desktopUpdates && <button className={`snav${sec === 'updates' ? ' active' : ''}`} onClick={() => setSec('updates')}><span aria-hidden="true">↑</span>软件更新</button>}
 +          <button className={`snav${sec === 'history' ? ' active' : ''}`} onClick={() => setSec('history')}><IconEllipsis size={16} />历史存档</button>
 +        </nav>
 +        <div className="settings-main">
 +          {sec === 'updates' && <SoftwareUpdates />}
++          {sec === 'library' && <LibrarySettings />}
 +          {sec === 'business' && <section className="st-sec active"><h3>运营资料与账号</h3>
 +            <p>画像页管理六维画像和经验；账号页沿用平台登录流程；工作台保留数据采集、指标与分析展示。</p>
 +            <p>研究、解释、策划与创作由你的外部 Agent 完成。软件中的方法文档和连接 Skill 继续提供业务背景与成果回存说明。</p>
 +            <button className="btn" onClick={onConnectAgent}>连接 Agent</button>
 +            <p className="foot-note">软件不再配置内置对话模型或安装通用创作环境。外部 Agent 的模型与工具由其自身环境管理。</p>
 +          </section>}
-+          {sec === 'history' && <section className="st-sec active"><h3>旧版聊天存档</h3><p>旧版会话保存在本地存档，可从目录中查阅或导出，不再续聊。画像、素材、账号和内容库仍在原位置使用。</p>
++          {sec === 'history' && <section className="st-sec active"><h3>旧版聊天存档</h3><p>旧版会话保存在本地存档，可从目录中查阅或导出，不再续聊。画像、素材、账号和内容库随当前资料库保存。</p>
 +            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
 +              {window.desktopData && <button className="btn" onClick={openArchive}>打开历史存档目录</button>}
 +              <button className="btn" disabled={!history.length} onClick={download}>导出聊天 JSON（{history.length} 条）</button>
@@ -22698,7 +24033,7 @@ index 0000000..219c2e8
 +    images, video: videos.length === 1 ? videos[0] : '', cover: /\.(png|jpe?g|webp)$/i.test(project.meta?.cover || '') ? project.meta!.cover! : '', mode, files };
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..5d2c35b 100644
+index 9b3d69f..83895aa 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -46,6 +46,7 @@ export interface SkillItem {
@@ -22718,6 +24053,76 @@ index 9b3d69f..5d2c35b 100644
  export function buildProfile(name: string, form: Record<string, unknown>): Promise<ProfileBuildResponse> {
    return request<ProfileBuildResponse>('/api/profile/build', {
      method: 'POST',
+@@ -364,7 +365,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
+ }
+ 
+ // ---- 账号登录 ----
+-export interface AccountItem {
++export type VerificationStatus = 'verified' | 'login_required' | 'unknown';
++export interface AccountVerification {
++  verificationStatus?: VerificationStatus;
++  accountId?: string | null;
++  checkedAt?: number | null; // Unix seconds
++  cached?: boolean;
++  errorCode?: string;
++  message?: string;
++  lastKnown?: { accountId?: string | null; name?: string; avatar?: string; checkedAt?: number | null };
++}
++export interface AccountItem extends AccountVerification {
+   platform: string;
+   name: string;
+   backend: string;      // xhs | web | biliup | unsupported
+@@ -428,15 +439,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
+   return request<AccountItem[]>('/api/accounts');
+ }
+ 
+-export interface AccountWhoami {
++export interface AccountWhoami extends AccountVerification {
+   loggedIn: boolean;
+   name: string;
+   avatar: string;   // 头像 URL（http）或空
+ }
+ 
+ /** 真校验某平台登录态 + 拉昵称/头像（后端起 headless 浏览器，数秒）。 */
+-export function accountWhoami(platform: string): Promise<AccountWhoami> {
+-  return request<AccountWhoami>(`/api/accounts/${encodeURIComponent(platform)}/whoami`);
++export function accountWhoami(platform: string, force = false): Promise<AccountWhoami> {
++  return request<AccountWhoami>(`/api/accounts/${encodeURIComponent(platform)}/whoami${force ? '?force=1' : ''}`);
+ }
+ 
+ /** 退出登录：删该平台持久化登录态。 */
+@@ -494,13 +505,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
+ }
+ 
+ // ---- 归因层：账号创作数据 ----
+-export interface AnalyticsPlatform {
++export interface AnalyticsPlatform extends AccountVerification {
+   platform: string;
+   name: string;
+   loggedIn: boolean;
+ }
+ 
+-export interface AccountAnalytics {
++export interface AccountAnalytics extends AccountVerification {
+   platform: string;
+   name: string;
+   nickname: string;
+@@ -508,12 +519,15 @@ export interface AccountAnalytics {
+   followers: number | null;
+   likes: number | null;
+   following: number | null;
++  reads?: number | null;
+   posts: number | null;
+   metrics: { label: string; value: string; vs: string }[];
+   notes: { title: string; url: string; cover?: string; stat?: string }[];
+   growth: Record<'last' | 'day' | 'week' | 'month' | 'year',
+     { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
+   fetched_at: number;
++  metrics_title?: string;
++  source?: string;
+ }
+ 
+ /** 支持抓数据的平台 + 各自登录态。 */
 diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
 new file mode 100644
 index 0000000..bd91a4f
@@ -22827,6 +24232,42 @@ index f6dac0a..3f048f9 100644
         "status": "done"
        },
        {
+diff --git a/web/frontend/src/lib/library.ts b/web/frontend/src/lib/library.ts
+new file mode 100644
+index 0000000..79f4653
+--- /dev/null
++++ b/web/frontend/src/lib/library.ts
+@@ -0,0 +1,30 @@
++export interface LibraryConflict { path: string; local: string; incoming: string; working?: string; scope?: string; }
++export interface LibraryStatus {
++  mode: string;
++  libraryRoot: string;
++  dataRoot: string;
++  workspace: string;
++  libraryId?: string;
++  pending?: unknown;
++  defaultLibraryRoot?: string;
++  conflicts?: LibraryConflict[];
++}
++declare global { interface Window { desktopLibrary?: { call(action: string, input?: unknown): Promise<unknown> }; } }
++
++export async function libraryStatus(): Promise<LibraryStatus> {
++  if (!window.desktopLibrary) throw new Error('资料库位置只能在 MediaSail 桌面版调整。');
++  return await window.desktopLibrary.call('status') as LibraryStatus;
++}
++export async function openLibrary(): Promise<void> {
++  if (!window.desktopLibrary) throw new Error('请在桌面版打开资料库。');
++  await window.desktopLibrary.call('open');
++}
++export async function chooseLibrary(): Promise<string | null> {
++  if (!window.desktopLibrary) throw new Error('资料库位置只能在桌面版调整。');
++  const result = await window.desktopLibrary.call('choose') as { path: string | null };
++  return result.path;
++}
++export async function changeLibrary(mode: 'move' | 'existing', targetRoot: string): Promise<void> {
++  if (!window.desktopLibrary) throw new Error('资料库位置只能在桌面版调整。');
++  await window.desktopLibrary.call('change', { mode, targetRoot });
++}
 diff --git a/web/frontend/src/lib/profileSelection.test.ts b/web/frontend/src/lib/profileSelection.test.ts
 new file mode 100644
 index 0000000..75ceb61
@@ -22878,7 +24319,7 @@ index 0000000..83ed1d0
 +  } catch { return ''; }
 +}
 diff --git a/web/frontend/src/lib/store.ts b/web/frontend/src/lib/store.ts
-index c348732..df9fcdc 100644
+index c348732..b3c1f1a 100644
 --- a/web/frontend/src/lib/store.ts
 +++ b/web/frontend/src/lib/store.ts
 @@ -1,3 +1,4 @@
@@ -22886,7 +24327,12 @@ index c348732..df9fcdc 100644
  import type { UploadedFile, ChatQuestion } from './api';
  
  export interface ChatMessage {
-@@ -40,35 +41,15 @@ export interface PublishDraft {
+@@ -36,39 +37,20 @@ export interface PublishDraft {
+   platforms: string[];
+   overrides: Record<string, string>;
+   tags: string;   // 话题标签，逗号分隔（小红书绑话题；其它平台按需写入）
++  selectedMedia?: string[];
+ }
  const PUBLISH_KEY = 'easel_publish_draft';
  const PREVIOUS_BRAND = ['post', 'craft'].join('');
  
@@ -22927,7 +24373,7 @@ index c348732..df9fcdc 100644
    }
    return previous;
  }
-@@ -86,7 +67,7 @@ export function loadPublishDraft(): PublishDraft {
+@@ -86,7 +68,7 @@ export function loadPublishDraft(): PublishDraft {
    }
  }
  export function savePublishDraft(d: PublishDraft): void {
@@ -22936,7 +24382,7 @@ index c348732..df9fcdc 100644
  }
  
  const STORAGE_KEY = 'easel_sessions';
-@@ -100,8 +81,8 @@ export function loadActiveId(): string | null {
+@@ -100,8 +82,8 @@ export function loadActiveId(): string | null {
  }
  export function saveActiveId(id: string | null): void {
    try {
@@ -22947,7 +24393,7 @@ index c348732..df9fcdc 100644
    } catch { /* quota */ }
  }
  
-@@ -146,11 +127,11 @@ function prune(sessions: ChatSession[]): ChatSession[] {
+@@ -146,11 +128,11 @@ function prune(sessions: ChatSession[]): ChatSession[] {
      keptEmpty = true;
      return true;
    });
@@ -23033,6 +24479,23 @@ index 0000000..93596a1
 +    };
 +  }, []);
 +}
+diff --git a/web/frontend/src/lib/unsaved.ts b/web/frontend/src/lib/unsaved.ts
+new file mode 100644
+index 0000000..da7f6ce
+--- /dev/null
++++ b/web/frontend/src/lib/unsaved.ts
+@@ -0,0 +1,11 @@
++declare global { interface Window { mediaSailHasUnsavedEdits?: () => boolean; } }
++
++const sources = new Map<string, () => boolean>();
++export function hasUnsavedEdits(): boolean {
++  return [...sources.values()].some(read => read());
++}
++export function registerUnsavedEdits(name: string, read: () => boolean): () => void {
++  sources.set(name, read);
++  window.mediaSailHasUnsavedEdits = hasUnsavedEdits;
++  return () => { if (sources.get(name) === read) sources.delete(name); };
++}
 diff --git a/web/frontend/src/lib/useRefreshOnFocus.ts b/web/frontend/src/lib/useRefreshOnFocus.ts
 new file mode 100644
 index 0000000..e80508e
@@ -23056,24 +24519,32 @@ index 0000000..e80508e
 +  }, []);
 +}
 diff --git a/web/frontend/src/lib/whoami.ts b/web/frontend/src/lib/whoami.ts
-index dd53a3c..cbe8941 100644
+index dd53a3c..692b6aa 100644
 --- a/web/frontend/src/lib/whoami.ts
 +++ b/web/frontend/src/lib/whoami.ts
-@@ -1,3 +1,4 @@
+@@ -1,6 +1,7 @@
 +import { appStorage } from './appStorage';
  // whoami 登录态：缓存 + 开页后台自愈校验。账号页与工作台「创作数据」卡片共用，
  // 避免对同一平台在 TTL 内重复起 headless 浏览器。缓存落 localStorage，条目带 ts。
- import { accountWhoami, type AccountWhoami } from './api';
-@@ -8,7 +9,7 @@ export const WHOAMI_TTL_MS = 600_000; // 10 分钟，与后端 WHOAMI_TTL 对齐
+-import { accountWhoami, type AccountWhoami } from './api';
++import { accountWhoami, type AccountWhoami, type AccountVerification } from './api';
+ 
+ const KEY = 'easel_whoami';
+ export const WHOAMI_TTL_MS = 600_000; // 10 分钟，与后端 WHOAMI_TTL 对齐
+@@ -8,7 +9,11 @@ export const WHOAMI_TTL_MS = 600_000; // 10 分钟，与后端 WHOAMI_TTL 对齐
  export type WhoamiEntry = AccountWhoami & { ts: number };
  
  export function getWhoamiCache(): Record<string, WhoamiEntry> {
 -  try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
-+  try { return JSON.parse(appStorage.getItem(KEY) || '{}'); } catch { return {}; }
++  try {
++    const parsed = JSON.parse(appStorage.getItem(KEY) || '{}') as Record<string, WhoamiEntry>;
++    return Object.fromEntries(Object.entries(parsed).filter(([, e]) => e && typeof e === 'object').map(([p, e]) => [p,
++      e.verificationStatus ? e : { ...e, loggedIn: false, verificationStatus: 'unknown' as const, ts: 0 }]));
++  } catch { return {}; }
  }
  
  /** 写缓存；r 为 null 则删除该平台条目。附带 ts 供 TTL 判定（旧格式无 ts→视为过期）。 */
-@@ -17,7 +18,7 @@ export function setWhoamiCache(platform: string, r: AccountWhoami | null): void
+@@ -17,12 +22,31 @@ export function setWhoamiCache(platform: string, r: AccountWhoami | null): void
      const c = getWhoamiCache();
      if (r) c[platform] = { ...r, ts: Date.now() };
      else delete c[platform];
@@ -23082,6 +24553,48 @@ index dd53a3c..cbe8941 100644
    } catch { /* 配额 / 隐私模式：忽略 */ }
  }
  
+ function isFresh(e: WhoamiEntry | undefined, ttlMs: number): boolean {
+-  return !!e && typeof e.ts === 'number' && (Date.now() - e.ts) < ttlMs;
++  return !!e && e.verificationStatus !== 'unknown' && typeof e.ts === 'number' &&
++    typeof e.checkedAt === 'number' && (Date.now() - e.checkedAt * 1000) < ttlMs && (Date.now() - e.ts) < ttlMs;
++}
++
++export function currentVerification(local: AccountVerification | undefined, server: AccountVerification): AccountVerification {
++  const localTime = local?.checkedAt ?? 0, serverTime = server.checkedAt ?? 0;
++  // Platform timestamps have second precision: a stale success must not win a
++  // same-second negative/unknown response solely because it lives in the UI cache.
++  const selected = !local || serverTime > localTime || (serverTime === localTime &&
++    local.verificationStatus === 'verified' && server.verificationStatus !== 'verified') ? server : local;
++  const age = selected.checkedAt == null ? Infinity : Date.now() - selected.checkedAt * 1000;
++  return selected.verificationStatus === 'verified' && (age < 0 || age >= WHOAMI_TTL_MS)
++    ? { ...selected, verificationStatus: 'unknown', cached: true, message: '上次登录校验已过期，请重新校验。' }
++    : selected;
++}
++
++export function unknownVerification(message: string, previous?: AccountWhoami): AccountWhoami {
++  return { loggedIn: false, name: '', avatar: '', verificationStatus: 'unknown', checkedAt: Date.now() / 1000,
++    cached: false, errorCode: 'VERIFY_FAILED', message,
++    lastKnown: previous?.verificationStatus === 'verified' ? previous : previous?.lastKnown };
+ }
+ 
+ interface VerifyOpts {
+@@ -51,11 +75,13 @@ export function verifyStale(platforms: string[], opts: VerifyOpts = {}): void {
+       if (opts.alive && !opts.alive()) return;
+       const p = todo[next++];
+       try {
+-        const r = await accountWhoami(p);
++        const r = await accountWhoami(p, opts.force ?? false);
++        setWhoamiCache(p, r);
++        if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
++      } catch (error) {
++        const r = unknownVerification(error instanceof Error ? error.message : '暂时无法校验账号，请重试。', cache[p]);
+         setWhoamiCache(p, r);
+         if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
+-      } catch {
+-        // 校验失败（超时/网络）：保留既有缓存，跳过该平台
+       }
+     }
+   };
 diff --git a/web/frontend/src/main.tsx b/web/frontend/src/main.tsx
 index dd33e5a..4eea955 100644
 --- a/web/frontend/src/main.tsx

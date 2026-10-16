@@ -41,3 +41,7 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'Backend checks failed'}
           & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 tests/test_skill_helper.py
           if($LASTEXITCODE -ne 0){throw 'Skill checks failed'}
+          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 tests/test_account_business.py
+          if($LASTEXITCODE -ne 0){throw 'Account business checks failed'}
+          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 tests/test_account_api.py
+          if($LASTEXITCODE -ne 0){throw 'Account API checks failed'}

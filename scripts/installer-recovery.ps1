@@ -59,7 +59,23 @@ function Get-RecoveryCandidate([string]$Descriptor, $Identities) {
   $connection = Get-Content -LiteralPath $Descriptor -Raw -Encoding UTF8 | ConvertFrom-Json
   if ($connection.schema -ne 1 -or $connection.product -cne 'MediaSail') { throw 'The connection descriptor does not identify MediaSail' }
   $data = [IO.Path]::GetFullPath((Split-Path -Parent $Descriptor)).TrimEnd('\')
-  if ($connection.dataDir -and [IO.Path]::GetFullPath($connection.dataDir).TrimEnd('\') -ine $data) { throw 'The connection data directory does not match' }
+  if ($connection.dataDir -and [IO.Path]::GetFullPath($connection.dataDir).TrimEnd('\') -ine $data) {
+    # The stable AppData descriptor is a public mirror after library migration.
+    # Resolve it only through the committed library choice and matching marker.
+    $location = Get-Content -LiteralPath (Join-Path $data 'library-location.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($location.schema -ne 1 -or $location.product -cne 'MediaSail' -or $location.state -cne 'ready') { throw 'The library location is not committed' }
+    $libraryRoot = [IO.Path]::GetFullPath($location.libraryRoot).TrimEnd('\')
+    $marker = Get-Content -LiteralPath (Join-Path $libraryRoot '.mediasail-library.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($marker.schema -ne 1 -or $marker.product -cne 'MediaSail' -or $marker.state -cne 'ready' -or $marker.libraryId -cne $location.libraryId -or $connection.libraryId -cne $location.libraryId) { throw 'The selected library identity does not match' }
+    if ([IO.Path]::GetFullPath($connection.libraryRoot).TrimEnd('\') -ine $libraryRoot) { throw 'The connection library directory does not match' }
+    $actualData = Join-Path $libraryRoot 'runtime'
+    $canonicalFile = Join-Path $actualData 'agent-connection.json'
+    if ([IO.Path]::GetFullPath($connection.dataDir).TrimEnd('\') -ine $actualData -or [IO.Path]::GetFullPath($connection.connectionFile) -ine $canonicalFile) { throw 'The canonical connection location does not match' }
+    $canonical = Get-Content -LiteralPath $canonicalFile -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($canonical.schema -ne 1 -or $canonical.product -cne 'MediaSail' -or $canonical.libraryId -cne $location.libraryId -or $canonical.instanceId -cne $connection.instanceId -or $canonical.executable -ine $connection.executable -or $canonical.version -cne $connection.version) { throw 'The mirrored connection does not match the library instance' }
+    $connection = $canonical
+    $data = $actualData
+  }
   $exe = Assert-PlainPath $connection.executable
   if ([IO.Path]::GetFileName($exe) -cne 'MediaSail.exe') { throw 'Unexpected application filename' }
   $directory = Split-Path -Parent $exe

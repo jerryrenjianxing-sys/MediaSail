@@ -1,0 +1,87 @@
+name: Verify MediaSail shared library upgrade
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Candidate draft installer or published original updater
+        required: true
+        type: choice
+        options:
+          - candidate
+          - published
+        default: candidate
+      target_version:
+        description: Exact release version to verify (without v)
+        required: true
+        type: string
+        default: '0.5.2'
+      registration:
+        description: Preserve registration or reproduce missing registration
+        required: true
+        type: choice
+        options:
+          - missing
+          - registered
+        default: missing
+      failure_mode:
+        description: Optional exclusive Playwright private-driver lock and rollback before retry
+        required: true
+        type: choice
+        options:
+          - none
+          - locked-old-node
+        default: none
+permissions:
+  # Draft releases are visible to repository writers. The token is passed only
+  # to the download step, never to the installed application.
+  contents: write
+jobs:
+  upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download genuine baseline and selected light installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MEDIASAIL_TARGET_VERSION: ${{ inputs.target_version }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $version=$env:MEDIASAIL_TARGET_VERSION
+          if($version -notmatch '^0\.5\.[0-9]+$'){throw 'Expected a 0.5.x target version'}
+          gh release view ('v'+$version) --json tagName,isDraft
+          if($LASTEXITCODE -ne 0){throw 'Candidate release is not visible to this run'}
+          foreach($entry in @(@{Version=$version;Directory='candidate'},@{Version='0.5.0';Directory='baseline'})) {
+            $directory=Join-Path 'release-input' $entry.Directory
+            New-Item -ItemType Directory -Path $directory | Out-Null
+            $name='MediaSail-'+$entry.Version+'-win-x64-Setup.exe'
+            gh release download ('v'+$entry.Version) --pattern $name --pattern SHA256SUMS.txt --dir $directory
+            if($LASTEXITCODE -ne 0){throw ('Release download failed: '+$entry.Version)}
+            $checks=Get-Content -LiteralPath (Join-Path $directory SHA256SUMS.txt)
+            $match=@($checks | Where-Object { $_ -match ('^[a-fA-F0-9]{64}\s+\*?'+[regex]::Escape($name)+'$') })
+            if($match.Count -ne 1){throw ('Missing unambiguous installer checksum: '+$name)}
+            $expected=($match[0] -split '\s+')[0].ToLower()
+            $actual=(Get-FileHash -LiteralPath (Join-Path $directory $name) -Algorithm SHA256).Hash.ToLower()
+            if($actual -ne $expected){throw ('Installer checksum mismatch: '+$name)}
+            if($entry.Version -eq '0.5.0' -and ($actual -ne '13d2946e4e9bab7faa31d0714d73ad83401d44c3543c9c2aed5822138bc2f0d6' -or (Get-Item -LiteralPath (Join-Path $directory $name)).Length -ne 273780875)){throw 'Genuine 0.5.0 baseline identity mismatch'}
+            Write-Output ($name+' SHA256 verified: '+$actual)
+          }
+      - name: Real isolated Windows installation and retention checks
+        env:
+          MEDIASAIL_UPGRADE_MODE: ${{ inputs.mode }}
+          MEDIASAIL_TARGET_VERSION: ${{ inputs.target_version }}
+          MEDIASAIL_REGISTRATION: ${{ inputs.registration }}
+          MEDIASAIL_FAILURE_MODE: ${{ inputs.failure_mode }}
+        run: node scripts/verify-library-upgrade-ci.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediasail-${{ inputs.target_version }}-library-upgrade-${{ inputs.mode }}-${{ inputs.registration }}-${{ inputs.failure_mode }}
+          path: installer-evidence/
+          retention-days: 14

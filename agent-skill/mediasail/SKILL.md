@@ -11,7 +11,9 @@ MediaSail 是用户的运营背景和经验中心。画像、受众、内容风�
 
 ## 接入
 
-复制说明中的 `agent-connection.json` 记录当前数据目录、服务地址、业务工具、内置 Python 和本地 Skill 的位置。默认位于 `%LOCALAPPDATA%\ElectronEasel\agent-connection.json`；有自定义目录时以复制说明为准。`selectedProfile` 是软件当前选择的运营画像提示，用户任务明确指定的对象优先，不代表其他 Agent 正在执行的任务。
+复制说明中的 `agent-connection.json` 记录当前资料库、运行数据目录、服务地址、业务工具、内置 Python 和本地 Skill 的位置。默认发现入口是 `%LOCALAPPDATA%\ElectronEasel\agent-connection.json`，其中 `connectionFile` 指向当前资料库的正式连接文件；位置以复制说明为准。每次使用辅助脚本都会重新读取，不记死端口或上一次资料库路径。`selectedProfile` 是软件当前选择的运营画像提示，用户任务明确指定的对象优先，不代表其他 Agent 正在执行的任务。
+
+`workspace` 就是控制台正在使用的工作目录。默认直接在这里读写画像、素材、项目和运营方法，成果回存后刷新原页面即可；无须另建工作副本再同步。`skillDir` 是资料库中可维护的接入 Skill。升级保留用户修改的工作文件；本地与新版同时变化时保留两份并提示冲突，真实位置由连接资料提供。
 
 用辅助脚本快速了解实际状态：
 

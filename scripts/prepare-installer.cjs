@@ -16,4 +16,9 @@ patch('installUtil.nsh','719d3e4c1f3b0b4297eb719d5814624c937f423790f902b77f6ee87
  if(text.split(needle).length!==2)throw Error('Unexpected old-uninstaller entry');
  return text.replace(needle,'  !insertmacro mediaSailBeforeOldUninstall\n'+needle);
 });
+patch('installer.nsh','0e319437dd01dcbf911f3f48f664fde0cefbaef704f1cdb1739f63d563f5d4a0','; MediaSail library-aware installer cache',text=>{
+ const needle='      !insertmacro copyFile "$EXEPATH" "$LOCALAPPDATA\\${APP_INSTALLER_STORE_FILE}"';
+ if(text.split(needle).length!==2)throw Error('Unexpected official installer-cache copy');
+ return text.replace(needle,'      ; Installer cache is copied and SHA256-checked in customInstall after verified installation.');
+});
 console.log('Pinned installer copy and legacy temporary-path patches applied');

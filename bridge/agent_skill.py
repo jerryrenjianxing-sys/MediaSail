@@ -38,13 +38,17 @@ def register(app, info):
 MediaSail 保存我的画像、受众、运营分析、历史内容和素材；你可以结合这些背景发挥自己的研究、策划、创作与开发能力，并把有用成果和经验整理回软件。
 
 本机连接资料：{info['connectionFile']}
+发现入口：{info.get('discoveryFile') or info['connectionFile']}
+当前资料库：{info.get('libraryRoot') or info.get('workspace') or info.get('dataDir') or '旧连接资料未提供，请查当前连接文件'}
+当前工作目录：{info.get('workspace') or '旧连接资料未提供，请查当前连接文件'}
 本机完整 Skill：{directory / 'SKILL.md'}
 当前服务：{info['baseUrl']}
 当前界面画像：{info.get('selectedProfile') or '尚未选择'}（具体任务使用哪份画像，请结合用户任务确认，不作为其他 Agent 的全局任务状态）
 完整 Skill 包：{info['baseUrl']}/api/v1/skill
 
 请先读取本机 SKILL.md；也可以下载 Skill 包，解压后读取 mediasail/SKILL.md。后续需要工具、接口、数据或源码说明时，再查对应 references。
-服务地址可能随重启改变，调用前通过连接资料和 scripts/mediasail.ps1 check 核对当前实例。自定义数据目录为：{info['dataDir']}。
+服务地址和资料库可能随重启或切换而改变，调用前重新读取连接资料，通过 scripts/mediasail.ps1 check 核对当前实例。辅助脚本会从发现入口追踪当前连接文件。运行数据目录为：{info['dataDir']}。
+画像、素材、成品和运营方法直接读写当前工作目录，与软件控制台使用同一份资料，无需另复制一套。
 
 初次接入时，简短告诉我实际连接情况、是否找到了工具与资料，然后重点介绍你能结合 MediaSail 帮我做什么。未检测的状态不要说成已连接；如果我同时给了任务，就自然继续任务。这段介绍不需要每轮重复。
 """

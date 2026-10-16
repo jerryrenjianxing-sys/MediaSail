@@ -95,7 +95,11 @@ function curatePayload({payloadRoot,sourceRoot}={}){
     next=next.replace(/^> \*\*不要调用[^\n]+$/gm,'').replace(/9 条强制清单/g,'9 条表达自检参考').replace(/每条阈值、完整禁用词表、改写示例\*\*必须逐条对照\*\*/g,'具体阈值、词表示例与改写方法可按需查阅');
     next=next.replace(/^\| 生成配图[^\n]+$/gm,'| 配图创作 | 由外部 Agent 自主完成 | 通用图像执行器不随软件提供 |');
    }
-   if(name==='skill-douyin-upload')next=next.replace(/\*\*马上调用 `ask_user` 工具弹【验证码卡片】要码——不要用普通文字消息\*\*[^\n]*/,'如平台要求验证码，由用户通过当前 Agent 或软件支持的输入方式提供；不假设外部 Agent 具有旧 ask_user 卡片协议。');
+   if(name==='skill-douyin-upload'){
+    next=next.replace(/## 短信验证码处理[^\n]*[\s\S]*?(?=## 发布前人设检查)/,'## 登录与短信验证\n\n登录入口是抖音创作者后台，不是普通视频主页。软件与外部 Agent 共用当前资料库的 DouyinProfile；用户默认浏览器的已登录状态不等于此后台会话已核验。登录完成会关闭扫码浏览器，再重开同一资料核对账号编号后才报告 success。\n\n遇到 sms_required 时，可由用户在账号/发布页面输入验证码，或通过现有 /api/login/douyin/sms、/api/publish/douyin/sms 接口回填。验证中保持已有操作继续，不重复启动发布；验证码错误时根据状态提示重试。未知或超时的发布结果先查询状态及创作者作品列表，不能重发来代替核对。外部 Agent 不需要旧 OpenClaw 卡片、Linux setsid 或固定跨对话轮协议。\n\n');
+    next=next.replace(/## 发布前人设检查[^\n]*[\s\S]*?(?=## 发布后留痕)/,'## 发布前内容检查\n\n可参考当前画像比较定位、受众和表达方式；分值属于可选诊断，具体修改和发布依据当前用户任务。媒体路径、标题限制和平台真实校验由脚本处理。\n\n');
+    next=next.replace(/本环境已装/g,'需按当前环境检测').replace(/本环境跑不了，已删除/g,'当前不需要此依赖').replace(/## 必做约束/g,'## 发布校验与排错');
+   }
    next=next.replace(/^.*检测\s*`=== EASEL ACCOUNT PROFILE ===`.*$/gm,'从当前任务指定的画像或连接资料的 selectedProfile 提示定位 profiles/<名称>/；没有系统自动注入全文。');
    if(name==='video-strategy'){
     next=next.replace(/### 2\. 选择制作方案[\s\S]*?(?=### 4\.)/,'### 2. 选择制作方案\n\n先根据表达目标、已有素材、预算、可修改性和复用需求判断：程序化适合重复和数据驱动；生成画面适合补充原创镜头；真人/数字呈现适合讲述；剪辑适合已有素材重组。外部 Agent 自选当前可用工具，不预设引擎、模型或供应商。\n\n### 3. 生成画面的质量判断\n\n比较画质、运动控制、时序与角色一致性、镜头长度、音频需求、成本、版权和数据处理方式。版本、规格与价格变化很快，按实际工具核对，不使用旧厂商表作为本版承诺。提示词方法继续见 [ai-video-prompting.md](references/ai-video-prompting.md)。\n\n');
@@ -121,6 +125,20 @@ function curatePayload({payloadRoot,sourceRoot}={}){
   const rel='skills/openclaw/'+name+'/SKILL.md';
   if(!fs.existsSync(path.join(root,rel)))continue;
   put(rel,body);if(!sanitizedFiles.includes(rel))sanitizedFiles.push(rel);
+ }
+ // Restore real callable business entrypoints after retiring old shell recipes.
+ // Only scripts with an argparse CLI are advertised as commands; support
+ // modules (locks/auth/API libraries) remain in the inventory without fake CLIs.
+ const callable=policy.keptScripts.filter(rel=>fs.existsSync(path.join(root,rel))&&/ArgumentParser\(/.test(fs.readFileSync(path.join(root,rel),'utf8')));
+ const helperCommand=rel=>"& $SkillHelper python --data-dir $DataDir '"+rel+"' --help";
+ for(const name of policy.BUSINESS){
+  const rel='skills/openclaw/'+name+'/SKILL.md';if(!fs.existsSync(path.join(root,rel)))continue;
+  const tools=callable.filter(p=>p.startsWith('skills/openclaw/'+name+'/'));
+  if(name==='skill-douyin-upload')tools.push('skills/shared/scripts/douyin_publish.py');
+  if(!tools.length)continue;
+  const guidance='\n## Windows 业务脚本入口\n\n$SkillHelper 使用连接资料 skillDir 下 scripts/mediasail.ps1 的绝对路径，$DataDir 使用复制说明中的运行数据目录。辅助脚本每次重读当前资料库并设置 workspace；先查帮助，再按本次任务选择参数。完整离线示例见接入 Skill 的 references/script-io.md。\n\n```powershell\n'+tools.map(helperCommand).join('\n')+'\n```\n';
+  put(rel,fs.readFileSync(path.join(root,rel),'utf8')+guidance);
+  if(!sanitizedFiles.includes(rel))sanitizedFiles.push(rel);
  }
  put('skills/shared/README.md','# 共享业务资料\n\n本目录保留业务计算、账号/登录、采集/发布、日历和成果登记支持。准确可运行脚本见 [业务工具清单](../business-tools.md)。\n\n## 专业知识\n\n- [热点资料](hotlist-apis.md)：原聚合源与数据结构说明；来源可用性以实际查询为准。\n- [内容支柱与节奏](pillar-and-cadence.md)：策划方法与案例。\n- [评分维度](scoring-dimensions.md)：经验性分析维度及标尺，非统一交付门槛。\n\n通用图像、音频、视频、字幕、模型供应商执行器不随本版提供；外部 Agent 自选工具，不从旧 README 猜测不存在的脚本或依赖。目录名与业务 Python 路径保持兼容，不依赖 OpenClaw。\n');
  sanitizedFiles.push('skills/shared/README.md');
@@ -154,7 +172,7 @@ function curatePayload({payloadRoot,sourceRoot}={}){
  put('skills/knowledge-index.json',JSON.stringify(index,null,2)+'\n');
  const md=['# MediaSail 业务能力与专业方法索引','','目录名 openclaw 是兼容旧版的路径，不表示需要 OpenClaw。外部 Agent 按任务查阅；无需逐项执行。业务数据和计算留在本机，研究、解释与创作由外部 Agent 自主完成。','','## 业务能力与分析方法','',...index.filter(e=>e.kind==='business').map(e=>'- ['+e.title+'](openclaw/'+e.name+'/SKILL.md)：'+e.description),'','## 创作方法（不绑定制作工具）','',...index.filter(e=>e.kind==='method').map(e=>'- ['+e.title+'](openclaw/'+e.name+'/SKILL.md)：'+e.description),'','方法原文来自固定 Easel 基线；保留作者署名、LICENSE/EASEL-META。数值经验不等于平台官方保证。'];
  put('skills/KNOWLEDGE.md',md.join('\n')+'\n');
- put('skills/business-tools.md',['# 业务工具与退出范围','','以下脚本保留在可写工作目录。先读帮助与方法文档，再按任务使用；无需运行每个脚本。PowerShell 用 Skill 的 mediasail.ps1 python 入口，工作目录自动设为 workspace。脚本中的相对路径从该目录解释。','','## 可运行的业务脚本','',...present.map(p=>'- `'+p+'`'),'','## 业务依赖边界','','- Python 与业务库由软件提供。平台网页采集/登录/发布通过 Playwright 使用系统 Chrome/Edge；未安装时由用户或外部 Agent 准备。FFmpeg、Node、OpenClaw、图像/语音/视频模型不随包提供。','- 公众号 Markdown/HTML 转换和官方草稿适配保留。ai_score 是正则/统计启发式，非 AI 检测事实；选用参考不等于交付门槛。multi_publish 是可选外部 Wechatsync 适配，其浏览器插件/Node 不随包提供，不属于默认能力。','- 数据tracker、发布日志、账号快照各有数据契约，不能因字段同名混算；详见接入 Skill 的画像与分析文档。','','## 已退出的实现','','通用生图、视频、音频、字幕、剪辑、卡片渲染、文档转换等脚本，以及视频产线 SDK、模型供应商适配、安装脚本、OpenClaw 系统指令不随安装包提供。混合技能中的专业方法继续可读，纯工具型技能不再进入默认列表；外部 Agent 自选可用工具完成。没有另发旧工具包；原始实现可在固定上游及 Git 历史查阅。','','退出文件和改写文档的准确清单见 [curation-report.json](curation-report.json)。'].join('\n')+'\n');
+ put('skills/business-tools.md',['# 业务工具与退出范围','','以下脚本保留在可写工作目录。先读帮助与方法文档，再按任务使用；无需运行每个脚本。PowerShell 用 Skill 的 mediasail.ps1 python 入口，工作目录自动设为 workspace。脚本中的相对路径从该目录解释。','','## 可运行的业务脚本与支持模块','',...present.map(p=>'- `'+p+'`'),'','## Windows 帮助入口','','$SkillHelper 为当前 skillDir/scripts/mediasail.ps1，$DataDir 为当前运行数据目录；占位变量从接入说明设置。下列 --help 不登录、不采集、不发布。支持模块没有独立 CLI，勿把库文件当命令。','','```powershell',...callable.map(helperCommand),'```','','## 业务依赖边界','','- Python 与业务库由软件提供。平台网页采集/登录/发布通过 Playwright 使用系统 Chrome/Edge；未安装时由用户或外部 Agent 准备。FFmpeg、Node、OpenClaw、图像/语音/视频模型不随包提供。','- 公众号 Markdown/HTML 转换和官方草稿适配保留。ai_score 是正则/统计启发式，非 AI 检测事实；选用参考不等于交付门槛。multi_publish 是可选外部 Wechatsync 适配，其浏览器插件/Node 不随包提供，不属于默认能力。','- 数据tracker、发布日志、账号快照各有数据契约，不能因字段同名混算；详见接入 Skill 的画像与分析文档。','','## 已退出的实现','','通用生图、视频、音频、字幕、剪辑、卡片渲染、文档转换等脚本，以及视频产线 SDK、模型供应商适配、安装脚本、OpenClaw 系统指令不随安装包提供。混合技能中的专业方法继续可读，纯工具型技能不再进入默认列表；外部 Agent 自选可用工具完成。没有另发旧工具包；原始实现可在固定上游及 Git 历史查阅。','','退出文件和改写文档的准确清单见 [curation-report.json](curation-report.json)。'].join('\n')+'\n');
  const report={schema:1,upstream:manifest.upstream,keptScripts:present,excludedFiles:excludedFiles.sort(),sanitizedFiles:sanitizedFiles.sort(),knowledgeFiles:[...new Set(knowledgeFiles)].sort(),index:'skills/knowledge-index.json'};
  put('skills/curation-report.json',JSON.stringify(report,null,2)+'\n');
  manifest.files={};for(const rel of walk(root))manifest.files[rel]=digest(fs.readFileSync(path.join(root,rel)));

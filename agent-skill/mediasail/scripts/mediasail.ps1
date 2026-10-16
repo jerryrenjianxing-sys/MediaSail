@@ -11,8 +11,18 @@ for ($i=0; $i -lt $taskArgs.Count; $i++) {
 }
 try {
     $file = Join-Path $dataDir 'agent-connection.json'
-    $info = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($info.product -ne 'MediaSail' -or $info.schema -ne 1) { throw 'Not a compatible MediaSail connection file' }
+    $visited = @{}
+    for ($attempt=0; $attempt -lt 8; $attempt++) {
+        $file = [IO.Path]::GetFullPath($file)
+        if ($visited.ContainsKey($file)) { throw 'Connection file redirect loop; reopen MediaSail' }
+        $visited[$file] = $true
+        $info = Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($info.product -ne 'MediaSail' -or $info.schema -ne 1) { throw 'Not a compatible MediaSail connection file' }
+        $canonical = if ($info.connectionFile) { [IO.Path]::GetFullPath([string]$info.connectionFile) } else { $file }
+        if ($canonical -eq $file) { break }
+        $file = $canonical
+    }
+    if ($canonical -ne $file -or $attempt -ge 8) { throw 'Too many connection redirects; reopen MediaSail' }
     if (-not (Test-Path -LiteralPath $info.python)) { throw 'Bundled Python is missing; restart or repair MediaSail' }
     $env:PYTHONUTF8 = '1'; $env:PYTHONIOENCODING = 'utf-8'
     & $info.python (Join-Path $PSScriptRoot 'mediasail.py') --connection $file @forward

@@ -1,4 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('desktopLibrary',{
+  call:async(action,input)=>{const r=await ipcRenderer.invoke('library:call',action,input);if(!r?.ok)throw new Error(r?.error||'资料库操作未完成。');return r.data;}
+});
 contextBridge.exposeInMainWorld('desktopData',{
   openArchive:async()=>{const r=await ipcRenderer.invoke('data:archive');if(!r?.ok)throw new Error(r?.error||'无法打开历史存档。');}
 });
@@ -15,6 +18,8 @@ contextBridge.exposeInMainWorld('desktopUpdates',{
 contextBridge.exposeInMainWorld('desktopStartup',{
   retry:()=>ipcRenderer.invoke('startup:retry'),
   logs:()=>ipcRenderer.invoke('startup:logs'),
+  library:action=>ipcRenderer.invoke('startup:library',action),
+  quit:()=>ipcRenderer.invoke('startup:quit'),
   status:()=>ipcRenderer.invoke('startup:status')
 });
 contextBridge.exposeInMainWorld('desktopAito',{

@@ -62,6 +62,67 @@ class HelperTest(unittest.TestCase):
         result=helper.check(self.info)
         self.assertFalse(result['connected']);self.assertFalse(result['ok'])
         self.assertTrue(result['localToolsReady']);self.assertEqual(result['selectedProfile'],'测试画像')
+    def test_discovery_mirror_follows_latest_canonical_file_and_detects_loops(self):
+        runtime=self.folder/'新资料库'/'runtime';runtime.mkdir(parents=True)
+        canonical=runtime/'agent-connection.json'
+        newer={**self.info,'workspace':str(self.folder/'新资料库'/'workspace'),
+               'libraryRoot':str(runtime.parent),'libraryId':'library-new','connectionFile':str(canonical)}
+        canonical.write_text(json.dumps(newer),encoding='utf-8')
+        self.connection.write_text(json.dumps({**self.info,'connectionFile':str(canonical)}),encoding='utf-8')
+        loaded=helper.connection_info(self.connection)
+        self.assertEqual(loaded['workspace'],newer['workspace'])
+        self.assertEqual(loaded['libraryId'],'library-new')
+        canonical.write_text(json.dumps({**newer,'connectionFile':str(self.connection)}),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'循环'):
+            helper.connection_info(self.connection)
+    def test_live_identity_updates_all_paths_and_python_execution_environment(self):
+        library=self.folder/'当前资料库';work=library/'workspace';work.mkdir(parents=True)
+        live={**self.info,'workspace':str(work),'profiles':str(work),'outputs':str(work),
+              'tools':str(work),'skillDir':str(library),'libraryRoot':str(library),
+              'libraryId':'library-live','version':'0.5.2',
+              'environment':{'HOME':str(library/'runtime'/'home')}}
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(s):
+                body=live if s.path=='/api/agent-info' else {'serviceReady':True}
+                data=json.dumps(body).encode();s.send_response(200)
+                s.send_header('Content-Length',str(len(data)));s.end_headers();s.wfile.write(data)
+            def log_message(*args): pass
+        server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        try:
+            live['baseUrl']='http://127.0.0.1:'+str(server.server_port)
+            self.info['baseUrl']=live['baseUrl']
+            checked=helper.check(self.info)
+            self.assertEqual(checked['paths']['workspace'],str(work))
+            self.assertEqual(checked['libraryId'],'library-live')
+            self.assertEqual(checked['version'],'0.5.2')
+            self.connection.write_text(json.dumps(self.info),encoding='utf-8')
+            script=work/'当前目录.py'
+            script.write_text('import os,json;print(json.dumps({"cwd":os.getcwd(),"root":os.environ["EASEL_ROOT"],"home":os.environ["HOME"]}))',encoding='utf-8')
+            result=subprocess.run([sys.executable,str(HELPER),'--connection',str(self.connection),'python',str(script)],capture_output=True,text=True,encoding='utf-8')
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            value=json.loads(result.stdout)
+            self.assertEqual(value['cwd'],str(work));self.assertEqual(value['root'],str(work))
+            self.assertEqual(value['home'],live['environment']['HOME'])
+        finally: server.shutdown();server.server_close()
+    @unittest.skipUnless(os.name == 'nt', 'PowerShell wrapper is Windows-only')
+    def test_powershell_wrapper_follows_mirror_before_selecting_python(self):
+        work=self.folder/'新资料库'/'workspace';work.mkdir(parents=True)
+        runtime=work.parent/'runtime';runtime.mkdir()
+        canonical=runtime/'agent-connection.json'
+        newer={**self.info,'workspace':str(work),'connectionFile':str(canonical),
+               'libraryRoot':str(work.parent),'libraryId':'canonical-test'}
+        canonical.write_text(json.dumps(newer),encoding='utf-8')
+        self.connection.write_text(json.dumps({**self.info,'python':str(self.folder/'missing-python.exe'),
+                                              'connectionFile':str(canonical)}),encoding='utf-8')
+        script=work/'参数 空格.py'
+        script.write_text('import os,sys,json;print(json.dumps({"cwd":os.getcwd(),"argument":sys.argv[1]}))',encoding='utf-8')
+        result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass',
+            '-File',str(HELPER.with_suffix('.ps1')),'python','--data-dir',str(self.folder),str(script),'中文 空格'],
+            capture_output=True,text=True,encoding='utf-8')
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        output=json.loads(result.stdout)
+        self.assertEqual(output['cwd'],str(work));self.assertEqual(output['argument'],'中文 空格')
     def test_documented_business_io(self):
         self.connection.write_text(json.dumps(self.info),encoding='utf-8')
         files=['skills/shared/scripts/manifest.py','skills/shared/scripts/social_stats.py',

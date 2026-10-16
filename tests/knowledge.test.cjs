@@ -20,6 +20,13 @@ test('curated knowledge preserves business scripts and full methods, retires gen
   for(const rel of ['video-production/references/design-baseline.md','video-production/references/quality-mechanisms.md','skill-social-performance-review/references/analysis-framework.md','skill-profile-builder/references/social-link-analysis.md'])assert.ok(fs.readFileSync(path.join(root,'skills/openclaw',rel),'utf8').length>500,rel);
   const review=fs.readFileSync(path.join(root,'skills/openclaw/skill-social-performance-review/SKILL.md'),'utf8');
   assert.match(review,/25%/);assert.match(review,/重新归一化/);assert.match(review,/自己的工具/);
+  assert.match(review,/\$SkillHelper python --data-dir \$DataDir 'skills\/openclaw\/skill-social-performance-review\/scripts\/review\.py' --help/);
+  const douyin=fs.readFileSync(path.join(root,'skills/openclaw/skill-douyin-upload/SKILL.md'),'utf8');
+  assert.match(douyin,/抖音创作者后台/);assert.match(douyin,/douyin_publish\.py' --help/);
+  assert.doesNotMatch(douyin,/setsid python|EASEL_ASKUSER_CARDS|卡片模式|printenv/);
+  const tools=fs.readFileSync(path.join(root,'skills/business-tools.md'),'utf8');
+  assert.match(tools,/manifest\.py' --help/);assert.match(tools,/track\.py' --help/);
+  assert.doesNotMatch(tools,/creator_auth\.py' --help|profile_lock\.py' --help/);
   assert.match(review,/\[业务工具清单\]\(\.\.\/\.\.\/business-tools\.md\)/);
   assert.ok(fs.existsSync(path.join(root,'skills/openclaw/video-production/references/upstream-sdk-LICENSE.txt')));
   const manifest=JSON.parse(fs.readFileSync(path.join(payload,'manifest.json')));
