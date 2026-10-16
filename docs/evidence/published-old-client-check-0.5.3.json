@@ -1,0 +1,12 @@
+{
+  "from": "0.5.2",
+  "to": "0.5.3",
+  "verifiedAt": "2026-10-16T09:35:15.807Z",
+  "phase": "available",
+  "version": "0.5.3",
+  "current": "0.5.2",
+  "downloadRequested": false,
+  "installationRequested": false,
+  "feed": "original public GitHub release feed",
+  "isolatedData": true
+}

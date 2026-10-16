@@ -1,0 +1,45 @@
+{
+  "tagName": "v0.5.3",
+  "publishedAt": "2026-10-16T09:32:19Z",
+  "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.3",
+  "isDraft": false,
+  "assets": [
+    {
+      "name": "latest.yml",
+      "size": 363,
+      "digest": "sha256:7479696126ddb7ab52522d53385f5b6bb57b1defa76b52383b935ba291c2ae14",
+      "state": "uploaded",
+      "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.3/latest.yml"
+    },
+    {
+      "name": "MediaSail-0.5.3-source.zip",
+      "size": 45605201,
+      "digest": "sha256:5ce7e456f1f4197374bf8c77990ffbeb6aaa353e1555b0f797600610081816d8",
+      "state": "uploaded",
+      "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.3/MediaSail-0.5.3-source.zip"
+    },
+    {
+      "name": "MediaSail-0.5.3-win-x64-Setup.exe",
+      "size": 262989425,
+      "digest": "sha256:5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e",
+      "state": "uploaded",
+      "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.3/MediaSail-0.5.3-win-x64-Setup.exe"
+    },
+    {
+      "name": "MediaSail-0.5.3-win-x64-Setup.exe.blockmap",
+      "size": 272889,
+      "digest": "sha256:a7223c0ed75bd8023119227ed519abc20a950fa2454ba8700f4de2fe54384414",
+      "state": "uploaded",
+      "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.3/MediaSail-0.5.3-win-x64-Setup.exe.blockmap"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 379,
+      "digest": "sha256:e82500325eb55d7f4d861b0da14ca582921c63a42ddbb860366a675208efffa5",
+      "state": "uploaded",
+      "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/download/v0.5.3/SHA256SUMS.txt"
+    }
+  ],
+  "sourceTagCommit": "2e2d420",
+  "appAsarSha256": "95eb7b35ee97a422873c10404f8d2a725f5829a019430143fd23834a49199bc8"
+}

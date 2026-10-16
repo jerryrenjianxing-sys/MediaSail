@@ -62,3 +62,11 @@
 旧迁移失败源态的独立真实安装也已通过：旧 failed transaction、旧散资料、旧库及悬空插件联接点同时存在，0.5.3 首启仍进入选库页。真实按钮取消后留页，再选择新空目录，旧固定样本不变且不导入；新库正常重启、再覆盖安装后仍沿用选择及合成登录状态。没有使用真实账号或公开发布。
 
 降低观察频率后，该轮候选升级与覆盖安装分别观察到 75.111 秒、70.089 秒；还包含原版 0.5.2 基线首次安装约 231.725 秒，不能把整轮测试时间当成本次升级耗时。[失败源态机器记录](evidence/registered-legacy-error-upgrade-0.5.3.json)、[安装进度](images/0.5.3/upgrade-legacy-error-progress.png)、[选库页面](images/0.5.3/upgrade-legacy-error-library-choice.png)、[新库首页](images/0.5.3/upgrade-legacy-error-home.png)。
+
+## 正式发布后核对
+
+2026-10-16 17:32:19（北京时间）发布 [v0.5.3](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.3) 为正式最新版。五个资产的 GitHub 服务端 SHA-256 与本地全部相同；安装包 SHA-512 与 latest.yml 相同，gzip blockmap 的块数与覆盖字节数通过，源码 ZIP CRC 通过。0.5.2 全部五个发布文件保持，0.5.1 历史草稿保留。[发布资产记录](evidence/release-0.5.3.json)。
+
+使用独立数据启动未修改的 0.5.2 打包版，原 GitHub 更新源能发现 0.5.3；本机 0.5.3 再次手动检查提示已是最新版。这两次仅检查，没有请求下载或安装。[旧版发现记录](evidence/published-old-client-check-0.5.3.json)、[截图](images/0.5.3/old-client-discovers-update.png)；[本机最新版记录](evidence/published-current-check-0.5.3.json)、[截图](images/0.5.3/current-version-check.png)。
+
+正式源码包在发布前生成，包含全部发行源和已完成安装验证；本段发布后的追加记录只更新仓库文档，不替换已正式发布的任何版本资产。运行验收时未公开发布内容或上传真实账号资料。
