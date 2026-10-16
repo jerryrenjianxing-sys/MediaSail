@@ -1,0 +1,84 @@
+{
+  "version": "0.5.2",
+  "status": "passed",
+  "environment": "fresh ephemeral GitHub-hosted Windows",
+  "workflow": "verify-first-install.yml",
+  "runId": 38855388085,
+  "runUrl": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38855388085",
+  "testCommit": "babf529e3a2ac3ce558e899c2a5883a46af31e77",
+  "startedAt": "2026-10-16T05:22:30.657Z",
+  "finishedAt": "2026-10-16T05:24:27.886Z",
+  "installer": {
+    "version": "0.5.2",
+    "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+    "sha256": "1f7d9b2dd9a51b04a3b6aeafa4087b717d8ae7a238f01201ef9becac28be55ed",
+    "bytes": 273956517,
+    "assetId": "RA_kwDOVCKwBc4mhLtm"
+  },
+  "installerDigestManifestAndBytesMatched": true,
+  "installerArguments": [],
+  "registryPreseeded": false,
+  "programDirectoryEnteredInRealWizard": true,
+  "libraryDirectoryEnteredInRealWizard": true,
+  "programPathContainsChineseAndSpace": true,
+  "libraryPathContainsChineseAndSpace": true,
+  "libraryPageObserved": true,
+  "realProgressAndFinishObserved": true,
+  "navigation": "actual fixture PID and HWND checked; real Edit WM_SETTEXT/WM_GETTEXT; real NSIS WM_COMMAND/BN_CLICKED when hosted UIA exposes Pane instead of Button",
+  "librarySubmissionCount": 1,
+  "actualValidateChildObserved": true,
+  "actualCacheChildObserved": true,
+  "busyPollFramesRetried": 4,
+  "wizardSelectionCommitted": true,
+  "cacheVerifiedBeforeLaunch": true,
+  "preparationRelaunched": true,
+  "bootstrapAndCanonicalMatched": true,
+  "selectedLibraryLayoutVerified": true,
+  "userDataAndSessionDataInSelectedRuntime": true,
+  "aitoearnPartitionInSelectedRuntime": true,
+  "syntheticSessionAndThemeRetainedAcrossNormalRestart": true,
+  "normalExitAndStoppedConnectionVerified": true,
+  "installMs": 71509,
+  "appToReadyObservedMs": 34725,
+  "installToReadyObservedMs": 106747,
+  "desktopFirstPreparationLogAt": "2026-10-16T05:23:49.984Z",
+  "desktopFirstBackendStartLogAt": "2026-10-16T05:23:51.299Z",
+  "desktopFirstServiceReadyLogAt": "2026-10-16T05:23:52.914Z",
+  "backendStartToReadyLogMs": 1615,
+  "timingScope": "Install duration includes actual visible wizard interaction and NSIS extraction/cache work. The two observed ready durations also include test inspector attachment after service readiness, so they are not pure application startup measurements. The 1615ms log interval covers backend startup only, after first-start library preparation/relaunch. Exact full launch-to-service-ready duration cannot be recovered because the explicit first-launch timestamp was not saved. Download time is outside these measurements.",
+  "realAccountsUsed": false,
+  "publicationPerformed": false,
+  "productOrInstallerModifiedByHarness": false,
+  "screenshots": [
+    {
+      "bytes": 14673,
+      "sha256": "c22e26d4bbacfa63c05e8388eed52b36f65e2f97aa84819e7ef81155dd2b9ba9",
+      "path": "docs/images/0.5.2/first-install-program-directory.png",
+      "visuallyInspected": true
+    },
+    {
+      "bytes": 12853,
+      "sha256": "8bfcfec8e3636be09b4b157715116495a63ae6af666748995860d1bba60de95e",
+      "path": "docs/images/0.5.2/first-install-library-directory.png",
+      "visuallyInspected": true
+    },
+    {
+      "bytes": 8197,
+      "sha256": "17cbe238aeb295aceadbdbe2dfc12cb128d8511930302b913bd83dc5f095d714",
+      "path": "docs/images/0.5.2/first-install-progress.png",
+      "visuallyInspected": true
+    },
+    {
+      "bytes": 10130,
+      "sha256": "bf4ac09ea8f1146053e60c6ee6e2500385e07c9a883367b44783331dcacb394a",
+      "path": "docs/images/0.5.2/first-install-finish.png",
+      "visuallyInspected": true
+    },
+    {
+      "bytes": 57909,
+      "sha256": "afe2673f6a46ca27247762d5c25e336b15f243a37a4e149496b20655d129b350",
+      "path": "docs/images/0.5.2/first-install-agent-home.png",
+      "visuallyInspected": true
+    }
+  ]
+}
