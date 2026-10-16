@@ -1,0 +1,438 @@
+{
+  "from": "0.5.0",
+  "to": "0.5.2",
+  "mode": "candidate",
+  "registration": "missing",
+  "failureMode": "locked-old-node",
+  "startedAt": "2026-10-16T04:58:41.432Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "verified draft installer, real NSIS /S --updated --force-run upgrade",
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.5.0-win-x64-Setup.exe",
+      "sha256": "13d2946e4e9bab7faa31d0714d73ad83401d44c3543c9c2aed5822138bc2f0d6",
+      "bytes": 273780875
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+      "sha256": "4d79ae50ae95ba802d930451fc729c2fb8b1c416d3a37270879bed0b046fd58f",
+      "bytes": 262988667
+    }
+  },
+  "phase": "installing",
+  "beforeProgram": {
+    "bytes": 837922271,
+    "files": 8614
+  },
+  "registrationBefore": [
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "values": {
+        "ShortcutName": {
+          "kind": "String",
+          "value": "MediaSail"
+        },
+        "InstallLocation": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录"
+        },
+        "KeepShortcuts": {
+          "kind": "String",
+          "value": "true"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry64",
+      "values": {
+        "Publisher": {
+          "kind": "String",
+          "value": "MediaSail contributors"
+        },
+        "DisplayName": {
+          "kind": "String",
+          "value": "MediaSail 0.5.0"
+        },
+        "NoRepair": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "QuietUninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+        },
+        "UninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+        },
+        "Comments": {
+          "kind": "String",
+          "value": "MediaSail: profiles, operating analytics and content workspace for your Agent"
+        },
+        "DisplayVersion": {
+          "kind": "String",
+          "value": "0.5.0"
+        },
+        "URLInfoAbout": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "URLUpdateInfo": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "Readme": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "NoModify": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "DisplayIcon": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe,0"
+        },
+        "EstimatedSize": {
+          "kind": "DWord",
+          "value": 818428
+        },
+        "HelpLink": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "values": {
+        "ShortcutName": {
+          "kind": "String",
+          "value": "MediaSail"
+        },
+        "InstallLocation": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录"
+        },
+        "KeepShortcuts": {
+          "kind": "String",
+          "value": "true"
+        }
+      }
+    },
+    {
+      "subkeys": [],
+      "hive": "CurrentUser",
+      "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "view": "Registry32",
+      "values": {
+        "Publisher": {
+          "kind": "String",
+          "value": "MediaSail contributors"
+        },
+        "DisplayName": {
+          "kind": "String",
+          "value": "MediaSail 0.5.0"
+        },
+        "NoRepair": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "QuietUninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser /S"
+        },
+        "UninstallString": {
+          "kind": "String",
+          "value": "\"D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\Uninstall MediaSail.exe\" /currentuser"
+        },
+        "Comments": {
+          "kind": "String",
+          "value": "MediaSail: profiles, operating analytics and content workspace for your Agent"
+        },
+        "DisplayVersion": {
+          "kind": "String",
+          "value": "0.5.0"
+        },
+        "URLInfoAbout": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "URLUpdateInfo": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "Readme": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        },
+        "NoModify": {
+          "kind": "DWord",
+          "value": 1
+        },
+        "DisplayIcon": {
+          "kind": "String",
+          "value": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe,0"
+        },
+        "EstimatedSize": {
+          "kind": "DWord",
+          "value": 818428
+        },
+        "HelpLink": {
+          "kind": "String",
+          "value": "https://github.com/jerryrenjianxing-sys/MediaSail"
+        }
+      }
+    }
+  ],
+  "baselineIdentity": {
+    "MediaSail.exe": {
+      "sha256": "93fcb81d775f1648a3c3e8ef82d6cbb3715260827fc10cd3e06f0c957dc33d83",
+      "bytes": 246338560
+    },
+    "Uninstall MediaSail.exe": {
+      "sha256": "e7a1c8081d6c58fba363b87a26bba56677697610dd31f4f0204dcdfa3ddaff32",
+      "bytes": 230794
+    },
+    "resources/app.asar": {
+      "sha256": "26e773626f1f1ce65fda96e17150ff30174abc5dfcc6f62c5b48a73fd661b620",
+      "bytes": 3429872
+    },
+    "resources/runtime/python/cpython-3.11.15-windows-x86_64-none/Lib/site-packages/playwright/driver/node.exe": {
+      "sha256": "ba4e6d110e8c1592a1ecd390f6b05f3da124b13871a5be62b341a07a853c6c32",
+      "bytes": 93580104
+    }
+  },
+  "userDataBefore": {
+    "bytes": 29826153,
+    "files": 845
+  },
+  "baselineReadyAt": "2026-10-16T04:59:44.806Z",
+  "missingRegistration": {
+    "removedKeys": [
+      "Software\\f524de6d-ce52-54ca-a07e-a51e0d556196",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\f524de6d-ce52-54ca-a07e-a51e0d556196"
+    ],
+    "backup": "baseline-installation-registration.json",
+    "at": "2026-10-16T04:59:46.155Z"
+  },
+  "baselineConnection": {
+    "version": "0.5.0",
+    "executable": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\MediaSail.exe",
+    "status": "ready"
+  },
+  "uninstallFailure": {
+    "startedAt": "2026-10-16T04:59:52.072Z",
+    "lockedFile": "D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\用户 自选目录\\resources\\runtime\\python\\cpython-3.11.15-windows-x86_64-none\\Lib\\site-packages\\playwright\\driver\\node.exe",
+    "actualInstallerExitCode": 2,
+    "dialog": [
+      {
+        "pid": 10164,
+        "action": "cancel-exhausted-uninstall-retries",
+        "confirmed": true,
+        "queued": true,
+        "button": {
+          "id": 2,
+          "text": "Cancel"
+        },
+        "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\library-candidate-missing-locked-old-node\\uninstall-failure-dialog-retry-cancel.png",
+        "activated": true,
+        "message": " | MediaSail cannot be closed. \r\nPlease close it manually and click Retry to continue."
+      },
+      {
+        "pid": 10164,
+        "action": "confirm-uninstall-failed",
+        "confirmed": true,
+        "queued": true,
+        "button": {
+          "id": 2,
+          "text": "OK"
+        },
+        "screenshot": "D:\\a\\MediaSail\\MediaSail\\installer-evidence\\library-candidate-missing-locked-old-node\\uninstall-failure-dialog.png",
+        "activated": true,
+        "message": " | Failed to uninstall old application files. Please try running the installer again.: 2"
+      }
+    ],
+    "actualInstallerError": "Error: MediaSail-0.5.2-win-x64-Setup.exe exited 2",
+    "installerLog": "[install]\r\nstate=old-uninstall-failed\r\ndirectory=D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\?? ????\r\nrecoveryRollback=succeeded\r\n",
+    "oldIdentityPreserved": {
+      "MediaSail.exe": {
+        "sha256": "93fcb81d775f1648a3c3e8ef82d6cbb3715260827fc10cd3e06f0c957dc33d83",
+        "bytes": 246338560
+      },
+      "Uninstall MediaSail.exe": {
+        "sha256": "e7a1c8081d6c58fba363b87a26bba56677697610dd31f4f0204dcdfa3ddaff32",
+        "bytes": 230794
+      },
+      "resources/app.asar": {
+        "sha256": "26e773626f1f1ce65fda96e17150ff30174abc5dfcc6f62c5b48a73fd661b620",
+        "bytes": 3429872
+      },
+      "resources/runtime/python/cpython-3.11.15-windows-x86_64-none/Lib/site-packages/playwright/driver/node.exe": {
+        "sha256": "ba4e6d110e8c1592a1ecd390f6b05f3da124b13871a5be62b341a07a853c6c32",
+        "bytes": 93580104
+      }
+    },
+    "originalMissingRegistrationRestored": true,
+    "lockReleased": true,
+    "passed": true,
+    "finishedAt": "2026-10-16T05:01:06.750Z"
+  },
+  "observation": {
+    "at": "2026-10-16T05:01:13.922Z",
+    "apps": [],
+    "installers": [
+      {
+        "ProcessId": 9408,
+        "ExecutablePath": "D:\\a\\MediaSail\\MediaSail\\release-input\\candidate\\MediaSail-0.5.2-win-x64-Setup.exe",
+        "CommandLine": "D:\\a\\MediaSail\\MediaSail\\release-input\\candidate\\MediaSail-0.5.2-win-x64-Setup.exe /S --updated --force-run"
+      }
+    ],
+    "windows": [
+      {
+        "children": [
+          {
+            "position": null,
+            "class": "Button",
+            "text": "OK"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "无法恢复旧版安装登记，更新已停止，用户数据保留。\n日志：C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\logs\\installer-0.5.2-recovery.ini"
+          }
+        ],
+        "title": "MediaSail Setup"
+      },
+      {
+        "children": [
+          {
+            "position": null,
+            "class": "Button",
+            "text": "< &Back"
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "&Next >"
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "Cancel"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "MediaSail 0.5.2 "
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "MediaSail 0.5.2"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "正在安装 MediaSail"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": "请稍候，完成后会自动重新打开。"
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "#32770",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Button",
+            "text": "Show &details"
+          },
+          {
+            "position": 15473,
+            "class": "msctls_progress32",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "Static",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "SysListView32",
+            "text": ""
+          },
+          {
+            "position": null,
+            "class": "SysHeader32",
+            "text": ""
+          }
+        ],
+        "title": "MediaSail Setup "
+      }
+    ]
+  },
+  "visibleInstallObserved": true,
+  "installStages": [
+    "[install]\r\nstate=started\r\ndirectory=C:\\Users\\runneradmin\\AppData\\Local\\Programs\\MediaSail\r\nrecoveryRollback=succeeded\r\n",
+    "[install]\r\nstate=installing\r\ndirectory=D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\?? ????\r\nrecoveryRollback=succeeded\r\n",
+    "[install]\r\nstate=recovery-stage-failed\r\ndirectory=D:\\a\\_temp\\mediasail-library-38853291969-candidate-missing-locked-old-node\\?? ????\r\nrecoveryRollback=succeeded\r\n"
+  ],
+  "error": "Error: Installer needs intervention: OK |  | 无法恢复旧版安装登记，更新已停止，用户数据保留。\n日志：C:\\Users\\runneradmin\\AppData\\Local\\ElectronEasel\\logs\\installer-0.5.2-recovery.ini | < &Back | &Next > | Cancel |  |  |  |  |  | MediaSail 0.5.2  | MediaSail 0.5.2 |  | 正在安装 MediaSail | 请稍候，完成后会自动重新打开。 |  |  | Show &details |  |  |  | \n    at D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:199:135\n    at async until (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:84:117)\n    at async Promise.all (index 0)\n    at async D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:328:19",
+  "cleanedUp": false,
+  "finishedAt": "2026-10-16T05:01:16.086Z",
+  "sideInstallationCleanedUp": true
+}

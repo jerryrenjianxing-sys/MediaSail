@@ -1,0 +1,63 @@
+{
+  "run": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/38851976256",
+  "sourceCommit": "30f05d8",
+  "result": "failed",
+  "candidate": {
+    "name": "MediaSail-0.5.2-win-x64-Setup.exe",
+    "sha256": "67e7afc5db072ae59544ca3f849d17927a079d7eb4116845e167a121be58929e",
+    "bytes": 263770995
+  },
+  "startedAt": "2026-10-16T04:42:57.162Z",
+  "finishedAt": "2026-10-16T04:56:21.711Z",
+  "phase": "missing-registration-reproduced",
+  "error": "Error: Timed out: real old-uninstaller failure and safe installer termination\n    at until (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:84:179)\n    at async verifyLockedUninstallRollback (D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:105:3)\n    at async D:\\a\\MediaSail\\MediaSail\\scripts\\verify-library-upgrade-ci.cjs:322:39",
+  "uninstallFailure": {
+    "startedAt": "2026-10-16T04:44:15.109Z",
+    "lockedFile": "D:\\a\\_temp\\mediasail-library-38851976256-candidate-missing-locked-old-node\\用户 自选目录\\resources\\runtime\\python\\cpython-3.11.15-windows-x86_64-none\\Lib\\site-packages\\playwright\\driver\\node.exe",
+    "actualInstallerExitCode": null
+  },
+  "dialogActions": [
+    {
+      "count": 1,
+      "action": "cancel-exhausted-uninstall-retries"
+    },
+    {
+      "count": 237,
+      "action": "waiting-for-known-error-button"
+    }
+  ],
+  "lastObservedDialog": {
+    "message": " | Failed to uninstall old application files. Please try running the installer again.: 2",
+    "pid": 5200,
+    "controls": [
+      {
+        "id": 2,
+        "text": "OK",
+        "class": "Button",
+        "direct": true,
+        "visible": true,
+        "enabled": true
+      },
+      {
+        "id": 20,
+        "text": "",
+        "class": "Static",
+        "direct": true,
+        "visible": true,
+        "enabled": true
+      },
+      {
+        "id": 65535,
+        "text": "Failed to uninstall old application files. Please try running the installer again.: 2",
+        "class": "Static",
+        "direct": true,
+        "visible": true,
+        "enabled": true
+      }
+    ],
+    "action": "waiting-for-known-error-button",
+    "confirmed": false
+  },
+  "installerLog": "[install]\r\nstate=installing\r\ndirectory=D:\\a\\_temp\\mediasail-library-38851976256-candidate-missing-locked-old-node\\?? ????\r\nrecoveryRollback=succeeded\r\n",
+  "interpretation": "The native final error dialog exposes a unique visible OK control with ID 2; the fixture required ID 1. This run does not establish completed rollback or upgrade acceptance."
+}
