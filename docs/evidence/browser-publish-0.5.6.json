@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "version": "0.5.6",
+  "passed": true,
+  "testedAt": "2026-10-19T10:03:54.579Z",
+  "realPackagedApplication": true,
+  "syntheticDataOnly": true,
+  "realAccountUsed": false,
+  "publications": 0,
+  "realBrowserLaunched": false,
+  "shellMethodsCapturedOnly": true,
+  "partitionEvidence": "Sentinel bytes and directory listing only; no claim of Cookie/login validation",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.6\\win-unpacked\\MediaSail.exe",
+  "testedAppAsarSha256": "10e19834464abe3a94cdb19ee79199deba2986a7d24d2c0a659446c66f92f820",
+  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库",
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261",
+  "checks": [
+    "侧栏固定官网外链，不导航、不打开内嵌网页，原筛选与内容保留",
+    "卡片与子目录均打开同一一级项目，shell 失败明确提示且保留分类搜索",
+    "未保存归档在浏览器成功/失败及窗口 focus 后仍保留，真实退出提示被拒绝后服务继续；还原表单后正常取消",
+    "旧 compose、uploading/creating 记录和合成分区标记字节不变；历史入口只打开目录",
+    "正常退出重开继续使用同库；无历史目录时明确提示且不创建目录",
+    "坏 JSON 不影响启动及目录入口、不被读取覆盖；所有阶段没有旧任务重试或 AitoEarn 页面请求"
+  ],
+  "shots": [
+    "browser-project-light.png",
+    "browser-project-dark.png",
+    "browser-folder-error.png",
+    "browser-project-subdirectory.png",
+    "browser-draft-preserved.png",
+    "browser-open-error.png",
+    "browser-history-light.png",
+    "browser-history-dark.png",
+    "browser-history-missing.png",
+    "browser-history-malformed.png"
+  ],
+  "dialogs": [
+    {
+      "type": "confirm",
+      "message": "归档信息还有未保存的修改。放弃修改并退出或安装更新吗？"
+    }
+  ],
+  "shellCalls": [
+    {
+      "kind": "external",
+      "target": "https://aitoearn.cn/zh-CN",
+      "failed": false
+    },
+    {
+      "kind": "path",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "failed": false
+    },
+    {
+      "kind": "path",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "failed": true
+    },
+    {
+      "kind": "path",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "failed": false
+    },
+    {
+      "kind": "external",
+      "target": "https://aitoearn.cn/zh-CN",
+      "failed": false
+    },
+    {
+      "kind": "external",
+      "target": "https://aitoearn.cn/zh-CN",
+      "failed": true
+    },
+    {
+      "kind": "path",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库\\runtime\\aitoearn",
+      "failed": false
+    },
+    {
+      "kind": "path",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.6 1792404214261\\共享 中文 空格资料库\\runtime\\aitoearn",
+      "failed": false
+    }
+  ],
+  "retainedSha256": {
+    "oldImports": "07788a7d33c94b0163fc8e1520ae6e7a0b759328024866c3899e0f230edb8313",
+    "partitionMarker": "61c4394f5e47891926248d2e60c6ca481eadb21e99802339f0bd6d597dc8d3d7",
+    "projectManifest": "d3e8e8ebdffdabadbf3bdfe0ca336a25c83ccff950998d6db181e25ebbc2a085"
+  },
+  "finalEmbeddedUrls": [
+    "http://127.0.0.1:7860/"
+  ],
+  "aitoearnRendererRequests": [],
+  "errors": []
+}

@@ -24,14 +24,16 @@ JSON：{"filename":"memory.md","content":"完整的新文件正文","revision":"
 
 旧请求省略 revision 仍可调用，只有串行和原子保存，不具备过期编辑检测。非法 revision 返回 422；不可读的 UTF-8 内容返回 invalid_profile_file，磁盘读写失败返回 503/profile_io_error，均不能当作保存成功。任意外部文件编辑器不共享服务端锁：直接文件操作仍可使用，这里的检查是乐观冲突检测，不承诺跨工具绝对互斥。
 
-可执行的 PowerShell 例子（$info 从当前连接说明取得）：
+可执行的 PowerShell 例子（$info 从当前连接说明取得）。Windows PowerShell 5.1 对没有 charset 的 JSON 可能错误解码，以下明确按 UTF-8 读取原始响应，避免把乱码写回画像；PowerShell 7 也可使用：
 
 ```powershell
 $name = [uri]::EscapeDataString('测试画像')
-$files = Invoke-RestMethod ($info.baseUrl + '/api/persona/' + $name + '/files')
+$response = Invoke-WebRequest ($info.baseUrl + '/api/persona/' + $name + '/files') -UseBasicParsing
+$files = [Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray()) | ConvertFrom-Json
 $file = $files.files | Where-Object filename -eq 'memory.md'
 $body = @{ filename = $file.filename; content = $file.content + "`n本次已核对的运营经验"; revision = $file.revision } | ConvertTo-Json
-$saved = Invoke-RestMethod ($info.baseUrl + '/api/persona/' + $name + '/file') -Method Put -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+$response = Invoke-WebRequest ($info.baseUrl + '/api/persona/' + $name + '/file') -UseBasicParsing -Method Put -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+$saved = [Text.Encoding]::UTF8.GetString($response.RawContentStream.ToArray()) | ConvertFrom-Json
 $saved | Select-Object filename, content, revision
 ```
 

@@ -13,9 +13,12 @@
 - 延迟响应复现并修复了保存期间输入丢失风险、旧 GET 覆盖新保存的界面回退。选题、日历、凭证、验证码与公众号输入保护通过；公众号保存冲突保留采集草稿和 Agent 新正文。
 - [浅色](images/0.5.6/reliable-profile-light.png)、[深色](images/0.5.6/reliable-profile-dark.png)、[操作录屏](images/0.5.6/reliable-editing.webm)。matt 双轴记录见 [审查记录](REVIEW-0.5.6.md)。
 
+- 内容库 8 组回归、浏览器发布入口 6 组回归及真实本地媒体预览均通过；合成旧发布记录、登录分区和项目文件保持不变。结果见 `evidence/content-library-0.5.6.json`、`evidence/browser-publish-0.5.6.json`、`evidence/library-media-0.5.6.json`。
+- matt 增量复核完成：Standards 无确认违例，Spec 已关闭 P1，无新增缺口。
+- 外部 PowerShell 实际消费随包 Skill：在线身份核对、下载 ZIP、直接执行中文画像版本示例、登记成果并由内容库读回均通过。Windows PowerShell 5.1 原先错误解码响应中文，红测复现后改为明确 UTF-8 读取原始响应；修正后的原中文与新增中文同时保留，见 `evidence/agent-profile-0.5.6.json`。
+
 ## 待完成
 
-- 其他业务界面回归与 matt 增量复核。
 - 最终资产核验、隔离真实 0.5.5 → 0.5.6 升级与两次正常重启。
 - GitHub 草稿核验、正式发布及公开更新检查。
 

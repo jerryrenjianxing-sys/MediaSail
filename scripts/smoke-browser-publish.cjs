@@ -74,7 +74,7 @@ async function close(){
   await app.close();app=null;page=null;
 }
 (async()=>{
-  assert.equal(version,'0.5.5','This evidence script belongs to the 0.5.5 release');
+  assert.ok(require('semver').gte(version,'0.5.5'),'Browser publishing evidence requires version 0.5.5 or later');
   for(const forbidden of ['D:\\mediasail',path.join(process.env.LOCALAPPDATA||os.tmpdir(),'Programs','MediaSail')])assert.ok(!executable.toLowerCase().startsWith(path.resolve(forbidden).toLowerCase()+path.sep),'Refusing daily installation');
   assert.equal(path.basename(executable),'MediaSail.exe');await fs.access(executable);await fs.mkdir(evidence,{recursive:true});
   const prepared=await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});outputs=path.join(prepared.workspace,'outputs');
