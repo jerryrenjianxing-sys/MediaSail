@@ -59,6 +59,7 @@ async function main(){
   const cache=path.join(old.dataDir,'update-cache','mediasail-updater');assert.equal(await hash(path.join(cache,'installer.exe')),result.installers.baseline.sha256);assert.equal(JSON.parse(await fs.readFile(path.join(cache,'current-installer.json'),'utf8')).version,from);result.baselineCacheVerified=true;
   await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'baseline home');
   await inspector.evaluate(render("(async()=>{await window.desktopUiState.call('set',{key:'mediasail_selected_profile',value:'合成画像'});await window.desktopUiState.call('set',{key:'easel_onboarding_seen',value:'1'});await window.desktopUiState.call('set',{key:'easel_theme',value:'dark'});await window.desktopUiState.call('flush');return true;})()"));
+  if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME_UPGRADE==='1')await inspector.evaluate(render("(async()=>{await window.desktopUiState.call('set',{key:'mediasail_skill_filename',value:'旧版中文接入.md'});await window.desktopUiState.call('flush');return true;})()"));
   const oldPartition=await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'content-upgrade-fixture',value:'synthetic-session',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return s.storagePath;})()");await quit();
   assert.ok(oldPartition&&oldPartition.toLowerCase().startsWith(old.dataDir.toLowerCase()+path.sep));
   let partitionFiles=0;async function rememberPartition(directory){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const file=path.join(directory,entry.name);if(entry.isDirectory())await rememberPartition(file);else if(entry.isFile()){originalFiles.set(file,await fs.readFile(file));partitionFiles++;}else throw Error('Unexpected linked legacy partition');}}
@@ -89,6 +90,7 @@ async function main(){
   assert.equal(await inspector.evaluate("process.mainModule.require('electron').webContents.getAllWebContents().some(w=>w.getURL().startsWith('https://aitoearn.cn/'))"),false);
   assert.equal(await inspector.evaluate("process.mainModule.require('node:fs').existsSync(process.mainModule.require('node:path').join(process.mainModule.require('electron').app.getAppPath(),'desktop/aitoearn/controller.cjs'))"),false);result.embeddedAitoRuntimeAbsent=true;
   const values=JSON.parse(await fs.readFile(path.join(current.dataDir,'ui-state.json'),'utf8')).values;assert.equal(values.easel_theme,'dark');assert.equal(values.mediasail_selected_profile,'合成画像');
+  if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME_UPGRADE==='1'){assert.equal(values.mediasail_skill_filename,'旧版中文接入.md');result.skillFilePreferenceUpgradeRetained=true;}
   if(process.env.MEDIASAIL_EXPECT_PROFILE_REVISIONS==='1'){
    const profiles=await(await fetch(current.baseUrl+'/api/persona/'+encodeURIComponent('合成画像')+'/files')).json();
    const identityFile=profiles.files.find(file=>file.filename==='identity.md');assert.equal(identityFile.revision,await hash(path.join(current.profiles,'合成画像/identity.md')));

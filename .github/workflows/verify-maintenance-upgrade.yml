@@ -22,6 +22,7 @@ jobs:
       MEDIASAIL_VERIFY_CUSTOM_FILES: '1'
       MEDIASAIL_EXPECT_PROFILE_REVISIONS: '1'
       MEDIASAIL_VERIFY_SKILL_FILENAME: '1'
+      MEDIASAIL_VERIFY_SKILL_FILENAME_UPGRADE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
