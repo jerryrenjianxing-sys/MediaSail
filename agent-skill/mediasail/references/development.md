@@ -37,6 +37,8 @@ dataDir（runtime）下：
 
 README、scripts/build.ps1、scripts/export-patches.cjs 和 docs/ 中有构建与验证流程。轻量版只提供核心服务与业务 Python 依赖；Node/OpenClaw、FFmpeg、自动化浏览器与重型创作/推理模型不随安装包分发。账号采集/登录/发布通过 Playwright 使用系统 Chrome/Edge，可用 EASEL_BROWSER_EXECUTABLE 指定浏览器程序位置，仍使用软件自己的平台资料目录。通用创作工具由外部 Agent 按任务准备。
 
+维护源码时先读仓库 AGENTS.md 和按需的 docs/DEVELOPMENT.md，按任务使用用户指定的 mattpocock-skills 插件。准备锁定依赖后运行 npm run check，统一检查 Node、Python、前端、接口资料及补丁复现；该命令不下载依赖，也不替你回写接口资料或补丁。源码检查、打包页面验收和真实安装升级是不同检查，完成情况按实际执行记录。
+
 工作目录 skills/knowledge-index.json 是本版真实资料索引，skills/business-tools.md 与 curation-report.json 列出保留脚本、方法整理和退出文件。旧技术目录名 skills/openclaw 为兼容路径，不表示要安装 OpenClaw。原始工具实现留在固定上游与 Git 历史，不另提供旧工具包。scripts/curate-knowledge.cjs 在 staged payload 上整理，不删除用户历史或改动固定上游源文件。
 
 已有桌面 HTTP 服务只供本机访问。AI 发布仅打开固定官网 https://aitoearn.cn/zh-CN，不在 Electron 中加载第三方页面；默认浏览器中的官网不会获得 MediaSail 的本地文件或命令接口，也不能直接读取资料库。Skill 不增加远程 shell。源码修改与发布仍根据当前用户任务进行，使用 Skill 本身不会自动替用户部署或发布内容。

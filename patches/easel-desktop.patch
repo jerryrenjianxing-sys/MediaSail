@@ -1253,6 +1253,89 @@ index b493b1d..0fff2f9 100644
      }
  
  
+diff --git a/skills/shared/scripts/profile_files.py b/skills/shared/scripts/profile_files.py
+new file mode 100644
+index 0000000..bd76ecd
+--- /dev/null
++++ b/skills/shared/scripts/profile_files.py
+@@ -0,0 +1,77 @@
++"""Versioned profile documents shared by the business HTTP Interface."""
++import hashlib
++import os
++from pathlib import Path
++import re
++import stat
++import tempfile
++import threading
++
++_locks = {}
++_guard = threading.Lock()
++
++
++def _lock(path):
++    key = os.path.normcase(str(path.absolute()))
++    with _guard:
++        return _locks.setdefault(key, threading.RLock())
++
++
++class ProfileFileError(Exception):
++    def __init__(self, code, message, *, status=409, current=None):
++        super().__init__(message)
++        self.code, self.status, self.current = code, status, current
++
++
++def _raw(path: Path):
++    try:
++        info = path.lstat()
++    except FileNotFoundError:
++        return None
++    if not stat.S_ISREG(info.st_mode) or path.is_symlink():
++        raise ProfileFileError('unsafe_profile_file', '画像必须是普通文件，原资料未改动。', status=403)
++    return path.read_bytes()
++
++
++def snapshot(path: Path):
++    raw = _raw(path)
++    try:
++        content = raw.decode('utf-8-sig') if raw is not None else ''
++    except UnicodeError as error:
++        raise ProfileFileError('invalid_profile_file', '画像文件无法按 UTF-8 读取，原文件已保留。') from error
++    return {'filename': path.name, 'content': content,
++            'revision': 'missing' if raw is None else hashlib.sha256(raw).hexdigest()}
++
++
++def save(path: Path, content: str, revision=None):
++    """Serialize owned writers and detect changes immediately before replace.
++
++    Arbitrary editors do not share this process lock. This is optimistic
++    detection, not a cross-process compare-and-swap filesystem.
++    """
++    if revision is not None and (not isinstance(revision, str) or
++            not re.fullmatch(r'missing|[0-9a-f]{64}', revision)):
++        raise ProfileFileError('invalid_revision', '画像版本无效，请重新读取后保存。', status=422)
++    with _lock(path):
++        current = snapshot(path)
++        if revision is not None and revision != current['revision']:
++            raise ProfileFileError('revision_conflict', '画像已有外部更新，本次未保存；请核对最新内容。', current=current)
++        if current['revision'] != 'missing' and content == current['content']:
++            return current
++        data = content.encode('utf-8')
++        fd, temporary = tempfile.mkstemp(dir=path.parent, prefix='.mediasail-profile-', suffix='.tmp')
++        try:
++            with os.fdopen(fd, 'wb') as stream:
++                stream.write(data)
++                stream.flush()
++                os.fsync(stream.fileno())
++            latest = snapshot(path)
++            if latest['revision'] != current['revision']:
++                raise ProfileFileError('revision_conflict', '保存期间画像发生变化，本次未替换文件。', current=latest)
++            os.replace(temporary, path)
++            return {'filename': path.name, 'content': content, 'revision': hashlib.sha256(data).hexdigest()}
++        finally:
++            try:
++                os.unlink(temporary)
++            except FileNotFoundError:
++                pass
 diff --git a/skills/shared/scripts/profile_lock.py b/skills/shared/scripts/profile_lock.py
 new file mode 100644
 index 0000000..4801a10
@@ -1720,7 +1803,7 @@ index f65b8e9..d235a89 100644
              headless=True,
              args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
 diff --git a/web/app.py b/web/app.py
-index 66b3678..c213d15 100644
+index 66b3678..53cff61 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -1796,7 +1879,7 @@ index 66b3678..c213d15 100644
  
  PROFILES_DIR = PROJECT_ROOT / "profiles"
  SKILLS_DIR = PROJECT_ROOT / "skills"
-@@ -74,137 +41,25 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+@@ -74,137 +41,26 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
  
  STATIC_DIR = Path(__file__).resolve().parent / "static"
  REACT_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
@@ -1904,6 +1987,7 @@ index 66b3678..c213d15 100644
  
 +from business_browser import BrowserUnavailable, resolve_browser
 +import manifest as project_manifest
++import profile_files as profile_store
  
 -def _heal_openclaw_session(sk: str) -> None:
 -    """每轮 spawn openclaw 前，清洗该会话历史里的无签名 thinking 块 + 空消息（自愈防回放失效）。
@@ -1944,7 +2028,7 @@ index 66b3678..c213d15 100644
  # 非 _ 前缀的历史系统目录（归因层数据），内容库不展示（真产物一律在项目目录内）
  SYSTEM_TOPLEVEL_DIRS = {"analytics"}
  LOGIN_TIMEOUT = 240
-@@ -324,7 +179,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -324,7 +180,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
      ) % (str(WECHAT_SKILL_SCRIPTS), WECHAT_WEB_ACCOUNT)
      try:
          proc = subprocess.run([sys.executable, "-c", code], cwd=str(WECHAT_SKILL_SCRIPTS),
@@ -1953,7 +2037,7 @@ index 66b3678..c213d15 100644
      except subprocess.TimeoutExpired:
          return False, "验证超时（网络或 IP 白名单问题）"
      out = (proc.stdout or "").strip().splitlines()
-@@ -337,83 +192,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -337,83 +193,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
      return False, err[0][:200]
  
  
@@ -2037,7 +2121,7 @@ index 66b3678..c213d15 100644
  TEXT_EXTS = {".txt", ".md", ".json", ".csv", ".log", ".py", ".js", ".ts", ".html", ".htm", ".css", ".xml", ".yaml", ".yml", ".srt", ".vtt"}
  IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"}
  VIDEO_EXTS = {".mp4", ".mov", ".webm", ".m4v"}
-@@ -426,7 +204,7 @@ async def _lifespan(_app: FastAPI):
+@@ -426,7 +205,7 @@ async def _lifespan(_app: FastAPI):
      _stop_mp_login_on_shutdown()
  
  
@@ -2046,7 +2130,7 @@ index 66b3678..c213d15 100644
  
  def _local_ports(env_port: str) -> set[str]:
      """本机写守卫放行的端口集合：固定的 7860/7870/5173，加上 `--port`/EASEL_PORT
-@@ -485,13 +263,8 @@ async def local_write_guard(request: Request, call_next):
+@@ -485,13 +264,8 @@ async def local_write_guard(request: Request, call_next):
      ① 带 Origin（浏览器跨站发起）：Origin 必须在 _LOCAL_ORIGINS 里，否则 403。
      ② 不带 Origin（curl / 本机脚本 / 测试客户端）：要求对端来自回环地址。
  
@@ -2062,7 +2146,7 @@ index 66b3678..c213d15 100644
      """
      origin = request.headers.get('origin')
      if request.url.path == '/api/clipper' and origin and re.fullmatch(r'chrome-extension://[a-p]{32}', origin):
-@@ -518,7 +291,7 @@ def list_personas() -> list[dict]:
+@@ -518,7 +292,7 @@ def list_personas() -> list[dict]:
          return []
      result = []
      for d in sorted(PROFILES_DIR.iterdir()):
@@ -2071,7 +2155,7 @@ index 66b3678..c213d15 100644
              continue
          desc = ''
          identity = d / 'identity.md'
-@@ -590,35 +363,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
+@@ -590,35 +364,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
  
  
  def get_skills() -> list[dict]:
@@ -2109,7 +2193,7 @@ index 66b3678..c213d15 100644
  def _proxy_env() -> dict[str, str]:
      """返回带外网代理的环境变量（保护内网直连）。"""
      env = os.environ.copy()
-@@ -663,259 +423,6 @@ def _wechat_env() -> dict[str, str]:
+@@ -663,259 +424,6 @@ def _wechat_env() -> dict[str, str]:
      return env
  
  
@@ -2369,7 +2453,7 @@ index 66b3678..c213d15 100644
  def _file_kind(name: str) -> str:
      ext = Path(name).suffix.lower()
      if ext in IMAGE_EXTS:
-@@ -961,16 +468,18 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -961,16 +469,18 @@ def _read_project_meta(proj: Path) -> dict:
      只取展示相关字段（不含编排 steps）。cover 解析优先级：
      展示头声明的 cover → 首个成品媒体 → 目录内首张图/视频（兜底）。
      """
@@ -2396,7 +2480,7 @@ index 66b3678..c213d15 100644
      if not meta:
          return {}
  
-@@ -980,17 +489,17 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -980,17 +490,17 @@ def _read_project_meta(proj: Path) -> dict:
      # 封面解析
      cover_rel = ""
      declared = data.get("cover")
@@ -2417,7 +2501,7 @@ index 66b3678..c213d15 100644
                                  if (proj / d).is_file()]
      return meta
  
-@@ -1010,6 +519,15 @@ def get_output_tree() -> list[dict]:
+@@ -1010,6 +520,15 @@ def get_output_tree() -> list[dict]:
          meta = _read_project_meta(e)
          if meta:
              node['meta'] = meta
@@ -2433,7 +2517,7 @@ index 66b3678..c213d15 100644
          items.append(node)
      # 按最后修改时间倒序：最近产物排最前（供工作台「最近产物」与内容库时间排序）
      return sorted(items, key=lambda x: x.get('mtime', 0), reverse=True)
-@@ -1066,7 +584,7 @@ async def static_file(path: str):
+@@ -1066,7 +585,7 @@ async def static_file(path: str):
  
  @app.get("/api/status")
  async def api_status():
@@ -2442,7 +2526,94 @@ index 66b3678..c213d15 100644
  
  
  @app.get("/api/personas")
-@@ -1155,909 +673,41 @@ async def api_skill_detail(name: str):
+@@ -1092,42 +611,76 @@ def _persona_file_path(name: str, filename: str) -> Path:
+         raise HTTPException(400, "画像名非法")
+     if not filename.endswith(".md") or "/" in filename or "\\" in filename or filename.startswith("."):
+         raise HTTPException(400, "文件名非法")
+-    pd = (PROFILES_DIR / name).resolve()
++    source_dir = PROFILES_DIR / name
++    if source_dir.is_symlink() or (source_dir / filename).is_symlink():
++        raise HTTPException(403, '画像位置必须是普通目录和文件，原资料未改动。')
++    pd = source_dir.resolve()
+     fp = (pd / filename).resolve()
+     if pd != fp.parent or PROFILES_DIR.resolve() not in pd.parents:
+         raise HTTPException(403, "非法路径")
+     return fp
+ 
+ 
+-@app.get("/api/persona/{name}/files")
++class PersonaFileSnapshot(BaseModel):
++    filename: str
++    content: str
++    revision: str
++
++
++class PersonaFilesResponse(BaseModel):
++    name: str
++    files: list[PersonaFileSnapshot]
++
++
++class PersonaFileSaveResponse(PersonaFileSnapshot):
++    ok: bool
++
++
++@app.get("/api/persona/{name}/files", response_model=PersonaFilesResponse)
+ async def api_persona_files(name: str):
+     """返回画像六维文件原文（按固定顺序 + 其余 .md），供在线编辑。"""
++    if not _valid_persona_name(name):
++        raise HTTPException(400, '画像名非法')
+     if not profile_exists(name):
+         raise HTTPException(404, "画像不存在")
+-    pd = PROFILES_DIR / name
++    pd = _persona_file_path(name, 'identity.md').parent
+     ordered = list(_FILE_ORDER) + sorted(f.name for f in pd.glob("*.md") if f.name not in _FILE_ORDER)
+     files = []
+     for fn in ordered:
+-        fp = pd / fn
+-        files.append({"filename": fn, "content": fp.read_text(encoding="utf-8") if fp.is_file() else ""})
++        fp = _persona_file_path(name, fn)
++        try:
++            files.append(profile_store.snapshot(fp))
++        except (profile_store.ProfileFileError, OSError) as error:
++            raise _profile_file_error(error) from error
+     return {"name": name, "files": files}
+ 
+ 
+ class PersonaFileRequest(BaseModel):
+     filename: str
+     content: str
++    revision: str | None = None
++
++
++def _profile_file_error(error):
++    if isinstance(error, profile_store.ProfileFileError):
++        detail = {'code': error.code, 'message': str(error)}
++        if error.current is not None:
++            detail['current'] = error.current
++        return HTTPException(error.status, detail)
++    return HTTPException(503, {'code': 'profile_io_error', 'message': '画像文件暂时无法读写，原资料已保留。' + str(error)})
+ 
+ 
+-@app.put("/api/persona/{name}/file")
++@app.put("/api/persona/{name}/file", response_model=PersonaFileSaveResponse)
+ async def api_persona_file_save(name: str, req: PersonaFileRequest):
+     """保存画像单个维度文件（原子写）。"""
+     if not profile_exists(name):
+         raise HTTPException(404, "画像不存在")
+     fp = _persona_file_path(name, req.filename)
+-    tmp = fp.with_suffix(".md.tmp")
+-    tmp.write_text(req.content, encoding="utf-8")
+-    tmp.replace(fp)
+-    return {"ok": True, "filename": req.filename}
++    try:
++        saved = await asyncio.to_thread(profile_store.save, fp, req.content, req.revision)
++        return {'ok': True, **saved}
++    except (profile_store.ProfileFileError, OSError) as error:
++        raise _profile_file_error(error) from error
+ 
+ 
+ @app.delete("/api/persona/{name}")
+@@ -1155,909 +708,41 @@ async def api_skill_detail(name: str):
      if full is None:
          raise HTTPException(404, f"SKILL '{name}' 不存在")
      desc, layer, body = _parse_skill_md(SKILLS_DIR / "openclaw" / full / "SKILL.md")
@@ -2456,12 +2627,9 @@ index 66b3678..c213d15 100644
 -        "needsApi": needs_api,
 -        "apiConfigured": _skill_api_configured(full, env) if needs_api else True,
 -        "apiSpec": _api_spec_status(full, env) if needs_api else None,
-+        "needsApi": False,
-+        "apiConfigured": True,
-+        "apiSpec": None,
-     }
- 
- 
+-    }
+-
+-
 -class EnvUpdateRequest(BaseModel):
 -    updates: dict[str, str]
 -
@@ -2477,9 +2645,12 @@ index 66b3678..c213d15 100644
 -    return {
 -        "ok": True,
 -        "skills": {s: _skill_api_configured(s, env) for s in SKILL_API_REQUIREMENTS},
--    }
--
--
++        "needsApi": False,
++        "apiConfigured": True,
++        "apiSpec": None,
+     }
+ 
+ 
 -# ═══════════════════════════════════════════════════════════════════════
 -# 设置面板 · 环境安装（skills/shared/scripts/install_tool.py 引擎桥）
 -# 体检走引擎 check --json；安装后台跑、前端轮询 /api/env/job/{id}。
@@ -3376,7 +3547,7 @@ index 66b3678..c213d15 100644
  
  
  def _attachment_scope(session_id: str) -> str:
-@@ -2072,1042 +722,6 @@ def _attachment_id(scope: str, path: str) -> str:
+@@ -2072,1042 +757,6 @@ def _attachment_id(scope: str, path: str) -> str:
      return hashlib.sha256(f"{scope}\0{path}".encode("utf-8")).hexdigest()[:24]
  
  
@@ -4419,7 +4590,7 @@ index 66b3678..c213d15 100644
  @app.get("/api/outputs")
  def api_outputs():
      # 产物树是全量递归扫描（文件量大时单次可达数十秒）。必须是同步 handler：
-@@ -3192,6 +806,60 @@ def _is_protected(full: Path) -> bool:
+@@ -3192,6 +841,60 @@ def _is_protected(full: Path) -> bool:
      )
  
  
@@ -4480,7 +4651,7 @@ index 66b3678..c213d15 100644
  @app.delete("/api/output/{path:path}")
  async def api_output_delete(path: str):
      """删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。"""
-@@ -3274,11 +942,12 @@ async def api_upload_local(
+@@ -3274,11 +977,12 @@ async def api_upload_local(
      return {"ok": True, "files": saved}
  
  
@@ -4494,7 +4665,7 @@ index 66b3678..c213d15 100644
      st = LOGIN_DIR / f'{platform}.json'
      tmp = st.with_suffix('.json.tmp')
      try:
-@@ -3291,31 +960,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+@@ -3291,31 +995,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
              pass
  
  
@@ -4554,7 +4725,7 @@ index 66b3678..c213d15 100644
  
  
  def _login_status(platform: str) -> dict:
-@@ -3325,7 +998,8 @@ def _login_status(platform: str) -> dict:
+@@ -3325,7 +1033,8 @@ def _login_status(platform: str) -> dict:
      if st.is_file():
          try:
              d = json.loads(st.read_text(encoding="utf-8"))
@@ -4564,7 +4735,7 @@ index 66b3678..c213d15 100644
          except Exception:
              pass
      # A runner that exits before writing its status must become an actionable error,
-@@ -3351,9 +1025,8 @@ def _login_status(platform: str) -> dict:
+@@ -3351,9 +1060,8 @@ def _login_status(platform: str) -> dict:
  @app.get("/api/accounts")
  async def api_accounts():
      return [
@@ -4575,7 +4746,7 @@ index 66b3678..c213d15 100644
           'note': cfg.get('note', '')}
          for pf, cfg in LOGIN_RUNNERS.items()
      ]
-@@ -3372,6 +1045,8 @@ async def api_login_start(platform: str):
+@@ -3372,6 +1080,8 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
@@ -4584,7 +4755,7 @@ index 66b3678..c213d15 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      qr = LOGIN_DIR / f'{platform}.png'
      status = LOGIN_DIR / f'{platform}.json'
-@@ -3548,6 +1223,7 @@ async def api_mp_login_start(platform: str):
+@@ -3548,6 +1258,7 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
@@ -4592,7 +4763,7 @@ index 66b3678..c213d15 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
          try:
-@@ -3579,26 +1255,57 @@ async def api_mp_login_status(platform: str):
+@@ -3579,26 +1290,57 @@ async def api_mp_login_status(platform: str):
      return {"mode": "qr", **_mp_login_status()}
  
  
@@ -4662,7 +4833,7 @@ index 66b3678..c213d15 100644
      if backend == 'biliup':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
                 '--cookie', str(PROJECT_ROOT / 'cookies.json')]
-@@ -3606,44 +1313,32 @@ async def api_account_whoami(platform: str):
+@@ -3606,44 +1348,32 @@ async def api_account_whoami(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
      elif backend == 'douyin':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
@@ -4721,7 +4892,7 @@ index 66b3678..c213d15 100644
  
  
  @app.post("/api/logout/{platform}")
-@@ -3715,8 +1410,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+@@ -3715,8 +1445,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
  async def api_analytics_platforms():
      """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
      return [
@@ -4732,7 +4903,7 @@ index 66b3678..c213d15 100644
          for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
      ]
  
-@@ -3726,6 +1421,8 @@ async def api_analytics(platform: str):
+@@ -3726,6 +1456,8 @@ async def api_analytics(platform: str):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -4741,7 +4912,7 @@ index 66b3678..c213d15 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,14 +1440,19 @@ async def api_analytics(platform: str):
+@@ -3743,14 +1475,19 @@ async def api_analytics(platform: str):
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -4763,7 +4934,7 @@ index 66b3678..c213d15 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1501,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1536,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -4772,7 +4943,7 @@ index 66b3678..c213d15 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1597,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1632,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -4781,7 +4952,7 @@ index 66b3678..c213d15 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1646,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1681,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -4790,7 +4961,7 @@ index 66b3678..c213d15 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1664,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1699,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -4799,7 +4970,7 @@ index 66b3678..c213d15 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1698,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1733,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -4812,7 +4983,7 @@ index 66b3678..c213d15 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1710,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1745,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -4848,7 +5019,7 @@ index 66b3678..c213d15 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1735,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1770,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -4889,7 +5060,7 @@ index 66b3678..c213d15 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1774,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1809,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -4902,7 +5073,7 @@ index 66b3678..c213d15 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,26 +1790,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,26 +1825,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -4930,7 +5101,7 @@ index 66b3678..c213d15 100644
  TREND_SOURCES: dict[str, tuple[str, str | None]] = {
      "weibo": ("https://60s.viki.moe/v2/weibo", "https://v2.xxapi.cn/api/weibohot"),
      "douyin": ("https://60s.viki.moe/v2/douyin", "https://v2.xxapi.cn/api/douyinhot"),
-@@ -4323,7 +1983,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +2018,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -4939,7 +5110,7 @@ index 66b3678..c213d15 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2069,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2104,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -20155,7 +20326,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/web/frontend/src/App.tsx b/web/frontend/src/App.tsx
-index fee8255..c50b349 100644
+index fee8255..80a91db 100644
 --- a/web/frontend/src/App.tsx
 +++ b/web/frontend/src/App.tsx
 @@ -1,7 +1,7 @@
@@ -20167,7 +20338,7 @@ index fee8255..c50b349 100644
  import SkillPage from './components/SkillPage';
  import OutputsPage from './components/OutputsPage';
  import AccountsPage from './components/AccountsPage';
-@@ -15,808 +15,132 @@ import BreakdownPage from './components/BreakdownPage';
+@@ -15,808 +15,141 @@ import BreakdownPage from './components/BreakdownPage';
  import SubNav from './components/SubNav';
  import OnboardingWizard from './components/OnboardingWizard';
  import SettingsPanel from './components/SettingsPanel';
@@ -20192,7 +20363,7 @@ index fee8255..c50b349 100644
 +import type { PersonaItem } from './lib/api';
 +import { SELECTED_PROFILE_KEY, resolveSelectedProfile } from './lib/profileSelection';
 +import { useRefreshOnFocus } from './lib/useRefreshOnFocus';
-+import { hasUnsavedProjectMetadata, isProjectMetadataSaving } from './lib/outputMetadata';
++import { requestLeave, readEdits } from './lib/unsaved';
  
  const ONBOARDING_SEEN_KEY = 'easel_onboarding_seen';
 -
@@ -20235,54 +20406,18 @@ index fee8255..c50b349 100644
 -  // （不污染地址栏与前进/后退历史）。
 +  const [topic, setTopic] = useState('');
    const [outputsJump, setOutputsJump] = useState('');
-+  const pageRef = useRef(currentPage); pageRef.current = currentPage;
-+  const navigate = useCallback((page: Page) => {
-+    if (page !== 'outputs' && pageRef.current === 'outputs' && isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再离开内容库。'); return; }
-+    if (page !== 'outputs' && pageRef.current === 'outputs' && hasUnsavedProjectMetadata() &&
-+      !window.confirm('内容归档信息还有未保存的修改。放弃修改并离开内容库吗？')) return;
-+    setCurrentPage(page);
-+  }, []);
-+  const requestSeq = useRef(0);
-+  const selectProfile = useCallback((name: string) => {
-+    selectedRef.current = name; setSelectedPersona(name);
-+    appStorage.setItem(SELECTED_PROFILE_KEY, name);
-+  }, []);
-+  const reloadPersonas = useCallback(async () => {
-+    const seq = ++requestSeq.current;
-+    const list = await fetchPersonas();
-+    if (seq !== requestSeq.current) return;
-+    setPersonas(list);
-+    // Read the old selection once without creating, resuming or modifying chat.
-+    const selected = resolveSelectedProfile(list.map(p => p.name),
-+      selectedRef.current ?? appStorage.getItem(SELECTED_PROFILE_KEY),
-+      appStorage.getItem('easel_sessions'), appStorage.getItem('easel_active_session'));
-+    selectProfile(selected);
-+    if (!list.length && !onboardingSeen()) setShowRecommend(true);
-+  }, [selectProfile]);
-+  const refresh = useCallback(() => {
-+    void fetchStatus().then(() => setServiceStatus('connected')).catch(() => setServiceStatus('disconnected'));
-+    void reloadPersonas().catch(() => {});
-+  }, [reloadPersonas]);
-+  useEffect(refresh, [refresh]);
-+  useRefreshOnFocus(refresh);
-   useEffect(() => {
-     const onHash = () => {
+-  useEffect(() => {
+-    const onHash = () => {
 -      const m = window.location.hash.match(/^#\/outputs\/(.+)$/);
 -      if (!m) return;
 -      let path = m[1];
 -      try { path = decodeURIComponent(path); } catch { /* 保留原样 */ }
 -      setOutputsJump(path);
 -      setCurrentPage('outputs');
-+      const match = window.location.hash.match(/^#\/outputs\/(.+)$/);
-+      if (!match) return;
-+      let path = match[1];
-+      try { path = decodeURIComponent(path); } catch { /* keep literal path */ }
-+      setOutputsJump(path); navigate('outputs');
-       window.history.replaceState(null, '', window.location.pathname + window.location.search);
-     };
+-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+-    };
 -    window.addEventListener('hashchange', onHash);
-+    onHash(); window.addEventListener('hashchange', onHash);
-     return () => window.removeEventListener('hashchange', onHash);
+-    return () => window.removeEventListener('hashchange', onHash);
 -  }, []);
 -  const clearOutputsJump = useCallback(() => setOutputsJump(''), []);
 -
@@ -20357,7 +20492,12 @@ index fee8255..c50b349 100644
 -      else openNew(existing);
 -    }
 -    return () => { ch?.removeEventListener('message', onMsg); ch?.close(); };
--  }, []);
++  const pageRef = useRef(currentPage); pageRef.current = currentPage;
++  const navigate = useCallback(async (page: Page) => {
++    if (page === pageRef.current) return true;
++    if (!await requestLeave({ reason: '切换页面' })) return false;
++    setCurrentPage(page); return true;
+   }, []);
 -
 -  // 持久化当前活跃会话 id，重开网页据此续接上次对话（修复"今天再问就忘了"）。
 -  // 仅在非空时写：避免挂载首刷 activeSessionId 尚为 null 时误清掉已存的 id。
@@ -20447,7 +20587,11 @@ index fee8255..c50b349 100644
 -      saveSessions(next);
 -      return next;
 -    });
--  }, []);
++  const requestSeq = useRef(0);
++  const selectProfile = useCallback((name: string) => {
++    selectedRef.current = name; setSelectedPersona(name);
++    appStorage.setItem(SELECTED_PROFILE_KEY, name);
+   }, []);
 -
 -  const clearStream = useCallback((sessionId: string) => {
 -    // 打字机收尾：剩余队列立刻吐出，避免结束瞬间内容被截断
@@ -20459,7 +20603,13 @@ index fee8255..c50b349 100644
 -      delete next[sessionId];
 -      return next;
 -    });
--  }, []);
++  const changeProfile = useCallback(async (name: string) => {
++    if (name === selectedRef.current) return;
++    if (await requestLeave({ reason: '切换画像', scope: ['profile'] })) selectProfile(name);
++  }, [selectProfile]);
++  const openProfileWizard = useCallback(async () => {
++    if (await requestLeave({ reason: '配置新画像' })) setShowWizard(true);
+   }, []);
 -
 -  // 启动一次流式（fetch + 累积 + 回调）——只管流，不动消息列表
 -  const startStream = useCallback((
@@ -20676,7 +20826,26 @@ index fee8255..c50b349 100644
 -  }, [appendAssistant, clearStream]);
 -
 -  // 活跃会话确定后（含挂载首刷）尝试恢复它悬空的一轮
--  useEffect(() => {
++  const reloadPersonas = useCallback(async () => {
++    const seq = ++requestSeq.current;
++    const list = await fetchPersonas();
++    if (seq !== requestSeq.current) return;
++    setPersonas(list);
++    // Read the old selection once without creating, resuming or modifying chat.
++    const selected = resolveSelectedProfile(list.map(p => p.name),
++      selectedRef.current ?? appStorage.getItem(SELECTED_PROFILE_KEY),
++      appStorage.getItem('easel_sessions'), appStorage.getItem('easel_active_session'));
++    const edits = readEdits(['profile']);
++    if (selected === selectedRef.current || (!edits.dirty && !edits.saving)) selectProfile(selected);
++    if (!list.length && !onboardingSeen()) setShowRecommend(true);
++  }, [selectProfile]);
++  const refresh = useCallback(() => {
++    void fetchStatus().then(() => setServiceStatus('connected')).catch(() => setServiceStatus('disconnected'));
++    void reloadPersonas().catch(() => {});
++  }, [reloadPersonas]);
++  useEffect(refresh, [refresh]);
++  useRefreshOnFocus(refresh);
+   useEffect(() => {
 -    if (activeSessionId) resumePendingTurn(activeSessionId);
 -  }, [activeSessionId, resumePendingTurn]);
 -
@@ -20752,7 +20921,15 @@ index fee8255..c50b349 100644
 -        content: (a.content || '') + '\n\n_（已停止）_',
 -        thinking: a.thinking || undefined,
 -        activity: a.steps.join('\n') || undefined,
--      });
++    const onHash = () => {
++      const match = window.location.hash.match(/^#\/outputs\/(.+)$/);
++      if (!match) return;
++      let path = match[1];
++      try { path = decodeURIComponent(path); } catch { /* keep literal path */ }
++      void navigate('outputs').then(allowed => {
++        if (allowed) setOutputsJump(path);
++        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+       });
 -    }
 -    clearStream(sessionId);
 -    // 关键：清掉「本轮进行中」标记，否则下一句被判为「上一条还没跑完」拦下
@@ -20863,6 +21040,9 @@ index fee8255..c50b349 100644
 -  }, []);
 -
 -  // 画像创建完成
++    };
++    onHash(); window.addEventListener('hashchange', onHash);
++    return () => window.removeEventListener('hashchange', onHash);
 +  }, [navigate]);
    const handleProfileCreated = useCallback((name: string) => {
 -    localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
@@ -20898,7 +21078,7 @@ index fee8255..c50b349 100644
 +    if (selectedRef.current === name) selectProfile('');
 +    void reloadPersonas().catch(() => {});
 +  }, [reloadPersonas, selectProfile]);
-+  const openAgent = () => { setTopic(''); navigate('agent'); };
++  const openAgent = async () => { if (await navigate('agent')) setTopic(''); };
 +  const clearOutputsJump = useCallback(() => setOutputsJump(''), []);
    const renderPage = () => {
      switch (currentPage) {
@@ -20971,7 +21151,7 @@ index fee8255..c50b349 100644
 +      case 'skills': return <SkillPage persona={selectedPersona} onConnectAgent={openAgent} />;
 +      case 'outputs': return <OutputsPage jumpPath={outputsJump} onJumpHandled={clearOutputsJump} />;
 +      case 'accounts': return <AccountsPage />;
-+      case 'profile': return <ProfilePage persona={selectedPersona} onNewProfile={() => setShowWizard(true)} onDeleted={handleProfileDeleted} onConnectAgent={openAgent} />;
++      case 'profile': return <ProfilePage persona={selectedPersona} onNewProfile={openProfileWizard} onDeleted={handleProfileDeleted} onConnectAgent={openAgent} />;
 +      default: return null;
      }
    };
@@ -21019,8 +21199,8 @@ index fee8255..c50b349 100644
 -      />
 +    <div className={`app-layout${currentPage === 'agent' ? ' app-layout-home' : ''}`}>
 +      {currentPage !== 'agent' && <Sidebar currentPage={currentPage} onPageChange={navigate}
-+        personas={personas} selectedPersona={selectedPersona} onPersonaChange={selectProfile}
-+        onNewProfile={() => setShowWizard(true)} serviceStatus={serviceStatus} onOpenSettings={() => setSettingsOpen(true)} />}
++        personas={personas} selectedPersona={selectedPersona} onPersonaChange={changeProfile}
++        onNewProfile={openProfileWizard} serviceStatus={serviceStatus} onOpenSettings={() => setSettingsOpen(true)} />}
        <main className="main-content">
 -        {(['trends', 'ideas', 'calendar', 'publish', 'breakdown'] as Page[]).includes(currentPage) && (
 -          <SubNav current={currentPage} onNavigate={setCurrentPage} />
@@ -21076,7 +21256,7 @@ index fee8255..c50b349 100644
    );
  }
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..5d75421 100644
+index 42545b5..6f67765 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
 @@ -5,7 +5,8 @@ import {
@@ -21085,21 +21265,27 @@ index 42545b5..5d75421 100644
  import type { AccountItem, AccountWhoami } from '../lib/api';
 -import { getWhoamiCache, setWhoamiCache, verifyStale } from '../lib/whoami';
 +import { currentVerification, getWhoamiCache, setWhoamiCache, unknownVerification, verifyStale } from '../lib/whoami';
-+import { registerUnsavedEdits } from '../lib/unsaved';
++import { registerEditing, requestLeave } from '../lib/unsaved';
  
  type QRState = {
    platform: string;
-@@ -61,6 +62,9 @@ export default function AccountsPage() {
+@@ -61,6 +62,15 @@ export default function AccountsPage() {
    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
    const aliveRef = useRef(true);
    const qrPlatformRef = useRef('');   // 当前登录中的平台，供 submitSms 稳定引用
-+  const dirtyForm = useRef(false);
-+  dirtyForm.current = Boolean(cred && (credForm.appId || credForm.appSecret || credForm.author)) || Boolean(smsCode) || credBusy || smsBusy;
-+  useEffect(() => registerUnsavedEdits('account-form', () => dirtyForm.current), []);
++  const editState = useRef({ cred, credForm, smsCode, credBusy, smsBusy });
++  editState.current = { cred, credForm, smsCode, credBusy, smsBusy };
++  const credSubmitting = useRef(false), smsSubmitting = useRef(false);
++  useEffect(() => {
++    const credentials = registerEditing('account-credentials', () => ({ label: '账号凭证', saving: credSubmitting.current || editState.current.credBusy,
++      dirty: Boolean(editState.current.cred && Object.values(editState.current.credForm).some(Boolean)) }));
++    const sms = registerEditing('account-sms', () => ({ label: '验证码', saving: smsSubmitting.current || editState.current.smsBusy, dirty: Boolean(editState.current.smsCode) }));
++    return () => { credentials(); sms(); };
++  }, []);
  
    useEffect(() => {
      aliveRef.current = true;
-@@ -70,25 +74,27 @@ export default function AccountsPage() {
+@@ -70,25 +80,27 @@ export default function AccountsPage() {
    // 真校验某平台登录态 + 拉昵称/头像（后端起浏览器，数秒）；手动「校验账号」或登录成功后调
    const runWhoami = useCallback((platform: string) => {
      setWhoami((w) => ({ ...w, [platform]: 'loading' }));
@@ -21132,7 +21318,69 @@ index 42545b5..5d75421 100644
            alive: () => aliveRef.current,
            onUpdate: (platform, r) => setWhoami((w) => ({ ...w, [platform]: r })),
          });
-@@ -225,9 +231,6 @@ export default function AccountsPage() {
+@@ -116,7 +128,8 @@ export default function AccountsPage() {
+ 
+   useEffect(() => () => stopPoll(), [stopPoll]);
+ 
+-  const closeQr = useCallback(() => {
++  const closeQr = useCallback(async () => {
++    if (!await requestLeave({ reason: '关闭验证码窗口', scope: ['account-sms'] })) return;
+     stopPoll();
+     setQr(null);
+     setSmsCode(''); setSmsErr(''); setSmsBusy(false);
+@@ -126,6 +139,7 @@ export default function AccountsPage() {
+   const submitSms = useCallback(async () => {
+     const code = smsCode.replace(/\D/g, '');
+     if (code.length < 4) { setSmsErr('请输入手机收到的验证码'); return; }
++    if (smsSubmitting.current) return; smsSubmitting.current = true;
+     setSmsBusy(true); setSmsErr('');
+     try {
+       await submitLoginSms(qrPlatformRef.current, code);
+@@ -136,7 +150,7 @@ export default function AccountsPage() {
+     } catch (e) {
+       setSmsErr(e instanceof Error ? e.message : '提交验证码失败');
+     } finally {
+-      setSmsBusy(false);
++      smsSubmitting.current = false; setSmsBusy(false);
+     }
+   }, [smsCode]);
+ 
+@@ -150,28 +164,30 @@ export default function AccountsPage() {
+       .catch(() => { /* 未配置，忽略 */ });
+   }, []);
+ 
+-  const closeCred = useCallback(() => { setCred(null); setCredBusy(false); load(); }, [load]);
++  const finishCred = useCallback(() => { setCred(null); setCredForm({ appId: '', appSecret: '', author: '' }); setCredBusy(false); load(); }, [load]);
++  const closeCred = useCallback(async () => { if (await requestLeave({ reason: '关闭账号配置', scope: ['account-credentials'] })) finishCred(); }, [finishCred]);
+ 
+   const submitCred = useCallback(async () => {
+     if (!cred) return;
+     const appId = credForm.appId.trim();
+     const appSecret = credForm.appSecret.trim();
+     if (!appId || !appSecret) { setCredErr('AppID 和 AppSecret 都要填'); return; }
++    if (credSubmitting.current) return; credSubmitting.current = true;
+     setCredBusy(true); setCredErr(''); setCredMsg('');
+     try {
+       const r = await saveCredentials(cred.platform, { appId, appSecret, name: cred.name, author: credForm.author.trim() });
+       if (r.ok) {
+         runWhoami(cred.platform);
+-        closeCred();
++        finishCred();
+       } else {
+         setCredErr(r.message || '验证未通过');
+       }
+     } catch (e) {
+       setCredErr(e instanceof Error ? e.message : '保存失败');
+     } finally {
+-      setCredBusy(false);
++      credSubmitting.current = false; setCredBusy(false);
+     }
+-  }, [cred, credForm, runWhoami, closeCred]);
++  }, [cred, credForm, runWhoami, finishCred]);
+ 
+   const handleLogin = useCallback(async (a: AccountItem) => {
+     if (!a.supported) return;
+@@ -225,9 +241,6 @@ export default function AccountsPage() {
            if (['success', 'expired', 'error'].includes(s.state)) {
              stopPoll();
              if (s.state === 'success') {
@@ -21142,7 +21390,7 @@ index 42545b5..5d75421 100644
                setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
                setWhoamiCache(a.platform, null);
                runWhoami(a.platform);
-@@ -249,7 +252,7 @@ export default function AccountsPage() {
+@@ -249,7 +262,7 @@ export default function AccountsPage() {
      try {
        await logoutAccount(a.platform);
        // 内存态立即翻未登录（同登录路径），不等 load() 回来
@@ -21151,7 +21399,7 @@ index 42545b5..5d75421 100644
        setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
        setWhoamiCache(a.platform, null);
        load();
-@@ -260,20 +263,19 @@ export default function AccountsPage() {
+@@ -260,20 +273,19 @@ export default function AccountsPage() {
      }
    }, [load]);
  
@@ -21179,7 +21427,7 @@ index 42545b5..5d75421 100644
    };
  
    return (
-@@ -282,11 +284,11 @@ export default function AccountsPage() {
+@@ -282,11 +294,11 @@ export default function AccountsPage() {
          <div>
            <h1 className="page-title">账号登录 Accounts</h1>
            <p className="page-subtitle">
@@ -21194,7 +21442,7 @@ index 42545b5..5d75421 100644
        </div>
  
        {err && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 12 }}>{err}</div>}
-@@ -299,6 +301,7 @@ export default function AccountsPage() {
+@@ -299,6 +311,7 @@ export default function AccountsPage() {
            const w = whoami[a.platform];
            const info = w && w !== 'loading' ? w : null;
            const logged = effLoggedIn(a);
@@ -21202,7 +21450,7 @@ index 42545b5..5d75421 100644
            return (
              <div key={a.platform} className="card account-card" style={{ opacity: a.supported ? 1 : 0.6 }}>
                <div className="account-card-head">
-@@ -315,6 +318,9 @@ export default function AccountsPage() {
+@@ -315,6 +328,9 @@ export default function AccountsPage() {
                {!logged && (
                  <div className="account-card-note">{a.note ? a.note : `后端：${a.name}`}</div>
                )}
@@ -21212,7 +21460,7 @@ index 42545b5..5d75421 100644
  
                <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
                  {logged ? (
-@@ -332,12 +338,15 @@ export default function AccountsPage() {
+@@ -332,12 +348,15 @@ export default function AccountsPage() {
                    </>
                  ) : (
                    // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
@@ -21720,28 +21968,30 @@ index 6fcd5d0..c782a20 100644
 +  </div>;
  }
 diff --git a/web/frontend/src/components/CalendarPage.tsx b/web/frontend/src/components/CalendarPage.tsx
-index e5418f6..34fc202 100644
+index e5418f6..7017ff5 100644
 --- a/web/frontend/src/components/CalendarPage.tsx
 +++ b/web/frontend/src/components/CalendarPage.tsx
 @@ -1,4 +1,6 @@
 -import { useState, useEffect, useCallback, useMemo } from 'react';
 +import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-+import { registerUnsavedEdits } from '../lib/unsaved';
++import { registerEditing, requestLeave } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import { fetchSchedule, createSchedule, updateSchedule, deleteSchedule, fetchScheduleContext } from '../lib/api';
  import type { ScheduleItem, ScheduleInput, ScheduleContext } from '../lib/api';
  import { IconCalendar, IconTrash, IconChevron } from './icons';
-@@ -39,12 +41,23 @@ export default function CalendarPage() {
+@@ -39,12 +41,25 @@ export default function CalendarPage() {
    const [ctx, setCtx] = useState<ScheduleContext | null>(null);
    const [showSuggest, setShowSuggest] = useState(true);
    const [dayView, setDayView] = useState<string | null>(null);   // 展开查看某天全部（date，null=关闭）
 +  const [error, setError] = useState('');
 +  const [externalUpdate, setExternalUpdate] = useState(false);
 +  const baseline = useRef<ScheduleItem | null>(null);
++  const initialForm = useRef<ScheduleInput | null>(null), operation = useRef(false);
 +  const current = useRef({ form, saving, editing });
 +  current.current = { form, saving, editing };
-+  const signature = (item: ScheduleItem | undefined | null) => item ? JSON.stringify(Object.keys(EMPTY).map(key => item[key as keyof ScheduleItem] ?? EMPTY[key as keyof ScheduleInput])) : '';
-+  useEffect(() => registerUnsavedEdits('calendar', () => Boolean(current.current.form) || current.current.saving), []);
++  const signature = (item: Partial<ScheduleItem> | undefined | null) => item ? JSON.stringify(Object.keys(EMPTY).map(key => item[key as keyof ScheduleItem] ?? EMPTY[key as keyof ScheduleInput])) : '';
++  useEffect(() => registerEditing('calendar', () => ({ label: '日历', saving: operation.current || current.current.saving,
++    dirty: Boolean(current.current.form && signature(current.current.form) !== signature(initialForm.current)) })), []);
  
    const load = useCallback(() => {
 -    fetchSchedule().then(setItems).catch(() => {});
@@ -21756,25 +22006,31 @@ index e5418f6..34fc202 100644
  
    const visible = useMemo(
      () => (filter === 'all' ? items : items.filter((it) => kindOf(it) === filter)),
-@@ -71,11 +84,12 @@ export default function CalendarPage() {
+@@ -71,12 +86,15 @@ export default function CalendarPage() {
    }, [cursor]);
  
    const openNew = (date: string) => {
 +    baseline.current = null; setExternalUpdate(false); setError('');
      setDayView(null);
      setEditing(null);
-     setForm({ ...EMPTY, date, kind: filter === 'event' ? 'event' : 'content' });
+-    setForm({ ...EMPTY, date, kind: filter === 'event' ? 'event' : 'content' });
++    initialForm.current = { ...EMPTY, date, kind: filter === 'event' ? 'event' : 'content' };
++    setForm(initialForm.current);
    };
 -  const openEdit = (it: ScheduleItem) => { setDayView(null); setEditing(it); setForm({ ...EMPTY, ...it }); };
-+  const openEdit = (it: ScheduleItem) => { baseline.current = it; setExternalUpdate(false); setError(''); setDayView(null); setEditing(it); setForm({ ...EMPTY, ...it }); };
-   const close = () => { setForm(null); setEditing(null); };
+-  const close = () => { setForm(null); setEditing(null); };
++  const openEdit = (it: ScheduleItem) => { baseline.current = it; setExternalUpdate(false); setError(''); setDayView(null); setEditing(it); initialForm.current = { ...EMPTY, ...it }; setForm(initialForm.current); };
++  const finish = () => { setForm(null); setEditing(null); initialForm.current = null; };
++  const close = async () => { if (await requestLeave({ reason: '关闭日历编辑', scope: ['calendar'] })) finish(); };
  
    // 单条 chip（活动=色条，内容=按状态上色的圆点），日历格与当天详情共用
-@@ -105,12 +119,18 @@ export default function CalendarPage() {
+   const renderChip = (it: ScheduleItem) => {
+@@ -105,17 +123,25 @@ export default function CalendarPage() {
  
    const save = async () => {
      if (!form || !form.title.trim() || !form.date) return;
 -    setSaving(true);
++    if (operation.current) return; operation.current = true;
 +    setSaving(true); setError('');
      try {
 -      if (editing) await updateSchedule(editing.id, form);
@@ -21785,14 +22041,23 @@ index e5418f6..34fc202 100644
 +        await updateSchedule(editing.id, form);
 +      }
        else await createSchedule(form);
-       close(); load();
+-      close(); load();
 -    } finally { setSaving(false); }
++      finish(); load();
 +    } catch (e) { setError(e instanceof Error ? e.message : '保存失败，当前草稿已保留。'); }
-+    finally { setSaving(false); }
++    finally { operation.current = false; setSaving(false); }
    };
    const remove = async () => {
-     if (!editing) return;
-@@ -132,6 +152,7 @@ export default function CalendarPage() {
+-    if (!editing) return;
++    if (!editing || operation.current) return;
++    operation.current = true;
+     setSaving(true);
+-    try { await deleteSchedule(editing.id); close(); load(); } finally { setSaving(false); }
++    try { await deleteSchedule(editing.id); finish(); load(); } catch (e) { setError(e instanceof Error ? e.message : '删除失败，当前编辑已保留。'); } finally { operation.current = false; setSaving(false); }
+   };
+ 
+   const monthLabel = `${cursor.getFullYear()} 年 ${cursor.getMonth() + 1} 月`;
+@@ -132,6 +158,7 @@ export default function CalendarPage() {
            <p className="page-subtitle">每天各平台发什么一目了然——发布自动落库，可记录排期与平台活动。</p>
          </div>
          <div className="cal-nav">
@@ -21800,7 +22065,7 @@ index e5418f6..34fc202 100644
            <button className="btn btn-sm" onClick={() => shift(-1)}><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={14} /></span></button>
            <button className="btn btn-sm" onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}>本月</button>
            <span className="cal-month">{monthLabel}</span>
-@@ -223,6 +244,8 @@ export default function CalendarPage() {
+@@ -223,6 +250,8 @@ export default function CalendarPage() {
                <h3 style={{ margin: 0 }}>{editing ? '编辑' : '新增'}{isEvent ? '平台活动' : '排期'}</h3>
                <button className="icon-btn" onClick={close}>×</button>
              </div>
@@ -22093,18 +22358,18 @@ index c151628..26b4f2e 100644
  
    render() {
 diff --git a/web/frontend/src/components/IdeasPage.tsx b/web/frontend/src/components/IdeasPage.tsx
-index f715205..f89049e 100644
+index f715205..76d1050 100644
 --- a/web/frontend/src/components/IdeasPage.tsx
 +++ b/web/frontend/src/components/IdeasPage.tsx
 @@ -1,4 +1,6 @@
 -import { useState, useEffect, useCallback, useMemo } from 'react';
 +import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-+import { registerUnsavedEdits } from '../lib/unsaved';
++import { registerEditing, requestLeave } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule } from '../lib/api';
  import type { Idea, IdeaInput } from '../lib/api';
  import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
-@@ -20,9 +22,21 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -20,9 +22,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
    const [form, setForm] = useState<IdeaInput | null>(null);
    const [editId, setEditId] = useState<string | null>(null);
    const [toast, setToast] = useState('');
@@ -22112,10 +22377,12 @@ index f715205..f89049e 100644
 +  const [error, setError] = useState('');
 +  const [externalUpdate, setExternalUpdate] = useState(false);
 +  const baseline = useRef<Idea | null>(null);
++  const initialForm = useRef<IdeaInput | null>(null), operation = useRef(false);
 +  const current = useRef({ form, saving, editId });
 +  current.current = { form, saving, editId };
-+  const signature = (idea: Idea | undefined | null) => idea ? JSON.stringify([idea.title, idea.note ?? '', idea.source ?? '', idea.status]) : '';
-+  useEffect(() => registerUnsavedEdits('ideas', () => Boolean(current.current.form) || current.current.saving), []);
++  const signature = (idea: IdeaInput | undefined | null) => idea ? JSON.stringify([idea.title, idea.note ?? '', idea.source ?? '', idea.status]) : '';
++  useEffect(() => registerEditing('ideas', () => ({ label: '选题', saving: operation.current || current.current.saving,
++    dirty: Boolean(current.current.form && signature(current.current.form) !== signature(initialForm.current)) })), []);
  
 -  const load = useCallback(() => { fetchIdeas().then(setIdeas).catch(() => {}); }, []);
 +  const load = useCallback(() => { fetchIdeas().then(fresh => {
@@ -22127,18 +22394,20 @@ index f715205..f89049e 100644
  
    const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
    const byStatus = useMemo(() => {
-@@ -31,12 +45,21 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -31,12 +47,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
      return g;
    }, [ideas]);
  
 -  const openNew = () => { setEditId(null); setForm({ ...EMPTY }); };
 -  const openEdit = (it: Idea) => { setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status }); };
-+  const openNew = () => { baseline.current = null; setExternalUpdate(false); setError(''); setEditId(null); setForm({ ...EMPTY }); };
-+  const openEdit = (it: Idea) => { baseline.current = it; setExternalUpdate(false); setError(''); setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status }); };
++  const openNew = () => { baseline.current = null; setExternalUpdate(false); setError(''); setEditId(null); initialForm.current = { ...EMPTY }; setForm(initialForm.current); };
++  const openEdit = (it: Idea) => { baseline.current = it; setExternalUpdate(false); setError(''); setEditId(it.id); initialForm.current = { title: it.title, note: it.note, source: it.source, status: it.status }; setForm(initialForm.current); };
++  const close = async () => { if (await requestLeave({ reason: '关闭选题编辑', scope: ['ideas'] })) { setForm(null); setEditId(null); initialForm.current = null; } };
    const save = async () => {
      if (!form || !form.title.trim()) return;
 -    if (editId) await updateIdea(editId, form); else await createIdea(form);
 -    setForm(null); setEditId(null); load();
++    if (operation.current) return; operation.current = true;
 +    setSaving(true); setError('');
 +    try {
 +      if (editId) {
@@ -22149,11 +22418,11 @@ index f715205..f89049e 100644
 +      } else await createIdea(form);
 +      setForm(null); setEditId(null); load();
 +    } catch (e) { setError(e instanceof Error ? e.message : '保存失败，当前草稿已保留。'); }
-+    finally { setSaving(false); }
++    finally { operation.current = false; setSaving(false); }
    };
    const advance = async (it: Idea) => { await updateIdea(it.id, { ...it, status: NEXT[it.status] }); load(); };
    const remove = async (it: Idea) => { await deleteIdea(it.id); load(); };
-@@ -53,7 +76,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -53,7 +80,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
            <h1 className="page-title"><IconIdea size={21} /> 选题库</h1>
            <p className="page-subtitle">攒住每一个灵感——从热点收藏或手动新增，推进到「做内容」再进日历。</p>
          </div>
@@ -22162,33 +22431,43 @@ index f715205..f89049e 100644
        </div>
  
        <div className="kanban">
-@@ -95,6 +118,8 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -89,12 +116,14 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+       </div>
+ 
+       {form && (
+-        <div className="overlay" onClick={() => setForm(null)}>
++        <div className="overlay" onClick={close}>
+           <div className="modal" style={{ width: 440, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                <h3 style={{ margin: 0 }}>{editId ? '编辑选题' : '新建选题'}</h3>
-               <button className="icon-btn" onClick={() => setForm(null)}>×</button>
+-              <button className="icon-btn" onClick={() => setForm(null)}>×</button>
++              <button className="icon-btn" onClick={close}>×</button>
              </div>
 +            {externalUpdate && <p role="status">这个选题已有外部更新，当前草稿已保留；保存前会再次核对。</p>}
 +            {error && <p role="alert" style={{ color: 'var(--red)' }}>{error}</p>}
              <label className="field-label">选题 *</label>
              <input className="field" value={form.title} autoFocus placeholder="想做的内容 / 角度"
                onChange={(e) => setForm({ ...form, title: e.target.value })} />
-@@ -113,7 +138,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -112,8 +141,8 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+               ))}
              </div>
              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
-               <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>
+-              <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>
 -              <button className="btn btn-sm btn-primary" onClick={save} disabled={!form.title.trim()}>保存</button>
++              <button className="btn btn-sm" onClick={close}>取消</button>
 +              <button className="btn btn-sm btn-primary" onClick={save} disabled={saving || !form.title.trim()}>{saving ? '保存中…' : '保存'}</button>
              </div>
            </div>
          </div>
 diff --git a/web/frontend/src/components/LibrarySettings.tsx b/web/frontend/src/components/LibrarySettings.tsx
 new file mode 100644
-index 0000000..9f0f2ac
+index 0000000..ce710e9
 --- /dev/null
 +++ b/web/frontend/src/components/LibrarySettings.tsx
 @@ -0,0 +1,78 @@
 +import { useCallback, useEffect, useState } from 'react';
 +import { changeLibrary, chooseLibrary, libraryStatus, openLibrary, type LibraryStatus } from '../lib/library';
-+import { hasUnsavedEdits } from '../lib/unsaved';
++import { requestLeave } from '../lib/unsaved';
 +
 +export default function LibrarySettings() {
 +  const [status, setStatus] = useState<LibraryStatus | null>(null);
@@ -22203,7 +22482,7 @@ index 0000000..9f0f2ac
 +  useEffect(() => { if (window.desktopLibrary) void refresh(); }, [refresh]);
 +
 +  const select = async () => {
-+    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，再调整资料库。'); return; }
++    if (!await requestLeave({ reason: '调整资料库', requireClean: true, notify: setError })) return;
 +    setBusy(true); setError('');
 +    try {
 +      const targetRoot = await chooseLibrary();
@@ -22213,7 +22492,7 @@ index 0000000..9f0f2ac
 +  };
 +  const confirm = async () => {
 +    if (!proposal) return;
-+    if (hasUnsavedEdits()) { setError('还有未保存的编辑或表单，请先保存或取消，当前草稿会继续保留。'); return; }
++    if (!await requestLeave({ reason: '更换资料库', requireClean: true, notify: setError })) return;
 +    setBusy(true); setError('');
 +    try { await changeLibrary(proposal.targetRoot); setProposal(null); await refresh(); }
 +    catch (e) { setError(e instanceof Error ? e.message : '资料库未能切换，原资料会继续保留。'); }
@@ -22265,40 +22544,55 @@ index 0000000..9f0f2ac
 +  </section>;
 +}
 diff --git a/web/frontend/src/components/OnboardingWizard.tsx b/web/frontend/src/components/OnboardingWizard.tsx
-index ed070bd..875a4b8 100644
+index ed070bd..6d47ac2 100644
 --- a/web/frontend/src/components/OnboardingWizard.tsx
 +++ b/web/frontend/src/components/OnboardingWizard.tsx
-@@ -1,5 +1,5 @@
+@@ -1,5 +1,6 @@
 -import { useState, useEffect } from 'react';
 -import { buildProfile, profileBuildStatus } from '../lib/api';
-+import { useState } from 'react';
++import { useEffect, useRef, useState } from 'react';
 +import { buildProfile } from '../lib/api';
++import { registerEditing, requestLeave } from '../lib/unsaved';
  
  const PLATFORMS = ['小红书', '抖音', 'B站', '视频号', '公众号', '微博', '知乎'];
  const TONES = ['专业严谨', '轻松幽默', '亲切日常', '犀利吐槽', '治愈温暖', '干货实用'];
-@@ -34,7 +34,6 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+@@ -34,8 +35,11 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
    const [step, setStep] = useState(0);
    const [form, setForm] = useState<FormState>(EMPTY);
    const [submitting, setSubmitting] = useState(false);
 -  const [phase, setPhase] = useState<'form' | 'enhancing'>('form');
    const [error, setError] = useState('');
++  const operation = useRef(false), current = useRef(form); current.current = form;
++  useEffect(() => registerEditing('onboarding', () => ({ label: '新画像配置', saving: operation.current,
++    dirty: JSON.stringify(current.current) !== JSON.stringify(EMPTY) })), []);
++  const close = async () => { if (await requestLeave({ reason: '关闭画像配置', scope: ['onboarding'] })) onClose(); };
  
    const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
-@@ -57,11 +56,10 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+     setForm((f) => ({ ...f, [k]: v }));
+@@ -54,14 +58,15 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+     step === 1 || step === 3;
+ 
+   const submit = async () => {
++    if (operation.current) return; operation.current = true;
      setSubmitting(true);
      setError('');
      try {
 -      // 后端异步：立即返回（基线已写、画像可用），不再长阻塞被代理超时掐断
        const res = await buildProfile(form.name.trim(), form as unknown as Record<string, unknown>);
        if (res.created) {
++        current.current = EMPTY; setForm(EMPTY); operation.current = false;
          setSubmitting(false);
 -        setPhase('enhancing'); // 进入后台增强等待（可跳过）
 +        onCreated(res.name || form.name.trim());
        } else {
          setError('画像创建失败，请重试');
          setSubmitting(false);
-@@ -72,28 +70,6 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
-     }
+@@ -69,31 +74,9 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+     } catch (e) {
+       setError(e instanceof Error ? e.message : '创建失败');
+       setSubmitting(false);
+-    }
++    } finally { operation.current = false; }
    };
  
 -  // 增强阶段：轮询后台 AI 增强进度；完成/失败即进入画像（基线已可用）
@@ -22326,7 +22620,16 @@ index ed070bd..875a4b8 100644
    const box: React.CSSProperties = {
      width: '100%', padding: '10px 12px', marginTop: 6, borderRadius: 'var(--radius)',
      border: '1px solid var(--border)', background: 'var(--bg-elev)', color: 'var(--text)',
-@@ -131,18 +107,6 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+@@ -114,7 +97,7 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+         {/* 头部 + 进度 */}
+         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+           <h2 style={{ margin: 0, fontSize: 20 }}>配置账号画像</h2>
+-          <button onClick={onClose} disabled={submitting}
++          <button onClick={close} disabled={submitting}
+             style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 22, cursor: 'pointer' }}>×</button>
+         </div>
+         <div style={{ display: 'flex', gap: 6, margin: '16px 0 4px' }}>
+@@ -131,18 +114,6 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
              <div className="spinner" style={{ margin: '0 auto 16px' }} />
              正在创建画像基线…
            </div>
@@ -22345,7 +22648,7 @@ index ed070bd..875a4b8 100644
          ) : (
            <div style={{ minHeight: 240 }}>
              {step === 0 && (
-@@ -168,7 +132,7 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+@@ -168,7 +139,7 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
              {step === 1 && (
                <>
                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 12 }}>
@@ -22354,26 +22657,30 @@ index ed070bd..875a4b8 100644
                  </p>
                  {form.platforms.length === 0 && (
                    <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>（未选平台，可直接下一步）</p>
-@@ -223,7 +187,7 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
+@@ -223,9 +194,9 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
          )}
  
          {/* 底部按钮 */}
 -        {phase === 'form' && !submitting && (
 +        {!submitting && (
            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
-             <button className="btn" onClick={() => (step === 0 ? onClose() : setStep(step - 1))}>
+-            <button className="btn" onClick={() => (step === 0 ? onClose() : setStep(step - 1))}>
++            <button className="btn" onClick={() => (step === 0 ? void close() : setStep(step - 1))}>
                {step === 0 ? '取消' : '上一步'}
+             </button>
+             {step < STEPS.length - 1 ? (
 diff --git a/web/frontend/src/components/OutputsPage.tsx b/web/frontend/src/components/OutputsPage.tsx
-index 043dc91..52989fb 100644
+index 043dc91..41cb7b9 100644
 --- a/web/frontend/src/components/OutputsPage.tsx
 +++ b/web/frontend/src/components/OutputsPage.tsx
-@@ -1,7 +1,13 @@
+@@ -1,7 +1,14 @@
  import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import type { CSSProperties } from 'react';
  import { fetchOutputs, fetchOutputContent, mediaUrl, deleteOutput } from '../lib/api';
  import type { OutputNode, OutputMeta } from '../lib/api';
-+import { CATEGORIES, STAGES, SHAPES, EMPTY_PROJECT_FILTERS, categoryLabel, kindLabel as projectKindLabel, stageLabel, matchesProject, valuesFor, textValue, hasUnsavedProjectMetadata, isProjectMetadataSaving } from '../lib/outputMetadata';
++import { CATEGORIES, STAGES, SHAPES, EMPTY_PROJECT_FILTERS, categoryLabel, kindLabel as projectKindLabel, stageLabel, matchesProject, valuesFor, textValue } from '../lib/outputMetadata';
++import { requestLeave } from '../lib/unsaved';
 +import type { ProjectFilters } from '../lib/outputMetadata';
 +import ProjectMetadataEditor from './ProjectMetadataEditor';
 +import '../lib/desktopActions';
@@ -22381,7 +22688,7 @@ index 043dc91..52989fb 100644
  import { renderMarkdown } from '../lib/sanitize';
  import { IconOutputs, IconImage, IconVideo, IconMusic, IconFile, IconFolder, IconRefresh, IconChevron, IconTrash } from './icons';
  
-@@ -13,11 +19,6 @@ const FILTERS: { key: string; label: string }[] = [
+@@ -13,11 +20,6 @@ const FILTERS: { key: string; label: string }[] = [
    { key: 'text', label: '文档' },
  ];
  
@@ -22393,7 +22700,7 @@ index 043dc91..52989fb 100644
  const STATUS_COLOR: Record<string, string> = { draft: 'var(--text-tertiary)', ready: 'var(--amber)', published: 'var(--green)' };
  
  const badge: CSSProperties = {
-@@ -84,38 +85,49 @@ interface OutputsPageProps {
+@@ -84,38 +86,50 @@ interface OutputsPageProps {
  export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProps) {
    const [roots, setRoots] = useState<OutputNode[]>([]);
    const [treeError, setTreeError] = useState('');
@@ -22422,13 +22729,16 @@ index 043dc91..52989fb 100644
    // 对话里的目录路径跳转：展开到对应层级（路径失效时 resolvePath 自动停在能到的层）
    useEffect(() => {
      if (!jumpPath) return;
-+    if (isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再打开其他项目。'); onJumpHandled?.(); return; }
-+    if (hasUnsavedProjectMetadata() && !window.confirm('归档信息还有未保存的修改。放弃修改并打开指定项目吗？')) { onJumpHandled?.(); return; }
-+    setEditorProject(null);
-     setStack(jumpPath.split('/').filter(Boolean));
+-    setStack(jumpPath.split('/').filter(Boolean));
 -    setFilter('all');
-+    setFileFilter('all');
-     onJumpHandled?.();
+-    onJumpHandled?.();
++    let alive = true;
++    void requestLeave({ reason: '打开指定项目', scope: ['project-metadata'] }).then(allowed => {
++      if (!alive) return;
++      if (allowed) { setEditorProject(null); setStack(jumpPath.split('/').filter(Boolean)); setFileFilter('all'); }
++      onJumpHandled?.();
++    });
++    return () => { alive = false; };
    }, [jumpPath, onJumpHandled]);
  
    const currentNodes = useMemo(() => resolvePath(roots, stack), [roots, stack]);
@@ -22453,7 +22763,7 @@ index 043dc91..52989fb 100644
    // 当前项目的展示头（进入项目后才有），用于「成品/素材」分区
    const projectMeta = useMemo(
      () => (stack.length >= 1 ? roots.find((r) => r.name === stack[0])?.meta : undefined),
-@@ -131,8 +143,30 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -131,8 +145,30 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
      () => (hasSplit ? files.filter((f) => !deliverableSet.has(f.path)) : files),
      [files, deliverableSet, hasSplit]);
  
@@ -22486,7 +22796,7 @@ index 043dc91..52989fb 100644
  
    const remove = useCallback(async (node: OutputNode, e: React.MouseEvent) => {
      e.stopPropagation();
-@@ -188,9 +222,9 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -188,9 +224,9 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
      const m = d.meta;
      const cover = coverNode(m) || firstMedia(d);
      return (
@@ -22498,7 +22808,7 @@ index 043dc91..52989fb 100644
            <button className="gcard-del" title="删除" onClick={(e) => remove(d, e)}><IconTrash size={14} /></button>
            {cover ? <Thumb f={cover} big /> : <div className="gcard-ph"><IconFolder size={38} /></div>}
          </div>
-@@ -198,11 +232,18 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -198,11 +234,18 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            <div className="gcard-name" title={m?.title || d.name}>
              {!m && <IconFolder size={13} />} {m?.title || d.name}
            </div>
@@ -22518,7 +22828,7 @@ index 043dc91..52989fb 100644
          </div>
        </div>
      );
-@@ -224,7 +265,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -224,7 +267,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
    const empty = dirs.length === 0 && files.length === 0;
  
    return (
@@ -22527,7 +22837,7 @@ index 043dc91..52989fb 100644
        <div className="gallery-head">
          <div>
            <h1 className="page-title">
-@@ -241,14 +282,39 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -241,14 +284,39 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            </h1>
            <p className="page-subtitle">
              {atTop
@@ -22569,7 +22879,7 @@ index 043dc91..52989fb 100644
  
        {/* 项目主题标签（进入项目根时展示） */}
        {atProjectRoot && projectMeta?.tags && projectMeta.tags.length > 0 && (
-@@ -263,8 +329,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -263,8 +331,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            <button className="btn btn-sm" onClick={() => goTo(stack.length - 1)}>
              <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={13} /></span> 返回上级
            </button>
@@ -22580,7 +22890,7 @@ index 043dc91..52989fb 100644
            ))}
          </div>
        )}
-@@ -272,7 +338,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -272,7 +340,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
        {empty && !treeError ? (
          <div className="empty-state" style={{ height: 300 }}>
            <div className="empty-icon"><IconOutputs size={44} /></div>
@@ -22589,7 +22899,7 @@ index 043dc91..52989fb 100644
          </div>
        ) : hasSplit ? (
          <>
-@@ -305,6 +371,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -305,6 +373,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
          </div>
        )}
  
@@ -22599,18 +22909,19 @@ index 043dc91..52989fb 100644
          <div className="drawer-overlay" onClick={() => setSelected(null)}>
            <div className="drawer" onClick={(e) => e.stopPropagation()}>
 diff --git a/web/frontend/src/components/ProfilePage.tsx b/web/frontend/src/components/ProfilePage.tsx
-index dee847e..4bc8cd7 100644
+index dee847e..b9316b8 100644
 --- a/web/frontend/src/components/ProfilePage.tsx
 +++ b/web/frontend/src/components/ProfilePage.tsx
 @@ -1,7 +1,10 @@
 -import { useState, useEffect } from 'react';
+-import { fetchPersonaFiles, savePersonaFile, deletePersona, fetchAccountAnalytics } from '../lib/api';
 +import { useState, useEffect, useCallback, useRef } from 'react';
- import { fetchPersonaFiles, savePersonaFile, deletePersona, fetchAccountAnalytics } from '../lib/api';
++import { ApiRequestError, fetchPersonaFiles, savePersonaFile, deletePersona, fetchAccountAnalytics } from '../lib/api';
  import type { PersonaFile, AccountAnalytics } from '../lib/api';
  import { renderMarkdown } from '../lib/sanitize';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
 +import AgentTaskContext from './AgentTaskContext';
-+import { registerUnsavedEdits } from '../lib/unsaved';
++import { registerEditing, requestLeave } from '../lib/unsaved';
  
  // 粉丝量级：把粉丝数映射成人话档位（画像里“粉丝量级”一栏要的是量级而非精确值）
  function fanTier(n: number): string {
@@ -22636,7 +22947,15 @@ index dee847e..4bc8cd7 100644
    ];
    if (a.metrics?.length) {
      lines.push(`- **后台数据**：${a.metrics.map((m) => `${m.label} ${m.value}`).join(' · ')}`);
-@@ -53,6 +56,7 @@ interface ProfilePageProps {
+@@ -49,10 +52,15 @@ function mergeWechatBlock(existing: string, block: string): string {
+   return head ? `${head}\n\n${wrapped}` : wrapped;
+ }
+ 
++function mergeProfileFiles(current: PersonaFile[], incoming: PersonaFile[]): PersonaFile[] {
++  return [...new Map([...current, ...incoming].map(file => [file.filename, file])).values()];
++}
++
+ interface ProfilePageProps {
    persona: string;
    onNewProfile: () => void;
    onDeleted: (name: string) => void;
@@ -22644,7 +22963,7 @@ index dee847e..4bc8cd7 100644
  }
  
  const DIM_META: Record<string, { label: string; icon: string }> = {
-@@ -64,7 +68,7 @@ const DIM_META: Record<string, { label: string; icon: string }> = {
+@@ -64,7 +72,7 @@ const DIM_META: Record<string, { label: string; icon: string }> = {
    'memory.md': { label: '经验沉淀', icon: '🧠' },
  };
  
@@ -22653,7 +22972,7 @@ index dee847e..4bc8cd7 100644
    const [files, setFiles] = useState<PersonaFile[]>([]);
    const [drafts, setDrafts] = useState<Record<string, string>>({});
    const [editing, setEditing] = useState(false);
-@@ -74,31 +78,63 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -74,35 +82,77 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
    const [deleting, setDeleting] = useState(false);
    const [toast, setToast] = useState('');
    const [fetchingWx, setFetchingWx] = useState(false);
@@ -22666,9 +22985,9 @@ index dee847e..4bc8cd7 100644
 +  const loadSeq = useRef(0);
 +  const hasUnsavedDrafts = files.some(f => (drafts[f.filename] ?? '') !== f.content);
 +  const operation = useRef(false);
-+  operation.current = Boolean(savingFile) || fetchingWx;
-+  useEffect(() => registerUnsavedEdits('profile', () => operation.current || snapshot.current.files.some(
-+    file => (snapshot.current.drafts[file.filename] ?? '') !== file.content)), []);
++  operation.current = Boolean(savingFile) || fetchingWx || deleting;
++  useEffect(() => registerEditing('profile', () => ({ label: '画像', saving: operation.current,
++    dirty: snapshot.current.files.some(file => (snapshot.current.drafts[file.filename] ?? '') !== file.content) })), []);
 +  const applyFiles = (next: PersonaFile[]) => {
 +    setFiles(next); setDrafts(Object.fromEntries(next.map(f => [f.filename, f.content]))); setExternalFiles(null);
 +  };
@@ -22715,26 +23034,45 @@ index dee847e..4bc8cd7 100644
    const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
  
    const handleSave = async (filename: string) => {
++    if (operation.current) return; operation.current = true;
      setSavingFile(filename);
      try {
 -      await savePersonaFile(persona, filename, drafts[filename] ?? '');
 -      setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: drafts[filename] ?? '' } : f));
 +      const text = drafts[filename] ?? '';
-+      const latest = await fetchPersonaFiles(persona);
-+      if (currentPersona.current !== persona) return;
-+      const disk = latest.files.find(f => f.filename === filename)?.content ?? '';
-+      const baseline = files.find(f => f.filename === filename)?.content ?? '';
-+      if (disk !== baseline && disk !== text && !window.confirm('这个维度已有外部更新。保留当前编辑并覆盖该文件吗？取消可先查看外部更新，当前草稿不会丢失。')) {
-+        setExternalFiles(latest.files); return;
++      const baseline = files.find(file => file.filename === filename);
++      const external = externalFiles?.find(file => file.filename === filename && file.revision !== baseline?.revision);
++      if (external && external.content !== text && !window.confirm('页面已显示这个维度的最新内容。用当前草稿覆盖你刚核对的版本吗？如果它再次变化，本次保存仍会停止。')) {
++        return;
 +      }
-+      await savePersonaFile(persona, filename, text);
++      const saved = await savePersonaFile(persona, filename, text, external?.revision || baseline?.revision || 'missing');
 +      if (currentPersona.current !== persona) return;
-+      setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: text } : f));
-+      setExternalFiles(null);
++      setFiles(prev => mergeProfileFiles(prev, [saved]));
++      setDrafts(prev => ({ ...prev, [filename]: saved.content }));
++      setExternalFiles(old => {
++        const remaining = old?.filter(file => file.filename !== filename && file.revision !== files.find(base => base.filename === file.filename)?.revision);
++        return remaining?.length ? remaining : null;
++      });
        showToast(`已保存 ${DIM_META[filename]?.label || filename} ✓`);
      } catch (e) {
++      if (e instanceof ApiRequestError && e.code === 'revision_conflict') {
++        const latest = (e.detail as { current?: PersonaFile }).current;
++        if (latest) setExternalFiles(old => mergeProfileFiles(old || [], [latest]));
++        showToast('画像已有外部更新，本次未保存；你的草稿仍在，请先核对下面的最新内容。');
++        return;
++      }
        showToast(e instanceof Error ? e.message : '保存失败');
-@@ -113,17 +149,22 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+     } finally {
++      operation.current = false;
+       setSavingFile('');
+     }
+   };
+@@ -110,30 +160,47 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+   // 「平台运营」一键抓取公众号数据：复用数据中心同一个 mp 后台会话接口，把粉丝量级/内容形式
+   // 抓完“直接落盘”并刷新视图——不进编辑态、不用用户点保存（否则会露出原始 markdown 破坏观感）。
+   const handleFetchWechat = async (filename: string) => {
++    if (operation.current || hasUnsavedDrafts) return; operation.current = true;
++    let collected = false;
      setFetchingWx(true);
      try {
        const a = await fetchAccountAnalytics('wechat-oa');
@@ -22746,22 +23084,56 @@ index dee847e..4bc8cd7 100644
          return;
        }
 -      const base = files.find((f) => f.filename === filename)?.content ?? '';
+-      const merged = mergeWechatBlock(base, buildWechatBlock(a));
+-      await savePersonaFile(persona, filename, merged);
 +      const latest = await fetchPersonaFiles(persona);
 +      if (currentPersona.current !== persona) return;
 +      // Merge into the latest disk contents after slow platform collection.
-+      const base = latest.files.find((f) => f.filename === filename)?.content ?? '';
-       const merged = mergeWechatBlock(base, buildWechatBlock(a));
-       await savePersonaFile(persona, filename, merged);
++      const base = latest.files.find(file => file.filename === filename) || { filename, content: '', revision: 'missing' };
++      const merged = mergeWechatBlock(base.content, buildWechatBlock(a));
++      collected = true;
++      setFiles(prev => mergeProfileFiles(prev, [base]));
++      setDrafts(prev => ({ ...prev, [filename]: merged }));
++      const saved = await savePersonaFile(persona, filename, merged, base.revision);
 +      if (currentPersona.current !== persona) return;
        // 同步更新 files（视图）与 drafts（若正在编辑也一致），无需手动保存
-       setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: merged } : f));
+-      setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: merged } : f));
++      setFiles(prev => mergeProfileFiles(prev, [saved]));
        setDrafts((p) => ({ ...p, [filename]: merged }));
 -      showToast(`已抓取并更新画像（粉丝 ${a.followers ?? 0}，已发表 ${a.posts ?? 0} 篇）✓`);
 +      showToast('已将本次取得的公众号数据更新到画像 ✓');
      } catch (e) {
-       showToast(e instanceof Error ? `抓取失败：${e.message}` : '抓取失败（可能未登录或平台改版）');
+-      showToast(e instanceof Error ? `抓取失败：${e.message}` : '抓取失败（可能未登录或平台改版）');
++      if (collected) setEditing(true);
++      if (e instanceof ApiRequestError && e.code === 'revision_conflict') {
++        const latest = (e.detail as { current?: PersonaFile }).current;
++        if (latest) setExternalFiles(old => mergeProfileFiles(old || [], [latest]));
++      }
++      showToast(collected ? '采集结果尚未写入画像，已保留为草稿。请核对后保存，无需重新采集。' : (e instanceof Error ? `抓取失败：${e.message}` : '抓取失败（可能未登录或平台改版）'));
      } finally {
-@@ -164,9 +205,11 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
++      operation.current = false;
+       setFetchingWx(false);
+     }
+   };
+ 
+   const handleDelete = async () => {
++    if (operation.current) { showToast('画像操作尚未完成，请稍后再删除。'); return; }
+     if (!window.confirm(`确定删除画像「${persona}」吗？\n此操作不可恢复，将删除该画像的全部六维文件。`)) return;
+-    setDeleting(true);
++    operation.current = true; setDeleting(true);
+     try {
+       await deletePersona(persona);
+       onDeleted(persona);
+@@ -141,7 +208,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+     } catch (e) {
+       showToast(e instanceof Error ? e.message : '删除失败');
+     } finally {
+-      setDeleting(false);
++      operation.current = false; setDeleting(false);
+     }
+   };
+ 
+@@ -164,10 +231,16 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        <div className="profile-head">
          <div>
            <h1 className="page-title">{persona}</h1>
@@ -22769,21 +23141,33 @@ index dee847e..4bc8cd7 100644
 +          <p className="page-subtitle">六个维度构成一个完整人设，可随时编辑保存；你的外部 Agent 也可完善并回存。</p>
          </div>
          <div style={{ display: 'flex', gap: 8 }}>
+-          <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={() => setEditing((v) => !v)}>
 +          <button className="btn" disabled={loading} onClick={() => void load()}>刷新</button>
 +          <button className="btn" onClick={() => setShowAgentTask(v => !v)}>完善画像</button>
-           <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={() => setEditing((v) => !v)}>
++          <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={async () => {
++            if (editing && !await requestLeave({ reason: '完成编辑', scope: ['profile'] })) return;
++            if (editing) setDrafts(Object.fromEntries(files.map(file => [file.filename, file.content])));
++            setEditing(value => !value);
++          }}>
              {editing ? '完成编辑' : '✏️ 编辑资料'}
            </button>
-@@ -178,6 +221,8 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+           <button className="btn" style={{ color: 'var(--red)', borderColor: 'var(--red)' }}
+@@ -178,6 +251,14 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        </div>
  
        {error && <div style={{ color: 'var(--red)', fontSize: 14, marginTop: 12 }}>{error}</div>}
-+      {externalFiles && <div className="panel" role="status"><p>画像已有外部更新。当前未保存编辑已保留；保存时会再次核对冲突。</p><button className="btn btn-sm" onClick={() => { if (window.confirm('载入最新资料将替换当前未保存的编辑，继续吗？')) applyFiles(externalFiles); }}>放弃当前编辑并载入最新资料</button></div>}
++      {externalFiles && <div className="panel" role="status"><p>画像已有外部更新。当前未保存编辑已保留；保存时会再次核对冲突。</p>
++        {externalFiles.filter(file => file.revision !== files.find(base => base.filename === file.filename)?.revision).map(file => <details key={file.filename} open>
++          <summary>最新内容：{DIM_META[file.filename]?.label || file.filename}{file.revision === 'missing' ? '（已删除）' : ''}</summary>
++          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 220, overflow: 'auto' }}>{file.content || '（空）'}</pre>
++        </details>)}
++        <button className="btn btn-sm" onClick={() => { if (window.confirm('载入最新资料将替换当前未保存的编辑，继续吗？')) applyFiles(mergeProfileFiles(files, externalFiles)); }}>放弃当前编辑并载入最新资料</button>
++      </div>}
 +      {showAgentTask && <AgentTaskContext title="完善运营画像" persona={persona} task="读取这个画像的六维资料、已有账号链接、历史内容和分析数据，结合画像方法完善定位、受众、风格与运营经验。区分事实与推断，缺少的背景可自然向用户了解，将有依据的改进回存原画像。" onConnectAgent={onConnectAgent} />}
  
        {loading ? (
          <div className="loading"><div className="spinner" />加载中…</div>
-@@ -191,7 +236,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -191,7 +272,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                  <div className="profile-dim-title">{meta.icon} {meta.label}</div>
                  <div style={{ display: 'flex', gap: 8 }}>
                    {f.filename === 'platforms.md' && (
@@ -22792,7 +23176,7 @@ index dee847e..4bc8cd7 100644
                        title="用已登录的公众号后台会话抓取粉丝/内容数据，写入本栏（与数据中心同源）"
                        onClick={() => handleFetchWechat(f.filename)}>
                        {fetchingWx ? '抓取中…' : '📊 抓取公众号数据'}
-@@ -210,6 +255,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -210,6 +291,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                    className="field"
                    style={{ minHeight: 150, fontFamily: "'SF Mono','Consolas',monospace", fontSize: 13 }}
                    value={drafts[f.filename] ?? ''}
@@ -22802,16 +23186,16 @@ index dee847e..4bc8cd7 100644
                ) : (
 diff --git a/web/frontend/src/components/ProjectMetadataEditor.tsx b/web/frontend/src/components/ProjectMetadataEditor.tsx
 new file mode 100644
-index 0000000..3fbd720
+index 0000000..a699399
 --- /dev/null
 +++ b/web/frontend/src/components/ProjectMetadataEditor.tsx
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,118 @@
 +import { useCallback, useEffect, useRef, useState } from 'react';
 +import { ApiRequestError, fetchPersonas, fetchProjectMetadata, saveProjectMetadata } from '../lib/api';
 +import type { ProjectMetadataSnapshot } from '../lib/api';
-+import { CATEGORIES, KINDS, STAGES, draftFrom, metadataDelta, registerProjectEdits, projectCloseApproved, resetProjectCloseApproval } from '../lib/outputMetadata';
++import { CATEGORIES, KINDS, STAGES, draftFrom, metadataDelta } from '../lib/outputMetadata';
 +import type { MetadataDraft } from '../lib/outputMetadata';
-+import { registerUnsavedEdits } from '../lib/unsaved';
++import { registerEditing, requestLeave } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
 +
 +interface Props { project: string; profiles: string[]; platforms: string[]; onClose: () => void; onSaved: () => void; }
@@ -22829,14 +23213,11 @@ index 0000000..3fbd720
 +  const dirty = Boolean(base && draft && Object.keys(metadataDelta(draftFrom(base.metadata), draft)).length);
 +  const isDirty = () => {
 +    const value = current.current;
-+    return operation.current || Boolean(value.base && value.draft && Object.keys(metadataDelta(draftFrom(value.base.metadata), value.draft)).length);
++    return Boolean(value.base && value.draft && Object.keys(metadataDelta(draftFrom(value.base.metadata), value.draft)).length);
 +  };
 +  useEffect(() => {
-+    const reader = () => isDirty();
-+    const remove = registerUnsavedEdits('project-metadata', reader), removeProject = registerProjectEdits(reader, () => operation.current);
-+    const beforeUnload = (event: BeforeUnloadEvent) => { if (reader() && !projectCloseApproved()) { event.preventDefault(); event.returnValue = ''; } };
-+    window.addEventListener('beforeunload', beforeUnload);
-+    return () => { sequence.current++; remove(); removeProject(); window.removeEventListener('beforeunload', beforeUnload); };
++    const remove = registerEditing('project-metadata', () => ({ label: '归档信息', dirty: isDirty(), saving: operation.current }));
++    return () => { sequence.current++; remove(); };
 +  }, []);
 +
 +  const apply = useCallback((value: ProjectMetadataSnapshot) => {
@@ -22865,12 +23246,11 @@ index 0000000..3fbd720
 +    return () => { alive = false; };
 +  }, []);
 +
-+  const close = () => {
-+    if (operation.current) return;
-+    if (dirty && !window.confirm('归档信息还有未保存的修改。放弃这些修改并关闭吗？')) return;
++  const close = async () => {
++    if (!await requestLeave({ reason: '关闭归档编辑', scope: ['project-metadata'] })) return;
 +    onClose();
 +  };
-+  const change = (key: keyof MetadataDraft, value: string) => { resetProjectCloseApproval(); setDraft(old => old ? { ...old, [key]: value } : old); setNotice(''); };
++  const change = (key: keyof MetadataDraft, value: string) => { setDraft(old => old ? { ...old, [key]: value } : old); setNotice(''); };
 +  const save = async () => {
 +    if (!base || !draft || operation.current || !dirty) return;
 +    sequence.current++; setReading(false); operation.current = true; setSaving(true); setError(''); setNotice('');
@@ -24137,10 +24517,10 @@ index 68eccd3..5f1ab76 100644
  }
 -
 diff --git a/web/frontend/src/components/Sidebar.tsx b/web/frontend/src/components/Sidebar.tsx
-index 1120f43..1d16832 100644
+index 1120f43..e4ec0b8 100644
 --- a/web/frontend/src/components/Sidebar.tsx
 +++ b/web/frontend/src/components/Sidebar.tsx
-@@ -1,188 +1,58 @@
+@@ -1,188 +1,59 @@
 -import { useState } from 'react';
 -import type { ChatSession } from '../lib/store';
 +import { PRODUCT_NAME, PRODUCT_ICON } from '../lib/branding';
@@ -24356,6 +24736,7 @@ index 1120f43..1d16832 100644
 +      <img className="sidebar-logo-icon" src={PRODUCT_ICON} alt={PRODUCT_NAME} /><h1>{PRODUCT_NAME}</h1><ThemeToggle />
 +    </div>
 +      <select className="persona-select" value={selectedPersona} title="选择用户画像" onChange={e => e.target.value === '__new__' ? onNewProfile() : onPersonaChange(e.target.value)}>
++        {selectedPersona && !personas.some(p => p.name === selectedPersona) && <option value={selectedPersona}>{selectedPersona}（当前不可用）</option>}
 +        <option value="">未指定画像</option>{personas.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}<option value="__new__">+ 新建画像…</option>
 +      </select>
 +    </div>
@@ -24863,7 +25244,7 @@ index 0000000..01f4858
 +    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..3b613f4 100644
+index 9b3d69f..76fae10 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -6,20 +6,31 @@ function getBasePath(): string {
@@ -24945,7 +25326,28 @@ index 9b3d69f..3b613f4 100644
  /** 产物树节点：文件或目录（目录带 children，可无限嵌套点开）。 */
  export interface OutputNode {
    name: string;
-@@ -263,7 +298,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
+@@ -150,17 +185,18 @@ export function fetchPersonaDetail(name: string): Promise<PersonaDetail> {
+ export interface PersonaFile {
+   filename: string;
+   content: string;
++  revision: string;
+ }
+ 
+ export function fetchPersonaFiles(name: string): Promise<{ name: string; files: PersonaFile[] }> {
+   return request(`/api/persona/${encodeURIComponent(name)}/files`);
+ }
+ 
+-export function savePersonaFile(name: string, filename: string, content: string): Promise<{ ok: boolean }> {
++export function savePersonaFile(name: string, filename: string, content: string, revision: string): Promise<PersonaFile & { ok: boolean }> {
+   return request(`/api/persona/${encodeURIComponent(name)}/file`, {
+     method: 'PUT',
+     headers: { 'Content-Type': 'application/json' },
+-    body: JSON.stringify({ filename, content }),
++    body: JSON.stringify({ filename, content, revision }),
+   });
+ }
+ 
+@@ -263,7 +299,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
    });
  }
  
@@ -24954,7 +25356,7 @@ index 9b3d69f..3b613f4 100644
  export function buildProfile(name: string, form: Record<string, unknown>): Promise<ProfileBuildResponse> {
    return request<ProfileBuildResponse>('/api/profile/build', {
      method: 'POST',
-@@ -364,7 +399,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
+@@ -364,7 +400,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
  }
  
  // ---- 账号登录 ----
@@ -24973,7 +25375,7 @@ index 9b3d69f..3b613f4 100644
    platform: string;
    name: string;
    backend: string;      // xhs | web | biliup | unsupported
-@@ -428,15 +473,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
+@@ -428,15 +474,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
    return request<AccountItem[]>('/api/accounts');
  }
  
@@ -24992,7 +25394,7 @@ index 9b3d69f..3b613f4 100644
  }
  
  /** 退出登录：删该平台持久化登录态。 */
-@@ -494,13 +539,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
+@@ -494,13 +540,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
  }
  
  // ---- 归因层：账号创作数据 ----
@@ -25008,7 +25410,7 @@ index 9b3d69f..3b613f4 100644
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +553,17 @@ export interface AccountAnalytics {
+@@ -508,12 +554,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -25028,11 +25430,11 @@ index 9b3d69f..3b613f4 100644
  /** 支持抓数据的平台 + 各自登录态。 */
 diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
 new file mode 100644
-index 0000000..1551278
+index 0000000..c6ac75d
 --- /dev/null
 +++ b/web/frontend/src/lib/appStorage.ts
-@@ -0,0 +1,55 @@
-+import { hasUnsavedProjectMetadata, isProjectMetadataSaving, projectCloseApproved, approveProjectClose, resetProjectCloseApproval } from './outputMetadata';
+@@ -0,0 +1,56 @@
++import { hasUnsavedEdits, requestLeave } from './unsaved';
 +
 +type Snapshot = {values: Record<string, string>; migration: {sessions: number; copies: number}};
 +declare global { interface Window { desktopUiState?: {call(action: string, input?: unknown): Promise<Snapshot | boolean>}; mediaSailPrepareClose?: () => Promise<boolean>; mediaSailResetClose?: () => void; } }
@@ -25040,6 +25442,10 @@ index 0000000..1551278
 +let values: Record<string, string> = {}, initialized = false;
 +const pending = new Set<Promise<unknown>>();
 +const dirty = new Map<string, {value: string | null}>();
++let closePrepared = false;
++window.addEventListener('beforeunload', event => {
++  if (hasUnsavedEdits() && !closePrepared) { event.preventDefault(); event.returnValue = ''; }
++});
 +function notice(message: string) {
 +  let element = document.getElementById('mediasail-storage-notice');
 +  if (!element) {
@@ -25062,15 +25468,12 @@ index 0000000..1551278
 +  if (!isDesktopStorage) return;
 +  const result = await window.desktopUiState!.call('load') as Snapshot;
 +  values = Object.assign(Object.create(null), result.values); initialized = true;
-+  window.mediaSailResetClose = () => { resetProjectCloseApproval(); document.body.inert = false; };
++  window.mediaSailResetClose = () => { closePrepared = false; document.body.inert = false; };
 +  window.mediaSailPrepareClose = async () => {
-+    if (isProjectMetadataSaving()) { window.alert('归档信息正在保存，请等待保存完成后再退出或安装更新。'); return false; }
-+    if (hasUnsavedProjectMetadata() && !projectCloseApproved()) {
-+      if (!window.confirm('内容归档信息还有未保存的修改。放弃修改并退出或安装更新吗？')) return false;
-+      approveProjectClose();
-+    }
++    if (!closePrepared && !await requestLeave({ reason: '退出或安装更新' })) return false;
++    closePrepared = true;
 +    document.body.inert = true;
-+    try { await flushStorage(); return true; } catch (e) { resetProjectCloseApproval(); document.body.inert = false; throw e; }
++    try { await flushStorage(); return true; } catch (e) { closePrepared = false; document.body.inert = false; throw e; }
 +  };
 +  const theme = values.easel_theme;
 +  if (theme === 'dark' || theme === 'light') {document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme;}
@@ -25160,6 +25563,55 @@ index 0000000..5779690
 +    };
 +  }
 +}
+diff --git a/web/frontend/src/lib/editing.ts b/web/frontend/src/lib/editing.ts
+new file mode 100644
+index 0000000..845c6af
+--- /dev/null
++++ b/web/frontend/src/lib/editing.ts
+@@ -0,0 +1,43 @@
++export type EditState = { label: string; dirty: boolean; saving: boolean };
++type LeaveRequest = {
++  reason: string;
++  scope?: string[];
++  requireClean?: boolean;
++  confirm?: (message: string) => boolean | Promise<boolean>;
++  notify?: (message: string) => void;
++};
++
++export function createEditingSession() {
++  const sources = new Map<string, () => EditState>();
++  let deciding = false;
++  const read = (scope?: string[]) => {
++    const states = [...sources].filter(([id]) => !scope || scope.includes(id)).map(([, get]) => get());
++    return { dirty: states.some(value => value.dirty), saving: states.some(value => value.saving),
++      labels: [...new Set(states.filter(value => value.dirty || value.saving).map(value => value.label))] };
++  };
++  return {
++    register(id: string, get: () => EditState) {
++      sources.set(id, get);
++      return () => { if (sources.get(id) === get) sources.delete(id); };
++    },
++    read,
++    async requestLeave(request: LeaveRequest): Promise<boolean> {
++      if (deciding) return false;
++      const state = read(request.scope);
++      const notify = request.notify || ((message: string) => window.alert(message));
++      if (state.saving) { notify(`${state.labels.join('、')}正在保存或提交，请等待完成后再${request.reason}。`); return false; }
++      if (!state.dirty) return true;
++      if (request.requireClean) { notify('还有未保存的编辑，请先保存或取消，再' + request.reason + '。'); return false; }
++      const confirm = request.confirm || ((message: string) => window.confirm(message));
++      deciding = true;
++      try {
++        const approved = await confirm(`${state.labels.join('、')}还有未保存的修改。放弃修改并${request.reason}吗？`);
++        if (approved && read(request.scope).saving) { notify('操作已经开始保存，请等待完成后重试。'); return false; }
++        return approved;
++      }
++      finally { deciding = false; }
++    },
++  };
++}
++
++export const editingSession = createEditingSession();
 diff --git a/web/frontend/src/lib/library.ts b/web/frontend/src/lib/library.ts
 new file mode 100644
 index 0000000..b302a01
@@ -25492,21 +25944,17 @@ index 0000000..93596a1
 +}
 diff --git a/web/frontend/src/lib/unsaved.ts b/web/frontend/src/lib/unsaved.ts
 new file mode 100644
-index 0000000..da7f6ce
+index 0000000..7f887d6
 --- /dev/null
 +++ b/web/frontend/src/lib/unsaved.ts
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,7 @@
++import { editingSession, type EditState } from './editing';
 +declare global { interface Window { mediaSailHasUnsavedEdits?: () => boolean; } }
-+
-+const sources = new Map<string, () => boolean>();
-+export function hasUnsavedEdits(): boolean {
-+  return [...sources.values()].some(read => read());
-+}
-+export function registerUnsavedEdits(name: string, read: () => boolean): () => void {
-+  sources.set(name, read);
-+  window.mediaSailHasUnsavedEdits = hasUnsavedEdits;
-+  return () => { if (sources.get(name) === read) sources.delete(name); };
-+}
++export const readEdits = editingSession.read;
++export const requestLeave = editingSession.requestLeave;
++export function hasUnsavedEdits(): boolean { const state = readEdits(); return state.dirty || state.saving; }
++export function registerEditing(name: string, read: () => EditState): () => void { return editingSession.register(name, read); }
++window.mediaSailHasUnsavedEdits = hasUnsavedEdits;
 diff --git a/web/frontend/src/lib/useRefreshOnFocus.ts b/web/frontend/src/lib/useRefreshOnFocus.ts
 new file mode 100644
 index 0000000..e80508e

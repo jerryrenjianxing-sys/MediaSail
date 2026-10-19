@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MediaSail local API",
-    "version": "0.5.4"
+    "version": "0.5.6"
   },
   "paths": {
     "/": {
@@ -237,7 +237,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaFilesResponse"
+                }
               }
             }
           },
@@ -285,7 +287,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaFileSaveResponse"
+                }
               }
             }
           },
@@ -1845,6 +1849,17 @@
           "content": {
             "type": "string",
             "title": "Content"
+          },
+          "revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision"
           }
         },
         "type": "object",
@@ -1853,6 +1868,78 @@
           "content"
         ],
         "title": "PersonaFileRequest"
+      },
+      "PersonaFileSaveResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "content",
+          "revision",
+          "ok"
+        ],
+        "title": "PersonaFileSaveResponse"
+      },
+      "PersonaFileSnapshot": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "content",
+          "revision"
+        ],
+        "title": "PersonaFileSnapshot"
+      },
+      "PersonaFilesResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/PersonaFileSnapshot"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "files"
+        ],
+        "title": "PersonaFilesResponse"
       },
       "ProfileBuildRequest": {
         "properties": {

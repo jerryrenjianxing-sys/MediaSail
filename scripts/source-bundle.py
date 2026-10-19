@@ -5,7 +5,7 @@ package=json.loads((root/'package.json').read_text());version=package['version']
 out=(root/package['build']['directories']['output']).resolve()/f'MediaSail-{version}-source.zip'
 out.parent.mkdir(parents=True,exist_ok=True)
 files=[]
-for name in ['package.json','package-lock.json','runtime-lock.json','requirements.lock','requirements-business.in','requirements-business.lock','constraints.txt','README.md','.gitignore','.gitattributes','LICENSE','NOTICE']:
+for name in ['AGENTS.md','GLOSSARY.md','package.json','package-lock.json','runtime-lock.json','requirements.lock','requirements-business.in','requirements-business.lock','constraints.txt','README.md','.gitignore','.gitattributes','LICENSE','NOTICE']:
     files.append(root/name)
 for name in ['agent-skill','desktop','bridge','scripts','tests','patches','licenses','branding','docs','.github']:
     files.extend(p for p in (root/name).rglob('*') if p.is_file() and '__pycache__' not in p.parts)

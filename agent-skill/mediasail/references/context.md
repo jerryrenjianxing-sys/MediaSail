@@ -15,12 +15,27 @@
 | preferences.md | 创作偏好 |
 | memory.md | 经验、反馈和长期记忆 |
 
-还可存在用户自定义 Markdown 文件。GET /api/personas 返回画像列表；GET /api/persona/{name} 返回合并文本；GET /api/persona/{name}/files 返回分文件正文。读写 API 的画像名用 URL 编码。
+还可存在用户自定义 Markdown 文件。GET /api/personas 返回画像列表；GET /api/persona/{name} 返回合并文本；GET /api/persona/{name}/files 返回分文件正文及 revision。revision 是文件原始字节的 SHA-256，缺少的维度为 missing；读写 API 的画像名用 URL 编码。
 
 更新某一维度：
 PUT /api/persona/{name}/file
-JSON：{"filename":"memory.md","content":"完整的新文件正文"}
-返回 {"ok":true,"filename":"memory.md"}。这是替换该文件，不是追加。新建画像也可直接建立目录及 Markdown 文件；刷新画像列表后可见。/api/profile/build 只把用户表单生成基线画像，返回 baseline-ready，不调用模型。外部 Agent 按完整建档方法继续分析链接、补充证据与完善六维文件。
+JSON：{"filename":"memory.md","content":"完整的新文件正文","revision":"刚读取的 revision"}
+成功保留 ok、filename，并返回实际保存的 content 与新 revision。这是替换该文件，不是追加；下一次更新使用新 revision。HTTP 409 的 detail.code 为 revision_conflict 时，detail.current 包含当前 filename、content、revision；保留待改正文，核对新内容后再决定如何合并，不自动用新 revision 重试覆盖。
+
+旧请求省略 revision 仍可调用，只有串行和原子保存，不具备过期编辑检测。非法 revision 返回 422；不可读的 UTF-8 内容返回 invalid_profile_file，磁盘读写失败返回 503/profile_io_error，均不能当作保存成功。任意外部文件编辑器不共享服务端锁：直接文件操作仍可使用，这里的检查是乐观冲突检测，不承诺跨工具绝对互斥。
+
+可执行的 PowerShell 例子（$info 从当前连接说明取得）：
+
+```powershell
+$name = [uri]::EscapeDataString('测试画像')
+$files = Invoke-RestMethod ($info.baseUrl + '/api/persona/' + $name + '/files')
+$file = $files.files | Where-Object filename -eq 'memory.md'
+$body = @{ filename = $file.filename; content = $file.content + "`n本次已核对的运营经验"; revision = $file.revision } | ConvertTo-Json
+$saved = Invoke-RestMethod ($info.baseUrl + '/api/persona/' + $name + '/file') -Method Put -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+$saved | Select-Object filename, content, revision
+```
+
+新建画像也可直接建立目录及 Markdown 文件；刷新画像列表后可见。/api/profile/build 只把用户表单生成基线画像，返回 baseline-ready，不调用模型。外部 Agent 按完整建档方法继续分析链接、补充证据与完善六维文件。
 
 连接信息的 selectedProfile 是界面当前画像提示，不是全局任务归属。用户明确指定画像时按任务指定；多 Agent 可以分别处理不同项目。更新已有文件前读当前正文，合并仍有用的内容和用户改动；不要用较早读到的全文覆盖后来的编辑。无需每轮读全部画像，也没有旧版的系统 Profile marker 自动注入。
 

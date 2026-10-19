@@ -34,8 +34,7 @@ jobs:
           uv python install 3.11.15 --install-dir build/runtime-business/python --no-bin --no-registry
           uv pip sync --python build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe --break-system-packages --require-hashes requirements-business.lock
           & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/launchers.py
-      - run: npm test
-      - shell: pwsh
-        run: |
-          & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe -X utf8 -B -m unittest discover -s tests -p 'test_*.py' -v
-          if($LASTEXITCODE -ne 0){throw 'Python checks failed'}
+      - name: Prepare locked frontend dependencies
+        run: npm --prefix vendor/easel/web/frontend ci --ignore-scripts --no-audit --no-fund
+      - name: Shared source verification
+        run: npm run check

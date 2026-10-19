@@ -18,8 +18,8 @@
 | GET /api/v1/skill | 下载完整 Skill ZIP |
 | GET /api/status | serviceReady、gateway:false、skills、personas；不要求网关 |
 | GET /api/personas | 画像列表 |
-| GET /api/persona/{name}、/files | 合并正文 / 分文件正文 |
-| PUT /api/persona/{name}/file | filename、content；替换一个画像文件 |
+| GET /api/persona/{name}、/files | 合并正文 / 分文件正文及 revision；缺少的维度 revision 为 missing |
+| PUT /api/persona/{name}/file | filename、content、读取的 revision；替换一个画像文件，返回保存内容及新版本。409/revision_conflict 保留草稿并核对 detail.current；省略 revision 的旧调用不提供过期检测 |
 | DELETE /api/persona/{name} | 删除画像目录 |
 | POST /api/profile/build | name、form；创建表单基线，返回 baseline-ready；不调用模型 |
 | GET /api/profile/build/status/{name} | 基线创建状态，不表示 Agent 已增强 |

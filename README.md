@@ -4,13 +4,13 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.5 更新说明](docs/RELEASE-0.5.5.md) · [验证记录](docs/VERIFICATION-0.5.5.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.6 更新说明](docs/RELEASE-0.5.6.md) · [验证记录](docs/VERIFICATION-0.5.6.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前源码为 **0.5.5**：AI 发布改用默认浏览器打开 AitoEarn 官网，不再内嵌网页、自动上传或创建草稿。内容库继续支持用途分类、搜索、画像／平台／形态／阶段筛选和归档信息编辑；旧项目保持原路径，缺用途的显示未分类。软件与 Agent 增量修改同一份项目登记，发生外部更新时提示冲突并保留编辑。0.5.3 的直接选库方式继续沿用，升级不重新选择；0.5.1 历史草稿保留。
+当前源码为 **0.5.6**，候选验收及发布状态见验证记录。本版统一未保存编辑保护，为画像文件增加版本冲突核对；保留用户草稿并展示外部最新内容。AI 发布继续用默认浏览器打开官网。内容库分类、搜索、筛选和归档编辑、直接选库及现有业务沿用，旧项目与历史资料原位保留。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -67,13 +67,15 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.5；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.6；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.5。
+开发前阅读 [AGENTS.md](AGENTS.md) 与按需的 [开发方法](docs/DEVELOPMENT.md)，使用用户指定的 mattpocock-skills；业务术语见 [词汇表](GLOSSARY.md)。准备锁定依赖后执行 npm run check，统一验证 Node、Python、前端、接口资料和补丁复现。检查不回写接口资料或补丁，需更新时显式运行导出脚本并审查差异。
+
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.6。包内验收与真实安装升级另行执行。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 

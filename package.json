@@ -1,6 +1,6 @@
 {
   "name": "mediasail",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "MediaSail: profiles, operating analytics and content workspace for your Agent",
   "author": "MediaSail contributors",
   "license": "Apache-2.0",
@@ -9,8 +9,9 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test tests/*.test.cjs",
+    "check": "node scripts/check.cjs",
     "stage": "node scripts/stage.cjs",
-    "pack": "npm run stage && electron-builder --win dir --x64 --publish never && node scripts/verify-payload.cjs",
+    "pack": "npm --prefix vendor/easel/web/frontend run build && npm run stage && electron-builder --win dir --x64 --publish never && node scripts/verify-payload.cjs",
     "dist": "npm run pack && node scripts/prepare-installer.cjs && node scripts/build-installer.cjs"
   },
   "devDependencies": {
@@ -25,7 +26,7 @@
     "asar": true,
     "electronDist": "node_modules/electron/dist",
     "directories": {
-      "output": "../../outputs/MediaSail/release-0.5.5",
+      "output": "../../outputs/MediaSail/release-0.5.6",
       "buildResources": "desktop/assets"
     },
     "files": [

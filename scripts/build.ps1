@@ -24,10 +24,8 @@ if (-not (Test-Path node_modules/electron/dist/electron.exe)) { Checked { & $Bus
 Checked { & $BusinessPython scripts/prepare.py assets }
 Checked { & $BusinessPython scripts/launchers.py }
 Checked { & build/runtime/node/npm.cmd --prefix vendor/easel/web/frontend ci --ignore-scripts --no-audit --no-fund }
-Checked { & build/runtime/node/npm.cmd --prefix vendor/easel/web/frontend run build }
+Checked { & build/runtime/node/npm.cmd run check }
 Checked { & build/runtime/node/node.exe scripts/stage.cjs }
-Checked { & $BusinessPython scripts/export-agent-api.py }
 Checked { & $BusinessPython scripts/inventory.py }
-Checked { & build/runtime/node/npm.cmd test }
 $env:ELECTRON_BUILDER_COMPRESSION_LEVEL = '5'
 Checked { & build/runtime/node/npm.cmd run dist }
