@@ -77,8 +77,9 @@ test('Windows directory spelling uses filesystem case rules without accepting an
 
 test('filesystem permission and OS launcher failures are returned without claiming success',async t=>{
   const f=await fixture(t),project=path.join(f.outputs,'项目');await fs.mkdir(project);
-  const original=fs.lstat,mocked=t.mock.method(fs,'lstat',async target=>{if(target===project){const error=Error('ACL denied');error.code='EACCES';throw error;}return original(target);});
-  assert.match((await f.handler(f.event,'open-project-folder','项目')).error,/权限/);assert.equal(f.calls.length,0);mocked.mock.restore();
+  let denied=0;
+  const original=fs.lstat,mocked=t.mock.method(fs,'lstat',async target=>{if(typeof target==='string'&&path.relative(project,target)===''){denied++;const error=Error('ACL denied');error.code='EACCES';throw error;}return original(target);});
+  assert.match((await f.handler(f.event,'open-project-folder','项目')).error,/权限/);assert.equal(denied,1,'The permission fault must actually hit the canonical project path');assert.equal(f.calls.length,0);mocked.mock.restore();
   f.shell.openExternal=async()=>{throw Error('no default application');};const browser=await f.handler(f.event,'open-aitoearn');assert.equal(browser.ok,false);assert.match(browser.error,/默认浏览器/);
   f.shell.openPath=async()=> 'Explorer rejected this location';let result=await f.handler(f.event,'open-project-folder','项目');assert.equal(result.ok,false);assert.match(result.error,/文件管理器.*Explorer rejected/);
   f.shell.openPath=async()=>{throw Error('launcher unavailable');};result=await f.handler(f.event,'open-project-folder','项目');assert.equal(result.ok,false);assert.match(result.error,/文件管理器.*launcher unavailable/);
