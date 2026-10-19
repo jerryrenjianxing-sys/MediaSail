@@ -90,4 +90,8 @@ $before = & $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manif
 
 导入接口 /api/upload 和 /api/upload/local 使用 multipart files + sessionId，返回 id/name/path。sessionId 在这里是收件目录标签，不需要启动旧聊天。把项目成果直接放进 outputs 不需要调用模型；也可以使用外部 Agent 的文件操作准备项目材料。
 
-AitoEarn 导入支持文字配图片，或文字配单个视频及封面。准备好文案和有序媒体后，用户可在内容库项目成品区点击「发送到 AI 发布」，检查候选正文、图片顺序、视频及草稿箱。仅文字会保留待发送内容并提示补媒体。发送记录在数据目录 aitoearn/imports.json；它是软件维护的记录，不等同于可调用的草稿接口。当前外部 Skill 不提供伪造的 AitoEarn HTTP API。
+AI 发布用默认浏览器打开 https://aitoearn.cn/zh-CN。把正文、图片、视频及封面保存到当前项目，并在 `.easel.json` 登记实际成品；可使用现有文件工具整理有序媒体、保留清晰的文件名和发布说明，不规定创作工具。用户在内容库打开项目文件夹；用户或 Agent 用现有文件工具读取项目成品文件并复制正文，再由用户到官网选择媒体，检查顺序、账号、平台和排期。网站不能直接读取资料库或自动选中文件，软件不再上传素材或创建 AitoEarn 草稿。
+
+默认浏览器与旧内嵌页面使用不同登录状态，可能需要重新登录，并按官网要求安装浏览器扩展。旧 Cookie 不迁移；官网现有草稿仍属于原云端账号。网页发布结果不自动回写 MediaSail，按实际结果、平台、账号、时间和 URL 补充本地发布记录，不仅将项目状态改为 published 就当作成功。MediaSail 原生平台工具的登录、采集和发布流程保持独立。
+
+旧发送记录留在当前数据目录 `aitoearn/imports.json`，可从设置的历史存档入口打开旧 AI 发布记录目录；它可能包含尚未回存项目的标题、正文和素材顺序。旧登录分区 `Partitions` 原位保留，不自动读取或迁移。不再续传、创建或重试旧任务；若旧结果为 creating/uncertain，先在官网原账号核对是否已有草稿，保留本地记录不代表云端操作被撤销。没有等价的 AitoEarn 上传或草稿 HTTP API 可从本 Skill 调用。

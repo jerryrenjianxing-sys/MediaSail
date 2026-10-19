@@ -1,4 +1,4 @@
-name: Verify MediaSail content library upgrade
+name: Verify MediaSail browser publishing upgrade
 on:
   workflow_dispatch:
 permissions:
@@ -18,10 +18,10 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          foreach($entry in @(@{Version='0.5.3';Directory='baseline'},@{Version='0.5.4';Directory='candidate'})){
+          foreach($entry in @(@{Version='0.5.4';Directory='baseline'},@{Version='0.5.5';Directory='candidate'})){
             $release=gh release view ('v'+$entry.Version) --json tagName,isDraft,assets | ConvertFrom-Json
             if($LASTEXITCODE -ne 0 -or $release.tagName -cne ('v'+$entry.Version)){throw 'Exact release unavailable'}
-            if($entry.Version -ceq '0.5.4' -and -not $release.isDraft){throw 'Expected verified candidate draft'}
+            if($entry.Version -ceq '0.5.5' -and -not $release.isDraft){throw 'Expected verified candidate draft'}
             $directory=Join-Path release-input $entry.Directory
             New-Item -ItemType Directory $directory | Out-Null
             $name='MediaSail-'+$entry.Version+'-win-x64-Setup.exe'
@@ -33,13 +33,13 @@ jobs:
             $lines=@(Get-Content -LiteralPath (Join-Path $directory SHA256SUMS.txt) -Encoding UTF8 | Where-Object {$_ -match ('^[a-fA-F0-9]{64}\s+\*?'+[regex]::Escape($name)+'$')})
             $asset=Get-Item -LiteralPath (Join-Path $directory $name)
             if($lines.Count -ne 1 -or ($lines[0] -split '\s+')[0].ToLowerInvariant() -cne $expected -or $asset.Length -ne $remote[0].size -or (Get-FileHash -LiteralPath $asset.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expected){throw 'Installer checksum mismatch'}
-            if($entry.Version -ceq '0.5.3' -and ($expected -cne '5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e' -or $asset.Length -ne 262989425)){throw 'Published baseline identity changed'}
+            if($entry.Version -ceq '0.5.4' -and ($expected -cne '06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d' -or $asset.Length -ne 273973986)){throw 'Published baseline identity changed'}
           }
       - name: Real installation, same library, sessions and project metadata
         run: node scripts/verify-content-upgrade-ci.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mediasail-0.5.4-content-upgrade
+          name: mediasail-0.5.5-browser-upgrade
           path: installer-evidence/content-upgrade/
           retention-days: 14

@@ -23,7 +23,9 @@ contextBridge.exposeInMainWorld('desktopStartup',{
   quit:()=>ipcRenderer.invoke('startup:quit'),
   status:()=>ipcRenderer.invoke('startup:status')
 });
-contextBridge.exposeInMainWorld('desktopAito',{
-  call:async(action,input)=>{const result=await ipcRenderer.invoke('aito:call',action,input);if(!result.ok)throw new Error(result.error);return result.data;},
-  subscribe:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('aito:state',listener);return()=>ipcRenderer.removeListener('aito:state',listener);}
+async function openAction(action,input){const result=await ipcRenderer.invoke('actions:call',action,input);if(!result?.ok)throw new Error(result?.error||'未能打开，请稍后重试。');return result.data;}
+contextBridge.exposeInMainWorld('desktopActions',{
+  openAitoearn:()=>openAction('open-aitoearn'),
+  openProjectFolder:projectName=>openAction('open-project-folder',projectName),
+  openAitoHistory:()=>openAction('open-aito-history')
 });

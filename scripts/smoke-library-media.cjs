@@ -1,5 +1,5 @@
-// Synthetic media only. Frozen packaged preview code and AitoEarn streaming code;
-// upload transport is an offline writable fixture and cannot make network calls.
+// Synthetic media only. Actual packaged local media API and preview decoding.
+// AitoEarn upload code is intentionally no longer part of the application.
 const {_electron:electron}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),version=require('../package.json').version;
@@ -45,31 +45,10 @@ async function until(test,message){for(let i=0;i<100;i++){if(await test())return
   await page.getByText(video,{exact:true}).click();const previewVideo=page.locator('.drawer-body video');
   await until(()=>previewVideo.evaluate(element=>element.readyState>=1&&element.videoWidth===160&&Number.isFinite(element.duration)&&element.duration>0),'Video preview metadata must decode the library file');
   await page.screenshot({path:path.join(evidence,'media-video-preview.png'),animations:'disabled'});
-  const streams=await app.evaluate(async({app},input)=>{
-    const req=process.mainModule.require.bind(process.mainModule),path=req('node:path'),fs=req('node:fs'),crypto=req('node:crypto'),vm=req('node:vm'),{createRequire}=req('node:module'),{Writable}=req('node:stream'),{EventEmitter}=req('node:events');
-    const filename=path.join(app.getAppPath(),'desktop/aitoearn/controller.cjs'),localRequire=createRequire(filename),{selectedFile}=localRequire('./imports.cjs');
-    const reads=[],requests=[];
-    const offlineNet={request:options=>{
-      const record={url:options.url,bytes:0,chunks:0,headers:{},hash:null};requests.push(record);const hash=crypto.createHash('sha256');
-      const sink=new Writable({write(chunk,_encoding,callback){record.bytes+=chunk.length;record.chunks++;hash.update(chunk);callback();}});
-      sink.setHeader=(name,value)=>{record.headers[name]=value;};sink.abort=()=>sink.destroy();
-      sink.on('finish',()=>{record.hash=hash.digest('hex');const response=new EventEmitter();response.statusCode=200;sink.emit('response',response);queueMicrotask(()=>response.emit('end'));});return sink;
-    }};
-    const realFs=new Proxy(fs,{get(target,key){return key==='createReadStream'?(file,...rest)=>{reads.push(file);return target.createReadStream(file,...rest);}:Reflect.get(target,key);}});
-    const module={exports:{}};
-    vm.runInNewContext(fs.readFileSync(filename,'utf8'),{module,exports:module.exports,require:name=>name==='electron'?{...localRequire(name),net:offlineNet}:name==='node:fs'?realFs:localRequire(name),URL,Buffer,setTimeout,clearTimeout,queueMicrotask,console},{filename});
-    const progress=[];
-    for(const item of input.media){
-      const selected=await selectedFile(input.outputs,item.relative),absolute=path.join(input.outputs,item.relative);if(selected.hash!==item.hash)throw Error('Selected library media hash mismatch');
-      await module.exports.streamUpload(absolute,selected,{uploadUrl:'https://assets.aitoearn.cn/offline-fixture/'+encodeURIComponent(selected.name),url:'https://assets.aitoearn.cn/offline-fixture/'+encodeURIComponent(selected.name)},new AbortController().signal,value=>progress.push(value),null);
-    }
-    return {reads,requests,progress,source:filename};
-  },{outputs:info.outputs,media});
-  assert.equal(streams.reads.length,2);assert.equal(streams.requests.length,2);
-  for(let index=0;index<media.length;index++){assert.equal(streams.reads[index],path.join(info.outputs,media[index].relative));assert.equal(streams.requests[index].hash,media[index].hash);assert.equal(streams.requests[index].bytes,media[index].size);assert.equal(streams.requests[index].headers['Content-Length'],String(media[index].size));}
-  assert.ok(streams.requests[1].chunks>1);assert.equal(streams.progress.at(-1),1);
+  assert.equal(await page.evaluate(()=>typeof window.desktopAito),'undefined');
+  assert.equal(await app.evaluate(({app})=>process.mainModule.require('node:fs').existsSync(process.mainModule.require('node:path').join(app.getAppPath(),'desktop/aitoearn/controller.cjs'))),false);
   const testedAppAsarSha256=hash(await fs.readFile(path.join(path.dirname(executable),'resources/app.asar')));
   await app.close();app=null;
-  await write(summary,{schema:1,version,passed:true,testedAtUtc:new Date().toISOString(),testedAppAsarSha256,realPackagedApplication:true,syntheticMediaOnly:true,actualLibraryMediaApiHashesMatch:true,imagePreviewDecoded:true,videoPreviewMetadataDecoded:true,chineseAndSpacePaths:true,aitoSelectedMediaHashesMatch:true,aitoStreamReadPathsMatchLibrary:true,videoStreamChunks:streams.requests[1].chunks,streamLengthAndHashMatch:true,uploadTransport:'offline writable fixture around the frozen packaged streaming code',outboundUploads:0,realAccountUsed:false,publicationPerformed:false});
+  await write(summary,{schema:1,version,passed:true,testedAtUtc:new Date().toISOString(),testedAppAsarSha256,realPackagedApplication:true,syntheticMediaOnly:true,actualLibraryMediaApiHashesMatch:true,imagePreviewDecoded:true,videoPreviewMetadataDecoded:true,chineseAndSpacePaths:true,aitoUploadRuntimeAbsent:true,media,outboundUploads:0,realAccountUsed:false,publicationPerformed:false});
   console.log('LIBRARY MEDIA PASSED: '+summary);
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{if(app)await app.close();});

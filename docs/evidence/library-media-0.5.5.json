@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "version": "0.5.5",
+  "passed": true,
+  "testedAtUtc": "2026-10-19T06:25:33.445Z",
+  "testedAppAsarSha256": "507543fbb1adb1ad3c78cb5bafcbe856fe416e3ca3ccc38c0ca3d922a0462d3e",
+  "realPackagedApplication": true,
+  "syntheticMediaOnly": true,
+  "actualLibraryMediaApiHashesMatch": true,
+  "imagePreviewDecoded": true,
+  "videoPreviewMetadataDecoded": true,
+  "chineseAndSpacePaths": true,
+  "aitoUploadRuntimeAbsent": true,
+  "media": [
+    {
+      "relative": "中文 空格 媒体项目/紫色 封面.png",
+      "hash": "316a91b8becf2ba4ea90e89ac0b048ddcc13c072478a31e7832a8ef805d28af0",
+      "size": 329
+    },
+    {
+      "relative": "中文 空格 媒体项目/紫色 短片.mp4",
+      "hash": "4594a3567abec043d7ba9427a8ae23dd873d0da289f243bb051ac438135aa9ae",
+      "size": 1050309
+    }
+  ],
+  "outboundUploads": 0,
+  "realAccountUsed": false,
+  "publicationPerformed": false
+}

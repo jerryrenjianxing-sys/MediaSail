@@ -4,13 +4,13 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.4 更新说明](docs/RELEASE-0.5.4.md) · [0.5.4 验证记录](docs/VERIFICATION-0.5.4.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.5 更新说明](docs/RELEASE-0.5.5.md) · [验证记录](docs/VERIFICATION-0.5.5.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前源码为 **0.5.4**：内容库支持用途分类、搜索、画像／平台／形态／阶段筛选和归档信息编辑；旧项目保持原路径，缺用途的显示未分类。软件与 Agent 增量修改同一份项目登记，发生外部更新时提示冲突并保留编辑。0.5.3 的直接选库方式继续沿用，升级不重新选择；0.5.1 历史草稿保留。
+当前源码为 **0.5.5**：AI 发布改用默认浏览器打开 AitoEarn 官网，不再内嵌网页、自动上传或创建草稿。内容库继续支持用途分类、搜索、画像／平台／形态／阶段筛选和归档信息编辑；旧项目保持原路径，缺用途的显示未分类。软件与 Agent 增量修改同一份项目登记，发生外部更新时提示冲突并保留编辑。0.5.3 的直接选库方式继续沿用，升级不重新选择；0.5.1 历史草稿保留。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -22,9 +22,11 @@
 
 ## AI 发布
 
-侧栏内嵌 AitoEarn 中国站，沿用独立登录会话。内容库选择“发送到 AI 发布”，检查正文、有序图片或单个视频及现成封面，再创建草稿。最终账号、平台、排期和发布仍在官方页面完成。
+点击侧栏“AI 发布”，使用用户默认浏览器打开 [AitoEarn 中国站](https://aitoearn.cn/zh-CN)。从内容库打开项目文件夹，从项目成品文件复制正文，在官网自行选择图片、视频及封面，检查顺序、账号、平台和排期后发布。用户与外部 Agent 仍在同一资料库准备素材，官网不能因知道目录位置就直接读取磁盘或自动选中文件。
 
-AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent 草稿 HTTP 接口；需要官方插件的操作沿用外部浏览器。适配使用网站现有接口，变化时可能需要更新。[兼容说明](desktop/aitoearn/COMPATIBILITY.md)。
+AitoEarn 的登录、浏览器扩展、额度及平台支持由官方服务负责；默认浏览器使用自己的登录状态，可能需要重新登录。MediaSail 不迁移旧 Cookie，不调用 AitoEarn 上传、草稿或发布接口，也不会自动读回网站发布结果。按官网实际结果补充本地发布记录；项目的“已标记发布”不代替发布事实。MediaSail 原生的平台登录、采集、发布及业务工具保留。
+
+旧版 `runtime/aitoearn/imports.json` 和 `runtime/Partitions` 原位保留；可从设置的历史存档入口打开旧 AI 发布记录目录。发送面板中尚未回存项目的标题、正文或素材顺序可能只在旧记录中。旧任务不会自动续传或重试，结果未明的草稿先到原账号官网核对，避免重复创建；保留记录不代表旧任务已在云端取消。
 
 ## 更新与旧程序清理
 
@@ -48,12 +50,12 @@ AitoEarn 是联网服务，不随包部署后台。软件不提供外部 Agent �
         outputs/              项目、成品、系统分析与发布记录
         skills/               保留的业务工具与完整专业方法
       agent-skill/mediasail/   可写 Skill、参考资料与连接辅助脚本
-      runtime/                浏览器资料、AitoEarn 会话、界面状态、历史存档、日志与更新缓存
+      runtime/                平台浏览器资料、界面状态、历史存档、日志与更新缓存
         agent-connection.json 当前实例及全部真实路径，无密钥
 
 软件与 Agent 直接使用同一份 workspace。用户修改的方法、脚本与 Skill 保持生效；新版也有修改时保存两份并提示合并。`%LOCALAPPDATA%/ElectronEasel` 保留为兼容旧版的定位入口，发现镜像里的 `connectionFile` 指向当前资料库的正式连接文件。移动位置或端口变化后，辅助脚本会重读并核对实例，不需要另建一套 Agent 工作副本。
 
-新库的平台资料、AitoEarn 分区、发送记录及存档使用 runtime 对应位置。旧 AppData 资料和之前的库不导入、不搬动、不删除；直接打开已有有效库时使用该库自己的资料。卸载默认保留资料库和旧数据，不删除用户自行保存的安装包。
+新库的平台资料和存档使用 runtime 对应位置；已有库内的旧 AitoEarn 分区与发送记录保留，不再作为新版本的登录或任务来源。旧 AppData 资料和之前的库不导入、不搬动、不删除；直接打开已有有效库时使用该库自己的资料。卸载默认保留资料库和旧数据，不删除用户自行保存的安装包。
 
 旧聊天停止续跑，可从设置打开存档目录。用户修改的脚本、素材及已进入工作目录的旧演示内容不会为了瘦身被清除。关闭窗口留在托盘；主动退出只结束软件自己的服务和业务任务，外部Agent任务由其环境负责。
 
@@ -65,13 +67,13 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.4；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.5；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.4。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm test运行测试；npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.5。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 

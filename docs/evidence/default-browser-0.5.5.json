@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "version": "0.5.5",
+  "passed": true,
+  "launcherAccepted": true,
+  "browserObservationPending": false,
+  "expectedUrl": "https://aitoearn.cn/zh-CN",
+  "startedAt": "2026-10-19T06:23:47.529Z",
+  "realPackagedApplication": true,
+  "realSystemDefaultBrowser": true,
+  "shellOpenExternalStubbed": false,
+  "syntheticDataOnly": true,
+  "realAccountUsed": false,
+  "downloadRequested": false,
+  "installRequested": false,
+  "uploadRequested": false,
+  "publicationPerformed": false,
+  "clickCount": 1,
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.5\\win-unpacked\\MediaSail.exe",
+  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\真实 默认浏览器 0.5.5 1792391027529\\合成 中文 空格资料库",
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\真实 默认浏览器 0.5.5 1792391027529",
+  "errors": [],
+  "testedAppAsarSha256": "507543fbb1adb1ad3c78cb5bafcbe856fe416e3ca3ccc38c0ca3d922a0462d3e",
+  "defaultHttpsAssociation": {
+    "readOnly": true,
+    "registryKey": "HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice",
+    "progId": "ChromeHTML"
+  },
+  "before": {
+    "url": "http://127.0.0.1:7860/",
+    "heading": "内容库\n/默认浏览器验收 · 合成项目",
+    "electron": {
+      "contents": [
+        {
+          "id": 1,
+          "type": "window",
+          "url": "http://127.0.0.1:7860/"
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "url": "http://127.0.0.1:7860/"
+        }
+      ]
+    }
+  },
+  "clickedAt": "2026-10-19T06:23:51.427Z",
+  "launcherAcceptedAt": "2026-10-19T06:23:51.566Z",
+  "after": {
+    "url": "http://127.0.0.1:7860/",
+    "heading": "内容库\n/默认浏览器验收 · 合成项目",
+    "electron": {
+      "contents": [
+        {
+          "id": 1,
+          "type": "window",
+          "url": "http://127.0.0.1:7860/"
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "url": "http://127.0.0.1:7860/"
+        }
+      ]
+    }
+  },
+  "localEffects": [],
+  "syntheticAccountRequests": [],
+  "currentProjectPreserved": true,
+  "noEmbeddedAitoEarn": true,
+  "updatePhase": "idle",
+  "screenshot": "docs/images/0.5.5/default-browser-launcher.png",
+  "normalExitCompleted": true,
+  "finishedAt": "2026-10-19T06:23:52.317Z",
+  "browserObservation": {
+    "method": "CUA Chrome extension, tab opened by the real OS launcher; no additional navigation",
+    "browser": "Chrome",
+    "defaultHttpsProgId": "ChromeHTML",
+    "url": "https://aitoearn.cn/zh-CN",
+    "title": "AiToEarn - 付费推广任务 - 用社交媒体赚钱",
+    "visibleControls": [
+      "内容管理",
+      "AI发布",
+      "浏览器插件 未安装"
+    ],
+    "screenshot": "docs/images/0.5.5/default-browser-official.png",
+    "observedAt": "2026-10-19T06:24:31.838Z",
+    "testTabClosed": true
+  }
+}

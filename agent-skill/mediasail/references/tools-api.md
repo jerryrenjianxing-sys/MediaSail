@@ -7,7 +7,7 @@
 - **本地业务脚本**：workspace/skills/shared/scripts/ 和对应方法的 scripts/。准确名单见 workspace/skills/business-tools.md。用内置业务 Python 或兼容的自有 Python 执行；本地计算不依赖桌面服务在线。通用创作引擎不随包提供。
 - **业务 API**：调用下表接口。参数见 api-schema.json（由当前后端与连接桥实际注册的 OpenAPI 生成），运行中也可读 /openapi.json。部分旧处理函数未声明细化响应模型，不能把空 schema 误当没有结果；实际数据以当前响应为准。
 - **外部 Agent 的智能工作**：研究、语义分析、画像增强、策划、创作和开发由你完成；不再使用旧 /api/chat 或 /api/skill 交回软件内模型。
-- **桌面操作**：AitoEarn 的登录、发送面板、上传及草稿流程属于 Electron 内部界面。外部脚本没有等价 HTTP 草稿接口；准备好成品后，用户可在内容库点击「发送到 AI 发布」，在官方页面检查账号、平台和最终发布。
+- **AI 发布官网**：侧栏“AI 发布”用默认浏览器打开固定地址 https://aitoearn.cn/zh-CN。用户或 Agent 从项目成品文件读取、复制正文；用户在官网选择项目媒体、检查顺序、登录、安装所需扩展、选择账号和最终发布。官网不会自动读取本地资料库。软件不再内嵌、自动上传或创建 AitoEarn 草稿，不提供对应 HTTP API。网页发布结果不自动回写，按实际结果登记本地记录。下表的原生 `/api/publish/{platform}` 及其平台资料是独立能力，继续保留。
 
 ## 常用入口
 

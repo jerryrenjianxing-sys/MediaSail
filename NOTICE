@@ -6,7 +6,7 @@ fb80ae6dd6fc26f5553efcb293ee6d93ef253f02, under Apache License 2.0.
 https://github.com/ZJU-REAL/Easel
 
 MediaSail adds Windows desktop packaging, isolated portable runtimes, lifecycle
-management, AitoEarn draft integration, branding and GitHub Release updates.
+management, external AitoEarn access, branding and GitHub Release updates.
 The upstream source is obtained at the pinned revision and modified by patches/.
 This distribution is independently maintained and does not imply endorsement
 by Easel, AitoEarn, Electron or the other component authors.

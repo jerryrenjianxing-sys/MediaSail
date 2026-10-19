@@ -1,5 +1,15 @@
 # Updates and releases
 
+Version 0.5.5 opens `https://aitoearn.cn/zh-CN` in the user's default browser.
+The embedded view and automatic AitoEarn uploads/draft creation are removed.
+Existing `runtime/aitoearn/imports.json` and `runtime/Partitions` stay in place;
+they are not loaded as active jobs or transferred into browser profiles. Settings
+can open the old AI publishing records directory. Some edited text may only exist
+in those records. Uncertain cloud results must be checked on the original account
+before a new manual submission; no old job is automatically retried. Native
+MediaSail platform publishing remains available. Existing library selection,
+updater identity and the GitHub update channel are unchanged.
+
 Version 0.5.0 keeps the same public channel and installation identity. It replaces
 the old program through its registered uninstaller before installing the smaller
 business runtime. A failed uninstall stops the upgrade; there is no broad folder
@@ -20,7 +30,7 @@ and immediately checks, without discarding unsaved settings. The sidebar and tra
 also open that same update window. A background check runs once,
 15 seconds after launch. Downloads start only on a user click. Progress survives
 closing to the tray. Both automatic download and install-on-quit are disabled.
-The user explicitly chooses restart/install; active Easel tasks, AitoEarn uploads
+The user explicitly chooses restart/install; active MediaSail business tasks
 and uncertain service status trigger the existing confirmation. Services owned by
 this app stop before installation. Canceling the confirmation keeps them running.
 
@@ -82,14 +92,16 @@ metadata, with no full-download fallback. Download/reconstruction/verification t
 
 An updater IPC caller must be a trusted top-level local window. The main Easel
 window can read status, open the update window, and use a restricted open-and-check
-action. Only the bundled update window can download/install. The remote AitoEarn view has no updater preload or local
-file/command API. Renderers cannot set a feed URL or an arbitrary installer path.
+action. Only the bundled update window can download/install. External browser
+pages receive no updater preload or local file/command API. Renderers cannot set
+a feed URL or an arbitrary installer path.
 
 ## Compatibility
 
 Keep `build.appId = org.electroneasel.desktop`, the NSIS installation identity,
-`%LOCALAPPDATA%\ElectronEasel`, and `persist:aitoearn-cn` stable. They intentionally
-retain the old name so ElectronEasel 0.1/0.2 data and sessions survive the rebrand.
+`%LOCALAPPDATA%\ElectronEasel` stable. Existing `persist:aitoearn-cn` data is
+retained for history, but 0.5.5 no longer creates or opens that partition. These
+legacy names preserve ElectronEasel 0.1/0.2 data through the rebrand.
 Install MediaSail 0.3 once manually over the old app. Subsequent updates happen
 inside the app. Uninstall defaults to keeping data.
 

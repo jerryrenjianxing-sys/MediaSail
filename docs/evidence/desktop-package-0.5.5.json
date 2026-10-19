@@ -1,0 +1,43 @@
+{
+  "version": "0.5.5",
+  "passed": true,
+  "verifiedAt": "2026-10-19T06:25:22.261Z",
+  "desktopFiles": 25,
+  "desktopFilesByteMatched": [
+    "desktop/actions.cjs",
+    "desktop/agent-connection.cjs",
+    "desktop/assets/icon.ico",
+    "desktop/assets/icon.png",
+    "desktop/history-archive.cjs",
+    "desktop/installer-cache.cjs",
+    "desktop/library.cjs",
+    "desktop/main.cjs",
+    "desktop/preload.cjs",
+    "desktop/runtime.cjs",
+    "desktop/single-instance.cjs",
+    "desktop/startup-recovery.cjs",
+    "desktop/startup.css",
+    "desktop/startup.html",
+    "desktop/startup.js",
+    "desktop/ui-migration.cjs",
+    "desktop/ui-state.cjs",
+    "desktop/update-cache.cjs",
+    "desktop/updates-preload.cjs",
+    "desktop/updates-window.cjs",
+    "desktop/updates.cjs",
+    "desktop/updates.css",
+    "desktop/updates.html",
+    "desktop/updates.js",
+    "desktop/workspace.cjs"
+  ],
+  "appAsarSha256": "507543fbb1adb1ad3c78cb5bafcbe856fe416e3ca3ccc38c0ca3d922a0462d3e",
+  "payloadManifestSha256": "b5a34fdb442eda750b7236c1167df42b8f6d81b4cac9a77cf09f3f592106f1e6",
+  "removedAitoAdapterAbsent": true,
+  "packageFieldsMatched": [
+    "name",
+    "version",
+    "main",
+    "dependencies"
+  ],
+  "thirdPartyNoticeMatched": true
+}

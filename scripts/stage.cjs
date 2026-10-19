@@ -20,6 +20,9 @@ walk(path.join(source, 'web/frontend/src'), 'web/frontend/src');
 names.push('web/static/mediasail-icon.png');
 const manifest = { version: require('../package.json').version + '-' + lock.easel.slice(0,7), upstream: lock.easel, files: {} };
 for (const name of new Set(names)) {
+  // A tracked upstream file can be intentionally removed by our desktop patch.
+  // Do not try to re-stage it from Git's index after it has been deleted.
+  if (!fs.existsSync(path.join(source,name))) continue;
   if (path.basename(name) === '.gitkeep') continue;
   if(name.startsWith('openclaw/')||name.startsWith('assets/readme/')||/^web\/static\/.*\.(mp4|webm|mov)$/i.test(name))continue;
   const bytes = fs.readFileSync(path.join(source,name));

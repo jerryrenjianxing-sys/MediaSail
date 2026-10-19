@@ -30,7 +30,7 @@ executables, media-generation frameworks or creative model weights. Historical
 source/notice references do not imply those old runtimes are shipped.
 All shipped runtime files are recorded in runtime-sha256.json.
 
-AitoEarn is loaded from its official website, not redistributed as a backend.
+AitoEarn is opened in the user's default browser; its backend is not redistributed.
 CCL read-only LevelDB/Snappy readers: MIT, Copyright CCL Forensics.
 Source pins: bridge/third_party/SOURCES.json. License: CCL-Readers-MIT.txt.
 Homepage, Agent icons and GSAP notices remain preserved; see NOTICE,

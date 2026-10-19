@@ -1,8 +1,8 @@
-// Genuine registered 0.5.3 -> content-library release; disposable Windows runner only.
+// Genuine registered 0.5.4 -> external-browser release; disposable Windows runner only.
 'use strict';
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs/promises'),fss=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
 const {attachTestMain}=require('./test-main-inspector.cjs'),{selectLibraryFixture}=require('./select-library-fixture.cjs');
-const from='0.5.3',to='0.5.4',identity='f524de6d-ce52-54ca-a07e-a51e0d556196';
+const from='0.5.4',to='0.5.5',identity='f524de6d-ce52-54ca-a07e-a51e0d556196';
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),list=value=>Array.isArray(value)?value:value?[value]:[];
 function fixtureScope(env=process.env,platform=process.platform){
  assert.equal(platform,'win32','Hosted Windows only; never run on a user PC');
@@ -50,7 +50,7 @@ async function main(){
  try{
   assert.equal(processes().length,0);assert.deepEqual(registry(),[]);for(const file of [bootstrap,run])assert.equal(fss.existsSync(file),false,'Fresh runner required: '+file);
   await fs.mkdir(evidence,{recursive:true});result.installers={};
-  for(const [key,file]of Object.entries(installers)){const sha256=await hash(file),name=path.basename(file),bytes=(await fs.stat(file)).size;const lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)===name);assert.equal(lines.length,1);assert.equal(lines[0].split(/\s+/)[0],sha256);if(key==='baseline'){assert.equal(sha256,'5f2a5003fc5fb4a1acc70ad9266230943540844582cecc03b2594131950fe23e');assert.equal(bytes,262989425);}result.installers[key]={name,sha256,bytes};}
+  for(const [key,file]of Object.entries(installers)){const sha256=await hash(file),name=path.basename(file),bytes=(await fs.stat(file)).size;const lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)===name);assert.equal(lines.length,1);assert.equal(lines[0].split(/\s+/)[0],sha256);if(key==='baseline'){assert.equal(sha256,'06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d');assert.equal(bytes,273973986);}result.installers[key]={name,sha256,bytes};}
   await phase('baseline-install');await setup(installers.baseline,['/S','/D='+target]);checkRegistry(from);
   cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const initial=await until(()=>owned().find(row=>!row.CommandLine?.includes('--type=')),120000,'baseline app');inspector=await attachTestMain(initial.ProcessId);
   await selectLibraryFixture({inspector,pid:initial.ProcessId,exe,libraryRoot,evidence,cancelFirst:false});inspector.close();inspector=null;
@@ -58,12 +58,15 @@ async function main(){
   const cache=path.join(old.dataDir,'update-cache','mediasail-updater');assert.equal(await hash(path.join(cache,'installer.exe')),result.installers.baseline.sha256);assert.equal(JSON.parse(await fs.readFile(path.join(cache,'current-installer.json'),'utf8')).version,from);result.baselineCacheVerified=true;
   await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'baseline home');
   await inspector.evaluate(render("(async()=>{await window.desktopUiState.call('set',{key:'mediasail_selected_profile',value:'合成画像'});await window.desktopUiState.call('set',{key:'easel_onboarding_seen',value:'1'});await window.desktopUiState.call('set',{key:'easel_theme',value:'dark'});await window.desktopUiState.call('flush');return true;})()"));
-  await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'content-upgrade-fixture',value:'synthetic-session',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return true;})()");await quit();
+  const oldPartition=await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'content-upgrade-fixture',value:'synthetic-session',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return s.storagePath;})()");await quit();
+  assert.ok(oldPartition&&oldPartition.toLowerCase().startsWith(old.dataDir.toLowerCase()+path.sep));
+  let partitionFiles=0;async function rememberPartition(directory){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const file=path.join(directory,entry.name);if(entry.isDirectory())await rememberPartition(file);else if(entry.isFile()){originalFiles.set(file,await fs.readFile(file));partitionFiles++;}else throw Error('Unexpected linked legacy partition');}}
+  await rememberPartition(oldPartition);assert.ok(partitionFiles>0);result.legacyPartitionFiles=partitionFiles;
   const project='旧项目 中文 空格',directory=path.join(old.outputs,project),metadata={topic:project,title:'旧版合成报告',kind:'article',status:'ready',profile:'合成画像',platform:'抖音',deliverables:['报告.md'],cover:'封面.txt',steps:[{skill:'external-agent',layer:'general',outputs:['报告.md']}],custom:{keep:'原扩展字段'},created:'2026-10-01T00:00:00+08:00'};
   await remember(path.join(directory,'.easel.json'),metadata);await remember(path.join(directory,'报告.md'),'# 合成资料\n升级保留项目原路径。');await remember(path.join(directory,'assets','原始素材.txt'),'source fixture');await remember(path.join(directory,'封面.txt'),'cover fixture');
   await remember(path.join(old.profiles,'合成画像','identity.md'),'# 合成画像\n仅用于升级测试。');await remember(path.join(old.profiles,'合成画像','memory.md'),'合成运营经验');
   await remember(path.join(old.dataDir,'home','.easel-browser-profiles','DouyinProfile','fixture-only.json'),{synthetic:true});
-  await remember(path.join(old.dataDir,'aitoearn/imports.json'),{version:1,compose:{title:'合成待发送内容',body:'只保存，不发送'},groups:{'fixture-user':'fixture-group'},jobs:[]});
+  await remember(path.join(old.dataDir,'aitoearn/imports.json'),{version:1,compose:{title:'仅旧面板中的标题',body:'仅旧记录保存的正文，不可丢失',images:['乙.png','甲.png']},groups:{'fixture-user':'fixture-group'},jobs:[{id:'fixture-creating',status:'creating',content:{title:'待核对云端结果',body:'不能自动重试'},files:[]},{id:'fixture-uploading',status:'uploading',content:{title:'旧上传任务'},files:[]}]});
   originalFiles.set(path.join(bootstrap,'library-location.json'),await fs.readFile(path.join(bootstrap,'library-location.json')));originalFiles.set(path.join(libraryRoot,'.mediasail-library.json'),await fs.readFile(path.join(libraryRoot,'.mediasail-library.json')));
   await phase('candidate-install');const started=Date.now();await setup(installers.candidate,['/S','--updated','--force-run'],true);result.installMs=Date.now()-started;result.registrationAfter=checkRegistry(to);
   assert.equal(fss.existsSync(path.join(process.env.LOCALAPPDATA,'Programs/MediaSail/MediaSail.exe')),false,'No parallel default installation');
@@ -71,7 +74,13 @@ async function main(){
   assert.equal(await hash(path.join(cache,'installer.exe')),result.installers.candidate.sha256);const cacheReceipt=JSON.parse(await fs.readFile(path.join(cache,'current-installer.json'),'utf8'));assert.equal(cacheReceipt.version,to);assert.equal(cacheReceipt.sha256,result.installers.candidate.sha256);assert.equal(cacheReceipt.bytes,result.installers.candidate.bytes);result.currentInstallerCacheVerified=true;
   inspector=await attachTestMain(current.pid);await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'updated home');
   assert.equal(await inspector.evaluate("process.mainModule.require('electron').BrowserWindow.getAllWindows().some(w=>w.webContents.getURL().includes('startup.html'))"),false,'No repeat library selection');
-  assert.equal(await inspector.evaluate("(async()=>{return (await process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn').cookies.get({name:'content-upgrade-fixture'}))[0]?.value;})()"),'synthetic-session');result.aitoSessionRetained=true;
+  // Never create/read an AitoEarn session in the new app. Compare the closed
+  // baseline partition bytes instead, including the real synthetic cookie DB.
+  await checkOriginals();result.legacyAitoPartitionByteRetained=true;
+  assert.equal(await inspector.evaluate(render("typeof window.desktopAito")),'undefined');
+  assert.equal(await inspector.evaluate(render("typeof window.desktopActions.openAitoearn")),'function');
+  assert.equal(await inspector.evaluate("process.mainModule.require('electron').webContents.getAllWebContents().some(w=>w.getURL().startsWith('https://aitoearn.cn/'))"),false);
+  assert.equal(await inspector.evaluate("process.mainModule.require('node:fs').existsSync(process.mainModule.require('node:path').join(process.mainModule.require('electron').app.getAppPath(),'desktop/aitoearn/controller.cjs'))"),false);result.embeddedAitoRuntimeAbsent=true;
   const values=JSON.parse(await fs.readFile(path.join(current.dataDir,'ui-state.json'),'utf8')).values;assert.equal(values.easel_theme,'dark');assert.equal(values.mediasail_selected_profile,'合成画像');
   const endpoint=current.baseUrl+'/api/projects/'+encodeURIComponent(project)+'/metadata',before=await(await fetch(endpoint)).json();assert.deepEqual(before.metadata,metadata);
   const response=await fetch(endpoint,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:before.revision,changes:{category:'analysis',summary:'升级后仅补用途'}})});assert.equal(response.status,200);const updated=await response.json();assert.equal(updated.metadata.category,'analysis');assert.deepEqual(updated.metadata.custom,metadata.custom);assert.deepEqual(updated.metadata.steps,metadata.steps);
@@ -81,6 +90,9 @@ async function main(){
   // real whoami checks, whose task reminder correctly needs user input on exit.
   await inspector.evaluate(render(`location.hash='#/outputs/'+encodeURIComponent(${JSON.stringify(project)});true`));
   await until(()=>inspector.evaluate(render("document.body.innerText.includes('旧版合成报告')&&document.body.innerText.includes('分析报告')")),30000,'updated content library');
+  await inspector.evaluate("(()=>{const {shell}=process.mainModule.require('electron');globalThis.__upgradeOpened=[];shell.openPath=async value=>{globalThis.__upgradeOpened.push(value);return '';};return true;})()");
+  await inspector.evaluate(render(`window.desktopActions.openProjectFolder(${JSON.stringify(project)}).then(()=>true)`));
+  assert.deepEqual(await inspector.evaluate('globalThis.__upgradeOpened'),[directory]);result.projectFolderActionVerified=true;
   await inspector.evaluate(`(async()=>{const image=await ${localWindow}.webContents.capturePage();process.mainModule.require('node:fs').writeFileSync(${JSON.stringify(path.join(evidence,'upgraded-content-library.png'))},image.toPNG());return true;})()`);
   result.categoryPatchPreservedOtherMetadata=true;await phase('normal-restarts');await quit();
   for(let i=0;i<2;i++){cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();}

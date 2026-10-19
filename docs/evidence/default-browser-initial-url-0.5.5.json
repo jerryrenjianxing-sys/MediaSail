@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "version": "0.5.5",
+  "passed": false,
+  "launcherAccepted": true,
+  "browserObservationPending": false,
+  "expectedUrl": "https://aitoearn.cn/zh",
+  "startedAt": "2026-10-19T06:19:04.200Z",
+  "realPackagedApplication": true,
+  "realSystemDefaultBrowser": true,
+  "shellOpenExternalStubbed": false,
+  "syntheticDataOnly": true,
+  "realAccountUsed": false,
+  "downloadRequested": false,
+  "installRequested": false,
+  "uploadRequested": false,
+  "publicationPerformed": false,
+  "clickCount": 1,
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.5\\win-unpacked\\MediaSail.exe",
+  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\真实 默认浏览器 0.5.5 1792390744200\\合成 中文 空格资料库",
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\真实 默认浏览器 0.5.5 1792390744200",
+  "errors": [],
+  "testedAppAsarSha256": "22ab21003b4911fb9983cc161b5b6efdbe244088d00cd0b785d6d6d2e708be6b",
+  "defaultHttpsAssociation": {
+    "readOnly": true,
+    "registryKey": "HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice",
+    "progId": "ChromeHTML"
+  },
+  "before": {
+    "url": "http://127.0.0.1:7860/",
+    "heading": "内容库\n/默认浏览器验收 · 合成项目",
+    "electron": {
+      "contents": [
+        {
+          "id": 1,
+          "type": "window",
+          "url": "http://127.0.0.1:7860/"
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "url": "http://127.0.0.1:7860/"
+        }
+      ]
+    }
+  },
+  "clickedAt": "2026-10-19T06:19:07.993Z",
+  "launcherAcceptedAt": "2026-10-19T06:19:08.138Z",
+  "after": {
+    "url": "http://127.0.0.1:7860/",
+    "heading": "内容库\n/默认浏览器验收 · 合成项目",
+    "electron": {
+      "contents": [
+        {
+          "id": 1,
+          "type": "window",
+          "url": "http://127.0.0.1:7860/"
+        }
+      ],
+      "windows": [
+        {
+          "id": 1,
+          "url": "http://127.0.0.1:7860/"
+        }
+      ]
+    }
+  },
+  "localEffects": [],
+  "syntheticAccountRequests": [],
+  "currentProjectPreserved": true,
+  "noEmbeddedAitoEarn": true,
+  "updatePhase": "idle",
+  "screenshot": "docs/images/0.5.5/default-browser-launcher.png",
+  "normalExitCompleted": true,
+  "finishedAt": "2026-10-19T06:19:08.919Z",
+  "browserObservation": {
+    "url": "https://aitoearn.cn/zh-CN/zh",
+    "title": "AiToEarn",
+    "visibleResult": "blank page",
+    "acceptedBySystem": true,
+    "notWebsiteSuccess": true
+  },
+  "canonicalDiscovery": {
+    "navigation": "https://aitoearn.cn/",
+    "officialRedirect": "https://aitoearn.cn/zh-CN",
+    "visibleResult": "Chinese official home with AI publish and content links"
+  },
+  "disposition": "Unreleased candidate superseded; fixed canonical address and rebuilt before publication"
+}
