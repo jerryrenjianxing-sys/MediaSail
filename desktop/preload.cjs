@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('desktopStartup',{
 });
 async function openAction(action,input){const result=await ipcRenderer.invoke('actions:call',action,input);if(!result?.ok)throw new Error(result?.error||'未能打开，请稍后重试。');return result.data;}
 contextBridge.exposeInMainWorld('desktopActions',{
-  copySkillFile:async fileName=>{const result=await ipcRenderer.invoke('skill:copy-file',fileName);if(!result?.ok)throw new Error(result?.error||'文件复制失败，可改用复制文字。');return result.data;},
+  copySkillFile:async fileName=>{const result=await ipcRenderer.invoke('skill:copy-file',fileName);if(!result?.ok)throw new Error(result?.error||'文件复制失败，请重试。');return result.data;},
   openAitoearn:()=>openAction('open-aitoearn'),
   openProjectFolder:projectName=>openAction('open-project-folder',projectName),
   openAitoHistory:()=>openAction('open-aito-history')

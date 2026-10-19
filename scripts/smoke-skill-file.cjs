@@ -30,6 +30,11 @@ async function menu(name) { await page.getByLabel('Skill 复制选项',{exact:tr
   await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
   try {
     await start();
+    await page.getByLabel('Skill 复制选项',{exact:true}).click();
+    assert.equal(await page.getByRole('textbox',{name:'Skill',exact:true}).count(),0,'long text dialog is removed');
+    record('homepage has only MD copying and filename editing, with no long text dialog');
+    assert.equal(await page.getByRole('button',{name:'复制文字',exact:true}).count(),0,'homepage must offer MD files only');
+    await page.getByLabel('Skill 复制选项',{exact:true}).click();
     await page.screenshot({path:path.join(evidence,'skill-file-home.png'),animations:'disabled'});
     clipboardBackup=await app.evaluate(async({clipboard})=>{const items=await clipboard.read();return await Promise.all(items.map(async item=>{const result={};for(const type of item.types){const value=await item.getType(type);result[type]=type==='electron application/bookmark'?{bookmark:value}:{bytes:Array.from(new Uint8Array(await value.arrayBuffer())),type:value.type};}return result;}));});
     const file=await copyFile();assert.equal(path.basename(file),'MediaSail 接入.md');
@@ -56,13 +61,15 @@ async function menu(name) { await page.getByLabel('Skill 复制选项',{exact:tr
 
     await app.evaluate(({clipboard})=>{globalThis.__originalClipboardWrite=clipboard.write;clipboard.write=async()=>{throw Error('synthetic clipboard locked');};});
     await page.getByRole('button',{name:'已复制',exact:true}).click();await page.getByText(/synthetic clipboard locked/).waitFor();
+    assert.equal(await page.getByRole('button',{name:'复制文字',exact:true}).count(),0);
+    assert.equal(await page.locator('dialog[open]').count(),0);
+    const unchanged=await app.evaluate(async({clipboard})=>await(await(await clipboard.read())[0].getType('text/uri-list')).text());assert.equal(fileURLToPath(unchanged.trim()),custom);
+    await page.screenshot({path:path.join(evidence,'skill-file-retry.png'),animations:'disabled'});
     await app.evaluate(({clipboard})=>{clipboard.write=globalThis.__originalClipboardWrite;});
-    await page.locator('.skill-error').getByRole('button',{name:'复制文字',exact:true}).click();await page.getByText('接入文字已复制，可粘贴给你的 Agent。',{exact:true}).waitFor();
-    assert.equal((await app.evaluate(({clipboard})=>clipboard.readText())).replace(/\r\n/g,'\n'),card.replace(/\r\n/g,'\n'));
-    await page.evaluate(()=>Object.defineProperty(navigator.clipboard,'writeText',{configurable:true,value:async()=>{throw Error('synthetic denied');}}));await menu('复制文字');
-    const manual=page.getByRole('dialog').filter({hasText:'手动复制 Skill'});await manual.waitFor();assert.equal(await manual.getByRole('textbox',{name:'Skill',exact:true}).inputValue(),card.replace(/\r\n/g,'\n'));await manual.getByRole('button',{name:'完成',exact:true}).click();record('clipboard failure offers real text fallback and denied text copying retains manual copy');
+    const retry=await copyFile('重试');assert.equal(path.basename(retry),'我的运营 # %.md');assert.notEqual(retry,custom);assert.equal(await fs.readFile(retry,'utf8'),card);
+    const formats=await app.evaluate(async({clipboard})=>(await clipboard.read())[0].types);assert.ok(formats.includes('text/uri-list'));assert.ok(!formats.includes('text/plain'));record('clipboard failure preserves the previous file, offers retry only, then copies a new MD without text');
     // Do not inspect/render this new clipboard payload until its owner has quit.
-    await page.getByRole('button',{name:'复制 Skill 文件',exact:true}).click();await page.getByText('文件已复制，可到 Agent 中粘贴。',{exact:true}).waitFor();await app.close();app=null;
+    await page.getByRole('button',{name:'已复制',exact:true}).click();await page.getByText('文件已复制，可到 Agent 中粘贴。',{exact:true}).waitFor();await app.close();app=null;
     const afterExit=JSON.parse(await ps(['-Command',"[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false);Add-Type -AssemblyName System.Windows.Forms;ConvertTo-Json -InputObject @([Windows.Forms.Clipboard]::GetFileDropList()) -Compress"]));assert.equal(afterExit.length,1);const last=afterExit[0];assert.equal(path.basename(last),'我的运营 # %.md');assert.equal(await fs.readFile(last,'utf8'),card);
     await start();await menu('修改文件名');assert.equal(await page.getByRole('textbox',{name:'Skill 文件名',exact:true}).inputValue(),'我的运营 # %');await page.getByRole('button',{name:'取消',exact:true}).click();assert.deepEqual(await fs.readFile(file),bytes);record('saved filename and copied files survive normal quit/restart and delayed clipboard reading');
     const oldUrl=info.baseUrl;await app.close();app=null;

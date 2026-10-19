@@ -21511,18 +21511,16 @@ index 42545b5..ad09d11 100644
        )}
 diff --git a/web/frontend/src/components/AgentConnectPage.tsx b/web/frontend/src/components/AgentConnectPage.tsx
 new file mode 100644
-index 0000000..b005240
+index 0000000..093925c
 --- /dev/null
 +++ b/web/frontend/src/components/AgentConnectPage.tsx
-@@ -0,0 +1,300 @@
+@@ -0,0 +1,247 @@
 +import { useEffect, useRef, useState } from "react";
 +
-+import { loadSkillMarkdown, fetchLocalApi } from "../lib/agent-home-loader";
 +import { PRODUCT_ICON } from "../lib/branding";
 +import { appStorage } from "../lib/appStorage";
 +import { registerEditing, requestLeave } from "../lib/unsaved";
 +import AgentThemeToggle from "./AgentThemeToggle";
-+const API = "";
 +import "../styles/agent-home.css";
 +
 +const agents = [
@@ -21605,44 +21603,18 @@ index 0000000..b005240
 +    const close = (event: PointerEvent) => { if (!menu.current?.contains(event.target as Node)) menu.current?.removeAttribute('open'); };
 +    document.addEventListener('pointerdown', close); return () => document.removeEventListener('pointerdown', close);
 +  }, []);
-+  const [manual, setManual] = useState(""),
-+    [paused, setPaused] = useState(false);
-+  const copying = useRef(false),
-+    dialog = useRef<HTMLDialogElement>(null),
-+    manualText = useRef<HTMLTextAreaElement>(null);
-+  useEffect(() => {
-+    if (manual) {
-+      dialog.current?.showModal();
-+      manualText.current?.focus();
-+      manualText.current?.select();
-+    }
-+  }, [manual]);
-+  async function copySkill(asFile = desktop) {
++  const [paused, setPaused] = useState(false);
++  const copying = useRef(false);
++  async function copySkill() {
 +    if (copying.current) return;
 +    copying.current = true;
 +    setCopy("loading");
 +    try {
-+      if (asFile && window.desktopActions) {
-+        await window.desktopActions.copySkillFile(fileName);
-+        setFeedback('文件已复制，可到 Agent 中粘贴。'); setCopy('done'); return;
-+      }
-+      const markdown = await loadSkillMarkdown(() =>
-+        fetchLocalApi(
-+          `${API}/api/platform-skill?format=connect`,
-+          { cache: "no-store" },
-+          15000,
-+        ),
-+      );
-+      try {
-+        await navigator.clipboard.writeText(markdown);
-+        setFeedback('接入文字已复制，可粘贴给你的 Agent。');
-+        setCopy("done");
-+      } catch {
-+        setCopy("idle");
-+        setManual(markdown);
-+      }
++      if (!window.desktopActions?.copySkillFile) throw new Error('请使用桌面版复制 MD 文件。');
++      await window.desktopActions.copySkillFile(fileName);
++      setFeedback('文件已复制，可到 Agent 中粘贴。'); setCopy('done');
 +    } catch (error) {
-+      setFeedback(error instanceof Error ? error.message : '复制失败，请重试或复制文字。');
++      setFeedback(error instanceof Error ? error.message : '文件复制失败，请重试。');
 +      setCopy("error");
 +    } finally {
 +      copying.current = false;
@@ -21698,7 +21670,7 @@ index 0000000..b005240
 +          <button
 +            className="skill-button skill-button-secondary"
 +            type="button"
-+            disabled={copy === "loading"}
++            disabled={!desktop || copy === "loading"}
 +            onClick={() => void copySkill()}
 +          >
 +            <Icon kind="copy" />
@@ -21706,24 +21678,23 @@ index 0000000..b005240
 +              ? "正在读取…"
 +              : copy === "done"
 +                ? "已复制"
-+                : desktop ? "复制 Skill 文件" : "复制文字"}
++                : "复制 Skill 文件"}
 +          </button>
 +          {desktop && <details ref={menu} className="skill-copy-menu">
 +            <summary aria-label="Skill 复制选项">⌄</summary>
 +            <div className="skill-copy-options">
-+              <button type="button" disabled={copy === 'loading'} onClick={() => {menu.current?.removeAttribute('open');void copySkill(false);}}>复制文字</button>
 +              <button type="button" disabled={copy === 'loading'} onClick={startRename}>修改文件名</button>
 +            </div>
 +          </details>}
 +          </div>
 +        </div>
 +        <p className="skill-format">
-+          复制接入 · 本地运行 · 使用自己的 Agent
++          {desktop ? '复制接入 · 本地运行 · 使用自己的 Agent' : '请使用桌面版复制 MD 文件。'}
 +        </p>
 +        <div className="skill-feedback" aria-live="polite" aria-atomic="true">
 +          {copy === "error" ? (
 +            <p className="skill-error">
-+              {feedback} {desktop && <button type="button" onClick={() => void copySkill(false)}>复制文字</button>}
++              {feedback} {desktop && <button type="button" onClick={() => void copySkill()}>重试</button>}
 +            </p>
 +          ) : copy === "done" ? (
 +            <p>{feedback}</p>
@@ -21787,30 +21758,6 @@ index 0000000..b005240
 +          {nameError && <p role="alert" className="skill-error">{nameError}</p>}
 +          <div className="skill-actions"><button type="button" className="skill-button skill-button-secondary" disabled={savingName} onClick={() => void closeRename()}>取消</button><button type="submit" className="skill-button skill-button-primary" disabled={savingName}>{savingName ? '正在保存…' : '保存名称'}</button></div>
 +        </form>
-+      </dialog>
-+      <dialog
-+        ref={dialog}
-+        className="skill-copy-dialog"
-+        onClose={() => setManual("")}
-+      >
-+        <h2>手动复制 Skill</h2>
-+        <p>
-+          浏览器未允许直接复制。下方已选中 Skill，请按 Ctrl+C（Mac 为
-+          ⌘C）。
-+        </p>
-+        <textarea
-+          ref={manualText}
-+          aria-label="Skill"
-+          readOnly
-+          value={manual}
-+        />
-+        <button
-+          type="button"
-+          className="skill-button skill-button-primary"
-+          onClick={() => dialog.current?.close()}
-+        >
-+          完成
-+        </button>
 +      </dialog>
 +    </section>
 +  );
@@ -26190,10 +26137,10 @@ index dd33e5a..4eea955 100644
 +});
 diff --git a/web/frontend/src/styles/agent-home.css b/web/frontend/src/styles/agent-home.css
 new file mode 100644
-index 0000000..af4c058
+index 0000000..74ee18e
 --- /dev/null
 +++ b/web/frontend/src/styles/agent-home.css
-@@ -0,0 +1,566 @@
+@@ -0,0 +1,553 @@
 +/* Skill landing: isolated from the management workspace. */
 +.skill-home {
 +  --sh-bg: #fafaf9;
@@ -26566,19 +26513,6 @@ index 0000000..af4c058
 +  font-size: 14px;
 +  line-height: 1.8;
 +  color: var(--sh-muted);
-+}
-+.skill-copy-dialog textarea {
-+  display: block;
-+  width: 100%;
-+  height: 240px;
-+  resize: vertical;
-+  margin: 20px 0;
-+  padding: 14px;
-+  border: 1px solid var(--sh-line);
-+  border-radius: 6px;
-+  font-size: 12px;
-+  background: var(--sh-bg);
-+  color: var(--sh-text);
 +}
 +@keyframes skill-agents-scroll {
 +  to {

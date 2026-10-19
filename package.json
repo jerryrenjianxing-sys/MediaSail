@@ -1,6 +1,6 @@
 {
   "name": "mediasail",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "MediaSail: profiles, operating analytics and content workspace for your Agent",
   "author": "MediaSail contributors",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
     "asar": true,
     "electronDist": "node_modules/electron/dist",
     "directories": {
-      "output": "../../outputs/MediaSail/release-0.5.7",
+      "output": "../../outputs/MediaSail/release-0.5.8",
       "buildResources": "desktop/assets"
     },
     "files": [

@@ -22,10 +22,10 @@ function createSkillShareHandler({ main, localOrigin, data, available, clipboard
       const origin = localOrigin(), root = data();
       const current = () => available() && origin === localOrigin() && root === data() && trustedStateSender(event, main(), origin);
       const response = await fetch(origin + '/api/platform-skill?format=connect', { signal: AbortSignal.timeout(15000), redirect: 'error' });
-      if (!response.ok) throw Error('接入说明暂不可读，请稍后重试或复制文字。');
+      if (!response.ok) throw Error('接入说明暂不可读，请稍后重试。');
       const text = await response.text();
       if (!current()) throw Error('软件状态已变化，请等待服务就绪后重新复制。');
-      if (!text.trim() || Buffer.byteLength(text) > 128 * 1024) throw Error('接入说明格式不正确，请重试或复制文字。');
+      if (!text.trim() || Buffer.byteLength(text) > 128 * 1024) throw Error('接入说明格式不正确，请重试。');
       if (typeof root !== 'string' || !path.isAbsolute(root)) throw Error('请先选择资料库。');
       let cache = root;
       for (const part of ['', 'cache', 'agent-share']) {
@@ -38,7 +38,7 @@ function createSkillShareHandler({ main, localOrigin, data, available, clipboard
       if (!current()) throw Error('软件状态已变化，请等待服务就绪后重新复制。');
       await clipboard.write([new ClipboardItem({ 'text/uri-list': pathToFileURL(file).href + '\r\n' })]);
       return { ok: true, data: { fileName } };
-    } catch (error) { return { ok: false, error: error.message || '文件复制失败，可改用复制文字。' }; }
+    } catch (error) { return { ok: false, error: error.message || '文件复制失败，请重试。' }; }
     finally { copying = false; }
   };
 }
