@@ -15,6 +15,7 @@
 - 打包有效载荷732个文件哈希通过。[文件复制记录](evidence/skill-file-0.5.7.json) 的7组行为通过：Windows真实文件剪贴板、独立Chromium接收、完整连接命令、名称编辑、文字/手动备用、正常退出及重启、旧卡片跟随新资料库和端口。
 - [编辑保护回归](evidence/reliable-editing-0.5.7.json) 13组通过。文件名编辑取消后保留草稿，非法名称提交失败后仍可修正。
 - 最近一次完整连接命令677ms；它只计本机脚本启动和连接返回，不含模型读取、思考及能力介绍，不与截图18秒等同。
+- 独立外部 Agent 仅从生成的 MD 开始，完成读卡、执行完整命令、定位及读取完整 Skill，工具观察6170ms，其中命令178ms。此值不含最终回复生成时间，其余时间包含工具往返和资料读取，不能独算为模型思考；没有ZIP、自检或业务采集。见[独立验收](evidence/independent-agent-0.5.7.json)，不是固定速度保证。
 - [首页](images/0.5.7/skill-file-home.png)、[浅色](images/0.5.7/skill-file-light.png)、[深色](images/0.5.7/skill-file-dark.png)、[修改名称](images/0.5.7/skill-file-name.png)、[独立接收页附件](images/0.5.7/skill-file-paste-receiver.png)。
 
 ## 客户端兼容边界
@@ -23,4 +24,6 @@ Windows 的真实文件列表格式已读回一致；独立Chromium输入框实�
 
 ## 待完成
 
-双轴审查、候选真实0.5.6→0.5.7安装升级、草稿资产核验、正式发布及公开更新检查。
+双轴审查完成，Standards和Spec均0项确认发现，见[审查记录](REVIEW-0.5.7.md)。[干净Windows源码CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39241062050)通过，执行与本地相同的统一入口。
+
+候选真实0.5.6→0.5.7安装升级、草稿资产核验、正式发布及公开更新检查仍待完成。
