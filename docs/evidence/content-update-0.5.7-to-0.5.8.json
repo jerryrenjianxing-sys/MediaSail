@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "from": "0.5.7",
+  "to": "0.5.8",
+  "checkedAt": "2026-10-19T12:04:48.070Z",
+  "state": {
+    "phase": "available",
+    "current": "0.5.7",
+    "version": "0.5.8",
+    "percent": 0,
+    "transferred": 0,
+    "total": 262999739,
+    "bytesPerSecond": 0,
+    "message": "发现新版本 0.5.8，可以开始下载。",
+    "checkedAt": 1792411487716,
+    "bannerDismissed": false
+  },
+  "source": "unchanged packaged GitHub electron-updater feed",
+  "downloadRequested": false,
+  "installRequested": false,
+  "isolatedLibrary": true
+}

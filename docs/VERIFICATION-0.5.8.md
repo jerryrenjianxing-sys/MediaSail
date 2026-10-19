@@ -1,6 +1,6 @@
 # MediaSail 0.5.8 验证记录
 
-状态：源码、打包界面、双轴审查及真实隔离升级通过；正在完成正式发布及公开更新检查。只使用隔离数据，不操作日常安装和资料库。
+状态：源码、打包界面、双轴审查、真实隔离升级及公开更新检查全部通过，0.5.8已正式发布。只使用隔离数据，不操作日常安装和资料库。
 
 ## 行为反馈
 
@@ -14,9 +14,9 @@
 - [普通网页版](evidence/skill-web-0.5.8.json) 没有桌面能力时，只显示禁用的文件复制按钮和桌面版提示；无文字入口、无文本框，进入控制台再返回行为一致。合成首次引导完成记录及退出确认Adapter用于测试环境清理，不代替真实升级与正常退出验收。
 - [首页](images/0.5.8/skill-file-home.png)、[浅色](images/0.5.8/skill-file-light.png)、[深色](images/0.5.8/skill-file-dark.png)、[改名](images/0.5.8/skill-file-name.png)、[失败重试](images/0.5.8/skill-file-retry.png)、[独立接收页](images/0.5.8/skill-file-paste-receiver.png)。
 
-## 待完成
+## 最终候选
 
-正式发布及公开更新检查。最终候选同步接口说明版本后重新构建并复测，日常安装和资料库保持原样。
+最终候选同步接口说明版本后重新构建并完成文件复制复测，安装、正式发布和公开更新检查均完成，日常安装和资料库保持原样。
 
 ## 审查与候选身份
 
@@ -38,6 +38,12 @@ GitHub草稿五个文件的服务端SHA-256与本地一致，16个历史Release�
 | 安装观察耗时 | 222138ms，约3分42秒；仅本次云机观察值，不是下载测速或本机速度保证 |
 
 [安装进度](images/0.5.8/upgrade-progress.png)、[升级后内容库](images/0.5.8/upgraded-content-library.png)、[复制日志](evidence/installer-copy-0.5.8.log)。未使用真实账号公开发布。
+
+## 正式发布与更新入口
+
+[v0.5.8](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.8)于2026-10-19T12:04:22Z发布为最新版，tag指向 `ab728d397a93f5a69175bd7b6db85dfbbf9d950a`，该提交的[源码CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39249121012)通过。最终五个发行文件的服务端SHA-256与本地一致，旧16个Release文件保持不变，见[资产核对](evidence/assets-0.5.8.json)。
+
+保留的原始0.5.7客户端通过原GitHub更新配置发现0.5.8，0.5.8客户端显示已是最新；没有替换源、请求下载或安装。见[旧版检查](evidence/content-update-0.5.7-to-0.5.8.json)、[新版检查](evidence/content-update-0.5.8-to-0.5.8.json)，以及[旧版截图](images/0.5.8/update-check-0.5.7.png)、[新版截图](images/0.5.8/update-check-0.5.8.png)。源码ZIP固定为发行时快照，发布后的检查证据补充在主分支，不再替换已发布资产。
 
 ## 兼容边界
 
