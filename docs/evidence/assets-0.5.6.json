@@ -1,7 +1,7 @@
 {
   "version": "0.5.6",
-  "draft": true,
-  "verifiedAt": "2026-10-19T10:15:15.865Z",
+  "draft": false,
+  "verifiedAt": "2026-10-19T10:28:45.691Z",
   "preservedVersions": [
     "v0.3.0",
     "v0.3.1",
@@ -31,8 +31,8 @@
     },
     {
       "name": "MediaSail-0.5.6-source.zip",
-      "size": 85136006,
-      "digest": "sha256:7f7757a97a1487d423a1a890599f39709efc82cdef7fbfadb35a58f45d20dca5"
+      "size": 85280402,
+      "digest": "sha256:cdec162b0ac15faf59c4639ae88aac13288dec40832349d05ad4998c745fb47f"
     },
     {
       "name": "latest.yml",
@@ -42,7 +42,7 @@
     {
       "name": "SHA256SUMS.txt",
       "size": 379,
-      "digest": "sha256:b79e42f4e5fd8d6127310ae110a2c2e91edf6a4533cfe6f98e5928cd34f349f2"
+      "digest": "sha256:60cdfdcdb293e6629457836b4273a7a76b3328fe2b7c7983494682e9be77f91c"
     }
   ]
 }

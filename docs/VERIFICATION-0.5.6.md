@@ -1,6 +1,6 @@
 # MediaSail 0.5.6 验证记录
 
-状态：开发、源码检查、打包界面及隔离真实升级均通过；正式发布后的公开更新检查另列记录。
+状态：开发、源码检查、打包界面、隔离真实升级及发布后的公开更新检查均通过，已正式发布。
 
 ## 已取得的反馈
 
@@ -40,6 +40,7 @@
 - 安装包：263779038 字节（约 251.56 MiB），SHA-256 `60b37c664accd9f29e3ed1ca9674551bca4e59695e051d1fe32bb7a99ad63822`。本地 SHA-512、GitHub 服务端摘要和真实安装记录相互一致。
 - 五个发行资产已核对，14 个旧 Release 的资产保持不变，包括未发行的 0.5.1 草稿；最终资产记录见 `evidence/assets-0.5.6.json`。源代码 ZIP 中的资产记录是生成时快照，发行文件校验以同批 `SHA256SUMS.txt` 为准。
 - 本机日常安装 `D:\mediasail` 和资料库未操作。真实升级发生在临时 GitHub-hosted Windows，使用合成资料，没有真实账号公开发布。
-- 正式发布后，使用原版 0.5.5 与当前 0.5.6 的 GitHub 更新配置检查；不请求下载或安装。公开结果将在本记录及对应 evidence 中补充。
+- [正式版本 v0.5.6](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.6) 于 2026-10-19 发布，tag 指向 `b16c6e959ec06eae668d792be75113f06eb19c5b`。该提交源码 CI [通过](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39237619606)，发行资产服务端摘要再次核对一致。
+- 发布后使用原版 0.5.5 的 GitHub 更新配置实际检查，结果为发现 0.5.6；使用当前 0.5.6 检查为已是最新。均只读取公开更新元数据，没有请求下载或安装。结果见 [旧版检查](evidence/content-update-0.5.5-to-0.5.6.json)、[新版检查](evidence/content-update-0.5.6-to-0.5.6.json)，截图为 [旧版](images/0.5.6/update-check-0.5.5.png)、[新版](images/0.5.6/update-check-0.5.6.png)。
 
 以上源码检查不能代替安装验收，合成资料测试不能代表真实平台发布成功。
