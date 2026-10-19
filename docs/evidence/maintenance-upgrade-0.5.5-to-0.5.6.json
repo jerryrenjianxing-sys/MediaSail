@@ -1,0 +1,59 @@
+{
+  "from": "0.5.5",
+  "to": "0.5.6",
+  "verificationCommit": "c17347d4200b3ac4062a97138f578bea678a3185",
+  "workflowRun": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39236126328",
+  "passed": true,
+  "startedAt": "2026-10-19T10:16:09.659Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "genuine NSIS /S --updated --force-run, no /D update override",
+  "syntheticDataOnly": true,
+  "publications": 0,
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.5.5-win-x64-Setup.exe",
+      "sha256": "67def2e003b3b02b5a5c0f3d0251be2eac320108da52b34d3383a039716392d9",
+      "bytes": 262990773
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.6-win-x64-Setup.exe",
+      "sha256": "60b37c664accd9f29e3ed1ca9674551bca4e59695e051d1fe32bb7a99ad63822",
+      "bytes": 263779038
+    }
+  },
+  "phase": "passed",
+  "lastInstallerWindows": [],
+  "baselineCacheVerified": true,
+  "legacyPartitionFiles": 22,
+  "customFilesSeeded": true,
+  "installMs": 325770,
+  "registrationAfter": [
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-39236126328\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.6",
+      "location": null
+    },
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-39236126328\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.6",
+      "location": null
+    }
+  ],
+  "originalFilesRetained": 34,
+  "librarySelectionRetained": true,
+  "currentInstallerCacheVerified": true,
+  "legacyAitoPartitionByteRetained": true,
+  "embeddedAitoRuntimeAbsent": true,
+  "profileRevisionVerified": true,
+  "projectFolderActionVerified": true,
+  "categoryPatchPreservedOtherMetadata": true,
+  "normalRestarts": 2,
+  "dataAndSessionRetentionVerified": true,
+  "finishedAt": "2026-10-19T10:25:17.187Z"
+}

@@ -1,6 +1,6 @@
 # MediaSail 0.5.6 验证记录
 
-状态：开发与隔离验收进行中，尚未发布；本文件逐项补充实际结果。
+状态：开发、源码检查、打包界面及隔离真实升级均通过；正式发布后的公开更新检查另列记录。
 
 ## 已取得的反馈
 
@@ -17,10 +17,29 @@
 - matt 增量复核完成：Standards 无确认违例，Spec 已关闭 P1，无新增缺口。
 - 外部 PowerShell 实际消费随包 Skill：在线身份核对、下载 ZIP、直接执行中文画像版本示例、登记成果并由内容库读回均通过。Windows PowerShell 5.1 原先错误解码响应中文，红测复现后改为明确 UTF-8 读取原始响应；修正后的原中文与新增中文同时保留，见 `evidence/agent-profile-0.5.6.json`。
 - [GitHub 干净环境源码检查](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39235758868) 通过，使用与本地相同的 `npm run check`，没有以准备依赖或部分测试代替完整入口。
+- [候选提交 c17347d 的重复 CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39236100473) 同样通过：110 项 Node、79 项 Python 全部通过。本机因没有符号链接权限跳过的一项在该 Windows runner 也通过。
 
-## 待完成
+## 真实安装升级
 
-- 最终资产核验、隔离真实 0.5.5 → 0.5.6 升级与两次正常重启。
-- GitHub 草稿核验、正式发布及公开更新检查。
+[独立 Windows 验收](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39236126328) 使用 GitHub 正式 0.5.5 安装包和校验过的 0.5.6 草稿资产。实际 NSIS 更新参数为 `/S --updated --force-run`，未传入 `/D` 覆盖位置。通过结果见 [原始记录](evidence/maintenance-upgrade-0.5.5-to-0.5.6.json)。
+
+| 核对项 | 结果 |
+| --- | --- |
+| 安装位置和登记 | 沿用含中文空格的旧安装目录，无默认目录旁装 |
+| 资料库、画像、合成登录资料、旧发布记录、自定义脚本及 Skill | 34 个受核对文件保留；旧 AitoEarn 分区 22 个文件字节不变 |
+| 当前缓存和画像版本 | 缓存与候选安装包哈希相同，画像 revision 与原始字节一致 |
+| 正常退出和重新打开 | 连续两次正常重启，资料保留，无空闲任务误提示 |
+| 安装观察耗时 | 325770 ms，约 5 分 26 秒；这是本次云机覆盖安装观察值，不是下载测速或用户电脑耗时承诺 |
+
+[安装进度](images/0.5.6/upgrade-progress.png)、[升级后内容库](images/0.5.6/upgraded-content-library.png)、[安装复制日志](evidence/installer-copy-0.5.6.log)。复制阶段本身约 3 秒，安装观察值还包括旧版卸载、校验和更新流程，未将整段时间归因于复制。
+
+## 候选身份与发布
+
+- 运行代码及 Skill 候选来源为 `9634a0d91b8e5a1c5f5967e8ec8572732ee51752`；`c17347d4200b3ac4062a97138f578bea678a3185` 仅补充测试和证据，使用它完成云端源码与真实安装验收。后续记录提交不改变运行代码。
+- 最终打包 `app.asar` SHA-256：`10e19834464abe3a94cdb19ee79199deba2986a7d24d2c0a659446c66f92f820`，与打包界面回归所测一致。
+- 安装包：263779038 字节（约 251.56 MiB），SHA-256 `60b37c664accd9f29e3ed1ca9674551bca4e59695e051d1fe32bb7a99ad63822`。本地 SHA-512、GitHub 服务端摘要和真实安装记录相互一致。
+- 五个发行资产已核对，14 个旧 Release 的资产保持不变，包括未发行的 0.5.1 草稿；最终资产记录见 `evidence/assets-0.5.6.json`。源代码 ZIP 中的资产记录是生成时快照，发行文件校验以同批 `SHA256SUMS.txt` 为准。
+- 本机日常安装 `D:\mediasail` 和资料库未操作。真实升级发生在临时 GitHub-hosted Windows，使用合成资料，没有真实账号公开发布。
+- 正式发布后，使用原版 0.5.5 与当前 0.5.6 的 GitHub 更新配置检查；不请求下载或安装。公开结果将在本记录及对应 evidence 中补充。
 
 以上源码检查不能代替安装验收，合成资料测试不能代表真实平台发布成功。
