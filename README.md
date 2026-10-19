@@ -4,13 +4,13 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.6 更新说明](docs/RELEASE-0.5.6.md) · [验证记录](docs/VERIFICATION-0.5.6.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.7 更新说明](docs/RELEASE-0.5.7.md) · [验证记录](docs/VERIFICATION-0.5.7.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前版本为 **0.5.6**，源码、打包界面和真实升级验收已通过，详见验证记录。本版统一未保存编辑保护，为画像文件增加版本冲突核对；保留用户草稿并展示外部最新内容。AI 发布继续用默认浏览器打开官网。内容库分类、搜索、筛选和归档编辑、直接选库及现有业务沿用，旧项目与历史资料原位保留。
+当前源码为 **0.5.7**，候选验收及发布状态见验证记录。首页可复制可改名的 MD 接入文件，也可选择复制文字；接入卡提供完整轻量连接命令，本机 Skill 优先，详细业务资料按需读取。文件粘贴支持以目标 Agent 为准。现有编辑保护、业务能力、默认浏览器 AI 发布与资料库机制沿用，旧项目与历史资料原位保留。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 

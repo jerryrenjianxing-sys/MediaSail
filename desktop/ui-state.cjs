@@ -1,7 +1,7 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const crypto=require('node:crypto');
-const KEYS=new Set(['mediasail_selected_profile','easel_sessions','easel_active_session','easel_publish_draft','easel_theme','easel_onboarding_seen','easel_analytics','easel_whoami','easel_model_lists','easel_chat_reset_20260902']);
+const KEYS=new Set(['mediasail_skill_filename','mediasail_selected_profile','easel_sessions','easel_active_session','easel_publish_draft','easel_theme','easel_onboarding_seen','easel_analytics','easel_whoami','easel_model_lists','easel_chat_reset_20260902']);
 const LEGACY_KEYS=new Set([...KEYS,'easel-sessions',...['sessions','active_session','publish_draft','onboarding_seen'].map(s=>'postcraft_'+s)]);
 const canonical=value=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 function trustedStateSender(event,main,origin){

@@ -34,23 +34,31 @@ def register(app, info):
 
     def connect(info):
         directory = Path(info["skillDir"])
-        return f"""请使用 MediaSail Skill 与我协作。
+        discovery = info.get('discoveryFile') or info['connectionFile']
+        literal = str(discovery).replace("'", "''")
+        return f"""# 使用本机 MediaSail 与我协作
+
 MediaSail 保存我的画像、受众、运营分析、历史内容和素材；你可以结合这些背景发挥自己的研究、策划、创作与开发能力，并把有用成果和经验整理回软件。
 
-本机连接资料：{info['connectionFile']}
-发现入口：{info.get('discoveryFile') or info['connectionFile']}
-当前资料库：{info.get('libraryRoot') or info.get('workspace') or info.get('dataDir') or '旧连接资料未提供，请查当前连接文件'}
-当前工作目录：{info.get('workspace') or '旧连接资料未提供，请查当前连接文件'}
+发现入口：{discovery}
 本机完整 Skill：{directory / 'SKILL.md'}
-当前服务：{info['baseUrl']}
-当前界面画像：{info.get('selectedProfile') or '尚未选择'}（具体任务使用哪份画像，请结合用户任务确认，不作为其他 Agent 的全局任务状态）
-完整 Skill 包：{info['baseUrl']}/api/v1/skill
+复制时资料库：{info.get('libraryRoot') or info.get('workspace') or info.get('dataDir')}
+复制时界面画像：{info.get('selectedProfile') or '尚未选择'}（具体任务使用任务指定的画像）
 
-请先读取本机 SKILL.md；也可以下载 Skill 包，解压后读取 mediasail/SKILL.md。后续需要工具、接口、数据或源码说明时，再查对应 references。
-服务地址和资料库可能随重启或切换而改变，调用前重新读取连接资料，通过 scripts/mediasail.ps1 check 核对当前实例。辅助脚本会从发现入口追踪当前连接文件。运行数据目录为：{info['dataDir']}。
-画像、素材、成品和运营方法直接读写当前工作目录，与软件控制台使用同一份资料，无需另复制一套。
+Windows 轻量连接命令（可直接运行，使用软件提供的运行环境）：
 
-初次接入时，简短告诉我实际连接情况、是否找到了工具与资料，然后重点介绍你能结合 MediaSail 帮我做什么。未检测的状态不要说成已连接；如果我同时给了任务，就自然继续任务。这段介绍不需要每轮重复。
+```powershell
+$discovery = '{literal}'
+$info = Get-Content -LiteralPath $discovery -Raw -Encoding UTF8 | ConvertFrom-Json
+if (-not $info.skillDir) {{ throw '请先打开 MediaSail 并选择资料库。' }}
+& (Join-Path $info.skillDir 'scripts/mediasail.ps1') check --data-dir (Split-Path -Parent $discovery)
+```
+
+软件重启或切库后，以发现入口和连接结果中的当前路径为准，再读取对应 SKILL.md。它说明工具、方法与资料在何处，相关 references 按任务查阅。画像、素材、成品和方法直接读写同一工作区。
+
+初次接入时简短反馈实际服务状态、资料是否找到和能帮我做什么；已有任务就自然继续。不需要为接入遍历画像、测试平台或运行全量自检，也不需要每轮重复检查。未检测的状态如实说明；离线仍可读本机资料和执行本地业务计算，在线动作需启动软件。
+
+仅在本机文件无法访问时，备用完整 Skill ZIP：{info['baseUrl']}/api/v1/skill（地址也是复制时快照）。云端或其他电脑上的 Agent 需要本机执行能力，不能靠反复访问自己的 localhost 连接这台电脑。
 """
 
     @app.get("/api/agent-info")

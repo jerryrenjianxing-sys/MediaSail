@@ -198,7 +198,11 @@ class SkillDiscovery(unittest.IsolatedAsyncioTestCase):
                 response = await client.get('/api/agent-info')
                 self.assertEqual(response.json()['selectedProfile'], '新选择 画像')
                 self.assertEqual(response.headers['cache-control'], 'no-store')
-                self.assertIn('新选择 画像', (await client.get('/api/platform-skill?format=connect')).text)
+                card = (await client.get('/api/platform-skill?format=connect')).text
+                self.assertIn('新选择 画像', card)
+                self.assertIn('```powershell', card)
+                self.assertIn('Get-Content -LiteralPath', card)
+                self.assertIn('仅在本机文件无法访问时', card)
                 self.assertIn('测试资料', (await client.get('/api/platform-skill?format=markdown')).text)
                 self.assertTrue((await client.get('/api/v1/skill')).content.startswith(b'PK'))
                 info['instanceId'] = 'new-owner'

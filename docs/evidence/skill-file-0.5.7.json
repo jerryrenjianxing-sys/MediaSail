@@ -1,0 +1,21 @@
+{
+  "version": "0.5.7",
+  "passed": true,
+  "checks": [
+    "real Windows file-drop clipboard points to an exact UTF-8 MD snapshot",
+    "independent Chromium input receives the actual named MD file and full bytes without text fallback",
+    "generated complete command connects using current discovery without ZIP or full self-test",
+    "filename editor validates, preserves cancelled drafts and creates independent renamed copies",
+    "clipboard failure offers real text fallback and denied text copying retains manual copy",
+    "saved filename and copied files survive normal quit/restart and delayed clipboard reading",
+    "the original copied card resolves a different library and port through current discovery"
+  ],
+  "syntheticDataOnly": true,
+  "messagesSent": 0,
+  "targetClients": {
+    "trae": "not verified; native UI helper unavailable",
+    "codex": "not verified; native UI helper unavailable"
+  },
+  "connectionCommandMs": 677,
+  "cacheFile": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\Skill 文件 # % 1792407176473\\中文 空格资料库\\runtime\\cache\\agent-share\\copy-2jUG47\\我的运营 # %.md"
+}

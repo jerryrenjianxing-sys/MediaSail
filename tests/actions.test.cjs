@@ -87,11 +87,11 @@ test('filesystem permission and OS launcher failures are returned without claimi
   f.shell.openPath=async()=>{throw Error('launcher unavailable');};result=await f.handler(f.event,'open-project-folder','项目');assert.equal(result.ok,false);assert.match(result.error,/文件管理器.*launcher unavailable/);
 });
 
-test('preload exposes exactly three narrow actions and propagates explicit failures',async()=>{
+test('preload exposes narrow desktop actions and propagates explicit failures',async()=>{
   const exposed={},calls=[];let response={ok:true,data:true};
   const electron={contextBridge:{exposeInMainWorld:(name,value)=>{exposed[name]=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return response;},on:()=>{},removeListener:()=>{}}};
   vm.runInNewContext(await fs.readFile(path.join(__dirname,'../desktop/preload.cjs'),'utf8'),{require:id=>{assert.equal(id,'electron');return electron;}});
-  assert.equal(exposed.desktopAito,undefined);assert.deepEqual(Object.keys(exposed.desktopActions).sort(),['openAitoHistory','openAitoearn','openProjectFolder']);
+  assert.equal(exposed.desktopAito,undefined);assert.deepEqual(Object.keys(exposed.desktopActions).sort(),['copySkillFile','openAitoHistory','openAitoearn','openProjectFolder']);
   await exposed.desktopActions.openAitoearn('https://other.example');await exposed.desktopActions.openProjectFolder('中文 项目');await exposed.desktopActions.openAitoHistory('C:\\outside');
   assert.deepEqual(calls,[['actions:call','open-aitoearn',undefined],['actions:call','open-project-folder','中文 项目'],['actions:call','open-aito-history',undefined]]);
   response={ok:false,error:'系统无法打开'};await assert.rejects(exposed.desktopActions.openAitoearn(),/系统无法打开/);

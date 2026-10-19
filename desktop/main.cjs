@@ -1,4 +1,4 @@
-const {app,BrowserWindow,Tray,Menu,nativeImage,ipcMain,shell,dialog}=require('electron');
+const {app,BrowserWindow,Tray,Menu,nativeImage,ipcMain,shell,dialog,clipboard,ClipboardItem}=require('electron');
 const fs=require('node:fs');
 const path=require('node:path');
 const {pathToFileURL}=require('node:url');
@@ -7,6 +7,7 @@ const library=require('./library.cjs');
 const {acquire}=require('./single-instance.cjs');
 const {freePort,environment,startSupervisor,stopSupervisor,state}=require('./runtime.cjs');
 const {createActionsHandler}=require('./actions.cjs');
+const {createSkillShareHandler,validateSkillFileName}=require('./skill-share.cjs');
 const {Updates}=require('./updates.cjs');
 const {AgentConnection,writeDisconnectedDiscovery}=require('./agent-connection.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
@@ -74,6 +75,7 @@ if(!locked){app.quit();} else {
   });
   let libraryChanging=false;
   ipcMain.handle('actions:call',createActionsHandler({shell,main:()=>window?.webContents,localOrigin:()=>baseUrl,outputs:()=>layout.workspace?path.join(layout.workspace,'outputs'):null,data:()=>data,available:()=>ready&&!quitting&&!libraryChanging}));
+  ipcMain.handle('skill:copy-file',createSkillShareHandler({clipboard,ClipboardItem,main:()=>window?.webContents,localOrigin:()=>baseUrl,data:()=>data,available:()=>ready&&!quitting&&!libraryChanging}));
   ipcMain.handle('library:call',async(event,action,input)=>{
     if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面不能操作资料库。'};
     try{
@@ -110,7 +112,7 @@ if(!locked){app.quit();} else {
     if(!trustedStateSender(event,window?.webContents,baseUrl))return {ok:false,error:'此页面无权访问界面数据。'};
     try{
       if(action==='load')return {ok:true,data:uiState.snapshot()};
-      if(action==='set'||action==='remove'){const result=await uiState.change(input?.key,action==='remove'?null:input?.value);if(input?.key==='mediasail_selected_profile')agentConnection.selectProfile(action==='remove'?null:input?.value);return {ok:true,data:result};}
+      if(action==='set'||action==='remove'){if(action==='set'&&input?.key==='mediasail_skill_filename')validateSkillFileName(input.value);const result=await uiState.change(input?.key,action==='remove'?null:input?.value);if(input?.key==='mediasail_selected_profile')agentConnection.selectProfile(action==='remove'?null:input?.value);return {ok:true,data:result};}
       if(action==='flush')return {ok:true,data:await uiState.flush()};
       throw new Error('不支持的界面数据操作。');
     }catch(e){report('界面数据操作失败：'+e.message);return {ok:false,error:'界面数据未能保存，请重试。'+e.message};}

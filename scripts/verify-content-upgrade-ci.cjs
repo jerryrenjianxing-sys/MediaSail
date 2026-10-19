@@ -106,8 +106,13 @@ async function main(){
   await inspector.evaluate(render(`window.desktopActions.openProjectFolder(${JSON.stringify(project)}).then(()=>true)`));
   assert.deepEqual(await inspector.evaluate('globalThis.__upgradeOpened'),[directory]);result.projectFolderActionVerified=true;
   await inspector.evaluate(`(async()=>{const image=await ${localWindow}.webContents.capturePage();process.mainModule.require('node:fs').writeFileSync(${JSON.stringify(path.join(evidence,'upgraded-content-library.png'))},image.toPNG());return true;})()`);
+  if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1'){
+   assert.equal(await inspector.evaluate(render("typeof window.desktopActions.copySkillFile")),'function');
+   await inspector.evaluate(render("window.desktopUiState.call('set',{key:'mediasail_skill_filename',value:'升级验收接入.md'}).then(()=>true)"));
+  }
   result.categoryPatchPreservedOtherMetadata=true;await phase('normal-restarts');await quit();
-  for(let i=0;i<2;i++){cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();}
+  for(let i=0;i<2;i++){cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')assert.equal(JSON.parse(await fs.readFile(path.join(live.dataDir,'ui-state.json'),'utf8')).values.mediasail_skill_filename,'升级验收接入.md');}
+  if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')result.skillFilePreferenceRetained=true;
   assert.equal(fss.existsSync(path.join(evidence,'exit-dialogs.jsonl')),false,'Idle local-content checks must not trigger a task confirmation');result.normalRestarts=2;result.dataAndSessionRetentionVerified=true;result.passed=true;await phase('passed');
  }catch(error){result.error=error.stack||String(error);await persist();throw error;}
  finally{inspector?.close();if(setupChild?.exitCode===null)cp.spawnSync('taskkill.exe',['/PID',String(setupChild.pid),'/T','/F'],{windowsHide:true});for(const row of owned().filter(row=>!row.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(row.ProcessId),'/T','/F'],{windowsHide:true});result.finishedAt=new Date().toISOString();await persist();}

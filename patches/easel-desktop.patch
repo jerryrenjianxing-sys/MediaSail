@@ -21511,14 +21511,16 @@ index 42545b5..ad09d11 100644
        )}
 diff --git a/web/frontend/src/components/AgentConnectPage.tsx b/web/frontend/src/components/AgentConnectPage.tsx
 new file mode 100644
-index 0000000..4bd7f26
+index 0000000..b005240
 --- /dev/null
 +++ b/web/frontend/src/components/AgentConnectPage.tsx
-@@ -0,0 +1,245 @@
+@@ -0,0 +1,300 @@
 +import { useEffect, useRef, useState } from "react";
 +
 +import { loadSkillMarkdown, fetchLocalApi } from "../lib/agent-home-loader";
 +import { PRODUCT_ICON } from "../lib/branding";
++import { appStorage } from "../lib/appStorage";
++import { registerEditing, requestLeave } from "../lib/unsaved";
 +import AgentThemeToggle from "./AgentThemeToggle";
 +const API = "";
 +import "../styles/agent-home.css";
@@ -21588,6 +21590,21 @@ index 0000000..4bd7f26
 +
 +export default function AgentConnectPage({ onDashboard }: { onDashboard: () => void }) {
 +  const [copy, setCopy] = useState<ActionState>("idle");
++  const desktop = Boolean(window.desktopActions?.copySkillFile);
++  const [fileName, setFileName] = useState(() => appStorage.getItem('mediasail_skill_filename') || 'MediaSail 接入.md');
++  const [renaming, setRenaming] = useState(false), [name, setName] = useState('');
++  const [savingName, setSavingName] = useState(false), [nameError, setNameError] = useState('');
++  const [feedback, setFeedback] = useState('');
++  const renameDialog = useRef<HTMLDialogElement>(null), menu = useRef<HTMLDetailsElement>(null);
++  const nameInput = useRef<HTMLInputElement>(null), nameOperation = useRef(false);
++  const edits = useRef({renaming, name, fileName}); edits.current = {renaming, name, fileName};
++  useEffect(() => registerEditing('skill-file-name', () => ({label:'Skill 文件名', saving:nameOperation.current,
++    dirty:edits.current.renaming && edits.current.name + '.md' !== edits.current.fileName})), []);
++  useEffect(() => { if (renaming) { renameDialog.current?.showModal(); nameInput.current?.focus(); nameInput.current?.select(); } }, [renaming]);
++  useEffect(() => {
++    const close = (event: PointerEvent) => { if (!menu.current?.contains(event.target as Node)) menu.current?.removeAttribute('open'); };
++    document.addEventListener('pointerdown', close); return () => document.removeEventListener('pointerdown', close);
++  }, []);
 +  const [manual, setManual] = useState(""),
 +    [paused, setPaused] = useState(false);
 +  const copying = useRef(false),
@@ -21600,11 +21617,15 @@ index 0000000..4bd7f26
 +      manualText.current?.select();
 +    }
 +  }, [manual]);
-+  async function copySkill() {
++  async function copySkill(asFile = desktop) {
 +    if (copying.current) return;
 +    copying.current = true;
 +    setCopy("loading");
 +    try {
++      if (asFile && window.desktopActions) {
++        await window.desktopActions.copySkillFile(fileName);
++        setFeedback('文件已复制，可到 Agent 中粘贴。'); setCopy('done'); return;
++      }
 +      const markdown = await loadSkillMarkdown(() =>
 +        fetchLocalApi(
 +          `${API}/api/platform-skill?format=connect`,
@@ -21614,16 +21635,33 @@ index 0000000..4bd7f26
 +      );
 +      try {
 +        await navigator.clipboard.writeText(markdown);
++        setFeedback('接入文字已复制，可粘贴给你的 Agent。');
 +        setCopy("done");
 +      } catch {
 +        setCopy("idle");
 +        setManual(markdown);
 +      }
-+    } catch {
++    } catch (error) {
++      setFeedback(error instanceof Error ? error.message : '复制失败，请重试或复制文字。');
 +      setCopy("error");
 +    } finally {
 +      copying.current = false;
 +    }
++  }
++  function startRename() { menu.current?.removeAttribute('open'); setName(fileName.slice(0, -3)); setNameError(''); setRenaming(true); }
++  async function closeRename() {
++    if (await requestLeave({reason:'关闭文件名编辑',scope:['skill-file-name']})) { edits.current.renaming = false; setRenaming(false); renameDialog.current?.close(); }
++  }
++  async function saveName(event: React.FormEvent) {
++    event.preventDefault(); if (nameOperation.current) return;
++    if (!name.trim()) { setNameError('请输入文件名。'); return; }
++    nameOperation.current = true; setSavingName(true); setNameError('');
++    try {
++      await appStorage.saveItem('mediasail_skill_filename', name + '.md');
++      setFileName(name + '.md'); edits.current.renaming = false; setRenaming(false); renameDialog.current?.close();
++      setCopy('idle'); setFeedback('');
++    } catch (error) { setNameError(error instanceof Error ? error.message : '文件名未能保存，请重试。'); }
++    finally { nameOperation.current = false; setSavingName(false); }
 +  }
 +  return (
 +    <section className="skill-home" aria-label="连接 Agent">
@@ -21649,13 +21687,14 @@ index 0000000..4bd7f26
 +        <p className="skill-description">
 +          把画像、分析、素材和工具，带给你熟悉的 Agent。
 +          <br />
-+          复制 Skill，粘贴给 Agent 即可开始。
++          复制接入文件，粘贴给 Agent 即可开始。
 +        </p>
 +        <div className="skill-actions">
 +          <button type="button" className="skill-button skill-button-primary" onClick={onDashboard}>
 +            <Icon kind="grid" />
 +            控制台
 +          </button>
++          <div className="skill-copy-group">
 +          <button
 +            className="skill-button skill-button-secondary"
 +            type="button"
@@ -21667,8 +21706,16 @@ index 0000000..4bd7f26
 +              ? "正在读取…"
 +              : copy === "done"
 +                ? "已复制"
-+                : "复制 Skill"}
++                : desktop ? "复制 Skill 文件" : "复制文字"}
 +          </button>
++          {desktop && <details ref={menu} className="skill-copy-menu">
++            <summary aria-label="Skill 复制选项">⌄</summary>
++            <div className="skill-copy-options">
++              <button type="button" disabled={copy === 'loading'} onClick={() => {menu.current?.removeAttribute('open');void copySkill(false);}}>复制文字</button>
++              <button type="button" disabled={copy === 'loading'} onClick={startRename}>修改文件名</button>
++            </div>
++          </details>}
++          </div>
 +        </div>
 +        <p className="skill-format">
 +          复制接入 · 本地运行 · 使用自己的 Agent
@@ -21676,10 +21723,10 @@ index 0000000..4bd7f26
 +        <div className="skill-feedback" aria-live="polite" aria-atomic="true">
 +          {copy === "error" ? (
 +            <p className="skill-error">
-+              读取失败，请重试复制，或检查本机服务。
++              {feedback} {desktop && <button type="button" onClick={() => void copySkill(false)}>复制文字</button>}
 +            </p>
 +          ) : copy === "done" ? (
-+            <p>Skill 已复制，粘贴给你的 Agent 即可。</p>
++            <p>{feedback}</p>
 +          ) : null}
 +        </div>
 +
@@ -21733,6 +21780,14 @@ index 0000000..4bd7f26
 +          <Icon kind="grid" />控制台 <Icon kind="arrow" />
 +        </button>
 +      </footer>
++      <dialog ref={renameDialog} className="skill-copy-dialog skill-name-dialog" onCancel={event => {event.preventDefault();void closeRename();}}>
++        <form onSubmit={event => void saveName(event)}>
++          <h2>修改文件名</h2><p>只修改发送的接入文件名称，软件内部 Skill 保持原样。</p>
++          <label className="skill-name-input">文件名 <input ref={nameInput} aria-label="Skill 文件名" value={name} maxLength={97} disabled={savingName} onChange={event => setName(event.target.value)} /><span>.md</span></label>
++          {nameError && <p role="alert" className="skill-error">{nameError}</p>}
++          <div className="skill-actions"><button type="button" className="skill-button skill-button-secondary" disabled={savingName} onClick={() => void closeRename()}>取消</button><button type="submit" className="skill-button skill-button-primary" disabled={savingName}>{savingName ? '正在保存…' : '保存名称'}</button></div>
++        </form>
++      </dialog>
 +      <dialog
 +        ref={dialog}
 +        className="skill-copy-dialog"
@@ -25480,10 +25535,10 @@ index 9b3d69f..76fae10 100644
  /** 支持抓数据的平台 + 各自登录态。 */
 diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
 new file mode 100644
-index 0000000..c6ac75d
+index 0000000..d6dac43
 --- /dev/null
 +++ b/web/frontend/src/lib/appStorage.ts
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,62 @@
 +import { hasUnsavedEdits, requestLeave } from './unsaved';
 +
 +type Snapshot = {values: Record<string, string>; migration: {sessions: number; copies: number}};
@@ -25536,6 +25591,12 @@ index 0000000..c6ac75d
 +  await window.desktopUiState!.call('flush');
 +}
 +export const appStorage = {
++  async saveItem(key: string, value: string): Promise<void> {
++    if (!isDesktopStorage) { localStorage.setItem(key, value); return; }
++    if (!initialized) throw new Error('界面数据尚未加载。');
++    await window.desktopUiState!.call('set', {key, value});
++    values[key] = value;
++  },
 +  getItem(key: string): string | null {if (!isDesktopStorage) return localStorage.getItem(key); if (!initialized) throw new Error('界面数据尚未加载。'); return values[key] ?? null;},
 +  setItem(key: string, value: string) {if (!isDesktopStorage) return localStorage.setItem(key,value); if (!initialized) throw new Error('界面数据尚未加载。'); values[key]=value; write('set',{key,value});},
 +  removeItem(key: string) {if (!isDesktopStorage) return localStorage.removeItem(key); if (!initialized) throw new Error('界面数据尚未加载。'); delete values[key]; write('remove',{key});},
@@ -25598,15 +25659,16 @@ index f6dac0a..3f048f9 100644
        {
 diff --git a/web/frontend/src/lib/desktopActions.ts b/web/frontend/src/lib/desktopActions.ts
 new file mode 100644
-index 0000000..5779690
+index 0000000..6601640
 --- /dev/null
 +++ b/web/frontend/src/lib/desktopActions.ts
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,12 @@
 +export const AITOEARN_HOME = 'https://aitoearn.cn/zh-CN';
 +
 +declare global {
 +  interface Window {
 +    desktopActions?: {
++      copySkillFile(fileName: string): Promise<{fileName: string}>;
 +      openAitoearn(): Promise<void>;
 +      openProjectFolder(project: string): Promise<void>;
 +      openAitoHistory(): Promise<void>;
@@ -26128,10 +26190,10 @@ index dd33e5a..4eea955 100644
 +});
 diff --git a/web/frontend/src/styles/agent-home.css b/web/frontend/src/styles/agent-home.css
 new file mode 100644
-index 0000000..ded2e0a
+index 0000000..af4c058
 --- /dev/null
 +++ b/web/frontend/src/styles/agent-home.css
-@@ -0,0 +1,554 @@
+@@ -0,0 +1,566 @@
 +/* Skill landing: isolated from the management workspace. */
 +.skill-home {
 +  --sh-bg: #fafaf9;
@@ -26686,6 +26748,18 @@ index 0000000..ded2e0a
 +/* The landing owns the entire available viewport; the console stays unchanged. */
 +.app-layout-home .page-host { overflow-y: auto; }
 +.app-layout-home .page-host > .skill-home { flex: 1 0 auto; }
++.skill-copy-group { display: inline-flex; position: relative; }
++.skill-copy-group:has(details) > .skill-button { border-radius: 7px 0 0 7px; }
++.skill-copy-menu > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 100%; box-sizing: border-box; border: 1px solid var(--sh-line); border-left: 0; border-radius: 0 7px 7px 0; color: var(--sh-text); }
++.skill-copy-menu > summary::-webkit-details-marker { display: none; }
++.skill-copy-menu > summary:hover { background: var(--sh-line); }
++.skill-copy-options { position: absolute; right: 0; top: calc(100% + 7px); min-width: 160px; z-index: 10; padding: 6px; border: 1px solid var(--sh-line); border-radius: 8px; background: var(--sh-bg); box-shadow: 0 8px 24px #0002; }
++.skill-copy-options button { display: block; width: 100%; padding: 10px 16px; border: 0; border-radius: 5px; background: transparent; color: var(--sh-text); text-align: left; cursor: pointer; }
++.skill-copy-options button:hover { background: var(--sh-line); }
++.skill-name-input { display: flex; align-items: center; gap: 10px; color: var(--sh-text); }
++.skill-name-input input { min-width: 0; flex: 1; padding: 10px; border: 1px solid var(--sh-line); border-radius: 6px; color: var(--sh-text); background: var(--sh-bg); }
++.skill-name-dialog .skill-actions { justify-content: flex-end; }
++@media (max-width: 600px) { .skill-copy-group > .skill-button { min-width: 0; flex: 1; padding: 12px 8px; font-size: 12px; gap: 5px; } .skill-copy-menu > summary { width: 26px; } }
 diff --git a/web/frontend/src/styles/content-library.css b/web/frontend/src/styles/content-library.css
 new file mode 100644
 index 0000000..9d359fd
