@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "version": "0.5.7",
+  "desktopPreload": false,
+  "clipboardAdapter": "browser permission success/denial only",
+  "checks": [
+    "web renderer offers text only",
+    "same connection card",
+    "manual fallback on denial"
+  ],
+  "messagesSent": 0
+}

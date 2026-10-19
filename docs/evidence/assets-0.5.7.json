@@ -1,0 +1,49 @@
+{
+  "version": "0.5.7",
+  "draft": true,
+  "verifiedAt": "2026-10-19T11:00:30.468Z",
+  "preservedVersions": [
+    "v0.3.0",
+    "v0.3.1",
+    "v0.3.2",
+    "v0.3.3",
+    "v0.4.0",
+    "v0.4.1",
+    "v0.4.2",
+    "v0.4.3",
+    "v0.5.0",
+    "v0.5.1",
+    "v0.5.2",
+    "v0.5.3",
+    "v0.5.4",
+    "v0.5.5",
+    "v0.5.6"
+  ],
+  "assets": [
+    {
+      "name": "MediaSail-0.5.7-win-x64-Setup.exe",
+      "size": 263782899,
+      "digest": "sha256:fc500825687c167fa4e20dca953c6d07d5de24ed2f5814237093d210742447b3"
+    },
+    {
+      "name": "MediaSail-0.5.7-win-x64-Setup.exe.blockmap",
+      "size": 273659,
+      "digest": "sha256:9f383cbb536db0216c0cad62766042a9e3cb4b35c5f7db04ef3d1c9ae7a982dd"
+    },
+    {
+      "name": "MediaSail-0.5.7-source.zip",
+      "size": 89760572,
+      "digest": "sha256:b12c0158aa123adba1d02067abba917fe6f326d346f101bb95b61300275576fc"
+    },
+    {
+      "name": "latest.yml",
+      "size": 363,
+      "digest": "sha256:d70cc7ab4200c2e79058794975a966dc91226533bd632217cd41dce493956cb8"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 379,
+      "digest": "sha256:8801d6e6518bf5fe5ed21ceeb72447315bfb482e5d6364c44fd9569046eef643"
+    }
+  ]
+}
