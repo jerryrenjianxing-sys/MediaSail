@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "version": "0.5.6",
+  "passed": true,
+  "testedAt": "2026-10-19T10:02:27.899Z",
+  "realPackagedApplication": true,
+  "syntheticDataOnly": true,
+  "realAccountUsed": false,
+  "publications": 0,
+  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\内容分类 0.5.6 1792404130637\\共用 中文 空格资料库",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.6\\win-unpacked\\MediaSail.exe",
+  "testedAppAsarSha256": "10e19834464abe3a94cdb19ee79199deba2986a7d24d2c0a659446c66f92f820",
+  "checks": [
+    "用途分类及旧项目未分类，全部项目保持原目录",
+    "中文、大小写、目录、摘要、标签搜索及多维交集、零结果和清空筛选",
+    "成品预览、项目内筛选零结果可恢复，返回保留顶层搜索及分类",
+    "归档编辑、真实退出取消/离页/取消/切库保护、Agent并发冲突和重读，未提交字段及成品保留",
+    "慢保存时重复提交、离页和真实退出被阻止，完成后结果可读回",
+    "自定义旧值保留，写入失败保留编辑并允许取消",
+    "缺登记项目可补分类，损坏登记报错且原件保留",
+    "真实打包进程正常退出重启后沿用同一资料库与归档信息"
+  ],
+  "shots": [
+    "content-library-filtered.png",
+    "content-library-light.png",
+    "content-library-dark.png",
+    "content-editor-dark.png",
+    "content-editor-light.png",
+    "content-editor-conflict.png"
+  ],
+  "errors": []
+}

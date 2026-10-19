@@ -1,0 +1,121 @@
+{
+  "version": "0.5.6",
+  "passed": true,
+  "checks": [
+    "cancelled page and profile changes preserve the draft",
+    "library change refuses dirty edits; opening updates preserves edits without a discard prompt",
+    "cancelled real quit preserves edits and rapid quit requests do not duplicate prompts",
+    "update window shares edit protection; cancelled install never calls the installer Adapter",
+    "profile conflict preserves draft, displays latest content and rejects a second external change",
+    "clean idea closes silently; cancelled dirty close preserves its fields",
+    "calendar close uses the same cancellation protection",
+    "initial profile wizard retains inputs after cancelling close",
+    "metadata cancellation retains fields and explicit discard does not modify the project",
+    "synthetic account credentials and SMS close preserve entered values when cancelled",
+    "native publishing draft survives page changes without a redundant discard prompt",
+    "rejected installer launch restores local services and an interactive main page"
+  ],
+  "screenshots": [
+    "reliable-profile-light.png",
+    "reliable-profile-dark.png"
+  ],
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\可靠编辑 0.5.6 1792404058991",
+  "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.6\\win-unpacked\\MediaSail.exe",
+  "syntheticDataOnly": true,
+  "publications": 0,
+  "updateAdapter": "synthetic third-party SDK; no actual installer or download",
+  "video": "reliable-editing.webm",
+  "dialogs": [
+    {
+      "type": "confirm",
+      "message": "画像还有未保存的修改。放弃修改并切换页面吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "画像还有未保存的修改。放弃修改并切换画像吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "画像还有未保存的修改。放弃修改并退出或安装更新吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "画像还有未保存的修改。放弃修改并退出或安装更新吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "页面已显示这个维度的最新内容。用当前草稿覆盖你刚核对的版本吗？如果它再次变化，本次保存仍会停止。",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "页面已显示这个维度的最新内容。用当前草稿覆盖你刚核对的版本吗？如果它再次变化，本次保存仍会停止。",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "选题还有未保存的修改。放弃修改并关闭选题编辑吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "选题还有未保存的修改。放弃修改并关闭选题编辑吗？",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "日历还有未保存的修改。放弃修改并关闭日历编辑吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "日历还有未保存的修改。放弃修改并关闭日历编辑吗？",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "新画像配置还有未保存的修改。放弃修改并关闭画像配置吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "新画像配置还有未保存的修改。放弃修改并关闭画像配置吗？",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "归档信息还有未保存的修改。放弃修改并关闭归档编辑吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "归档信息还有未保存的修改。放弃修改并关闭归档编辑吗？",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "账号凭证还有未保存的修改。放弃修改并关闭账号配置吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "账号凭证还有未保存的修改。放弃修改并关闭账号配置吗？",
+      "accepted": true
+    },
+    {
+      "type": "confirm",
+      "message": "验证码还有未保存的修改。放弃修改并关闭验证码窗口吗？",
+      "accepted": false
+    },
+    {
+      "type": "confirm",
+      "message": "验证码还有未保存的修改。放弃修改并关闭验证码窗口吗？",
+      "accepted": true
+    }
+  ],
+  "rendererErrors": []
+}

@@ -1,0 +1,60 @@
+name: Verify maintenance upgrade
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Published baseline version
+        required: true
+        default: '0.5.5'
+      candidate:
+        description: Verified draft candidate version
+        required: true
+        default: '0.5.6'
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      MEDIASAIL_UPGRADE_FROM: ${{ inputs.baseline }}
+      MEDIASAIL_UPGRADE_TO: ${{ inputs.candidate }}
+      MEDIASAIL_VERIFY_CUSTOM_FILES: '1'
+      MEDIASAIL_EXPECT_PROFILE_REVISIONS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Download exact baseline and draft candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($entry in @(@{Version=$env:MEDIASAIL_UPGRADE_FROM;Directory='baseline'},@{Version=$env:MEDIASAIL_UPGRADE_TO;Directory='candidate'})){
+            if($entry.Version -notmatch '^\d+\.\d+\.\d+$'){throw 'Invalid exact version'}
+            $release=gh release view ('v'+$entry.Version) --json tagName,isDraft,assets | ConvertFrom-Json
+            if($LASTEXITCODE -ne 0 -or $release.tagName -cne ('v'+$entry.Version)){throw 'Exact release unavailable'}
+            if($entry.Directory -ceq 'candidate' -and -not $release.isDraft){throw 'Candidate must remain a draft until acceptance'}
+            if($entry.Directory -ceq 'baseline' -and $release.isDraft){throw 'Baseline must be published'}
+            $directory=Join-Path release-input $entry.Directory
+            New-Item -ItemType Directory $directory | Out-Null
+            $name='MediaSail-'+$entry.Version+'-win-x64-Setup.exe'
+            gh release download ('v'+$entry.Version) --pattern $name --pattern SHA256SUMS.txt --dir $directory
+            if($LASTEXITCODE -ne 0){throw 'Release download failed'}
+            $remote=@($release.assets | Where-Object {$_.name -ceq $name})
+            if($remote.Count -ne 1 -or $remote[0].digest -notmatch '^sha256:[a-f0-9]{64}$'){throw 'Missing official asset digest'}
+            $expected=$remote[0].digest.Substring(7)
+            $lines=@(Get-Content -LiteralPath (Join-Path $directory SHA256SUMS.txt) -Encoding UTF8 | Where-Object {$_ -match ('^[a-fA-F0-9]{64}\s+\*?'+[regex]::Escape($name)+'$')})
+            $asset=Get-Item -LiteralPath (Join-Path $directory $name)
+            if($lines.Count -ne 1 -or ($lines[0] -split '\s+')[0].ToLowerInvariant() -cne $expected -or $asset.Length -ne $remote[0].size -or (Get-FileHash -LiteralPath $asset.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expected){throw 'Installer checksum mismatch'}
+          }
+      - name: Real installation, retained library and two restarts
+        run: node scripts/verify-content-upgrade-ci.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediasail-maintenance-upgrade
+          path: installer-evidence/content-upgrade/
+          retention-days: 14

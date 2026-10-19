@@ -56,3 +56,17 @@ test('saving blocks interruption and library changes require clean drafts withou
   assert.match(notices[1], /保存或取消/);
   assert.equal(editing.read().dirty, true);
 });
+
+test('a failed decision releases the attempt and scoped registration cleanup preserves a replacement', async () => {
+  const { createEditingSession } = await import(moduleUrl);
+  const editing = createEditingSession();
+  const previous = editing.register('profile', () => ({ label: '旧画像', dirty: true, saving: false }));
+  const current = editing.register('profile', () => ({ label: '当前画像', dirty: true, saving: false }));
+  previous();
+  assert.equal(editing.read(['profile']).dirty, true);
+  assert.equal(editing.read(['calendar']).dirty, false);
+  await assert.rejects(editing.requestLeave({ reason: '退出', confirm: () => { throw Error('synthetic dialog failure'); } }), /synthetic/);
+  assert.equal(await editing.requestLeave({ reason: '退出', confirm: () => true }), true);
+  current();
+  assert.equal(editing.read().dirty, false);
+});

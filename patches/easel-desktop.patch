@@ -21256,7 +21256,7 @@ index fee8255..80a91db 100644
    );
  }
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..6f67765 100644
+index 42545b5..ad09d11 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
 @@ -5,7 +5,8 @@ import {
@@ -21477,6 +21477,38 @@ index 42545b5..6f67765 100644
                  )}
                </div>
              </div>
+@@ -349,6 +368,7 @@ export default function AccountsPage() {
+         <div className="overlay" onClick={closeQr}>
+           <div className="modal" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
+             onClick={(e) => e.stopPropagation()}>
++            <fieldset disabled={smsBusy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+             <h3 style={{ margin: '0 0 4px' }}>登录 {qr.name}</h3>
+             <div style={{ fontSize: 13, marginBottom: 14,
+               color: qr.state === 'success' ? 'var(--green)'
+@@ -394,6 +414,7 @@ export default function AccountsPage() {
+             <div style={{ marginTop: 16 }}>
+               <button className="btn" onClick={closeQr}>{qr.state === 'success' ? '完成' : '关闭'}</button>
+             </div>
++            </fieldset>
+           </div>
+         </div>
+       )}
+@@ -401,6 +422,7 @@ export default function AccountsPage() {
+       {cred && (
+         <div className="overlay" onClick={closeCred}>
+           <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
++            <fieldset disabled={credBusy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+             <h3 style={{ margin: '0 0 4px' }}>配置 {cred.name}</h3>
+             <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>
+               公众号用官方接口发布，需填开发者凭证（公众平台 → 设置与开发 → 开发接口管理）。<br />
+@@ -429,6 +451,7 @@ export default function AccountsPage() {
+               </button>
+               <button className="btn" onClick={closeCred}>关闭</button>
+             </div>
++            </fieldset>
+           </div>
+         </div>
+       )}
 diff --git a/web/frontend/src/components/AgentConnectPage.tsx b/web/frontend/src/components/AgentConnectPage.tsx
 new file mode 100644
 index 0000000..4bd7f26
@@ -21968,7 +22000,7 @@ index 6fcd5d0..c782a20 100644
 +  </div>;
  }
 diff --git a/web/frontend/src/components/CalendarPage.tsx b/web/frontend/src/components/CalendarPage.tsx
-index e5418f6..7017ff5 100644
+index e5418f6..49dee81 100644
 --- a/web/frontend/src/components/CalendarPage.tsx
 +++ b/web/frontend/src/components/CalendarPage.tsx
 @@ -1,4 +1,6 @@
@@ -22065,7 +22097,12 @@ index e5418f6..7017ff5 100644
            <button className="btn btn-sm" onClick={() => shift(-1)}><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={14} /></span></button>
            <button className="btn btn-sm" onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}>本月</button>
            <span className="cal-month">{monthLabel}</span>
-@@ -223,6 +250,8 @@ export default function CalendarPage() {
+@@ -219,10 +246,13 @@ export default function CalendarPage() {
+       {form && (
+         <div className="overlay" onClick={close}>
+           <div className="modal" style={{ width: 440, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
++            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                <h3 style={{ margin: 0 }}>{editing ? '编辑' : '新增'}{isEvent ? '平台活动' : '排期'}</h3>
                <button className="icon-btn" onClick={close}>×</button>
              </div>
@@ -22074,6 +22111,14 @@ index e5418f6..7017ff5 100644
              <label className="field-label">类型</label>
              <div style={{ display: 'flex', gap: 7 }}>
                <button className={`chip ${!isEvent ? 'active' : ''}`}
+@@ -302,6 +332,7 @@ export default function CalendarPage() {
+                 </button>
+               </div>
+             </div>
++            </fieldset>
+           </div>
+         </div>
+       )}
 diff --git a/web/frontend/src/components/ChatPage.tsx b/web/frontend/src/components/ChatPage.tsx
 index 0f5c8ed..1a6ae7b 100644
 --- a/web/frontend/src/components/ChatPage.tsx
@@ -22358,7 +22403,7 @@ index c151628..26b4f2e 100644
  
    render() {
 diff --git a/web/frontend/src/components/IdeasPage.tsx b/web/frontend/src/components/IdeasPage.tsx
-index f715205..76d1050 100644
+index f715205..0480486 100644
 --- a/web/frontend/src/components/IdeasPage.tsx
 +++ b/web/frontend/src/components/IdeasPage.tsx
 @@ -1,4 +1,6 @@
@@ -22431,13 +22476,14 @@ index f715205..76d1050 100644
        </div>
  
        <div className="kanban">
-@@ -89,12 +116,14 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -89,12 +116,15 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
        </div>
  
        {form && (
 -        <div className="overlay" onClick={() => setForm(null)}>
 +        <div className="overlay" onClick={close}>
            <div className="modal" style={{ width: 440, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
++            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                <h3 style={{ margin: 0 }}>{editId ? '编辑选题' : '新建选题'}</h3>
 -              <button className="icon-btn" onClick={() => setForm(null)}>×</button>
@@ -22448,7 +22494,7 @@ index f715205..76d1050 100644
              <label className="field-label">选题 *</label>
              <input className="field" value={form.title} autoFocus placeholder="想做的内容 / 角度"
                onChange={(e) => setForm({ ...form, title: e.target.value })} />
-@@ -112,8 +141,8 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -112,9 +142,10 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
                ))}
              </div>
              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
@@ -22457,8 +22503,10 @@ index f715205..76d1050 100644
 +              <button className="btn btn-sm" onClick={close}>取消</button>
 +              <button className="btn btn-sm btn-primary" onClick={save} disabled={saving || !form.title.trim()}>{saving ? '保存中…' : '保存'}</button>
              </div>
++            </fieldset>
            </div>
          </div>
+       )}
 diff --git a/web/frontend/src/components/LibrarySettings.tsx b/web/frontend/src/components/LibrarySettings.tsx
 new file mode 100644
 index 0000000..ce710e9
@@ -22909,7 +22957,7 @@ index 043dc91..41cb7b9 100644
          <div className="drawer-overlay" onClick={() => setSelected(null)}>
            <div className="drawer" onClick={(e) => e.stopPropagation()}>
 diff --git a/web/frontend/src/components/ProfilePage.tsx b/web/frontend/src/components/ProfilePage.tsx
-index dee847e..b9316b8 100644
+index dee847e..7510778 100644
 --- a/web/frontend/src/components/ProfilePage.tsx
 +++ b/web/frontend/src/components/ProfilePage.tsx
 @@ -1,7 +1,10 @@
@@ -22972,7 +23020,7 @@ index dee847e..b9316b8 100644
    const [files, setFiles] = useState<PersonaFile[]>([]);
    const [drafts, setDrafts] = useState<Record<string, string>>({});
    const [editing, setEditing] = useState(false);
-@@ -74,35 +82,77 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -74,35 +82,78 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
    const [deleting, setDeleting] = useState(false);
    const [toast, setToast] = useState('');
    const [fetchingWx, setFetchingWx] = useState(false);
@@ -22992,7 +23040,7 @@ index dee847e..b9316b8 100644
 +    setFiles(next); setDrafts(Object.fromEntries(next.map(f => [f.filename, f.content]))); setExternalFiles(null);
 +  };
 +  const load = useCallback(async () => {
-+    if (!persona) return;
++    if (!persona || operation.current) return;
 +    const seq = ++loadSeq.current;
 +    try {
 +      const fresh = await fetchPersonaFiles(persona);
@@ -23035,6 +23083,7 @@ index dee847e..b9316b8 100644
  
    const handleSave = async (filename: string) => {
 +    if (operation.current) return; operation.current = true;
++    loadSeq.current++;
      setSavingFile(filename);
      try {
 -      await savePersonaFile(persona, filename, drafts[filename] ?? '');
@@ -23067,11 +23116,12 @@ index dee847e..b9316b8 100644
        setSavingFile('');
      }
    };
-@@ -110,30 +160,47 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -110,30 +161,48 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
    // 「平台运营」一键抓取公众号数据：复用数据中心同一个 mp 后台会话接口，把粉丝量级/内容形式
    // 抓完“直接落盘”并刷新视图——不进编辑态、不用用户点保存（否则会露出原始 markdown 破坏观感）。
    const handleFetchWechat = async (filename: string) => {
 +    if (operation.current || hasUnsavedDrafts) return; operation.current = true;
++    loadSeq.current++;
 +    let collected = false;
      setFetchingWx(true);
      try {
@@ -23124,7 +23174,7 @@ index dee847e..b9316b8 100644
      try {
        await deletePersona(persona);
        onDeleted(persona);
-@@ -141,7 +208,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -141,7 +210,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
      } catch (e) {
        showToast(e instanceof Error ? e.message : '删除失败');
      } finally {
@@ -23133,7 +23183,7 @@ index dee847e..b9316b8 100644
      }
    };
  
-@@ -164,10 +231,16 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -164,10 +233,16 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        <div className="profile-head">
          <div>
            <h1 className="page-title">{persona}</h1>
@@ -23142,9 +23192,9 @@ index dee847e..b9316b8 100644
          </div>
          <div style={{ display: 'flex', gap: 8 }}>
 -          <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={() => setEditing((v) => !v)}>
-+          <button className="btn" disabled={loading} onClick={() => void load()}>刷新</button>
++          <button className="btn" disabled={loading || Boolean(savingFile) || fetchingWx} onClick={() => void load()}>刷新</button>
 +          <button className="btn" onClick={() => setShowAgentTask(v => !v)}>完善画像</button>
-+          <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={async () => {
++          <button className={`btn ${editing ? 'btn-primary' : ''}`} disabled={Boolean(savingFile) || fetchingWx || deleting} onClick={async () => {
 +            if (editing && !await requestLeave({ reason: '完成编辑', scope: ['profile'] })) return;
 +            if (editing) setDrafts(Object.fromEntries(files.map(file => [file.filename, file.content])));
 +            setEditing(value => !value);
@@ -23152,7 +23202,7 @@ index dee847e..b9316b8 100644
              {editing ? '完成编辑' : '✏️ 编辑资料'}
            </button>
            <button className="btn" style={{ color: 'var(--red)', borderColor: 'var(--red)' }}
-@@ -178,6 +251,14 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -178,6 +253,14 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
        </div>
  
        {error && <div style={{ color: 'var(--red)', fontSize: 14, marginTop: 12 }}>{error}</div>}
@@ -23161,13 +23211,13 @@ index dee847e..b9316b8 100644
 +          <summary>最新内容：{DIM_META[file.filename]?.label || file.filename}{file.revision === 'missing' ? '（已删除）' : ''}</summary>
 +          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 220, overflow: 'auto' }}>{file.content || '（空）'}</pre>
 +        </details>)}
-+        <button className="btn btn-sm" onClick={() => { if (window.confirm('载入最新资料将替换当前未保存的编辑，继续吗？')) applyFiles(mergeProfileFiles(files, externalFiles)); }}>放弃当前编辑并载入最新资料</button>
++        <button className="btn btn-sm" disabled={Boolean(savingFile) || fetchingWx} onClick={() => { if (window.confirm('载入最新资料将替换当前未保存的编辑，继续吗？')) applyFiles(mergeProfileFiles(files, externalFiles)); }}>放弃当前编辑并载入最新资料</button>
 +      </div>}
 +      {showAgentTask && <AgentTaskContext title="完善运营画像" persona={persona} task="读取这个画像的六维资料、已有账号链接、历史内容和分析数据，结合画像方法完善定位、受众、风格与运营经验。区分事实与推断，缺少的背景可自然向用户了解，将有依据的改进回存原画像。" onConnectAgent={onConnectAgent} />}
  
        {loading ? (
          <div className="loading"><div className="spinner" />加载中…</div>
-@@ -191,7 +272,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -191,7 +274,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                  <div className="profile-dim-title">{meta.icon} {meta.label}</div>
                  <div style={{ display: 'flex', gap: 8 }}>
                    {f.filename === 'platforms.md' && (
@@ -23176,11 +23226,11 @@ index dee847e..b9316b8 100644
                        title="用已登录的公众号后台会话抓取粉丝/内容数据，写入本栏（与数据中心同源）"
                        onClick={() => handleFetchWechat(f.filename)}>
                        {fetchingWx ? '抓取中…' : '📊 抓取公众号数据'}
-@@ -210,6 +291,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
+@@ -210,6 +293,7 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
                    className="field"
                    style={{ minHeight: 150, fontFamily: "'SF Mono','Consolas',monospace", fontSize: 13 }}
                    value={drafts[f.filename] ?? ''}
-+                  disabled={savingFile === f.filename}
++                  disabled={savingFile === f.filename || (fetchingWx && f.filename === 'platforms.md')}
                    onChange={(e) => setDrafts((p) => ({ ...p, [f.filename]: e.target.value }))}
                  />
                ) : (
@@ -25651,10 +25701,10 @@ index 0000000..b302a01
 +}
 diff --git a/web/frontend/src/lib/outputMetadata.ts b/web/frontend/src/lib/outputMetadata.ts
 new file mode 100644
-index 0000000..eb884a9
+index 0000000..0ea265b
 --- /dev/null
 +++ b/web/frontend/src/lib/outputMetadata.ts
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,64 @@
 +import type { OutputMeta, OutputNode, ProjectMetadata, ProjectMetadataChanges } from './api';
 +
 +export const CATEGORIES = [
@@ -25719,18 +25769,6 @@ index 0000000..eb884a9
 +  return delta;
 +}
 +
-+let readProjectEdits: (() => boolean) | null = null;
-+let readProjectSaving: (() => boolean) | null = null;
-+let closingApproved = false;
-+export function registerProjectEdits(read: () => boolean, saving: () => boolean = () => false): () => void {
-+  readProjectEdits = read; readProjectSaving = saving; closingApproved = false;
-+  return () => { if (readProjectEdits === read) { readProjectEdits = null; readProjectSaving = null; closingApproved = false; } };
-+}
-+export function hasUnsavedProjectMetadata(): boolean { return Boolean(readProjectEdits?.()); }
-+export function isProjectMetadataSaving(): boolean { return Boolean(readProjectSaving?.()); }
-+export function projectCloseApproved(): boolean { return closingApproved; }
-+export function approveProjectClose(): void { closingApproved = true; }
-+export function resetProjectCloseApproval(): void { closingApproved = false; }
 diff --git a/web/frontend/src/lib/profileSelection.test.ts b/web/frontend/src/lib/profileSelection.test.ts
 new file mode 100644
 index 0000000..75ceb61

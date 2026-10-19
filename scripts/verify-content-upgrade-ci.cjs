@@ -1,8 +1,8 @@
-// Genuine registered 0.5.4 -> external-browser release; disposable Windows runner only.
+// Genuine registered upgrade; disposable Windows runner only. Historical defaults stay reproducible.
 'use strict';
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs/promises'),fss=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
 const {attachTestMain}=require('./test-main-inspector.cjs'),{selectLibraryFixture}=require('./select-library-fixture.cjs');
-const from='0.5.4',to='0.5.5',identity='f524de6d-ce52-54ca-a07e-a51e0d556196';
+const from=process.env.MEDIASAIL_UPGRADE_FROM||'0.5.4',to=process.env.MEDIASAIL_UPGRADE_TO||'0.5.5',identity='f524de6d-ce52-54ca-a07e-a51e0d556196';
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),list=value=>Array.isArray(value)?value:value?[value]:[];
 function fixtureScope(env=process.env,platform=process.platform){
  assert.equal(platform,'win32','Hosted Windows only; never run on a user PC');
@@ -24,6 +24,7 @@ function environment(){
 }
 async function main(){
  const {root,run,target,exe,libraryRoot,bootstrap,evidence}=fixtureScope();
+ assert.match(from,/^\d+\.\d+\.\d+$/);assert.match(to,/^\d+\.\d+\.\d+$/);assert.notEqual(from,to);
  const installers={baseline:path.join(root,'release-input','baseline',`MediaSail-${from}-win-x64-Setup.exe`),candidate:path.join(root,'release-input','candidate',`MediaSail-${to}-win-x64-Setup.exe`)};
  const ps=code=>cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command','[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false);'+code],{encoding:'utf8',windowsHide:true,timeout:30000}).trim();
  const processes=()=>list(JSON.parse(ps("ConvertTo-Json -InputObject @(Get-CimInstance Win32_Process -Filter \"Name='MediaSail.exe'\"|Select-Object ProcessId,ExecutablePath,CommandLine) -Compress")||'[]'));
@@ -50,7 +51,7 @@ async function main(){
  try{
   assert.equal(processes().length,0);assert.deepEqual(registry(),[]);for(const file of [bootstrap,run])assert.equal(fss.existsSync(file),false,'Fresh runner required: '+file);
   await fs.mkdir(evidence,{recursive:true});result.installers={};
-  for(const [key,file]of Object.entries(installers)){const sha256=await hash(file),name=path.basename(file),bytes=(await fs.stat(file)).size;const lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)===name);assert.equal(lines.length,1);assert.equal(lines[0].split(/\s+/)[0],sha256);if(key==='baseline'){assert.equal(sha256,'06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d');assert.equal(bytes,273973986);}result.installers[key]={name,sha256,bytes};}
+  for(const [key,file]of Object.entries(installers)){const sha256=await hash(file),name=path.basename(file),bytes=(await fs.stat(file)).size;const lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)===name);assert.equal(lines.length,1);assert.equal(lines[0].split(/\s+/)[0],sha256);if(key==='baseline'&&from==='0.5.4'){assert.equal(sha256,'06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d');assert.equal(bytes,273973986);}if(key==='baseline'&&from==='0.5.5'){assert.equal(sha256,'67def2e003b3b02b5a5c0f3d0251be2eac320108da52b34d3383a039716392d9');assert.equal(bytes,262990773);}result.installers[key]={name,sha256,bytes};}
   await phase('baseline-install');await setup(installers.baseline,['/S','/D='+target]);checkRegistry(from);
   cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const initial=await until(()=>owned().find(row=>!row.CommandLine?.includes('--type=')),120000,'baseline app');inspector=await attachTestMain(initial.ProcessId);
   await selectLibraryFixture({inspector,pid:initial.ProcessId,exe,libraryRoot,evidence,cancelFirst:false});inspector.close();inspector=null;
@@ -65,6 +66,12 @@ async function main(){
   const project='旧项目 中文 空格',directory=path.join(old.outputs,project),metadata={topic:project,title:'旧版合成报告',kind:'article',status:'ready',profile:'合成画像',platform:'抖音',deliverables:['报告.md'],cover:'封面.txt',steps:[{skill:'external-agent',layer:'general',outputs:['报告.md']}],custom:{keep:'原扩展字段'},created:'2026-10-01T00:00:00+08:00'};
   await remember(path.join(directory,'.easel.json'),metadata);await remember(path.join(directory,'报告.md'),'# 合成资料\n升级保留项目原路径。');await remember(path.join(directory,'assets','原始素材.txt'),'source fixture');await remember(path.join(directory,'封面.txt'),'cover fixture');
   await remember(path.join(old.profiles,'合成画像','identity.md'),'# 合成画像\n仅用于升级测试。');await remember(path.join(old.profiles,'合成画像','memory.md'),'合成运营经验');
+  if(process.env.MEDIASAIL_VERIFY_CUSTOM_FILES==='1'){
+   const method=path.join(old.workspace,'skills/shared/scripts/wordcount.py'),skill=path.join(old.skillDir,'references/context.md');
+   await remember(method,(await fs.readFile(method,'utf8'))+'\n# synthetic user customization retained across upgrade\n');
+   await remember(skill,(await fs.readFile(skill,'utf8'))+'\n合成用户维护的运营说明，升级后继续保留。\n');
+   result.customFilesSeeded=true;
+  }
   await remember(path.join(old.dataDir,'home','.easel-browser-profiles','DouyinProfile','fixture-only.json'),{synthetic:true});
   await remember(path.join(old.dataDir,'aitoearn/imports.json'),{version:1,compose:{title:'仅旧面板中的标题',body:'仅旧记录保存的正文，不可丢失',images:['乙.png','甲.png']},groups:{'fixture-user':'fixture-group'},jobs:[{id:'fixture-creating',status:'creating',content:{title:'待核对云端结果',body:'不能自动重试'},files:[]},{id:'fixture-uploading',status:'uploading',content:{title:'旧上传任务'},files:[]}]});
   originalFiles.set(path.join(bootstrap,'library-location.json'),await fs.readFile(path.join(bootstrap,'library-location.json')));originalFiles.set(path.join(libraryRoot,'.mediasail-library.json'),await fs.readFile(path.join(libraryRoot,'.mediasail-library.json')));
@@ -82,6 +89,11 @@ async function main(){
   assert.equal(await inspector.evaluate("process.mainModule.require('electron').webContents.getAllWebContents().some(w=>w.getURL().startsWith('https://aitoearn.cn/'))"),false);
   assert.equal(await inspector.evaluate("process.mainModule.require('node:fs').existsSync(process.mainModule.require('node:path').join(process.mainModule.require('electron').app.getAppPath(),'desktop/aitoearn/controller.cjs'))"),false);result.embeddedAitoRuntimeAbsent=true;
   const values=JSON.parse(await fs.readFile(path.join(current.dataDir,'ui-state.json'),'utf8')).values;assert.equal(values.easel_theme,'dark');assert.equal(values.mediasail_selected_profile,'合成画像');
+  if(process.env.MEDIASAIL_EXPECT_PROFILE_REVISIONS==='1'){
+   const profiles=await(await fetch(current.baseUrl+'/api/persona/'+encodeURIComponent('合成画像')+'/files')).json();
+   const identityFile=profiles.files.find(file=>file.filename==='identity.md');assert.equal(identityFile.revision,await hash(path.join(current.profiles,'合成画像/identity.md')));
+   assert.equal(identityFile.content,'# 合成画像\n仅用于升级测试。');result.profileRevisionVerified=true;
+  }
   const endpoint=current.baseUrl+'/api/projects/'+encodeURIComponent(project)+'/metadata',before=await(await fetch(endpoint)).json();assert.deepEqual(before.metadata,metadata);
   const response=await fetch(endpoint,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:before.revision,changes:{category:'analysis',summary:'升级后仅补用途'}})});assert.equal(response.status,200);const updated=await response.json();assert.equal(updated.metadata.category,'analysis');assert.deepEqual(updated.metadata.custom,metadata.custom);assert.deepEqual(updated.metadata.steps,metadata.steps);
   originalFiles.delete(path.join(directory,'.easel.json'));await checkOriginals();
