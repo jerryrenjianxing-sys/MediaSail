@@ -1,6 +1,6 @@
 # MediaSail 0.5.7 验证记录
 
-状态：开发、源码、打包界面、接入及隔离真实升级均通过；实际客户端兼容限制如下。日常安装和资料库不操作。
+状态：开发、源码、打包界面、接入、隔离真实升级与发布后公开更新检查均通过，已正式发布；实际客户端兼容限制如下。日常安装和资料库不操作。
 
 ## 行为反馈
 
@@ -46,4 +46,7 @@ Windows 的真实文件列表格式已读回一致；独立Chromium输入框实�
 
 [安装进度](images/0.5.7/upgrade-progress.png)、[升级后内容库](images/0.5.7/upgraded-content-library.png)、[原始复制日志](evidence/installer-copy-0.5.7.log)。文件复制阶段约4秒，安装总观察值还包含解包、旧版卸载和校验，不把整段时间归因于复制。
 
-最终源码包与校验文件更新后再核对草稿资产、正式发布，并使用原0.5.6与0.5.7配置分别核对公开更新入口；此项结果在发布后补充。
+## 正式发布与更新入口
+
+- [v0.5.7](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.7)于2026-10-19正式发布为最新版，tag指向 `4678a23d4c7d0e60845c8209dbc661727043f52b`。该提交[源码CI通过](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39242891259)。最终五个资产服务端摘要与本地一致，旧15个Release的文件保持不变，见 `evidence/assets-0.5.7.json`。
+- 原始0.5.6客户端读取原GitHub配置，确认发现0.5.7；0.5.7客户端提示已是最新。未更换源、未请求下载或安装。结果见[旧版检查](evidence/content-update-0.5.6-to-0.5.7.json)、[新版检查](evidence/content-update-0.5.7-to-0.5.7.json)，截图为[旧版](images/0.5.7/update-check-0.5.6.png)、[新版](images/0.5.7/update-check-0.5.7.png)。
