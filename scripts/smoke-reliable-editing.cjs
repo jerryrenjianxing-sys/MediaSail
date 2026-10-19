@@ -75,6 +75,13 @@ async function start() {
     assert.equal(await page.locator('body').evaluate(body => body.inert), false);
     record('cancelled real quit preserves edits and rapid quit requests do not duplicate prompts');
 
+    count = dialogs.length;
+    const hidden = await app.evaluate(({ BrowserWindow }) => { const main = BrowserWindow.getAllWindows().find(window => window.webContents.getURL().startsWith('http://127.0.0.1:')); main.close(); return !main.isVisible(); });
+    assert.equal(hidden, true); assert.equal(dialogs.length, count);
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(window => window.webContents.getURL().startsWith('http://127.0.0.1:')).show());
+    assert.equal(await text.inputValue(), '# 用户尚未保存的定位');
+    record('close to tray and restore retain the draft without an extra confirmation');
+
     // Replace only the third-party updater Adapter. Real installation is tested
     // separately on hosted Windows with the original NSIS executable.
     await app.evaluate(({ app }, future) => {

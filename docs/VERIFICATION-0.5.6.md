@@ -8,7 +8,7 @@
 - 编辑状态 Interface 的四项测试经历红绿：取消后保留草稿；保存中及切库阻止离开；重复请求不共享确认；确认期间开始保存阻止离开。
 - 画像 HTTP 首次测试确认旧响应缺 revision；旧接口接受过期版本并返回200。实现后读取、409冲突、同版本并发、旧调用、自定义维度、删除、写入失败、不可读文件、保存期间外部修改及进程中断共10项通过。
 - 统一源码检查已通过：110项 Node，79项 Python（1项环境跳过），前端类型与生产构建、43条接口路径资料一致性、1052个上游源码文件补丁复现。
-- [打包界面记录](evidence/reliable-editing-0.5.6.json)：12组检查通过，包括真实取消退出、切库拒绝、各表单关闭、连续画像冲突、发布草稿持久化及安装前编辑检查。
+- [打包界面记录](evidence/reliable-editing-0.5.6.json)：13组检查通过，包括真实取消退出、关闭到托盘再恢复、切库拒绝、各表单关闭、连续画像冲突、发布草稿持久化及安装前编辑检查。
 - 安装前编辑检查与安装启动失败恢复通过第三方更新 SDK Adapter 注入进行，没有下载或运行模拟安装包；真实 NSIS 安装仍另行验收。录屏中的后续版本提示为该合成测试，不代表 GitHub 已发布该版本。
 - 延迟响应复现并修复了保存期间输入丢失风险、旧 GET 覆盖新保存的界面回退。选题、日历、凭证、验证码与公众号输入保护通过；公众号保存冲突保留采集草稿和 Agent 新正文。
 - [浅色](images/0.5.6/reliable-profile-light.png)、[深色](images/0.5.6/reliable-profile-dark.png)、[操作录屏](images/0.5.6/reliable-editing.webm)。matt 双轴记录见 [审查记录](REVIEW-0.5.6.md)。
@@ -16,6 +16,7 @@
 - 内容库 8 组回归、浏览器发布入口 6 组回归及真实本地媒体预览均通过；合成旧发布记录、登录分区和项目文件保持不变。结果见 `evidence/content-library-0.5.6.json`、`evidence/browser-publish-0.5.6.json`、`evidence/library-media-0.5.6.json`。
 - matt 增量复核完成：Standards 无确认违例，Spec 已关闭 P1，无新增缺口。
 - 外部 PowerShell 实际消费随包 Skill：在线身份核对、下载 ZIP、直接执行中文画像版本示例、登记成果并由内容库读回均通过。Windows PowerShell 5.1 原先错误解码响应中文，红测复现后改为明确 UTF-8 读取原始响应；修正后的原中文与新增中文同时保留，见 `evidence/agent-profile-0.5.6.json`。
+- [GitHub 干净环境源码检查](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39235758868) 通过，使用与本地相同的 `npm run check`，没有以准备依赖或部分测试代替完整入口。
 
 ## 待完成
 

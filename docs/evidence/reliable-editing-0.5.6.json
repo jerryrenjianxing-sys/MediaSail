@@ -5,6 +5,7 @@
     "cancelled page and profile changes preserve the draft",
     "library change refuses dirty edits; opening updates preserves edits without a discard prompt",
     "cancelled real quit preserves edits and rapid quit requests do not duplicate prompts",
+    "close to tray and restore retain the draft without an extra confirmation",
     "update window shares edit protection; cancelled install never calls the installer Adapter",
     "profile conflict preserves draft, displays latest content and rejects a second external change",
     "clean idea closes silently; cancelled dirty close preserves its fields",
@@ -19,7 +20,7 @@
     "reliable-profile-light.png",
     "reliable-profile-dark.png"
   ],
-  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\可靠编辑 0.5.6 1792404058991",
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\可靠编辑 0.5.6 1792404820439",
   "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.6\\win-unpacked\\MediaSail.exe",
   "syntheticDataOnly": true,
   "publications": 0,
