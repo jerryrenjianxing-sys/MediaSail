@@ -2,7 +2,7 @@
 'use strict';
 const {_electron:electron}=require('playwright'),path=require('node:path'),fs=require('node:fs/promises'),os=require('node:os'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),target=require('../package.json').version;
-const from=process.env.MEDIASAIL_CHECK_VERSION||'0.5.7';assert.ok(['0.5.4','0.5.5','0.5.6','0.5.7',target].includes(from));
+const from=process.env.MEDIASAIL_CHECK_VERSION||'0.5.8';assert.ok(['0.5.4','0.5.5','0.5.6','0.5.7','0.5.8',target].includes(from));
 const executable=path.resolve(root,'../../outputs/MediaSail','release-'+from,'win-unpacked/MediaSail.exe');
 const run=path.join(os.homedir(),'Documents','MediaSail 隔离验证','正式更新检查 '+from+' '+Date.now()),bootstrap=path.join(run,'定位'),libraryRoot=path.join(run,'资料库'),data=path.join(libraryRoot,'runtime');
 const evidence=path.join(root,'docs/evidence','content-update-'+from+'-to-'+target+'.json'),screenshot=path.join(root,'docs/images',target,'update-check-'+from+'.png');
