@@ -2,7 +2,7 @@
   "schema": 1,
   "version": "0.5.10",
   "passed": true,
-  "testedAt": "2026-10-20T11:17:02.590Z",
+  "testedAt": "2026-10-20T11:42:44.282Z",
   "realPackagedApplication": true,
   "syntheticDataOnly": true,
   "realAccountUsed": false,
@@ -12,8 +12,8 @@
   "partitionEvidence": "Sentinel bytes and directory listing only; no claim of Cookie/login validation",
   "executable": "C:\\Users\\jerry\\Documents\\Codex\\2026-10-08\\ban-2\\outputs\\MediaSail\\release-0.5.10\\win-unpacked\\MediaSail.exe",
   "testedAppAsarSha256": "9d0e07184a0f9b2ea5cc135c5ed4d31ee727d10e2f3a815fe9ac3f6a0a425591",
-  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库",
-  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615",
+  "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库",
+  "run": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039",
   "checks": [
     "侧栏固定官网外链，不导航、不打开内嵌网页，原筛选与内容保留",
     "卡片与子目录均打开同一一级项目，shell 失败明确提示且保留分类搜索",
@@ -48,17 +48,17 @@
     },
     {
       "kind": "path",
-      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
       "failed": false
     },
     {
       "kind": "path",
-      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
       "failed": true
     },
     {
       "kind": "path",
-      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库\\workspace\\outputs\\早餐咖啡 中文 项目",
       "failed": false
     },
     {
@@ -73,12 +73,12 @@
     },
     {
       "kind": "path",
-      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库\\runtime\\aitoearn",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库\\runtime\\aitoearn",
       "failed": false
     },
     {
       "kind": "path",
-      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792495004615\\共享 中文 空格资料库\\runtime\\aitoearn",
+      "target": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\浏览器发布 0.5.10 1792496547039\\共享 中文 空格资料库\\runtime\\aitoearn",
       "failed": false
     }
   ],
@@ -88,7 +88,7 @@
     "projectManifest": "d3e8e8ebdffdabadbf3bdfe0ca336a25c83ccff950998d6db181e25ebbc2a085"
   },
   "finalEmbeddedUrls": [
-    "http://127.0.0.1:60553/"
+    "http://127.0.0.1:58805/"
   ],
   "aitoearnRendererRequests": [],
   "errors": []

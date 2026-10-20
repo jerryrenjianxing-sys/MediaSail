@@ -1,0 +1,32 @@
+{
+  "version": "0.5.10",
+  "implementationCommit": "359f2ef2d167fcd036b4a221bd7afef8db7bd43a",
+  "baseline": "v0.5.9",
+  "checkedAt": "2026-10-20T11:43:31.603211+00:00",
+  "files": {
+    "installer": {
+      "name": "MediaSail-0.5.10-win-x64-Setup.exe",
+      "bytes": 263020970,
+      "sha256": "900ae407310fdb754559228af6e99c5cdd8fe7228a49168ac3691b17e1467b90"
+    },
+    "appAsar": {
+      "name": "app.asar",
+      "bytes": 3449836,
+      "sha256": "9d0e07184a0f9b2ea5cc135c5ed4d31ee727d10e2f3a815fe9ac3f6a0a425591"
+    },
+    "payloadManifest": {
+      "name": "manifest.json",
+      "bytes": 93569,
+      "sha256": "f9e227ec2d6556c1da146d833cbe0da532731e37d938294891945f49080f31d3"
+    }
+  },
+  "sourceCheck": {
+    "nodeTests": 117,
+    "pythonTests": 98,
+    "pythonSkipped": 1,
+    "apiPaths": 43,
+    "frontendBuild": true,
+    "patchReproduced": true
+  },
+  "businessDependenciesAdded": false
+}

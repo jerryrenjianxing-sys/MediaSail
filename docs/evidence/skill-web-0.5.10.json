@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "version": "0.5.10",
+  "desktopPreload": false,
+  "checks": [
+    "MD-only entry disabled without desktop capability",
+    "short desktop-only hint",
+    "no text option or manual dialog",
+    "console round trip retains the same behavior"
+  ],
+  "messagesSent": 0
+}

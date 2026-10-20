@@ -1,0 +1,59 @@
+{
+  "from": "0.5.9",
+  "to": "0.5.10",
+  "passed": true,
+  "startedAt": "2026-10-20T11:44:25.822Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "genuine NSIS /S --updated --force-run, no /D update override",
+  "syntheticDataOnly": true,
+  "publications": 0,
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.5.9-win-x64-Setup.exe",
+      "sha256": "19f98cc0325e106e3cdd053f9d300071c74c70a08723f5d79635a3849a5408e8",
+      "bytes": 262997174
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.10-win-x64-Setup.exe",
+      "sha256": "900ae407310fdb754559228af6e99c5cdd8fe7228a49168ac3691b17e1467b90",
+      "bytes": 263020970
+    }
+  },
+  "phase": "passed",
+  "lastInstallerWindows": [],
+  "baselineCacheVerified": true,
+  "legacyPartitionFiles": 22,
+  "customFilesSeeded": true,
+  "installMs": 308691,
+  "registrationAfter": [
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-39417041852\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.10",
+      "location": null
+    },
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-39417041852\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.10",
+      "location": null
+    }
+  ],
+  "originalFilesRetained": 34,
+  "librarySelectionRetained": true,
+  "currentInstallerCacheVerified": true,
+  "legacyAitoPartitionByteRetained": true,
+  "embeddedAitoRuntimeAbsent": true,
+  "skillFilePreferenceUpgradeRetained": true,
+  "profileRevisionVerified": true,
+  "projectFolderActionVerified": true,
+  "categoryPatchPreservedOtherMetadata": true,
+  "skillFilePreferenceRetained": true,
+  "normalRestarts": 2,
+  "dataAndSessionRetentionVerified": true,
+  "finishedAt": "2026-10-20T11:53:18.374Z"
+}

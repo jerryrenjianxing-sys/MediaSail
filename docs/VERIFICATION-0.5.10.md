@@ -1,6 +1,6 @@
 # MediaSail 0.5.10 验证记录
 
-状态：发行候选。源码、打包界面、独立 Agent 与双轴审查已完成；候选真实升级及正式发布尚未完成，以下不表示已发行。
+状态：源码、打包界面、独立 Agent、双轴审查及候选真实升级通过；正式发布与公开更新检查待执行。以下安装验收使用同一候选，不操作日常安装和资料库。
 
 ## 已完成的反馈循环
 
@@ -27,3 +27,25 @@
 Standards 发现 1 项、Spec 发现 4 项，均先补反馈用例再修正：来源报错但 data 为空不得写成 live；whoami 服务端代次防止旧结果回写缓存及标记；登录 runner 使用独立轮次文件，在运行的同平台任务复用，过期 sessionId 的查询和验证码返回 409；知乎已有回答即使旧 ID 未渲染也不冒报新回答；访谈参考正文删除固定两批与指定工具。公众号真实 CLI 合成网络用例确认只提交一次、退出码 2、原稿保留、恢复 JSON 不含 token。修正后的候选重新构建，独立复审通过。
 
 复审另发现采集链可绕过服务端代次；已通过真实 HTTP 反馈复现，并让所有账号状态写入都必须携带代次。旧采集返回 409 account_state_changed，原结果保留在 detail.result，当前账号标记与缓存保持最新。
+
+## 候选身份与兼容回归
+
+安装包 263020970 字节（约 251 MiB），比 0.5.9 增加 23796 字节；未添加运行依赖。SHA-256 `900ae407310fdb754559228af6e99c5cdd8fe7228a49168ac3691b17e1467b90`，app.asar SHA-256 `9d0e07184a0f9b2ea5cc135c5ed4d31ee727d10e2f3a815fe9ac3f6a0a425591`。运行实现至 `359f2ef`，后续提交仅补观察脚本和证据；见[构建身份](evidence/build-0.5.10.json)。实现提交的[源码 CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39416614669)及补充证据提交的[源码 CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39416777049)均通过。
+
+最终构建重新完成[业务界面](evidence/business-ui-0.5.10.json)、[浏览器发布](evidence/browser-publish-0.5.10.json)、[实际文件剪贴板](evidence/skill-file-0.5.10.json)和[普通网页版](evidence/skill-web-0.5.10.json)回归。浏览器发布记录中的实际 app.asar 哈希与上述一致。首页无展开键、改名或文字备用入口；仅复制固定名称 MD，失败重试，旧卡片可在切库及端口变化后找到当前位置。普通网页版仅提示桌面版。独立 Chromium 接收页不代替 TRAE 或 Codex 的实际输入框兼容验证。
+
+## 真实安装升级
+
+[隔离 Windows 工作流](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39417041852)通过，测试提交 `c3e7914`。正式 0.5.9 与草稿 0.5.10 均先核对官方摘要及校验文件；执行真实 NSIS `/S --updated --force-run`，升级不传 `/D` 覆盖位置。候选哈希与上述最终安装包一致，见[原始结果](evidence/maintenance-upgrade-0.5.9-to-0.5.10.json)。
+
+- 含中文空格的原安装路径、登记和资料库选择保留，没有默认目录旁装或重复选库。
+- 34 个原有文件和用户自定义工具、Skill 保留，旧 AitoEarn 分区的 22 个文件字节一致；新版未初始化旧内嵌页或发送器。
+- 画像 revision、分类增量修改及原扩展字段、成品和素材路径、项目文件夹入口、当前安装器缓存核对通过。
+- 两次正常退出重开，资料、合成登录资料、主题和旧偏好保持，无空闲任务误提醒。固定 MD 名称由真实剪贴板另行验证，保留旧名称存储键不表示恢复改名入口。
+- 本次云机候选安装观察 308691ms（约 5 分 9 秒），不含下载；完整安装验收约 8 分 53 秒。仅为该云机的当次观察，不作为安装速度保证。
+
+[实际安装进度](images/0.5.10/upgrade-progress.png)、[升级后内容库](images/0.5.10/upgraded-content-library.png)、[安装复制日志](evidence/installer-copy-0.5.10.log)。没有使用真实账号公开发布。
+
+## 发行文件
+
+安装包、源码 ZIP、更新索引、差量索引及校验文件按同批摘要核对；18 个历史 Release 的文件保持不变，包括未发行 0.5.1 草稿，见[资产核对](evidence/assets-0.5.10.json)。源码 ZIP 内报告为发行时快照，资产的最终身份以同批 `SHA256SUMS.txt` 为准；正式发布后不替换资产。
