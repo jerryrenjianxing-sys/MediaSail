@@ -1,0 +1,80 @@
+{
+  "passed": true,
+  "version": "0.5.10",
+  "checkedAt": "2026-10-20T11:41:18.612Z",
+  "syntheticDataOnly": true,
+  "realService": true,
+  "realPackagedUi": true,
+  "profileRetainedAndUpdated": true,
+  "deliverables": [
+    "图文正文.md",
+    "研究小结.md"
+  ],
+  "methodReferencesVisible": true,
+  "agent": {
+    "tools": [
+      "mediasail.ps1 check/python",
+      "MediaSail 内置 Python",
+      "social_stats.delta/pct_change",
+      "wordcount.py",
+      "manifest.py read --revision/meta --if-revision",
+      "本机 persona files/PUT、metadata、outputs、agent-info API",
+      "PowerShell 本地文件工具"
+    ],
+    "elapsedSeconds": 244.9,
+    "limitations": [
+      "没有样本日期、账号核验、真实改稿、访谈、竞品页面或图片",
+      "无可靠趋势、内容因果或成交推断",
+      "仅调用本地业务函数，不为 tracker 虚构日期"
+    ],
+    "revision": {
+      "metadata": "1e32c7961ba3930771dacc640adb72ff0e55eb6cb975cfb4b1df2737e32b7117",
+      "profileSavedWithReadRevision": true,
+      "manifestAtomicReplace": true,
+      "memory": "bbfe6e4c84be357705451f13d3ee98b982ccdd0ef1c4a1b000ea0bd53a367e3f"
+    },
+    "results": {
+      "followersDelta": 25,
+      "followersGrowthPercent": 25,
+      "contentLibraryVerified": true,
+      "syntheticTotalLikesDelta": 50,
+      "bodySocialCount": 305,
+      "deliverables": [
+        "图文正文.md",
+        "研究小结.md"
+      ],
+      "syntheticTotalLikesGrowthPercent": 27.77777777777778
+    },
+    "observedInterfaceDefects": [],
+    "evidenceMethods": [
+      "voice-evidence.md",
+      "audience-evidence.md",
+      "competitor-evidence.md",
+      "asset-lineage.md",
+      "learning-revision.md"
+    ],
+    "startUtc": "2026-10-20T11:16:33.0000000+00:00",
+    "connection": {
+      "baseUrl": "http://127.0.0.1:52564",
+      "libraryId": "5489669f-cc4f-4a03-b11c-fb86cf882b6c",
+      "version": "0.5.10",
+      "instanceId": "76fa7ebf-150c-4765-861b-d1c6b8cdfa99",
+      "connected": true,
+      "localToolsReady": true,
+      "serviceReady": true,
+      "processStillRunning": true
+    },
+    "completedUtc": "2026-10-20T11:20:37.9287576+00:00",
+    "timezone": "Asia/Shanghai",
+    "project": "运营证据-独立接入验收",
+    "boundaries": {
+      "published": false,
+      "writes": "仅本隔离资料库的目标画像 memory.md 和项目及其 assets",
+      "sourceModified": false,
+      "realAccountConnection": false,
+      "globalSkillInstalled": false,
+      "testSoftwareClosed": false
+    },
+    "fictional": true
+  }
+}
