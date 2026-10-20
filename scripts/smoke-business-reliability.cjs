@@ -106,8 +106,15 @@ let app, release = () => {};
   console.log('PASS: publish draft scheduling uses local civil date');
   await app.evaluate(({app})=>{
     const require=process.getBuiltinModule('node:module').createRequire(app.getAppPath()+'/package.json');
-    require('electron-updater').autoUpdater.emit('update-available',{version:'0.5.11',files:[{size:1}]});
+    require('electron-updater').NsisUpdater.prototype.checkForUpdates=async function(){
+      this.emit('checking-for-update');
+      const updateInfo={version:'0.5.11',files:[{size:1}]};
+      this.emit('update-available',updateInfo);return {updateInfo};
+    };
   });
+  const panelPromise=app.waitForEvent('window',{predicate:window=>window!==page});
+  await page.evaluate(()=>window.desktopUpdates.openAndCheck());
+  const panel=await panelPromise;await panel.waitForURL('**/updates.html');await panel.close();
   await page.locator('.desktop-update-banner').waitFor();
   await page.locator('.sidebar-nav').getByRole('button',{name:'连接 Agent',exact:true}).click();
   await page.locator('.desktop-update-banner').waitFor();

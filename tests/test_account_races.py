@@ -64,3 +64,24 @@ class AccountRaces(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(stale.status_code,409)
         stale_sms = await self.client.post('/api/login/douyin/sms',json={'code':'1234','sessionId':first['sessionId']})
         self.assertEqual(stale_sms.status_code,409)
+
+    async def test_old_collection_is_not_returned_as_current_identity(self):
+        entered, release = threading.Event(), threading.Event()
+        def run(command, **kwargs):
+            if 'fetch' in command:
+                entered.set(); release.wait(5)
+                data={'verificationStatus':'verified','accountId':'old','name':'旧账号','loggedIn':True,'fans':10}
+            else: data={'verificationStatus':'login_required','loggedIn':False}
+            return SimpleNamespace(returncode=0,stdout=json.dumps(data),stderr='')
+        with patch.object(self.web.subprocess,'run',side_effect=run):
+            old=asyncio.create_task(self.client.get('/api/analytics/douyin'))
+            try:
+                self.assertTrue(await asyncio.to_thread(entered.wait,3))
+                await self.client.get('/api/accounts/douyin/whoami?force=1')
+            finally: release.set()
+            response=await old
+        self.assertEqual(response.status_code,409)
+        self.assertEqual(response.json()['detail']['code'],'account_state_changed')
+        self.assertEqual(response.json()['detail']['result']['accountId'],'old')
+        accounts=(await self.client.get('/api/accounts')).json()
+        self.assertEqual(next(a for a in accounts if a['platform']=='douyin')['verificationStatus'],'login_required')

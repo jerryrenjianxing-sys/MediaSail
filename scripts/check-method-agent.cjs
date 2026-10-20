@@ -31,7 +31,7 @@ let app;
  const images=path.join(root,'docs/images',pkg.version);await fs.mkdir(images,{recursive:true});
  await page.screenshot({path:path.join(images,'independent-method-agent.png')});
  await page.locator('.sidebar-nav').getByRole('button',{name:'技能方法',exact:true}).click();
- await page.getByText('声音画像构建',{exact:true}).first().click();
+ await page.getByText('声音画像',{exact:true}).first().click();
  await page.getByText('文风证据与改稿学习',{exact:true}).waitFor();
  await page.screenshot({path:path.join(images,'voice-method.png')});
  const agent=JSON.parse(await fs.readFile(path.join(project,'assets/验收记录.json'),'utf8'));

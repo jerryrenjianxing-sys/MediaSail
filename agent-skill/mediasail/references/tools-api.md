@@ -91,3 +91,5 @@ POST /api/profile/build 返回最小形状如下；动态值以实际响应为�
 ## 登录轮次与校验并发
 
 登录启动返回可选 sessionId，新调用方在 status 查询及登录短信 code 请求中带回该值；过期轮次返回 HTTP 409，不写验证码。相同平台仍在运行的扫码任务会复用，不启动第二个浏览器；上一轮收尾时稍候重试。旧调用不带 sessionId 仍可查看当前轮次。服务端 whoami 以请求代次保存结果，登录、退出和后续校验使旧结果失效，迟到响应可能带 superseded:true，不代表新一次核验。
+
+采集期间账号状态被登录、退出或新校验替代时，GET /api/analytics/{platform} 返回 HTTP 409，detail.code 为 account_state_changed。detail.result 保留本次旧账号的采集结果供核对，不作为当前账号数据展示，也不回写当前登录状态。
