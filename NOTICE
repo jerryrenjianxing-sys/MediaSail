@@ -18,3 +18,5 @@ The Connect Agent landing and circular theme transition are adapted, at the user
 
 The homepage theme transition uses GSAP 3.15.0. Its copyright and license reference
 are included in licenses/GSAP-NOTICE.txt and retained in the frontend bundle.
+
+MediaSail 0.5.10 operating-method references adapt selected concepts from Anthropic knowledge-work-plugins (a266ab8c3c754a3ccf7a634044fc1595fc06e50e, Apache-2.0 source license retained) and Marketing Skills by Corey Haines (e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b, Copyright (c) 2025 Corey Haines, MIT). These are Chinese adaptations for the existing workspace, not entire imported skills or publisher integrations. Original licenses are included in licenses/ and the method reference directory.

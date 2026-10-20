@@ -42,6 +42,78 @@ index 491e3e9..5a0edee 100644
  问到"我的账号 / 我的帖子 / 我的粉丝 / 最近发了啥"这类，**先去查已登录账号和站内数据，别回头问他要账号名**。
  真碰到一时不趁手的工具或拿不到的数据，就实话实说卡在哪、再给个能走的替代路子。
  
+diff --git a/skills/openclaw/skill-audience-profiler/SKILL.md b/skills/openclaw/skill-audience-profiler/SKILL.md
+index ceb34e4..a925cb9 100644
+--- a/skills/openclaw/skill-audience-profiler/SKILL.md
++++ b/skills/openclaw/skill-audience-profiler/SKILL.md
+@@ -93,3 +93,7 @@ layer: plan
+ 
+ - **有 Profile**：从 `identity.md` 读赛道和账号定位，从 `platforms.md` 读目标平台，预填上下文
+ - **无 Profile**：主动询问赛道和目标平台，退回通用模式。输出末尾附注："如提供账号 Profile 可获得更精准的受众分析"
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/audience-evidence.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-comment-insights/SKILL.md b/skills/openclaw/skill-comment-insights/SKILL.md
+index 45b918d..75aa9f7 100644
+--- a/skills/openclaw/skill-comment-insights/SKILL.md
++++ b/skills/openclaw/skill-comment-insights/SKILL.md
+@@ -63,3 +63,7 @@ python <skill>/scripts/comment_insights.py analyze -i comments.csv --column 评
+ 沿用社媒评论分析常用组合：jieba 中文分词（#131 高频词）+ SnowNLP 情感（#130），并叠加
+ 社媒情感词典（绝绝子/yyds/避雷/翻车等网络用语）修正 SnowNLP 在社交文本上的偏差。诉求挖掘
+ 用规则匹配（求购/疑问/吐槽），确定可复现。
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/audience-evidence.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-competitor-analysis/SKILL.md b/skills/openclaw/skill-competitor-analysis/SKILL.md
+index 8730d49..6536d48 100644
+--- a/skills/openclaw/skill-competitor-analysis/SKILL.md
++++ b/skills/openclaw/skill-competitor-analysis/SKILL.md
+@@ -155,3 +155,7 @@ layer: discover
+   - 退回通用模式，要求用户手动提供赛道和竞品信息
+   - 分析覆盖全平台，不做平台特化
+   - 附注"如提供账号 Profile 可获得更精准的竞品对标和差异化建议"
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/competitor-evidence.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-content-gap-analysis/SKILL.md b/skills/openclaw/skill-content-gap-analysis/SKILL.md
+index f56ee1c..3312679 100644
+--- a/skills/openclaw/skill-content-gap-analysis/SKILL.md
++++ b/skills/openclaw/skill-content-gap-analysis/SKILL.md
+@@ -164,3 +164,7 @@ layer: discover
+   - 退回通用模式，要求用户提供赛道信息
+   - 全平台扫描，不做平台特化分析
+   - 附注"如提供账号 Profile 可获得更精准的选题方向和平台匹配"
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/competitor-evidence.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-content-postmortem/SKILL.md b/skills/openclaw/skill-content-postmortem/SKILL.md
+index 738e5b6..ca605c5 100644
+--- a/skills/openclaw/skill-content-postmortem/SKILL.md
++++ b/skills/openclaw/skill-content-postmortem/SKILL.md
+@@ -184,3 +184,7 @@ layer: attribute
+ - 提示用户补充 Profile（`identity.md` / `audience.md` / `platforms.md`）可获得更精准复盘
+ 
+ > 自研溯源与参考项目见同目录 `EASEL-META.md`。
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/learning-revision.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-content-repurposing/SKILL.md b/skills/openclaw/skill-content-repurposing/SKILL.md
+index 7574d6e..b6f5496 100644
+--- a/skills/openclaw/skill-content-repurposing/SKILL.md
++++ b/skills/openclaw/skill-content-repurposing/SKILL.md
+@@ -109,3 +109,7 @@ Execute /skill-content-repurposing
+   - 要求用户指定目标平台（未指定则默认 小红书 + 抖音 + 微博）
+   - 使用通用专业语气
+   - 提示："如提供账号 Profile（含平台和受众信息），可获得更精准的改编效果"
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/asset-lineage.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
 diff --git a/skills/openclaw/skill-data-tracker/scripts/track.py b/skills/openclaw/skill-data-tracker/scripts/track.py
 index 008f4ba..e9deb5d 100644
 --- a/skills/openclaw/skill-data-tracker/scripts/track.py
@@ -82,6 +154,18 @@ index 008f4ba..e9deb5d 100644
      metric = args.metric
  
      # 找目标帖子的发布日期与逐日指标
+diff --git a/skills/openclaw/skill-profile-manager/SKILL.md b/skills/openclaw/skill-profile-manager/SKILL.md
+index b217206..cc48f56 100644
+--- a/skills/openclaw/skill-profile-manager/SKILL.md
++++ b/skills/openclaw/skill-profile-manager/SKILL.md
+@@ -142,3 +142,7 @@ layer: general
+ - **首次使用时**：如果 profiles/ 目录下没有任何画像（只有 _template），自动进入 create 流程
+ 
+ > 自研溯源与参考项目见同目录 `EASEL-META.md`。
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/learning-revision.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
 diff --git a/skills/openclaw/skill-publish-analytics/scripts/analyze.py b/skills/openclaw/skill-publish-analytics/scripts/analyze.py
 index a7016c7..ea4e94f 100644
 --- a/skills/openclaw/skill-publish-analytics/scripts/analyze.py
@@ -103,6 +187,294 @@ index a7016c7..ea4e94f 100644
  DEFAULT_DATA = PROJECT_ROOT / "outputs" / "_analytics" / "publish-log.json"
  DEFAULT_FOLLOWER = PROJECT_ROOT / "outputs" / "_analytics" / "follower-log.json"
  LEGACY_DATA = PROJECT_ROOT / "outputs" / "publish-log.json"
+diff --git a/skills/openclaw/skill-quality-gate/SKILL.md b/skills/openclaw/skill-quality-gate/SKILL.md
+index 169748f..3ca4730 100644
+--- a/skills/openclaw/skill-quality-gate/SKILL.md
++++ b/skills/openclaw/skill-quality-gate/SKILL.md
+@@ -73,3 +73,7 @@ layer: publish
+ 
+ - **有 Profile**：读取 platform 加载平台规则、检查风格适配
+ - **无 Profile**：仅通用合规检查 + 通用质量标准
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/asset-lineage.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-social-performance-review/SKILL.md b/skills/openclaw/skill-social-performance-review/SKILL.md
+index 403803e..3a69ea3 100644
+--- a/skills/openclaw/skill-social-performance-review/SKILL.md
++++ b/skills/openclaw/skill-social-performance-review/SKILL.md
+@@ -189,3 +189,7 @@ python3 skills/openclaw/skill-social-performance-review/scripts/review.py score
+   - 使用 `references/benchmarks.md` 通用基准
+   - 跳过支柱分析（或让用户口述支柱分类）
+   - 附注："如提供账号 Profile，可启用支柱拆解和历史趋势分析"
++
++## 补充参考
++
++当前任务涉及证据、原始素材或经验修订时，可查阅 [运营方法补充](../../shared/social-methods/learning-revision.md)；与当前画像、项目和日历共用位置，工具和执行方式由 Agent 自主选择。
+diff --git a/skills/openclaw/skill-voice-builder/SKILL.md b/skills/openclaw/skill-voice-builder/SKILL.md
+index 0c4c5c6..86e572b 100644
+--- a/skills/openclaw/skill-voice-builder/SKILL.md
++++ b/skills/openclaw/skill-voice-builder/SKILL.md
+@@ -9,114 +9,23 @@ layer: plan
+ 
+ # 声音画像构建
+ 
+-> 通过结构化访谈 + 写作样本分析，生成个人声音画像（about-me.md + voice.md），确保后续内容创作的品牌一致性。
++从已有画像、真实写作样本和用户改稿理解声音。结合当前任务选择研究深度；已有答案直接复用，需要补的信息再提问。访谈题库是参考，不规定开场、题数、批次或指定工具。
+ 
+-## 输入
++## 背景与输出
+ 
+-用户参与访谈并提供 3-5 篇写作样本（小红书笔记、抖音文案、B站文稿、微博帖子、公众号文章等）。
++画像是长期入口：定位和承诺可写 identity，表达风格写 style，明确偏好写 preferences，细致分析与原始样本留当前项目。用户需要独立指南时可交付项目文档，不把 about-me.md/voice.md 建成另一套权威画像。
+ 
+-若用户没有样本，可输入 `use samples` 加载默认样本集 `references/sample-content.md`。
++## 样本分析
+ 
+-## 输出
++跨样本观察句长、段落节奏、开头、人称、语调、标志性短语、行动邀请、篇幅、结构、过渡、主题和立场。样本不足时仍可提供局部判断并说明范围；参考样本仅用于演示，不视为用户本人的表达。未出现某表达是“本次未观察到”，不推断作者永不使用。
+ 
+-两个文件，输出至项目根目录（**独立的轻量声音产物，不属于 Profile 六维 schema**；如需并入画像，可把要点回写到 `profiles/<画像>/style.md`）：
++样本互相矛盾时保留差异，核对时间、平台、用途和合作场景。把“亲切”“专业”等属性展开成表现与边界，使用原句支撑。对比用户改稿前后及修改理由，区分单次项目要求与稳定偏好。
+ 
+-1. **about-me.md**（≤300 词）— 个人定位：身份定位、目标受众、主题支柱、行业观点、人设承诺、内容禁区
+-2. **voice.md**（≤500 词）— 声音画像：正向信号（怎么写）+ 缺失信号（从不怎么写），合并在同一文件
++- [分析维度](references/voice-analysis-dimensions.md)：句子、结构、主题和表达证据。
++- [访谈题库](references/interview-questions.md)：定位、受众、主题、观点、承诺和禁区，按需取用。
++- [示范样本](references/sample-content.md)：演示分析方法，不作为用户证据。
++- [文风证据与改稿学习](../../shared/social-methods/voice-evidence.md)：属性边界、改稿证据、场景调节与回存。
+ 
+-## 执行步骤
++## 判断与回存
+ 
+-### 1. 自动启动访谈
+-
+-加载即执行，不做任何前言、摘要或确认。第一条消息必须是访谈问题。
+-
+-禁止：
+-- 总结本 SKILL 的功能
+-- 询问用户是否准备好
+-- 解释将生成哪些文件
+-
+-### 2. 分两批提问（共 6 题）
+-
+-使用 AskUserQuestion 工具，每批最多 4 题。
+-
+-- **Batch 1**（4 题）：身份定位、目标受众、主题支柱、行业观点
+-- **Batch 2**（2 题）：人设承诺、内容禁区
+-
+-问题详情及选项 → [interview-questions.md](references/interview-questions.md)
+-
+-Batch 1 回答后立即发送 Batch 2，中间不做评论。若有答案为空，单独追问一次后继续。
+-
+-### 3. 生成 about-me.md
+-
+-根据 6 题答案撰写，结构：
+-
+-```
+-# 我的定位
+-## 身份与定位
+-## 目标受众
+-## 内容主题支柱
+-## 行业观点
+-## 人设承诺
+-## 内容禁区
+-```
+-
+-≤300 词。每一行都应是后续创作时可直接引用的信息。
+-
+-### 4. 收集写作样本
+-
+-提示用户粘贴 3-5 篇写作样本。支持一次性粘贴或逐篇发送。
+-
+-- 最少 3 篇才可进入分析，不足时追问
+-- 用户输入 `use samples` → 加载 `references/sample-content.md`，告知样本作者并提醒可随时替换
+-
+-### 5. 分析样本
+-
+-跨所有样本寻找模式，不依赖单篇特征。
+-
+-分析维度详情 → [voice-analysis-dimensions.md](references/voice-analysis-dimensions.md)
+-
+-四个分析维度：
+-- **声音信号** — 句长、段落节奏、开头风格、人称、语调、标志性短语、CTA 风格
+-- **结构信号** — 长度范围、列表 vs 散文、开头/结尾模式、过渡手法
+-- **主题信号** — 跨样本的高频主题、隐含受众、作者立场
+-- **缺失信号** — 从未出现的词汇/标点、从未使用的开头类型、从未触及的语调
+-
+-### 6. 生成 voice.md
+-
+-综合声音画像，正向信号与缺失信号合并在同一文件：
+-
+-```
+-# 我的声音画像
+-## 我听起来像谁
+-## 语气基调
+-## 句子节奏
+-## 开头钩子
+-## 我怎么开头
+-## 我怎么收尾
+-## 标志性表达
+-## 内容禁区
+-## 这个声音从不做的事
+-```
+-
+-≤500 词。每个章节必须基于样本实证，不得编造。`内容禁区` 和 `这个声音从不做的事` 必须有样本缺失证据支撑。
+-
+-### 7. 确认完成并提示下一步
+-
+-告知用户两个文件已就绪，后续创作将自动引用。提示可用的下一步操作。
+-
+-## Profile 感知
+-
+-- **有 Profile** — 从 Profile 中预填受众、平台、调性偏好等已知信息，访谈时跳过已有答案或用于验证；voice.md 中标注与 Profile 的一致性。
+-- **无 Profile** — 完整执行全部 6 题访谈，生成通用声音画像。
+-
+-## 规则
+-
+-1. **加载即执行** — 不做摘要、不做解释、直接开始访谈
+-2. **最少 3 篇样本** — 少于 3 篇不启动分析
+-3. **基于实证** — 从样本中提取模式，不编造不存在的特征
+-4. **矛盾保留** — 样本间风格矛盾时如实记录，不做平滑处理
+-5. **字数限制** — about-me.md ≤300 词，voice.md ≤500 词
+-6. **产物格式** — 所有样本内容使用代码块输出，保留换行和空白
+-7. **不重复** — voice.md 不重复 about-me.md 中已有的受众和主题信息
+-8. **语言** — 产物文件默认使用中文（除非样本明确为英文）
+-9. **禁用破折号** — 产物文件和草稿中不使用 em dash
++用真实样本解释风格假设、例外及适用场景。样本来源、原稿和改稿保存在项目，稳定背景回写现有画像；保存时遵循现有 revision 冲突保护，保留用户自定义内容。交付语言、篇幅和形式依据用户目标，不设统一字数或标点限制。完成后说明实际更新位置及尚未验证的判断，不承诺未来对话自动读取任何文件。
+diff --git a/skills/openclaw/skill-wechat-publisher/scripts/api.py b/skills/openclaw/skill-wechat-publisher/scripts/api.py
+index 68014c4..7226fbc 100755
+--- a/skills/openclaw/skill-wechat-publisher/scripts/api.py
++++ b/skills/openclaw/skill-wechat-publisher/scripts/api.py
+@@ -176,6 +176,36 @@ def upload_content_image(image_path: Union[str, Path]) -> str:
+ # 草稿
+ # ============================================================
+ 
++class DraftOutcomeUnknown(RuntimeError):
++    """The server may have created a draft. Callers must reconcile, not replay."""
++    def __init__(self, payload: dict, diagnostic: str):
++        super().__init__('草稿创建结果尚未确认，请到公众号草稿箱核对，不要重复提交。')
++        self.payload = payload
++        self.diagnostic = diagnostic
++
++
++def _create_draft_once(url: str, payload: dict) -> str:
++    try:
++        response = requests.request('POST', url, timeout=API_TIMEOUT_SEC, allow_redirects=False,
++            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
++            headers={'Content-Type': 'application/json; charset=utf-8'})
++    except requests.exceptions.RequestException as error:
++        raise DraftOutcomeUnknown(payload, type(error).__name__) from None
++    if response.status_code != 200:
++        raise DraftOutcomeUnknown(payload, f'HTTP {response.status_code}')
++    try:
++        data = response.json()
++    except (ValueError, TypeError):
++        raise DraftOutcomeUnknown(payload, 'invalid_json') from None
++    if not isinstance(data, dict):
++        raise DraftOutcomeUnknown(payload, 'invalid_response')
++    if isinstance(data.get('media_id'), str) and data['media_id'].strip():
++        return data['media_id']
++    code = data.get('errcode')
++    if isinstance(code, int) and code != 0:
++        raise RuntimeError(f'草稿创建被平台拒绝 [{code}]；请修正原因后再操作。')
++    raise DraftOutcomeUnknown(payload, 'missing_media_id')
++
+ def add_newspic_draft(
+     title: str,
+     content: str,
+@@ -227,21 +257,9 @@ def add_newspic_draft(
+ 
+     payload = {"articles": [article]}
+ 
+-    resp = _api_request_with_retry(
+-        "POST", url,
+-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+-        headers={"Content-Type": "application/json; charset=utf-8"},
+-    )
+-    resp.raise_for_status()
+-    data = resp.json()
+-
+-    if "media_id" not in data:
+-        error_msg = data.get("errmsg", "未知错误")
+-        error_code = data.get("errcode", -1)
+-        raise RuntimeError(f"新建贴图草稿失败 [{error_code}]: {error_msg}")
+-
+-    print(f"贴图草稿创建成功! media_id={data['media_id']}")
+-    return data["media_id"]
++    media_id = _create_draft_once(url, payload)
++    print(f"贴图草稿创建成功! media_id={media_id}")
++    return media_id
+ 
+ 
+ def add_draft(articles: Union[Dict[str, Any], List[Dict[str, Any]]]) -> str:
+@@ -264,21 +282,10 @@ def add_draft(articles: Union[Dict[str, Any], List[Dict[str, Any]]]) -> str:
+ 
+     payload = {"articles": articles}
+ 
+-    resp = _api_request_with_retry(
+-        "POST", url,
+-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+-        headers={"Content-Type": "application/json; charset=utf-8"},
+-    )
+-    resp.raise_for_status()
+-    data = resp.json()
++    media_id = _create_draft_once(url, payload)
+ 
+-    if "media_id" not in data:
+-        error_msg = data.get("errmsg", "未知错误")
+-        error_code = data.get("errcode", -1)
+-        raise RuntimeError(f"新建草稿失败 [{error_code}]: {error_msg}")
+-
+-    print(f"草稿创建成功! media_id={data['media_id']}")
+-    return data["media_id"]
++    print(f"草稿创建成功! media_id={media_id}")
++    return media_id
+ 
+ 
+ # ============================================================
+diff --git a/skills/openclaw/skill-wechat-publisher/scripts/publish.py b/skills/openclaw/skill-wechat-publisher/scripts/publish.py
+index 123bae2..0f6da95 100755
+--- a/skills/openclaw/skill-wechat-publisher/scripts/publish.py
++++ b/skills/openclaw/skill-wechat-publisher/scripts/publish.py
+@@ -21,6 +21,7 @@ import json
+ import argparse
+ import tempfile
+ import uuid
++import os
+ from pathlib import Path
+ from typing import Optional
+ 
+@@ -43,6 +44,7 @@ from wechat_api import (
+ )
+ from html_converter import convert_markdown_to_wechat_html, load_styles, load_theme
+ from image_handler import process_article_images, extract_images_from_markdown
++from api import DraftOutcomeUnknown
+ 
+ 
+ # ============================================================
+@@ -929,4 +931,20 @@ def main():
+ 
+ 
+ if __name__ == "__main__":
+-    main()
++    try:
++        main()
++    except DraftOutcomeUnknown as error:
++        recovery = {'success': False, 'outcome': 'unverified', 'error': str(error),
++                    'diagnostic': error.diagnostic, 'payload': error.payload}
++        directory = Path(os.environ.get('EASEL_ROOT') or Path.cwd()) / 'outputs' / '_inbox'
++        try:
++            directory.mkdir(parents=True, exist_ok=True)
++            file = directory / f'wechat-draft-unconfirmed-{uuid.uuid4().hex}.json'
++            with file.open('x', encoding='utf-8') as stream:
++                json.dump(recovery, stream, ensure_ascii=False, indent=2)
++            recovery = {key: value for key, value in recovery.items() if key != 'payload'}
++            recovery['recoveryFile'] = str(file)
++        except OSError:
++            recovery['recoveryError'] = '恢复记录写入失败，原稿未改动，请先在平台核对结果。'
++        print(json.dumps(recovery, ensure_ascii=False, indent=2))
++        sys.exit(2)
 diff --git a/skills/shared/scripts/account_stats.py b/skills/shared/scripts/account_stats.py
 index 8d336d0..2cdfa37 100644
 --- a/skills/shared/scripts/account_stats.py
@@ -826,10 +1198,49 @@ index ba699d3..c9ecb93 100644
      print(json.dumps(result, ensure_ascii=False))
      return 0
  
+diff --git a/skills/shared/scripts/login_qr.py b/skills/shared/scripts/login_qr.py
+new file mode 100644
+index 0000000..43802de
+--- /dev/null
++++ b/skills/shared/scripts/login_qr.py
+@@ -0,0 +1,24 @@
++"""Login-only QR snapshots. Keep the old image until a complete new one exists."""
++from pathlib import Path
++import os
++import tempfile
++
++
++def refresh_snapshot(page, destination, capture):
++    """Capture a fresh QR without changing its mtime when pixels did not change."""
++    destination = Path(destination)
++    destination.parent.mkdir(parents=True, exist_ok=True)
++    fd, temporary = tempfile.mkstemp(dir=destination.parent, suffix='.png')
++    os.close(fd)
++    temporary = Path(temporary)
++    try:
++        capture(page, temporary)
++        content = temporary.read_bytes()
++        if not content:
++            return False
++        if destination.exists() and destination.read_bytes() == content:
++            return False
++        os.replace(temporary, destination)
++        return True
++    finally:
++        temporary.unlink(missing_ok=True)
 diff --git a/skills/shared/scripts/login_state.py b/skills/shared/scripts/login_state.py
-index 1e73a95..b49f9f1 100644
+index 1e73a95..0cb123f 100644
 --- a/skills/shared/scripts/login_state.py
 +++ b/skills/shared/scripts/login_state.py
+@@ -15,7 +15,7 @@ import os
+ import tempfile
+ import time
+ 
+-STATES = ("starting", "qr_ready", "scanned", "sms_required", "verifying",
++STATES = ("starting", "qr_ready", "window_login", "scanned", "sms_required", "verifying",
+           "success", "expired", "error")
+ 
+ 
 @@ -39,11 +39,16 @@ def read_sms_code(path: str | None) -> str:
      return code
  
@@ -1409,7 +1820,7 @@ index 0000000..4801a10
 +    def __exit__(self, *_):
 +        self.release()
 diff --git a/skills/shared/scripts/web_publisher.py b/skills/shared/scripts/web_publisher.py
-index a3a73fa..8c6c4fc 100644
+index a3a73fa..f8220ce 100644
 --- a/skills/shared/scripts/web_publisher.py
 +++ b/skills/shared/scripts/web_publisher.py
 @@ -9,7 +9,7 @@
@@ -1421,7 +1832,7 @@ index a3a73fa..8c6c4fc 100644
      - 目标平台已登录（首次 `login` 打开有头浏览器扫码/登录，持久化到 profile 目录）
      - 有图形/远程显示或平台支持无头（登录一般需有头）
    无头/无内核环境仍可用 `platforms` / `plan`（dry-run 步骤预览）/ `check`。
-@@ -29,9 +29,13 @@ from __future__ import annotations
+@@ -29,9 +29,15 @@ from __future__ import annotations
  
  import argparse
  import json
@@ -1429,13 +1840,15 @@ index a3a73fa..8c6c4fc 100644
  import sys
  import time
  from pathlib import Path
++from urllib.parse import urlsplit
 +from business_browser import launch_persistent_context, resolve_browser
++from login_qr import refresh_snapshot
 +
 +PROJECT_ROOT = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
  
  sys.path.insert(0, str(Path(__file__).resolve().parent))
  import login_state  # noqa: E402
-@@ -334,13 +338,13 @@ def cmd_check(_a) -> int:
+@@ -334,13 +340,13 @@ def cmd_check(_a) -> int:
      try:
          from playwright.sync_api import sync_playwright
          with sync_playwright() as p:
@@ -1452,7 +1865,7 @@ index a3a73fa..8c6c4fc 100644
      print("登录态目录：~/.easel-browser-profiles/<平台>Profile")
      return 0 if ok else 3
  
-@@ -553,14 +557,14 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
+@@ -553,14 +559,14 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
      try:
          from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
      except Exception as e:
@@ -1469,7 +1882,7 @@ index a3a73fa..8c6c4fc 100644
              str(profile), headless=not headed, args=LAUNCH_ARGS + ["--no-proxy-server"],
              viewport={"width": 1440, "height": 900})
          page = browser.pages[0] if browser.pages else browser.new_page()
-@@ -745,7 +749,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
+@@ -745,7 +751,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                                             snapshot_ids=snapshot_ids)
                  if verdict.outcome != "verified":
                      try:  # 失败留现场，供排错
@@ -1478,7 +1891,7 @@ index a3a73fa..8c6c4fc 100644
                          fp.parent.mkdir(parents=True, exist_ok=True)
                          page.screenshot(path=str(fp))
                      except Exception:
-@@ -762,7 +766,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
+@@ -762,7 +768,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
              elif chk:
                  if not ui_ok:
                      try:  # 仅失败时截图，供排错（正常成功不截）
@@ -1487,7 +1900,7 @@ index a3a73fa..8c6c4fc 100644
                          fp.parent.mkdir(parents=True, exist_ok=True)
                          page.screenshot(path=str(fp))
                      except Exception:
-@@ -805,7 +809,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
+@@ -805,7 +811,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
          except PWTimeout as e:
              # 超时（常见：选择器失效 / 上传转码慢）——截图 + dump 当前可见输入控件，便于精修选择器
              try:
@@ -1496,7 +1909,28 @@ index a3a73fa..8c6c4fc 100644
                  fp.parent.mkdir(parents=True, exist_ok=True)
                  page.screenshot(path=str(fp))
                  print(f"    失败截图：{fp}", file=sys.stderr)
-@@ -1114,14 +1118,14 @@ def cmd_login_qr(a) -> int:
+@@ -857,6 +863,8 @@ def _is_logged_in(page, cfg: dict) -> bool:
+     # 1. URL 明确在登录/验证页（视频号→login.html、知乎→signin，实测）
+     if any(m in url for m in _LOGIN_MARKERS):
+         return False
++    if urlsplit(url).hostname != urlsplit(cfg['publish_url']).hostname:
++        return False
+     # 2. 登出浮层/二维码可见 → 未登录（快手停在发布页但弹登录浮层，实测）
+     out_sel = cfg.get("logged_out_selector")
+     if out_sel:
+@@ -883,10 +891,7 @@ def _is_logged_in(page, cfg: dict) -> bool:
+         # 配了 login_check 却都不命中：严格平台（快手：同域落地页 URL 区分不了）直接判未登录
+         if cfg.get("login_strict"):
+             return False
+-    # 4. URL 启发式兜底（非严格平台）：已离开登录入口页且无登录标记 → 已登录
+-    login_url = cfg["login_url"].lower().rstrip("/")
+-    if url and url != login_url:
+-        return True
++    # A redirect to an anonymous page is not evidence of an authenticated account.
+     return False
+ 
+ 
+@@ -1114,14 +1119,14 @@ def cmd_login_qr(a) -> int:
          _die(f"未知平台：{a.platform}（支持：{', '.join(PLATFORMS)}）")
      profile = _profile_dir(a.platform, a.profile_base)
      profile.mkdir(parents=True, exist_ok=True)
@@ -1513,7 +1947,19 @@ index a3a73fa..8c6c4fc 100644
              str(profile), headless=True, locale="zh-CN",
              args=LAUNCH_ARGS + ["--no-proxy-server"])
          page = browser.pages[0] if browser.pages else browser.new_page()
-@@ -1253,7 +1257,7 @@ def cmd_whoami(a) -> int:
+@@ -1176,6 +1181,11 @@ def cmd_login_qr(a) -> int:
+                     if _probe_logged_in(browser, cfg):
+                         confirmed = True
+                         break
++                if tick % 5 == 0:
++                    try:
++                        refresh_snapshot(page, qr_out, lambda view, file: _capture_qr(view, file, cfg))
++                    except Exception:
++                        pass  # keep the last complete image; final timeout stays explicit
+                 page.wait_for_timeout(_LOGIN_POLL_MS)
+             if confirmed:
+                 login_state.write_status(sf, "success", "登录成功")
+@@ -1253,7 +1263,7 @@ def cmd_whoami(a) -> int:
          with sync_playwright() as p:
              profile = _profile_dir(a.platform, a.profile_base)
              profile.mkdir(parents=True, exist_ok=True)
@@ -1629,18 +2075,19 @@ index 84de337..f46fa55 100644
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
 diff --git a/skills/shared/scripts/xhs_publish.py b/skills/shared/scripts/xhs_publish.py
-index 812ec82..d851bec 100644
+index 812ec82..ec55887 100644
 --- a/skills/shared/scripts/xhs_publish.py
 +++ b/skills/shared/scripts/xhs_publish.py
-@@ -34,6 +34,7 @@ import re
+@@ -34,6 +34,8 @@ import re
  import sys
  import time
  from pathlib import Path
 +from business_browser import launch_persistent_context, resolve_browser
++from login_qr import refresh_snapshot
  
  sys.path.insert(0, str(Path(__file__).resolve().parent))
  import login_state  # noqa: E402
-@@ -75,7 +76,7 @@ SELECTORS = {
+@@ -75,7 +77,7 @@ SELECTORS = {
  }
  
  PROFILE_NAME = "XiaohongshuProfile"
@@ -1649,7 +2096,7 @@ index 812ec82..d851bec 100644
  DEFAULT_QR_OUT = PROJECT_ROOT / "outputs" / "_login" / "xhs-login-qrcode.png"
  
  # Chromium 启动性能参数（提速冷启动；勿禁用图片——二维码是图片）
-@@ -129,24 +130,8 @@ def _profile_dir(base: str | None) -> Path:
+@@ -129,24 +131,8 @@ def _profile_dir(base: str | None) -> Path:
      return root / PROFILE_NAME
  
  
@@ -1675,7 +2122,7 @@ index 812ec82..d851bec 100644
  
      def __init__(self, profile: Path):
          self.path = profile / ".easel.lock"
-@@ -209,29 +194,6 @@ def _clear_stale_chrome_locks(profile: Path) -> None:
+@@ -209,29 +195,6 @@ def _clear_stale_chrome_locks(profile: Path) -> None:
              pass
  
  
@@ -1705,7 +2152,7 @@ index 812ec82..d851bec 100644
  def _risk_blocked(page) -> bool:
      try:
          url = page.url or ""
-@@ -559,17 +521,10 @@ def _launch(p, headed: bool, base: str | None, proxy: str | None):
+@@ -559,17 +522,10 @@ def _launch(p, headed: bool, base: str | None, proxy: str | None):
      else:
          # 显式直连：Chromium 级屏蔽系统/环境代理（开 VPN 也能用）——同抖音链兜底
          args.append("--no-proxy-server")
@@ -1724,7 +2171,7 @@ index 812ec82..d851bec 100644
          except Exception as e:
              last = e
              if attempt == 0 and "TargetClosed" in type(e).__name__:
-@@ -586,18 +541,13 @@ def cmd_check(_a) -> int:
+@@ -586,18 +542,13 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -1745,7 +2192,63 @@ index 812ec82..d851bec 100644
      print(f"登录态目录：{_profile_dir(None)}")
      return 0 if ok else 3
  
-@@ -969,8 +919,6 @@ def cmd_selftest(_a) -> int:
+@@ -664,7 +615,7 @@ def cmd_login(a) -> int:
+                 if a.headed:
+                     login_state.write_status(
+                         sf, "window_login",
+-                        "请在弹出的 CloakBrowser 窗口里扫码，不要关掉那个窗口。")
++                        "请在弹出的 浏览器窗口里扫码，不要关掉那个窗口。")
+                 try:
+                     page.goto(EXPLORE_URL, wait_until="domcontentloaded", timeout=45000)
+                 except Exception as e:
+@@ -679,7 +630,7 @@ def cmd_login(a) -> int:
+                             page.goto(CREATOR_LOGIN_URL, wait_until="domcontentloaded", timeout=45000)
+                             login_state.write_status(
+                                 sf, "window_login",
+-                                "首页被风控拦截了，已改开创作平台。请在弹出的 CloakBrowser 窗口里扫码或短信登录。")
++                                "首页被风控拦截了，已改开创作平台。请在弹出的 浏览器窗口里扫码或短信登录。")
+                             break
+                         login_state.write_status(sf, "error", "IP 存在风险，需干净网络/代理")
+                         _die("小红书判定当前网络为风险 IP（安全限制 300012「IP存在风险，请切换可靠网络环境」）——"
+@@ -714,14 +665,14 @@ def cmd_login(a) -> int:
+                              "或已弹别的登录方式——可加 --headed 观察")
+                     login_state.write_status(
+                         sf, "window_login",
+-                        "请在弹出的 CloakBrowser 窗口里完成登录（扫码或短信），不要关掉那个窗口。")
++                        "请在弹出的 浏览器窗口里完成登录（扫码或短信），不要关掉那个窗口。")
+                 if qr:
+                     qr_out.parent.mkdir(parents=True, exist_ok=True)
+                     qr.screenshot(path=str(qr_out))
+                     if a.headed:
+                         login_state.write_status(
+                             sf, "window_login",
+-                            "请在弹出的 CloakBrowser 窗口里扫码，不要关掉那个窗口。也可以扫下面这张图。",
++                            "请在弹出的 浏览器窗口里扫码，不要关掉那个窗口。也可以扫下面这张图。",
+                             qr=str(qr_out))
+                     else:
+                         login_state.write_status(sf, "qr_ready", "二维码已就绪，请扫码", qr=str(qr_out))
+@@ -732,6 +683,7 @@ def cmd_login(a) -> int:
+ 
+                 # 轮询登录成功（扫码成功瞬间页面会跳转，查询崩了是正常的，重试继续等）
+                 deadline = time.time() + timeout_s
++                next_qr_refresh = time.time() + 10
+                 while time.time() < deadline:
+                     try:
+                         logged_in = _is_logged_in(page)
+@@ -749,6 +701,12 @@ def cmd_login(a) -> int:
+                         except OSError:
+                             pass
+                         return 0
++                    if time.time() >= next_qr_refresh:
++                        try:
++                            refresh_snapshot(page, qr_out, lambda view, file: view.query_selector(SELECTORS['qrcode']).screenshot(path=str(file)))
++                        except Exception:
++                            pass
++                        next_qr_refresh = time.time() + 10
+                     page.wait_for_timeout(2000)
+                 login_state.write_status(sf, "expired", "二维码超时未扫")
+                 print(f"⏱️ {timeout_s}s 内未检测到登录成功（二维码可能已过期）。请重跑 login 再扫。",
+@@ -969,8 +927,6 @@ def cmd_selftest(_a) -> int:
      # profile 目录路由
      assert _profile_dir(None).name == PROFILE_NAME
      assert "cloak-research-profile" not in str(_profile_dir(None))
@@ -1755,19 +2258,46 @@ index 812ec82..d851bec 100644
      import tempfile
      tmp = Path(tempfile.mkdtemp(prefix="easel-xhs-lock-"))
 diff --git a/skills/shared/scripts/zhihu_answer.py b/skills/shared/scripts/zhihu_answer.py
-index 7bc69ce..8a1549c 100644
+index 7bc69ce..846924b 100644
 --- a/skills/shared/scripts/zhihu_answer.py
 +++ b/skills/shared/scripts/zhihu_answer.py
-@@ -25,6 +25,7 @@
+@@ -24,7 +24,10 @@
+ 
  from __future__ import annotations
  import argparse, json, os, sys
++import re
  from pathlib import Path
++from urllib.parse import urlsplit
 +from business_browser import launch_persistent_context, resolve_browser
  
  sys.path.insert(0, str(Path(__file__).resolve().parent))
  import content_guard  # noqa: E402  出站内容安全闸门
-@@ -221,7 +222,7 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
-     result = {"success": False, "url": "", "error": ""}
+@@ -215,13 +218,30 @@ def _click_publish_btn(page) -> bool:
+     return False
+ 
+ 
++def classify_answer_outcome(question_url: str, final_url: str, previous_urls=()) -> str:
++    def address(url):
++        parsed = urlsplit(url)
++        if parsed.scheme != 'https' or parsed.hostname not in {'zhihu.com', 'www.zhihu.com'} or parsed.username or parsed.port not in (None, 443):
++            return None
++        return re.fullmatch(r'/question/(\d+)(?:/answer/(\d+))?/?', parsed.path)
++    target = address(question_url)
++    final = address(final_url)
++    parsed = urlsplit(final_url)
++    if parsed.hostname in {'zhihu.com', 'www.zhihu.com'} and parsed.path.startswith(('/signin', '/login')):
++        return 'login_required'
++    if not target or not final or final[1] != target[1] or not final[2]:
++        return 'unverified'
++    old_ids = {match[2] for url in previous_urls if (match := address(url)) and match[2]}
++    return 'unverified' if final[2] in old_ids else 'verified'
++
++
+ def publish_answer(question_url: str, content: str, headed: bool = False, dry_run: bool = True) -> dict:
+     from playwright.sync_api import sync_playwright
+ 
+-    result = {"success": False, "url": "", "error": ""}
++    result = {"success": False, "url": "", "error": "", "outcome": "unverified"}
  
      with sync_playwright() as p:
 -        ctx = p.chromium.launch_persistent_context(
@@ -1775,6 +2305,47 @@ index 7bc69ce..8a1549c 100644
              str(PROFILE_DIR),
              headless=not headed,
              args=LAUNCH_ARGS,
+@@ -236,6 +256,7 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+ 
+         # 检查登录态
+         if page.query_selector(".SignContainer, .Login-content"):
++            result['outcome'] = 'login_required'
+             result["error"] = "未登录知乎，请先在「账号」页扫码登录"
+             ctx.close()
+             return result
+@@ -256,9 +277,12 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+             result["success"] = True
+             result["url"] = question_url
+             result["dry_run"] = True
++            result['outcome'] = 'dry_run'
+             ctx.close()
+             return result
+ 
++        previous_urls = [page.url, question_url]
++        previous_urls += page.evaluate('() => Array.from(document.querySelectorAll(\'a[href*="/answer/"]\'), a => a.href)')
+         # 2. 写入回答内容
+         ok = type_into_editor(page, content)
+         if not ok:
+@@ -269,6 +293,7 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+         page.wait_for_timeout(1500)
+ 
+         # 3. 发布
++        previous_urls.append(page.url)
+         published = _click_publish_btn(page)
+         if not published:
+             result["error"] = "未找到或无法点击发布回答按钮"
+@@ -278,7 +303,10 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+         # 4. 验证
+         current_url = page.url
+         print(f"[INFO] 当前页面 URL: {current_url}", file=sys.stderr)
+-        result["success"] = "/answer/" in current_url or "question" in current_url
++        result['outcome'] = classify_answer_outcome(question_url, current_url, previous_urls)
++        result['success'] = result['outcome'] == 'verified'
++        if not result['success']:
++            result['error'] = '发布结果尚未确认，请到目标问题核对；不要重复提交。'
+         result["url"] = current_url
+ 
+         ctx.close()
 diff --git a/skills/shared/scripts/zhihu_comments_fetch.py b/skills/shared/scripts/zhihu_comments_fetch.py
 index f65b8e9..d235a89 100644
 --- a/skills/shared/scripts/zhihu_comments_fetch.py
@@ -1802,8 +2373,420 @@ index f65b8e9..d235a89 100644
              str(PROFILE_DIR),
              headless=True,
              args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+diff --git a/skills/shared/social-methods/README.md b/skills/shared/social-methods/README.md
+new file mode 100644
+index 0000000..671acf0
+--- /dev/null
++++ b/skills/shared/social-methods/README.md
+@@ -0,0 +1,22 @@
++# 运营方法补充：按任务查阅
++
++本组资料补充现有方法，外部 Agent 结合目标自主研究和实现；工具、访谈数量、执行顺序和交付深度由实际任务决定。
++
++| 当前需要 | 参考资料 | 回存位置 |
++| --- | --- | --- |
++| 学习文风，解释用户为什么改稿 | [文风证据](voice-evidence.md) | 画像 style/preferences；原稿和改稿留项目 |
++| 理解受众为什么关注、购买或放弃 | [受众证据](audience-evidence.md) | 画像 audience；访谈原话与研究留项目 |
++| 分析对标，判断内容机会 | [竞品证据](competitor-evidence.md) | 分析报告项目；稳定背景按需回画像 |
++| 组织图文、检查素材与衍生作品 | [素材映射](asset-lineage.md) | 当前项目 assets、成品及原有元数据 |
++| 修订过去的运营经验 | [经验修订](learning-revision.md) | 画像 memory；详细复盘留项目 |
++
++沿用当前资料库的 profiles、outputs、选题和日历。这里描述观察、判断与准备内容的方法；发布使用已有默认浏览器 AitoEarn 入口，官网结果由实际页面核对，不自动写回。两套来源的发布适配、上传、云端草稿、授权和平台排期执行不在引入范围。
++
++## 来源及改编
++
++2026-10-20 为 MediaSail 整理的中文改编资料，采用本软件已有业务概念和存储位置，非原库完整 Skill，也未验证原库供应商接口。
++
++- Anthropic `knowledge-work-plugins`，固定提交 `a266ab8c3c754a3ccf7a634044fc1595fc06e50e`：[social-content-engine](https://github.com/anthropics/knowledge-work-plugins/tree/a266ab8c3c754a3ccf7a634044fc1595fc06e50e/small-business/skills/social-content-engine) 及共享 voice-profile。原件许可见 [Anthropic LICENSE](anthropic-LICENSE.txt)，发行包 licenses 亦保留原件。涉及发布的原参考未收入。
++- Corey Haines，Marketing Skills，固定提交 `e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b`：[源仓库](https://github.com/coreyhaines31/marketingskills/tree/e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b)。Copyright (c) 2025 Corey Haines，MIT，见 [原许可证](marketing-skills-LICENSE.txt)。品牌声音参考另注明 WisprFlow / retieedra-profound 来源，本次未复制其文件或模板。
++
++本组为重新组织的方法说明，原始运营经验和计算脚本继续在各自方法目录；没有添加平台能力、固定供应商或新的运行环境。
+diff --git a/skills/shared/social-methods/anthropic-LICENSE.txt b/skills/shared/social-methods/anthropic-LICENSE.txt
+new file mode 100644
+index 0000000..f53c679
+--- /dev/null
++++ b/skills/shared/social-methods/anthropic-LICENSE.txt
+@@ -0,0 +1,212 @@
++
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++   1. Definitions.
++
++      "License" shall mean the terms and conditions for use, reproduction,
++      and distribution as defined by Sections 1 through 9 of this document.
++
++      "Licensor" shall mean the copyright owner or entity authorized by
++      the copyright owner that is granting the License.
++
++      "Legal Entity" shall mean the union of the acting entity and all
++      other entities that control, are controlled by, or are under common
++      control with that entity. For the purposes of this definition,
++      "control" means (i) the power, direct or indirect, to cause the
++      direction or management of such entity, whether by contract or
++      otherwise, or (ii) ownership of fifty percent (50%) or more of the
++      outstanding shares, or (iii) beneficial ownership of such entity.
++
++      "You" (or "Your") shall mean an individual or Legal Entity
++      exercising permissions granted by this License.
++
++      "Source" form shall mean the preferred form for making modifications,
++      including but not limited to software source code, documentation
++      source, and configuration files.
++
++      "Object" form shall mean any form resulting from mechanical
++      transformation or translation of a Source form, including but
++      not limited to compiled object code, generated documentation,
++      and conversions to other media types.
++
++      "Work" shall mean the work of authorship, whether in Source or
++      Object form, made available under the License, as indicated by a
++      copyright notice that is included in or attached to the work
++      (an example is provided in the Appendix below).
++
++      "Derivative Works" shall mean any work, whether in Source or Object
++      form, that is based on (or derived from) the Work and for which the
++      editorial revisions, annotations, elaborations, or other modifications
++      represent, as a whole, an original work of authorship. For the purposes
++      of this License, Derivative Works shall not include works that remain
++      separable from, or merely link (or bind by name) to the interfaces of,
++      the Work and Derivative Works thereof.
++
++      "Contribution" shall mean any work of authorship, including
++      the original version of the Work and any modifications or additions
++      to that Work or Derivative Works thereof, that is intentionally
++      submitted to Licensor for inclusion in the Work by the copyright owner
++      or by an individual or Legal Entity authorized to submit on behalf of
++      the copyright owner. For the purposes of this definition, "submitted"
++      means any form of electronic, verbal, or written communication sent
++      to the Licensor or its representatives, including but not limited to
++      communication on electronic mailing lists, source code control systems,
++      and issue tracking systems that are managed by, or on behalf of, the
++      Licensor for the purpose of discussing and improving the Work, but
++      excluding communication that is conspicuously marked or otherwise
++      designated in writing by the copyright owner as "Not a Contribution."
++
++      "Contributor" shall mean Licensor and any individual or Legal Entity
++      on behalf of whom a Contribution has been received by Licensor and
++      subsequently incorporated within the Work.
++
++   2. Grant of Copyright License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      copyright license to reproduce, prepare Derivative Works of,
++      publicly display, publicly perform, sublicense, and distribute the
++      Work and such Derivative Works in Source or Object form.
++
++   3. Grant of Patent License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      (except as stated in this section) patent license to make, have made,
++      use, offer to sell, sell, import, and otherwise transfer the Work,
++      where such license applies only to those patent claims licensable
++      by such Contributor that are necessarily infringed by their
++      Contribution(s) alone or by combination of their Contribution(s)
++      with the Work to which such Contribution(s) was submitted. If You
++      institute patent litigation against any entity (including a
++      cross-claim or counterclaim in a lawsuit) alleging that the Work
++      or a Contribution incorporated within the Work constitutes direct
++      or contributory patent infringement, then any patent licenses
++      granted to You under this License for that Work shall terminate
++      as of the date such litigation is filed.
++
++   4. Redistribution. You may reproduce and distribute copies of the
++      Work or Derivative Works thereof in any medium, with or without
++      modifications, and in Source or Object form, provided that You
++      meet the following conditions:
++
++      (a) You must give any other recipients of the Work or
++          Derivative Works a copy of this License; and
++
++      (b) You must cause any modified files to carry prominent notices
++          stating that You changed the files; and
++
++      (c) You must retain, in the Source form of any Derivative Works
++          that You distribute, all copyright, patent, trademark, and
++          attribution notices from the Source form of the Work,
++          excluding those notices that do not pertain to any part of
++          the Derivative Works; and
++
++      (d) If the Work includes a "NOTICE" text file as part of its
++          distribution, then any Derivative Works that You distribute must
++          include a readable copy of the attribution notices contained
++          within such NOTICE file, excluding those notices that do not
++          pertain to any part of the Derivative Works, in at least one
++          of the following places: within a NOTICE text file distributed
++          as part of the Derivative Works; within the Source form or
++          documentation, if provided along with the Derivative Works; or,
++          within a display generated by the Derivative Works, if and
++          wherever such third-party notices normally appear. The contents
++          of the NOTICE file are for informational purposes only and
++          do not modify the License. You may add Your own attribution
++          notices within Derivative Works that You distribute, alongside
++          or as an addendum to the NOTICE text from the Work, provided
++          that such additional attribution notices cannot be construed
++          as modifying the License.
++
++      You may add Your own copyright statement to Your modifications and
++      may provide additional or different license terms and conditions
++      for use, reproduction, or distribution of Your modifications, or
++      for any such Derivative Works as a whole, provided Your use,
++      reproduction, and distribution of the Work otherwise complies with
++      the conditions stated in this License.
++
++   5. Submission of Contributions. Unless You explicitly state otherwise,
++      any Contribution intentionally submitted for inclusion in the Work
++      by You to the Licensor shall be under the terms and conditions of
++      this License, without any additional terms or conditions.
++      Notwithstanding the above, nothing herein shall supersede or modify
++      the terms of any separate license agreement you may have executed
++      with Licensor regarding such Contributions.
++
++   6. Trademarks. This License does not grant permission to use the trade
++      names, trademarks, service marks, or product names of the Licensor,
++      except as required for reasonable and customary use in describing the
++      origin of the Work and reproducing the content of the NOTICE file.
++
++   7. Disclaimer of Warranty. Unless required by applicable law or
++      agreed to in writing, Licensor provides the Work (and each
++      Contributor provides its Contributions) on an "AS IS" BASIS,
++      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++      implied, including, without limitation, any warranties or conditions
++      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++      PARTICULAR PURPOSE. You are solely responsible for determining the
++      appropriateness of using or redistributing the Work and assume any
++      risks associated with Your exercise of permissions under this License.
++
++   8. Limitation of Liability. In no event and under no legal theory,
++      whether in tort (including negligence), contract, or otherwise,
++      unless required by applicable law (such as deliberate and grossly
++      negligent acts) or agreed to in writing, shall any Contributor be
++      liable to You for damages, including any direct, indirect, special,
++      incidental, or consequential damages of any character arising as a
++      result of this License or out of the use or inability to use the
++      Work (including but not limited to damages for loss of goodwill,
++      work stoppage, computer failure or malfunction, or any and all
++      other commercial damages or losses), even if such Contributor
++      has been advised of the possibility of such damages.
++
++   9. Accepting Warranty or Additional Liability. While redistributing
++      the Work or Derivative Works thereof, You may choose to offer,
++      and charge a fee for, acceptance of support, warranty, indemnity,
++      or other liability obligations and/or rights consistent with this
++      License. However, in accepting such obligations, You may act only
++      on Your own behalf and on Your sole responsibility, not on behalf
++      of any other Contributor, and only if You agree to indemnify,
++      defend, and hold each Contributor harmless for any liability
++      incurred by, or claims asserted against, such Contributor by reason
++      of your accepting any such warranty or additional liability.
++
++   END OF TERMS AND CONDITIONS
++
++   APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "[]"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++   Copyright [yyyy] [name of copyright owner]
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++
++
++  Syntax-file, code seperations,code vault integeted with css definition.
++Pre-recordec, pre-tested, elements to capture elements into Packeted-User-Relations to capture - [
++
++pre-requisites, statements, recorded-cams
++, cams-data
++, data, input()
++
++]
+diff --git a/skills/shared/social-methods/asset-lineage.md b/skills/shared/social-methods/asset-lineage.md
+new file mode 100644
+index 0000000..e1d1e06
+--- /dev/null
++++ b/skills/shared/social-methods/asset-lineage.md
+@@ -0,0 +1,23 @@
++# 素材对应与衍生关系
++
++适用于多图内容、封面、图文转视频及旧内容复用。来源与改编见 [资料索引](README.md)。
++
++围绕内容的表达目标梳理已有素材。每个画面或槽位需要传达什么，哪个源文件支持它，是否缺素材，是否有使用条件？工具由 Agent 按环境选择；没有可用素材时标明缺项，不把占位图当成真实交付。
++
++可在当前项目中记录对应关系，格式按任务选择，例如：
++
++| 位置 | 表达任务 | 来源 | 核对 |
++| --- | --- | --- | --- |
++| 封面 | 明确主题和受众 | 用户拍摄原图 assets/原片.jpg | 标题可读，主体不被裁切 |
++| 第 2 图 | 解释三个选择条件 | 研究报告中的已核对结论 | 数字与单位一致，顺序符合正文 |
++| 第 3 图 | 展示实际案例 | 原项目中的授权成品 | 注明衍生来源，适配当前画幅 |
++
++## 看实际结果
++
++文件名或生成提示词符合主题，不代表图片本身正确。检查实际渲染后的文字、数据、语义、构图、分辨率、画幅、连续风格和媒体顺序；视频还需看时间关系、同步和实际封面。只生成或返工需要修订的项目，已确认素材可继续复用，避免整组盲目重做。
++
++## 保留来源并形成可识别成品
++
++源文件保持可定位，衍生作品记录来自哪个项目/文件、改了什么以及何时制作。素材与过程文件留 assets，正文和最终媒体按原有项目结构保存；用 .easel.json 登记真实成品、顺序和封面，遵守现有元数据接口及版本冲突保护，不为这些方法增加全局素材数据库。
++
++内容准备好后可打开项目文件夹，在默认浏览器的 AitoEarn 中选择文件和核对账号。内容已就绪、已登记发布和平台实际成功是不同事实；官网发布结果不会自动回写 MediaSail。
+diff --git a/skills/shared/social-methods/audience-evidence.md b/skills/shared/social-methods/audience-evidence.md
+new file mode 100644
+index 0000000..cc8c6a1
+--- /dev/null
++++ b/skills/shared/social-methods/audience-evidence.md
+@@ -0,0 +1,23 @@
++# 受众决策证据
++
++适用于受众研究、评论洞察、定位和内容选题。来源与改编见 [资料索引](README.md)。
++
++## 分开事实、解释与待验证问题
++
++评论词频、点赞和收藏能发现话题，但不能直接证明购买动机。关注用户在什么情境遇到什么问题、想完成什么事、现在如何解决、为什么考虑改变，以及什么因素使其放弃。
++
++可从访谈、真实问答、反馈、已有研究和可访问数据提取线索。为原话保留来源、时间、样本范围和上下文，区分实际体验、转述、玩笑与营销内容。用户身份不清楚时保持未知，不从头像或一句评论推断人口属性。
++
++| 证据 | 可形成的假设 | 仍需核对 |
++| --- | --- | --- |
++| “早上来不及做，外卖又太贵” | 时间和预算共同影响早餐选择 | 是长期需求还是临时抱怨，已有替代方案是什么 |
++| 教程收藏高、购买咨询少 | 内容可能具有学习或未来使用价值 | 不能仅凭收藏推断购买意愿或成交 |
++| 多位用户询问清洗难度 | 维护成本可能是决策障碍 | 是否集中于某型号、场景或引导提问 |
++
++## 按决策情境归组
++
++群组可由使用任务、触发时刻、现有替代、顾虑和期望结果组成；先看真实差异，再决定是否需要年龄等标签。既记录支持证据，也找反例：沉默用户、未购买者、流失者和非粉丝是否被样本遗漏？平台推荐机制、问题措辞和抽样方式如何影响结果？
++
++研究报告可以列原话、观察、假设、反证和下一步验证，不强制字段表或访谈题数。已有资料足够时直接工作；缺少影响结论的信息时再问用户或补研究。
++
++稳定受众背景写入 audience.md；原话、完整数据、分组依据和待验证假设留在分析项目，注明采集账号、平台、来源和时间。公开互动指标与私有经营指标分别说明，不修改既有业务公式，不把缺失补为零。
+diff --git a/skills/shared/social-methods/competitor-evidence.md b/skills/shared/social-methods/competitor-evidence.md
+new file mode 100644
+index 0000000..617aa0c
+--- /dev/null
++++ b/skills/shared/social-methods/competitor-evidence.md
+@@ -0,0 +1,21 @@
++# 竞品事实、推断与启示
++
++适用于对标、差异定位、内容空缺和策略研究。来源与改编见 [资料索引](README.md)。
++
++确定比较目标和样本边界：同平台还是跨平台、什么时间范围、哪些产品或内容形态、为什么选这些对象。按实际任务选择指标，不把体量不同、时期不同或付费投放不明的账号直接排名。
++
++## 三层记录
++
++- 观察：能够指向页面、帖子、截图或数据的事实，带访问日期及适用范围。
++- 推断：对事实的解释，同时写出其他合理解释和未取得的信息。
++- 启示：与用户目标的关系、适用条件和可尝试的方向。
++
++例如：“样本中 12 篇有 8 篇用步骤图”是观察；“用户可能更需要可执行教程”是推断；“在我们的新手主题试验步骤图并比较同口径收藏表现”是启示。不能把后两层改写为竞品的内部决策事实。
++
++未观察到某主题不等于竞品从未做过；搜索排序、删除、地域和登录权限都可能影响可见性。保留原始快照与来源时间，不用后续变动覆盖当时证据。平台指标定义不一致时分别比较，明确同账号/来源/口径与观察窗口。
++
++## 找空缺而非复制表面
++
++比较服务对象、问题深度、解释方式、证据质量、内容形态和用户反馈。机会可能是把已有主题讲得更清楚、补决策信息或覆盖被忽略场景；不是关键词没搜到就证明有需求。可以记录支持/反对理由及试验结果，避免固定评分替代判断。
++
++分析与原始材料回存现有分析报告项目。长期定位背景按任务写回画像，用户本人的身份与竞品特征分开；不建立另一个全局 product-marketing 档案。
+diff --git a/skills/shared/social-methods/learning-revision.md b/skills/shared/social-methods/learning-revision.md
+new file mode 100644
+index 0000000..3be31cf
+--- /dev/null
++++ b/skills/shared/social-methods/learning-revision.md
+@@ -0,0 +1,15 @@
++# 经验的适用范围与修订
++
++适用于复盘、长期经验维护和内容策略调整。来源与改编见 [资料索引](README.md)。
++
++将“有效做法”连同依据保存，比只存结论更容易复用。说明对应账号、平台、内容形态、时间窗口、指标来源和比较口径，以及当时目标。一次爆款只是一个样本；相关关系不能直接证明改稿、发布时间或形式导致了增长。
++
++例如：“步骤图更好”可改为“该账号本月同主题样本中，步骤图收藏率较高；样本小，流量来源未完全控制，适合继续观察”。既保留有用方向，也让下一位 Agent 知道哪里不能外推。
++
++## 有新证据时如何调整
++
++复用经验前看它是否适合当前任务。平台改版、受众变化、业务目标改变、样本陈旧或反例出现时，可缩小适用范围、改写解释或标记暂不采用。保留旧结论、当时依据及修订原因，便于解释历史决策；不机械删除相反案例。
++
++“可继续参考／待观察／已不适用”可作为文字说明，按需要采用，不引入全局状态机、强制到期日、评分门槛或每轮更新要求。有效性来自证据，不来自日期新或被重复引用。
++
++稳定经验回存画像 memory.md，表达偏好回 preferences.md，详细计算、原始样本和对照留分析项目。现有脚本的公式和缺值处理保持原口径；不同账号、平台、来源或公开/私有指标不能无说明混算。使用画像文件接口保存时提交读取的 revision，冲突时保留研究和草稿供核对。
+diff --git a/skills/shared/social-methods/marketing-skills-LICENSE.txt b/skills/shared/social-methods/marketing-skills-LICENSE.txt
+new file mode 100644
+index 0000000..7c48dd6
+--- /dev/null
++++ b/skills/shared/social-methods/marketing-skills-LICENSE.txt
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) 2025 Corey Haines
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/skills/shared/social-methods/voice-evidence.md b/skills/shared/social-methods/voice-evidence.md
+new file mode 100644
+index 0000000..3134f24
+--- /dev/null
++++ b/skills/shared/social-methods/voice-evidence.md
+@@ -0,0 +1,27 @@
++# 文风证据与改稿学习
++
++适用于建立表达风格、解释改稿差异、把同一声音用于不同平台；与受众画像分开。来源和改编说明见 [资料索引](README.md)。
++
++## 从真实表达建立假设
++
++先复用任务所指画像、已有成品和用户改稿。多篇跨场景样本更容易识别稳定规律；只有一篇时也可给出局部判断，说明覆盖范围。示范样本只用于演示方法，不能作为用户本人的证据。
++
++可观察句长和段落节奏、人称、口语密度、语气、标志性词汇、开头、过渡、收尾与行动邀请。把“专业、亲切、有力”等属性展开成可识别的表达，并写清边界。
++
++| 属性假设 | 可观察表现 | 边界与反例 |
++| --- | --- | --- |
++| 专业且易懂 | 先讲判断，再解释术语并给实例 | 不是术语越多越专业，也不省略关键条件 |
++| 亲切 | 说具体经历，承认困难，用自然称呼 | 不是所有情境都开玩笑或过度亲昵 |
++| 有主张 | 说明取舍及依据 | 不是把经验包装成保证或攻击他人 |
++
++用原句、文件位置或日期支撑判断。样本里没出现某种表达只能说明“本次未观察到”；用户明确说过的禁区与小样本缺失是不同事实。矛盾保留，核对是否来自平台、时间、合作方或目标不同。
++
++## 用户改稿是高价值反馈
++
++比较改前、改后及用户解释：改了事实、结构、语气、节奏还是立场？例如把“颠覆所有人的认知”改成“这三个细节值得再看”，可以形成“减少夸张承诺”的假设；若用户仅为某次商务合作调整，则标为当前项目条件，不自动推广到全部内容。
++
++原稿与改稿留在项目，记录文件或版本、修改理由与适用场景。稳定风格写入 style.md，明确表达偏好写入 preferences.md。结合后续作品检验假设，避免只模仿口头禅。用户要独立声音指南时可以另交项目文档，六维画像仍是长期背景入口。
++
++## 随场景调节
++
++声音可以稳定，语气强度会因科普、投诉回应、销售介绍和复盘不同而变化。修改时比较是否清楚、可信、符合当前目标与用户习惯；不把固定字数、标点禁用或单一 CTA 当作跨任务规则。
 diff --git a/web/app.py b/web/app.py
-index 66b3678..53cff61 100644
+index 66b3678..c34f961 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -1827,15 +2810,17 @@ index 66b3678..53cff61 100644
  import subprocess
  import sys
  import threading
-@@ -22,7 +18,6 @@ import urllib.parse
+@@ -21,8 +17,8 @@ import urllib.error
+ import urllib.parse
  import urllib.request
  import uuid
++from typing import Literal
  from contextlib import asynccontextmanager
 -import ipaddress
  from pathlib import Path
  
  from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
-@@ -30,7 +25,6 @@ from fastapi.middleware.cors import CORSMiddleware
+@@ -30,7 +26,6 @@ from fastapi.middleware.cors import CORSMiddleware
  from starlette.middleware.trustedhost import TrustedHostMiddleware
  from fastapi.responses import FileResponse, JSONResponse
  from pydantic import BaseModel, Field
@@ -1843,7 +2828,7 @@ index 66b3678..53cff61 100644
  
  PROJECT_ROOT = Path(__file__).resolve().parents[1]
  
-@@ -39,34 +33,7 @@ if str(PROJECT_ROOT) not in sys.path:
+@@ -39,34 +34,7 @@ if str(PROJECT_ROOT) not in sys.path:
  if str(PROJECT_ROOT / "scripts") not in sys.path:
      sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
  
@@ -1879,7 +2864,7 @@ index 66b3678..53cff61 100644
  
  PROFILES_DIR = PROJECT_ROOT / "profiles"
  SKILLS_DIR = PROJECT_ROOT / "skills"
-@@ -74,137 +41,26 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+@@ -74,137 +42,26 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
  
  STATIC_DIR = Path(__file__).resolve().parent / "static"
  REACT_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
@@ -2006,16 +2991,16 @@ index 66b3678..53cff61 100644
 -    except Exception as e:
 -        print(f"[session-heal] 跳过（{e}）", file=sys.stderr, flush=True)
 -
--
++        return resolve_browser()
++    except BrowserUnavailable as error:
++        raise HTTPException(503, str(error)) from error
+ 
 -# 制作层/直接执行层/chat 超时统一走 easel/timeouts.py（CLI/Web/skill 三入口单一真相源）
 -
 -SHARED_SCRIPTS = PROJECT_ROOT / "skills" / "shared" / "scripts"
 -if str(SHARED_SCRIPTS) not in sys.path:
 -    sys.path.insert(0, str(SHARED_SCRIPTS))
-+        return resolve_browser()
-+    except BrowserUnavailable as error:
-+        raise HTTPException(503, str(error)) from error
- 
+-
 -from model_registry import model_group
  
  BROWSER_PROFILES = Path.home() / ".easel-browser-profiles"
@@ -2028,7 +3013,7 @@ index 66b3678..53cff61 100644
  # 非 _ 前缀的历史系统目录（归因层数据），内容库不展示（真产物一律在项目目录内）
  SYSTEM_TOPLEVEL_DIRS = {"analytics"}
  LOGIN_TIMEOUT = 240
-@@ -324,7 +180,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -324,7 +181,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
      ) % (str(WECHAT_SKILL_SCRIPTS), WECHAT_WEB_ACCOUNT)
      try:
          proc = subprocess.run([sys.executable, "-c", code], cwd=str(WECHAT_SKILL_SCRIPTS),
@@ -2037,7 +3022,7 @@ index 66b3678..53cff61 100644
      except subprocess.TimeoutExpired:
          return False, "验证超时（网络或 IP 白名单问题）"
      out = (proc.stdout or "").strip().splitlines()
-@@ -337,83 +193,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -337,83 +194,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
      return False, err[0][:200]
  
  
@@ -2121,7 +3106,7 @@ index 66b3678..53cff61 100644
  TEXT_EXTS = {".txt", ".md", ".json", ".csv", ".log", ".py", ".js", ".ts", ".html", ".htm", ".css", ".xml", ".yaml", ".yml", ".srt", ".vtt"}
  IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"}
  VIDEO_EXTS = {".mp4", ".mov", ".webm", ".m4v"}
-@@ -426,7 +205,7 @@ async def _lifespan(_app: FastAPI):
+@@ -426,7 +206,7 @@ async def _lifespan(_app: FastAPI):
      _stop_mp_login_on_shutdown()
  
  
@@ -2130,7 +3115,7 @@ index 66b3678..53cff61 100644
  
  def _local_ports(env_port: str) -> set[str]:
      """本机写守卫放行的端口集合：固定的 7860/7870/5173，加上 `--port`/EASEL_PORT
-@@ -485,13 +264,8 @@ async def local_write_guard(request: Request, call_next):
+@@ -485,13 +265,8 @@ async def local_write_guard(request: Request, call_next):
      ① 带 Origin（浏览器跨站发起）：Origin 必须在 _LOCAL_ORIGINS 里，否则 403。
      ② 不带 Origin（curl / 本机脚本 / 测试客户端）：要求对端来自回环地址。
  
@@ -2146,7 +3131,7 @@ index 66b3678..53cff61 100644
      """
      origin = request.headers.get('origin')
      if request.url.path == '/api/clipper' and origin and re.fullmatch(r'chrome-extension://[a-p]{32}', origin):
-@@ -518,7 +292,7 @@ def list_personas() -> list[dict]:
+@@ -518,7 +293,7 @@ def list_personas() -> list[dict]:
          return []
      result = []
      for d in sorted(PROFILES_DIR.iterdir()):
@@ -2155,7 +3140,7 @@ index 66b3678..53cff61 100644
              continue
          desc = ''
          identity = d / 'identity.md'
-@@ -590,35 +364,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
+@@ -590,35 +365,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
  
  
  def get_skills() -> list[dict]:
@@ -2193,7 +3178,7 @@ index 66b3678..53cff61 100644
  def _proxy_env() -> dict[str, str]:
      """返回带外网代理的环境变量（保护内网直连）。"""
      env = os.environ.copy()
-@@ -663,259 +424,6 @@ def _wechat_env() -> dict[str, str]:
+@@ -663,259 +425,6 @@ def _wechat_env() -> dict[str, str]:
      return env
  
  
@@ -2453,7 +3438,7 @@ index 66b3678..53cff61 100644
  def _file_kind(name: str) -> str:
      ext = Path(name).suffix.lower()
      if ext in IMAGE_EXTS:
-@@ -961,16 +469,18 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -961,16 +470,18 @@ def _read_project_meta(proj: Path) -> dict:
      只取展示相关字段（不含编排 steps）。cover 解析优先级：
      展示头声明的 cover → 首个成品媒体 → 目录内首张图/视频（兜底）。
      """
@@ -2480,7 +3465,7 @@ index 66b3678..53cff61 100644
      if not meta:
          return {}
  
-@@ -980,17 +490,17 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -980,17 +491,17 @@ def _read_project_meta(proj: Path) -> dict:
      # 封面解析
      cover_rel = ""
      declared = data.get("cover")
@@ -2501,7 +3486,7 @@ index 66b3678..53cff61 100644
                                  if (proj / d).is_file()]
      return meta
  
-@@ -1010,6 +520,15 @@ def get_output_tree() -> list[dict]:
+@@ -1010,6 +521,15 @@ def get_output_tree() -> list[dict]:
          meta = _read_project_meta(e)
          if meta:
              node['meta'] = meta
@@ -2517,7 +3502,7 @@ index 66b3678..53cff61 100644
          items.append(node)
      # 按最后修改时间倒序：最近产物排最前（供工作台「最近产物」与内容库时间排序）
      return sorted(items, key=lambda x: x.get('mtime', 0), reverse=True)
-@@ -1066,7 +585,7 @@ async def static_file(path: str):
+@@ -1066,7 +586,7 @@ async def static_file(path: str):
  
  @app.get("/api/status")
  async def api_status():
@@ -2526,7 +3511,7 @@ index 66b3678..53cff61 100644
  
  
  @app.get("/api/personas")
-@@ -1092,42 +611,76 @@ def _persona_file_path(name: str, filename: str) -> Path:
+@@ -1092,42 +612,76 @@ def _persona_file_path(name: str, filename: str) -> Path:
          raise HTTPException(400, "画像名非法")
      if not filename.endswith(".md") or "/" in filename or "\\" in filename or filename.startswith("."):
          raise HTTPException(400, "文件名非法")
@@ -2613,7 +3598,7 @@ index 66b3678..53cff61 100644
  
  
  @app.delete("/api/persona/{name}")
-@@ -1155,909 +708,41 @@ async def api_skill_detail(name: str):
+@@ -1155,909 +709,41 @@ async def api_skill_detail(name: str):
      if full is None:
          raise HTTPException(404, f"SKILL '{name}' 不存在")
      desc, layer, body = _parse_skill_md(SKILLS_DIR / "openclaw" / full / "SKILL.md")
@@ -2627,9 +3612,12 @@ index 66b3678..53cff61 100644
 -        "needsApi": needs_api,
 -        "apiConfigured": _skill_api_configured(full, env) if needs_api else True,
 -        "apiSpec": _api_spec_status(full, env) if needs_api else None,
--    }
--
--
++        "needsApi": False,
++        "apiConfigured": True,
++        "apiSpec": None,
+     }
+ 
+ 
 -class EnvUpdateRequest(BaseModel):
 -    updates: dict[str, str]
 -
@@ -2645,12 +3633,9 @@ index 66b3678..53cff61 100644
 -    return {
 -        "ok": True,
 -        "skills": {s: _skill_api_configured(s, env) for s in SKILL_API_REQUIREMENTS},
-+        "needsApi": False,
-+        "apiConfigured": True,
-+        "apiSpec": None,
-     }
- 
- 
+-    }
+-
+-
 -# ═══════════════════════════════════════════════════════════════════════
 -# 设置面板 · 环境安装（skills/shared/scripts/install_tool.py 引擎桥）
 -# 体检走引擎 check --json；安装后台跑、前端轮询 /api/env/job/{id}。
@@ -3547,7 +4532,7 @@ index 66b3678..53cff61 100644
  
  
  def _attachment_scope(session_id: str) -> str:
-@@ -2072,1042 +757,6 @@ def _attachment_id(scope: str, path: str) -> str:
+@@ -2072,1042 +758,6 @@ def _attachment_id(scope: str, path: str) -> str:
      return hashlib.sha256(f"{scope}\0{path}".encode("utf-8")).hexdigest()[:24]
  
  
@@ -4590,7 +5575,7 @@ index 66b3678..53cff61 100644
  @app.get("/api/outputs")
  def api_outputs():
      # 产物树是全量递归扫描（文件量大时单次可达数十秒）。必须是同步 handler：
-@@ -3192,6 +841,60 @@ def _is_protected(full: Path) -> bool:
+@@ -3192,6 +842,60 @@ def _is_protected(full: Path) -> bool:
      )
  
  
@@ -4651,7 +5636,7 @@ index 66b3678..53cff61 100644
  @app.delete("/api/output/{path:path}")
  async def api_output_delete(path: str):
      """删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。"""
-@@ -3274,11 +977,12 @@ async def api_upload_local(
+@@ -3274,11 +978,12 @@ async def api_upload_local(
      return {"ok": True, "files": saved}
  
  
@@ -4665,7 +5650,7 @@ index 66b3678..53cff61 100644
      st = LOGIN_DIR / f'{platform}.json'
      tmp = st.with_suffix('.json.tmp')
      try:
-@@ -3291,31 +995,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+@@ -3291,31 +996,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
              pass
  
  
@@ -4725,7 +5710,7 @@ index 66b3678..53cff61 100644
  
  
  def _login_status(platform: str) -> dict:
-@@ -3325,7 +1033,8 @@ def _login_status(platform: str) -> dict:
+@@ -3325,7 +1034,8 @@ def _login_status(platform: str) -> dict:
      if st.is_file():
          try:
              d = json.loads(st.read_text(encoding="utf-8"))
@@ -4735,7 +5720,7 @@ index 66b3678..53cff61 100644
          except Exception:
              pass
      # A runner that exits before writing its status must become an actionable error,
-@@ -3351,9 +1060,8 @@ def _login_status(platform: str) -> dict:
+@@ -3351,9 +1061,8 @@ def _login_status(platform: str) -> dict:
  @app.get("/api/accounts")
  async def api_accounts():
      return [
@@ -4746,7 +5731,7 @@ index 66b3678..53cff61 100644
           'note': cfg.get('note', '')}
          for pf, cfg in LOGIN_RUNNERS.items()
      ]
-@@ -3372,6 +1080,8 @@ async def api_login_start(platform: str):
+@@ -3372,6 +1081,8 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
@@ -4755,7 +5740,7 @@ index 66b3678..53cff61 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      qr = LOGIN_DIR / f'{platform}.png'
      status = LOGIN_DIR / f'{platform}.json'
-@@ -3548,6 +1258,7 @@ async def api_mp_login_start(platform: str):
+@@ -3548,6 +1259,7 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
@@ -4763,7 +5748,7 @@ index 66b3678..53cff61 100644
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
      for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
          try:
-@@ -3579,26 +1290,57 @@ async def api_mp_login_status(platform: str):
+@@ -3579,26 +1291,57 @@ async def api_mp_login_status(platform: str):
      return {"mode": "qr", **_mp_login_status()}
  
  
@@ -4833,7 +5818,7 @@ index 66b3678..53cff61 100644
      if backend == 'biliup':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
                 '--cookie', str(PROJECT_ROOT / 'cookies.json')]
-@@ -3606,44 +1348,32 @@ async def api_account_whoami(platform: str):
+@@ -3606,44 +1349,32 @@ async def api_account_whoami(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
      elif backend == 'douyin':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
@@ -4892,7 +5877,7 @@ index 66b3678..53cff61 100644
  
  
  @app.post("/api/logout/{platform}")
-@@ -3715,8 +1445,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+@@ -3715,8 +1446,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
  async def api_analytics_platforms():
      """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
      return [
@@ -4903,7 +5888,7 @@ index 66b3678..53cff61 100644
          for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
      ]
  
-@@ -3726,6 +1456,8 @@ async def api_analytics(platform: str):
+@@ -3726,6 +1457,8 @@ async def api_analytics(platform: str):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -4912,7 +5897,7 @@ index 66b3678..53cff61 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,14 +1475,19 @@ async def api_analytics(platform: str):
+@@ -3743,14 +1476,19 @@ async def api_analytics(platform: str):
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -4934,7 +5919,7 @@ index 66b3678..53cff61 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1536,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1537,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -4943,7 +5928,7 @@ index 66b3678..53cff61 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1632,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1633,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -4952,7 +5937,7 @@ index 66b3678..53cff61 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1681,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1682,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -4961,7 +5946,7 @@ index 66b3678..53cff61 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1699,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1700,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -4970,7 +5955,7 @@ index 66b3678..53cff61 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1733,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1734,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -4983,7 +5968,7 @@ index 66b3678..53cff61 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1745,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1746,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -5019,7 +6004,7 @@ index 66b3678..53cff61 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1770,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1771,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -5060,7 +6045,7 @@ index 66b3678..53cff61 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1809,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1810,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -5073,7 +6058,7 @@ index 66b3678..53cff61 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,26 +1825,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,33 +1826,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -5101,7 +6086,155 @@ index 66b3678..53cff61 100644
  TREND_SOURCES: dict[str, tuple[str, str | None]] = {
      "weibo": ("https://60s.viki.moe/v2/weibo", "https://v2.xxapi.cn/api/weibohot"),
      "douyin": ("https://60s.viki.moe/v2/douyin", "https://v2.xxapi.cn/api/douyinhot"),
-@@ -4323,7 +2018,7 @@ async def api_schedule_context(days: int = 14):
+-    "zhihu": ("https://60s.viki.moe/v2/zhihu", None),
++    "zhihu": ("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50&desktop=true", "https://60s.viki.moe/v2/zhihu"),
+     "bilibili": ("https://60s.viki.moe/v2/bili", "https://v2.xxapi.cn/api/bilibilihot"),
+     "baidu": ("https://60s.viki.moe/v2/baidu/hot", "https://v2.xxapi.cn/api/baiduhot"),
+-    "toutiao": ("https://60s.viki.moe/v2/toutiao", None),
++    "toutiao": ("https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc", "https://60s.viki.moe/v2/toutiao"),
+ }
+ TREND_LABELS = {
+     "weibo": "微博",
+@@ -4150,50 +1846,93 @@ TREND_LABELS = {
+     "baidu": "百度",
+     "toutiao": "头条",
+ }
+-_TREND_CACHE: dict[str, tuple[float, list]] = {}
++_TREND_CACHE: dict[str, dict] = {}
+ 
+ 
+ def _http_get_json(url: str, timeout: int = 8):
+-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 Easel"})
++    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 MediaSail"})
+     with urllib.request.urlopen(req, timeout=timeout) as r:
+         return json.loads(r.read().decode("utf-8", "replace"))
+ 
+ 
+ def _parse_hot(obj: dict) -> list[dict]:
+-    data = obj.get("data")
+-    if isinstance(data, dict):
+-        data = data.get("data") or data.get("list") or []
++    data = obj
++    for _ in range(4):
++        if isinstance(data, list):
++            break
++        if not isinstance(data, dict):
++            raise ValueError('unsupported_hotlist')
++        keys = {key.lower(): value for key, value in data.items()}
++        key = next((key for key in ('data', 'list', 'items', 'hotlist') if key in keys), None)
++        if key is None:
++            raise ValueError('unsupported_hotlist')
++        data = keys[key]
++    if not isinstance(data, list):
++        raise ValueError('unsupported_hotlist')
+     out = []
+     if isinstance(data, list):
+         for it in data:
++            if isinstance(it, str):
++                it = {"title": it}
+             if not isinstance(it, dict):
+                 continue
++            it = {key.lower(): value for key, value in it.items()}
++            if isinstance(it.get('target'), dict):
++                it = {**it, **{key.lower(): value for key, value in it['target'].items()}}
+             title = it.get("title") or it.get("word") or it.get("name") or it.get("keyword")
+             if not title:
+                 continue
++            url = it.get('url') or it.get('link') or it.get('mobil_url') or ''
++            if url.startswith('https://api.zhihu.com/questions/'):
++                url = 'https://www.zhihu.com/question/' + url.rsplit('/', 1)[-1]
+             out.append({
+                 "title": str(title),
+-                "hot": str(it.get("hot") or it.get("hot_value") or it.get("num") or ""),
+-                "url": it.get("url") or it.get("link") or it.get("mobil_url") or "",
++                "hot": str(it.get("hot") or it.get("hot_value") or it.get("hotvalue") or it.get("num") or ""),
++                "url": url,
+             })
++    if data and not out:
++        raise ValueError('unsupported_hotlist_items')
+     return out
+ 
+ 
+-def _fetch_platform(pf: str) -> list[dict]:
++def _fetch_platform(pf: str) -> dict:
+     primary, backup = TREND_SOURCES.get(pf, (None, None))
+-    for url in (primary, backup):
++    errors = []
++    sources = (primary, backup) if pf in {'zhihu', 'toutiao'} else (backup, primary)
++    for url in sources:
+         if not url:
+             continue
+         try:
+             items = _parse_hot(_http_get_json(url))
+-            if items:
+-                return items
+-        except Exception:
+-            continue
+-    return []
++            return {'items': items, 'fetchedAt': int(time.time()), 'source': url, 'error': ''}
++        except Exception as error:
++            errors.append(type(error).__name__)
++    return {'items': [], 'fetchedAt': None, 'source': None, 'error': '来源暂时不可用（' + ', '.join(errors) + '）'}
++
++
++class TrendItem(BaseModel):
++    title: str
++    hot: str
++    url: str
++
++
++class TrendGroup(BaseModel):
++    platform: str
++    label: str
++    items: list[TrendItem]
++    status: Literal['live', 'cached', 'unavailable']
++    fetchedAt: int | None
++    source: str | None
++    error: str
++    stale: bool
+ 
+ 
+-@app.get("/api/trends")
++class TrendResponse(BaseModel):
++    trends: list[TrendGroup]
++    updated: int
++
++
++@app.get("/api/trends", response_model=TrendResponse)
+ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+     pfs = [p.strip() for p in platforms.split(",") if p.strip() in TREND_SOURCES]
+     now = time.time()
+@@ -4201,18 +1940,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+     result = []
+     for pf in pfs:
+         c = _TREND_CACHE.get(pf)
+-        if c and now - c[0] < 300:
+-            items = c[1]
++        if c and now - c['fetchedAt'] < 300:
++            entry = {**c, 'status': 'cached', 'stale': False}
+         else:
+-            items = await loop.run_in_executor(None, _fetch_platform, pf)
+-            if items:
+-                _TREND_CACHE[pf] = (now, items)
++            fresh = await loop.run_in_executor(None, _fetch_platform, pf)
++            if not fresh['error']:
++                _TREND_CACHE[pf] = fresh
++                entry = {**fresh, 'status': 'live', 'stale': False}
+             elif c:
+-                items = c[1]
++                entry = {**c, 'status': 'cached', 'stale': True, 'error': fresh['error']}
++            else:
++                entry = {**fresh, 'status': 'unavailable', 'stale': False}
+         result.append({
++            **entry,
+             "platform": pf,
+             "label": TREND_LABELS.get(pf, pf),
+-            "items": items[:max(1, min(limit, 30))],
++            "items": entry['items'][:max(1, min(limit, 30))],
+         })
+     return {"trends": result, "updated": int(now)}
+ 
+@@ -4323,7 +2066,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -5110,7 +6243,7 @@ index 66b3678..53cff61 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2104,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2152,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -21256,23 +22389,37 @@ index fee8255..80a91db 100644
    );
  }
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..ad09d11 100644
+index 42545b5..f82def4 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
-@@ -5,7 +5,8 @@ import {
+@@ -1,11 +1,12 @@
+ import { useState, useEffect, useCallback, useRef } from 'react';
+ import {
+   fetchAccounts, startLogin, loginStatus, mediaUrl,
+-  accountWhoami, logoutAccount, submitLoginSms,
++  logoutAccount, submitLoginSms,
    saveCredentials, getCredentials, startMpLogin, mpLoginStatus,
  } from '../lib/api';
  import type { AccountItem, AccountWhoami } from '../lib/api';
 -import { getWhoamiCache, setWhoamiCache, verifyStale } from '../lib/whoami';
-+import { currentVerification, getWhoamiCache, setWhoamiCache, unknownVerification, verifyStale } from '../lib/whoami';
++import { currentVerification, getWhoamiCache, setWhoamiCache, verifyStale, verifyAccount, invalidateAccountVerification } from '../lib/whoami';
 +import { registerEditing, requestLeave } from '../lib/unsaved';
  
  type QRState = {
    platform: string;
-@@ -61,6 +62,15 @@ export default function AccountsPage() {
+@@ -19,6 +20,7 @@ type QRState = {
+ const STATE_LABEL: Record<string, string> = {
+   starting: '启动中…',
+   qr_ready: '请扫码',
++  window_login: '请在浏览器窗口登录',
+   scanned: '扫码成功',
+   sms_required: '需短信验证',
+   verifying: '验证中…',
+@@ -61,6 +63,16 @@ export default function AccountsPage() {
    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
    const aliveRef = useRef(true);
    const qrPlatformRef = useRef('');   // 当前登录中的平台，供 submitSms 稳定引用
++  const qrRequest = useRef(0), loadRequest = useRef(0);
 +  const editState = useRef({ cred, credForm, smsCode, credBusy, smsBusy });
 +  editState.current = { cred, credForm, smsCode, credBusy, smsBusy };
 +  const credSubmitting = useRef(false), smsSubmitting = useRef(false);
@@ -21285,40 +22432,48 @@ index 42545b5..ad09d11 100644
  
    useEffect(() => {
      aliveRef.current = true;
-@@ -70,25 +80,27 @@ export default function AccountsPage() {
+@@ -70,26 +82,25 @@ export default function AccountsPage() {
    // 真校验某平台登录态 + 拉昵称/头像（后端起浏览器，数秒）；手动「校验账号」或登录成功后调
    const runWhoami = useCallback((platform: string) => {
      setWhoami((w) => ({ ...w, [platform]: 'loading' }));
 -    accountWhoami(platform)
-+    accountWhoami(platform, true)
-       .then((r) => { if (aliveRef.current) { setWhoami((w) => ({ ...w, [platform]: r })); setWhoamiCache(platform, r); } })
+-      .then((r) => { if (aliveRef.current) { setWhoami((w) => ({ ...w, [platform]: r })); setWhoamiCache(platform, r); } })
 -      .catch(() => {
 -        if (aliveRef.current) setWhoami((w) => { const n = { ...w }; delete n[platform]; return n; });
-+      .catch((error) => {
-+        const r = unknownVerification(error instanceof Error ? error.message : '账号校验失败，请重试。', getWhoamiCache()[platform]);
-+        if (aliveRef.current) { setWhoami((w) => ({ ...w, [platform]: r })); setWhoamiCache(platform, r); }
-       });
+-      });
++    void verifyAccount(platform, true, () => aliveRef.current)
++      .then((r) => { if (r) setWhoami((w) => ({ ...w, [platform]: r })); });
    }, []);
  
    // 打开页面：拉「快」状态（读 status.json，不起浏览器），随后后台自愈——对缓存缺失/过期的
    // 浏览器平台逐个真校验（whoami），结果到了刷新 UI，并令陈旧的假阴性缓存被真值覆盖。
 -  const load = useCallback(() => {
 +  const load = useCallback((force = false) => {
++    const request = ++loadRequest.current;
      setErr('');
      fetchAccounts()
        .then((list) => {
-         if (!aliveRef.current) return;
+-        if (!aliveRef.current) return;
++        if (!aliveRef.current || request !== loadRequest.current) return;
          setAccounts(list);
          const targets = list
 -          .filter((a) => a.supported && a.backend !== 'biliup')
 +          .filter((a) => a.supported)
            .map((a) => a.platform);
          verifyStale(targets, {
+-          alive: () => aliveRef.current,
 +          force,
-           alive: () => aliveRef.current,
++          alive: () => aliveRef.current && request === loadRequest.current,
            onUpdate: (platform, r) => setWhoami((w) => ({ ...w, [platform]: r })),
          });
-@@ -116,7 +128,8 @@ export default function AccountsPage() {
+       })
+@@ -111,14 +122,16 @@ export default function AccountsPage() {
+   }, [load]);
+ 
+   const stopPoll = useCallback(() => {
++    qrRequest.current++;
+     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+   }, []);
  
    useEffect(() => () => stopPoll(), [stopPoll]);
  
@@ -21326,17 +22481,25 @@ index 42545b5..ad09d11 100644
 +  const closeQr = useCallback(async () => {
 +    if (!await requestLeave({ reason: '关闭验证码窗口', scope: ['account-sms'] })) return;
      stopPoll();
-     setQr(null);
+-    setQr(null);
++    setQr(null); setBusy(''); qrPlatformRef.current = '';
      setSmsCode(''); setSmsErr(''); setSmsBusy(false);
-@@ -126,6 +139,7 @@ export default function AccountsPage() {
+     load();
+   }, [stopPoll, load]);
+@@ -126,9 +139,12 @@ export default function AccountsPage() {
    const submitSms = useCallback(async () => {
      const code = smsCode.replace(/\D/g, '');
      if (code.length < 4) { setSmsErr('请输入手机收到的验证码'); return; }
 +    if (smsSubmitting.current) return; smsSubmitting.current = true;
      setSmsBusy(true); setSmsErr('');
++    const request = qrRequest.current;
      try {
        await submitLoginSms(qrPlatformRef.current, code);
-@@ -136,7 +150,7 @@ export default function AccountsPage() {
++      if (!aliveRef.current || request !== qrRequest.current) return;
+       setSmsCode('');
+       // 乐观切到「验证中」转圈：后端读走码→verifying；成功→success，失败→退回 sms_required 带错误
+       setQr((prev) => prev && ({ ...prev, state: 'verifying', message: '正在验证验证码…' }));
+@@ -136,7 +152,7 @@ export default function AccountsPage() {
      } catch (e) {
        setSmsErr(e instanceof Error ? e.message : '提交验证码失败');
      } finally {
@@ -21345,7 +22508,7 @@ index 42545b5..ad09d11 100644
      }
    }, [smsCode]);
  
-@@ -150,28 +164,30 @@ export default function AccountsPage() {
+@@ -150,106 +166,83 @@ export default function AccountsPage() {
        .catch(() => { /* 未配置，忽略 */ });
    }, []);
  
@@ -21378,19 +22541,115 @@ index 42545b5..ad09d11 100644
 -  }, [cred, credForm, runWhoami, closeCred]);
 +  }, [cred, credForm, runWhoami, finishCred]);
  
-   const handleLogin = useCallback(async (a: AccountItem) => {
+-  const handleLogin = useCallback(async (a: AccountItem) => {
++  const beginLogin = useCallback(async (a: AccountItem, mp = false) => {
      if (!a.supported) return;
-@@ -225,9 +241,6 @@ export default function AccountsPage() {
-           if (['success', 'expired', 'error'].includes(s.state)) {
+-    if (a.backend === 'wechat-oa') { openCred(a); return; }   // 公众号走凭证表单，不扫码
+-    setTerminalMsg('');
+-    setBusy(a.platform);
+-    setSmsCode(''); setSmsErr('');
++    if (!mp && a.backend === 'wechat-oa') { openCred(a); return; }
++    stopPoll();
++    const request = qrRequest.current;
++    const active = () => aliveRef.current && qrRequest.current === request;
++    invalidateAccountVerification(a.platform);
++    loadRequest.current++;
+     qrPlatformRef.current = a.platform;
+-    setQrNonce((n) => n + 1);
++    setTerminalMsg(''); setBusy(a.platform + (mp ? ':mp' : ''));
++    setSmsCode(''); setSmsErr(''); setQrNonce(n => n + 1);
++    const name = a.name + (mp ? ' · 后台取数' : '');
++    setQr({platform:a.platform,name,state:'starting',message:'',qr:''});
+     try {
+-      const res = await startLogin(a.platform);
+-      if (res.mode === 'terminal') {
+-        setTerminalMsg(res.message || '请在终端登录');
+-        return;
+-      }
+-      if (res.mode === 'credentials') { openCred(a); return; }
+-      setQr({ platform: a.platform, name: a.name, state: res.state || 'starting',
+-              message: res.message || '', qr: res.qr || '' });   // qrTs 由随后的轮询填入
+-      stopPoll();
++      const response = mp ? await startMpLogin(a.platform) : await startLogin(a.platform);
++      if (!active()) return;
++      if (response.mode === 'terminal') { setQr(null); setTerminalMsg(response.message || '请在终端登录'); return; }
++      if (response.mode === 'credentials') { setQr(null); openCred(a); return; }
++      setQr({platform:a.platform,name,state:response.state || 'starting',message:response.message || '',qr:response.qr || ''});
++      let polling = false;
+       pollRef.current = setInterval(async () => {
++        if (!active() || polling) return;
++        polling = true;
+         try {
+-          const s = await loginStatus(a.platform);
+-          setQr((prev) => prev && ({ ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs }));
+-          if (['success', 'expired', 'error'].includes(s.state)) {
++          const status = mp ? await mpLoginStatus(a.platform) : await loginStatus(a.platform);
++          if (!active()) return;
++          setQr(previous => previous && previous.platform === a.platform ? {...previous,...status,platform:a.platform,name} : previous);
++          if (['success','expired','error'].includes(status.state)) {
              stopPoll();
-             if (s.state === 'success') {
+-            if (s.state === 'success') runWhoami(a.platform);   // 登录成功即拉账号信息
+-          }
+-        } catch { /* 忽略单次轮询失败 */ }
+-      }, 2000);
+-    } catch (e) {
+-      setErr(e instanceof Error ? e.message : '启动登录失败');
+-    } finally {
+-      setBusy('');
+-    }
+-  }, [stopPoll, runWhoami]);
+-
+-  // 公众号后台扫码登录（数据中心取数用，独立于 AppID 凭证）
+-  const handleMpLogin = useCallback(async (a: AccountItem) => {
+-    setBusy(a.platform + ':mp');
+-    setSmsCode(''); setSmsErr('');
+-    setQrNonce((n) => n + 1);
+-    try {
+-      const res = await startMpLogin(a.platform);
+-      setQr({ platform: a.platform, name: a.name + ' · 后台取数', state: res.state || 'starting',
+-              message: res.message || '', qr: res.qr || '', qrTs: res.qrTs });
+-      stopPoll();
+-      pollRef.current = setInterval(async () => {
+-        try {
+-          const s = await mpLoginStatus(a.platform);
+-          setQr((prev) => prev && ({ ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs }));
+-          if (['success', 'expired', 'error'].includes(s.state)) {
+-            stopPoll();
+-            if (s.state === 'success') {
 -              // 像快手一样“内存态立即翻”：wechat-oa 的 effLoggedIn 只看 a.loggedIn，这里直接把它乐观置 true，
 -              // 卡片瞬间变「已登录」，不必等 load() 那趟网络往返（后面 load() 再对账兜底）。
 -              setAccounts((list) => list.map((x) => x.platform === a.platform ? { ...x, loggedIn: true } : x));
-               setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
-               setWhoamiCache(a.platform, null);
-               runWhoami(a.platform);
-@@ -249,7 +262,7 @@ export default function AccountsPage() {
+-              setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
+-              setWhoamiCache(a.platform, null);
+-              runWhoami(a.platform);
+-              load();
++            if (status.state === 'success') {
++              if (mp) { setWhoamiCache(a.platform,null); load(); }
++              else runWhoami(a.platform);
+             }
+           }
+-        } catch { /* 忽略单次轮询失败 */ }
+-      }, 2000);
+-    } catch (e) {
+-      setErr(e instanceof Error ? e.message : '启动后台登录失败');
+-    } finally {
+-      setBusy('');
+-    }
+-  }, [stopPoll, runWhoami, load]);
++        } catch { /* a transient status failure leaves this session retryable */ }
++        finally { polling = false; }
++      },2000);
++    } catch (error) {
++      if (active()) setQr({platform:a.platform,name,state:'error',message:error instanceof Error ? error.message : '启动登录失败',qr:''});
++    } finally { if (active()) setBusy(''); }
++  },[stopPoll,openCred,runWhoami,load]);
++  const handleLogin = useCallback((a:AccountItem) => beginLogin(a),[beginLogin]);
++  const handleMpLogin = useCallback((a:AccountItem) => beginLogin(a,true),[beginLogin]);
+ 
+   const handleLogout = useCallback(async (a: AccountItem) => {
+     if (!window.confirm(`确定退出「${a.name}」的登录？登录态将被清除，下次发布需重新扫码。`)) return;
+     setLogoutBusy(a.platform);
++    invalidateAccountVerification(a.platform);
      try {
        await logoutAccount(a.platform);
        // 内存态立即翻未登录（同登录路径），不等 load() 回来
@@ -21399,7 +22658,7 @@ index 42545b5..ad09d11 100644
        setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
        setWhoamiCache(a.platform, null);
        load();
-@@ -260,20 +273,19 @@ export default function AccountsPage() {
+@@ -260,20 +253,19 @@ export default function AccountsPage() {
      }
    }, [load]);
  
@@ -21427,7 +22686,7 @@ index 42545b5..ad09d11 100644
    };
  
    return (
-@@ -282,11 +294,11 @@ export default function AccountsPage() {
+@@ -282,11 +274,11 @@ export default function AccountsPage() {
          <div>
            <h1 className="page-title">账号登录 Accounts</h1>
            <p className="page-subtitle">
@@ -21442,7 +22701,7 @@ index 42545b5..ad09d11 100644
        </div>
  
        {err && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 12 }}>{err}</div>}
-@@ -299,6 +311,7 @@ export default function AccountsPage() {
+@@ -299,6 +291,7 @@ export default function AccountsPage() {
            const w = whoami[a.platform];
            const info = w && w !== 'loading' ? w : null;
            const logged = effLoggedIn(a);
@@ -21450,7 +22709,7 @@ index 42545b5..ad09d11 100644
            return (
              <div key={a.platform} className="card account-card" style={{ opacity: a.supported ? 1 : 0.6 }}>
                <div className="account-card-head">
-@@ -315,6 +328,9 @@ export default function AccountsPage() {
+@@ -315,6 +308,9 @@ export default function AccountsPage() {
                {!logged && (
                  <div className="account-card-note">{a.note ? a.note : `后端：${a.name}`}</div>
                )}
@@ -21460,7 +22719,7 @@ index 42545b5..ad09d11 100644
  
                <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
                  {logged ? (
-@@ -332,12 +348,15 @@ export default function AccountsPage() {
+@@ -332,12 +328,15 @@ export default function AccountsPage() {
                    </>
                  ) : (
                    // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
@@ -21477,7 +22736,7 @@ index 42545b5..ad09d11 100644
                  )}
                </div>
              </div>
-@@ -349,6 +368,7 @@ export default function AccountsPage() {
+@@ -349,6 +348,7 @@ export default function AccountsPage() {
          <div className="overlay" onClick={closeQr}>
            <div className="modal" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
              onClick={(e) => e.stopPropagation()}>
@@ -21485,15 +22744,28 @@ index 42545b5..ad09d11 100644
              <h3 style={{ margin: '0 0 4px' }}>登录 {qr.name}</h3>
              <div style={{ fontSize: 13, marginBottom: 14,
                color: qr.state === 'success' ? 'var(--green)'
-@@ -394,6 +414,7 @@ export default function AccountsPage() {
+@@ -386,14 +386,19 @@ export default function AccountsPage() {
+               <div style={{ fontSize: 48, padding: 40 }}>✅</div>
+             ) : ['error', 'expired'].includes(qr.state) ? (
+               <div style={{ fontSize: 13, color: 'var(--red)', padding: 30 }}>
+-                {qr.message || '登录失败'}<br />可关闭后重试（或换干净 IP）。
++                {qr.message || '登录失败'}<br />可重新获取二维码；网络或平台验证异常时请按提示处理。
+               </div>
+             ) : (
+               <div className="loading" style={{ padding: 40 }}><div className="spinner" />准备二维码…</div>
+             )}
              <div style={{ marginTop: 16 }}>
++              {['expired','error'].includes(qr.state) && <button className="btn" onClick={() => {
++                const account = accounts.find(a => a.platform === qr.platform);
++                if (account) void beginLogin(account, account.backend === 'wechat-oa');
++              }}>重新获取二维码</button>}
                <button className="btn" onClick={closeQr}>{qr.state === 'success' ? '完成' : '关闭'}</button>
              </div>
 +            </fieldset>
            </div>
          </div>
        )}
-@@ -401,6 +422,7 @@ export default function AccountsPage() {
+@@ -401,6 +406,7 @@ export default function AccountsPage() {
        {cred && (
          <div className="overlay" onClick={closeCred}>
            <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -21501,7 +22773,7 @@ index 42545b5..ad09d11 100644
              <h3 style={{ margin: '0 0 4px' }}>配置 {cred.name}</h3>
              <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>
                公众号用官方接口发布，需填开发者凭证（公众平台 → 设置与开发 → 开发接口管理）。<br />
-@@ -429,6 +451,7 @@ export default function AccountsPage() {
+@@ -429,6 +435,7 @@ export default function AccountsPage() {
                </button>
                <button className="btn" onClick={closeCred}>关闭</button>
              </div>
@@ -22097,7 +23369,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..fed1fb0 100644
+index 135c4fc..86469f9 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,4 +1,6 @@
@@ -22108,17 +23380,19 @@ index 135c4fc..fed1fb0 100644
  import {
    fetchTrends, fetchSchedule, fetchOutputs, fetchAccounts, fetchIdeas,
    fetchAnalyticsPlatforms, fetchAccountAnalytics,
-@@ -8,7 +10,8 @@ import type {
+@@ -8,7 +10,10 @@ import type {
    AnalyticsPlatform, AccountAnalytics, AccountWhoami,
  } from '../lib/api';
  import type { Page } from './Sidebar';
 -import { getWhoamiCache, verifyStale } from '../lib/whoami';
 +import { currentVerification, getWhoamiCache, verifyStale } from '../lib/whoami';
++import { localDate } from '../lib/localDate';
++import { trendStatus } from '../lib/trendStatus';
 +import { canShowGrowth, unavailableGrowthReason } from '../lib/analytics';
  import {
    IconFire, IconCalendar, IconOutputs, IconChat, IconSkills, IconAccounts,
    IconIdea, IconPublish,
-@@ -48,13 +51,15 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -48,13 +53,15 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
    const [anaPlats, setAnaPlats] = useState<AnalyticsPlatform[]>([]);
    const [anaSel, setAnaSel] = useState('');
    const [anaData, setAnaData] = useState<Record<string, AccountAnalytics | 'loading' | 'error'>>(() => {
@@ -22136,7 +23410,7 @@ index 135c4fc..fed1fb0 100644
      fetchTrends('weibo,douyin', 6).then((d) => setTrends(d.trends)).catch(() => {});
      fetchSchedule().then(setSchedule).catch(() => {});
      fetchOutputs().then(setOutputs).catch(() => {});
-@@ -63,31 +68,43 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -63,45 +70,57 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
      fetchAnalyticsPlatforms().then((ps) => {
        setAnaPlats(ps);
        const cache = getWhoamiCache();
@@ -22190,7 +23464,11 @@ index 135c4fc..fed1fb0 100644
    };
  
    const hour = new Date().getHours();
-@@ -98,10 +115,10 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+   const greet = hour < 6 ? '夜深了' : hour < 12 ? '上午好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
+-  const todayStr = new Date().toISOString().slice(0, 10);
++  const todayStr = localDate();
+   const upcoming = [...schedule]
+     .filter((s) => s.date >= todayStr && s.status !== 'published')
      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 5);
    const recent = outputs.slice(0, 5);
    const pendingIdeas = ideas.filter((i) => i.status === 'pending');
@@ -22203,7 +23481,7 @@ index 135c4fc..fed1fb0 100644
      { label: '看热点', page: 'trends', Icon: IconFire },
      { label: '拆爆款', page: 'breakdown', Icon: IconSkills },
      { label: '记选题', page: 'ideas', Icon: IconIdea },
-@@ -121,10 +138,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -121,10 +140,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
        <div className="dash-hero">
          <h1 className="page-title" style={{ fontSize: 26 }}>{greet} 👋</h1>
          <p className="page-subtitle">
@@ -22217,7 +23495,20 @@ index 135c4fc..fed1fb0 100644
          <div className="dash-quick">
            {quick.map((q) => (
              <button key={q.page} className="dash-quick-btn" onClick={() => onNavigate(q.page)}>
-@@ -202,7 +220,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -152,10 +172,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+             <span><IconFire size={16} /> 今日热点</span>
+             <button className="dash-more" onClick={() => onNavigate('trends')}>热点雷达 →</button>
+           </div>
+-          {trends.length === 0 && <div className="dash-empty">热点加载中 / 需配置代理</div>}
++          {trends.length === 0 && <div className="dash-empty">暂无热点数据，可到热点雷达重试</div>}
+           {trends.map((g) => (
+             <div key={g.platform} className="dash-trend-group">
+               <div className="dash-trend-plat">{g.label}</div>
++              <div className="page-subtitle" title={g.source || undefined}>{trendStatus(g)}</div>
+               {g.items.slice(0, 3).map((it, i) => (
+                 <div key={i} className="dash-trend-item" title={`${it.title}（点击做成内容）`}>
+                   <span className="dash-trend-title" onClick={() => onUseTopic(it.title)}>{it.title}</span>
+@@ -202,7 +223,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
              <span><IconOutputs size={16} /> 最近产物</span>
              <button className="dash-more" onClick={() => onNavigate('outputs')}>内容库 →</button>
            </div>
@@ -22226,7 +23517,7 @@ index 135c4fc..fed1fb0 100644
            {recent.map((g) => (
              <div key={g.name} className="dash-output" onClick={() => onNavigate('outputs')}>
                <span className="dash-output-name">{g.meta?.title || g.name}</span>
-@@ -216,11 +234,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -216,11 +237,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
            <div className="dash-card-head">
              <span><IconAccounts size={16} /> 创作数据</span>
              {anaSel && anaData[anaSel] && anaData[anaSel] !== 'loading' && (
@@ -22240,7 +23531,7 @@ index 135c4fc..fed1fb0 100644
              if (anaPlats.length === 0) return <div className="dash-empty">加载中 / 需配置代理</div>;
              if (logged.length === 0) {
                return (
-@@ -238,16 +256,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -238,16 +259,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                  <div className="ana-plats">
                    {logged.map((p) => (
                      <button key={p.platform} className={`chip ${anaSel === p.platform ? 'active' : ''}`}
@@ -22268,7 +23559,7 @@ index 135c4fc..fed1fb0 100644
                  {d && d !== 'loading' && d !== 'error' && (!d.loggedIn ? (
                    <div className="dash-empty" onClick={() => onNavigate('accounts')} style={{ cursor: 'pointer' }}>
                      该平台登录态已失效，去账号页重登 →
-@@ -259,7 +285,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -259,7 +288,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                        <div className="ana-id">{d.nickname ? `@${d.nickname}` : d.name}</div>
                        <div className="ana-overview">
                          {([['粉丝', 'followers'], ['获赞', 'likes'], ['关注', 'following']] as const).map(([label, key]) => {
@@ -22277,7 +23568,7 @@ index 135c4fc..fed1fb0 100644
                            const g = w ? growthInfo(w[key as 'followers' | 'likes']) : null;
                            return (
                              <div key={key} className="ana-stat">
-@@ -278,15 +304,16 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -278,15 +307,16 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                          ))}
                        </div>
                        <div className="ana-wins-note">
@@ -22359,18 +23650,19 @@ index c151628..26b4f2e 100644
  
    render() {
 diff --git a/web/frontend/src/components/IdeasPage.tsx b/web/frontend/src/components/IdeasPage.tsx
-index f715205..0480486 100644
+index f715205..be65f7f 100644
 --- a/web/frontend/src/components/IdeasPage.tsx
 +++ b/web/frontend/src/components/IdeasPage.tsx
-@@ -1,4 +1,6 @@
+@@ -1,4 +1,7 @@
 -import { useState, useEffect, useCallback, useMemo } from 'react';
++import { localDate } from '../lib/localDate';
 +import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 +import { registerEditing, requestLeave } from '../lib/unsaved';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
  import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule } from '../lib/api';
  import type { Idea, IdeaInput } from '../lib/api';
  import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
-@@ -20,9 +22,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -20,9 +23,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
    const [form, setForm] = useState<IdeaInput | null>(null);
    const [editId, setEditId] = useState<string | null>(null);
    const [toast, setToast] = useState('');
@@ -22395,7 +23687,7 @@ index f715205..0480486 100644
  
    const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
    const byStatus = useMemo(() => {
-@@ -31,12 +47,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -31,18 +48,29 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
      return g;
    }, [ideas]);
  
@@ -22423,7 +23715,14 @@ index f715205..0480486 100644
    };
    const advance = async (it: Idea) => { await updateIdea(it.id, { ...it, status: NEXT[it.status] }); load(); };
    const remove = async (it: Idea) => { await deleteIdea(it.id); load(); };
-@@ -53,7 +80,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+   const schedule = async (it: Idea) => {
+     const d = new Date();
+-    await createSchedule({ title: it.title, date: d.toISOString().slice(0, 10), platform: '', time: '', status: 'idea', note: it.note });
++    await createSchedule({ title: it.title, date: localDate(d), platform: '', time: '', status: 'idea', note: it.note });
+     showToast('已加入日历（今天）');
+   };
+ 
+@@ -53,7 +81,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
            <h1 className="page-title"><IconIdea size={21} /> 选题库</h1>
            <p className="page-subtitle">攒住每一个灵感——从热点收藏或手动新增，推进到「做内容」再进日历。</p>
          </div>
@@ -22432,7 +23731,7 @@ index f715205..0480486 100644
        </div>
  
        <div className="kanban">
-@@ -89,12 +116,15 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -89,12 +117,15 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
        </div>
  
        {form && (
@@ -22450,7 +23749,7 @@ index f715205..0480486 100644
              <label className="field-label">选题 *</label>
              <input className="field" value={form.title} autoFocus placeholder="想做的内容 / 角度"
                onChange={(e) => setForm({ ...form, title: e.target.value })} />
-@@ -112,9 +142,10 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+@@ -112,9 +143,10 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
                ))}
              </div>
              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
@@ -23315,11 +24614,12 @@ index 0000000..a699399
 +  </div>;
 +}
 diff --git a/web/frontend/src/components/PublishPage.tsx b/web/frontend/src/components/PublishPage.tsx
-index c72723f..63f8a69 100644
+index c72723f..3bc46df 100644
 --- a/web/frontend/src/components/PublishPage.tsx
 +++ b/web/frontend/src/components/PublishPage.tsx
-@@ -1,15 +1,15 @@
+@@ -1,15 +1,16 @@
 -import { useState, useRef, useEffect } from 'react';
++import { localDate } from '../lib/localDate';
 +import { useState, useEffect, useCallback } from 'react';
  import {
 -  createSchedule, executeSkill, runAgent, streamChat,
@@ -23339,7 +24639,7 @@ index c72723f..63f8a69 100644
  }
  
  // 平台列表须与后端 LOGIN_RUNNERS 对齐（有登录/发布链路的才列）
-@@ -22,7 +22,6 @@ const PLATFORMS: { key: string; label: string; titleLimit?: number; bodyLimit: n
+@@ -22,7 +23,6 @@ const PLATFORMS: { key: string; label: string; titleLimit?: number; bodyLimit: n
    { key: 'bilibili', label: 'B站', titleLimit: 80, bodyLimit: 2000, hint: '需附视频，标题≤80、简介≤2000，默认投「知识」分区' },
    { key: 'wechat-oa', label: '公众号', titleLimit: 64, bodyLimit: 20000, hint: '图文文章，正文用 Markdown，首图作封面，发到草稿箱；需先在账号页「登录公众号后台」扫码' },
  ];
@@ -23347,7 +24647,7 @@ index c72723f..63f8a69 100644
  
  // 能一键发布的平台（有后端 publisher）
  const PUBLISHABLE = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'weixin-channels', 'zhihu', 'bilibili', 'wechat-oa']);
-@@ -32,16 +31,9 @@ const MEDIA_REQUIRED = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'weixin-cha
+@@ -32,16 +32,9 @@ const MEDIA_REQUIRED = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'weixin-cha
  const VIDEO_ONLY = new Set(['douyin', 'weixin-channels', 'bilibili']);
  const VIDEO_RE = /\.(mp4|mov|webm|mkv|avi|m4v|flv|ts)$/i;
  
@@ -23365,7 +24665,7 @@ index c72723f..63f8a69 100644
    const draft0 = loadPublishDraft();
    const [title, setTitle] = useState(draft0.title);
    const [body, setBody] = useState(draft0.body);
-@@ -51,15 +43,10 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -51,15 +44,10 @@ export default function PublishPage({ persona }: PublishPageProps) {
    const [editing, setEditing] = useState<string | null>(null);
    const [copied, setCopied] = useState('');
    const [toast, setToast] = useState('');
@@ -23382,7 +24682,7 @@ index c72723f..63f8a69 100644
    const [showPicker, setShowPicker] = useState(false);
    const [pub, setPub] = useState<Record<string, PubState>>({});
    const [publishing, setPublishing] = useState(false);
-@@ -70,13 +57,12 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -70,13 +58,12 @@ export default function PublishPage({ persona }: PublishPageProps) {
  
    // 草稿持久化：任何改动即写 localStorage，切页/刷新回来都在
    useEffect(() => {
@@ -23399,7 +24699,7 @@ index c72723f..63f8a69 100644
      fetchAccounts().then(setAccounts).catch(() => { /* 忽略 */ });
      fetchOutputs().then((roots) => {
        const files: OutputFile[] = [];
-@@ -89,6 +75,8 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -89,6 +76,8 @@ export default function PublishPage({ persona }: PublishPageProps) {
        setMediaFiles(files);
      }).catch(() => { /* 忽略 */ });
    }, []);
@@ -23408,7 +24708,7 @@ index c72723f..63f8a69 100644
  
    const loginOf = (key: string) => accounts.find((a) => a.platform === key)?.loggedIn ?? false;
  
-@@ -110,87 +98,15 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -110,87 +99,15 @@ export default function PublishPage({ persona }: PublishPageProps) {
        return [...prev, path]; // 图片可多选（图文）
      });
  
@@ -23497,7 +24797,16 @@ index c72723f..63f8a69 100644
        `即将【真实发布】到：${targets.map((t) => t.label).join('、')}。\n` +
        `这会公开发布到你的账号，确定继续？`);
      if (!okToSend) return;
-@@ -296,14 +212,15 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -284,7 +201,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
+     if (empty) return;
+     const d = new Date();
+     await createSchedule({
+-      title: title.trim() || effective(key).slice(0, 20), date: d.toISOString().slice(0, 10),
++      title: title.trim() || effective(key).slice(0, 20), date: localDate(d),
+       platform: PLATFORMS.find((p) => p.key === key)?.label || '', time: '', status: 'draft', note: effective(key),
+     });
+     showToast('已存为草稿并加入今天的日历');
+@@ -296,14 +213,15 @@ export default function PublishPage({ persona }: PublishPageProps) {
      <div className="publish-page">
        <div className="publish-editor">
          <h1 className="page-title"><IconPublish size={21} /> 发布中心</h1>
@@ -23515,7 +24824,7 @@ index c72723f..63f8a69 100644
            onChange={(e) => setBody(e.target.value)} />
  
          <label className="field-label">话题标签 <span style={{ color: 'var(--text-secondary)', fontWeight: 400, fontSize: 12 }}>（逗号分隔，如「AI,职场,干货」；小红书会用 # 联想真正绑定话题）</span></label>
-@@ -351,37 +268,20 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -351,37 +269,20 @@ export default function PublishPage({ persona }: PublishPageProps) {
          )}
  
          <div className="publish-actions">
@@ -23556,7 +24865,7 @@ index c72723f..63f8a69 100644
        </div>
  
        <div className="publish-previews">
-@@ -399,7 +299,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -399,7 +300,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
                <div className="pv-head">
                  <span className="pv-plat">
                    {p.label}
@@ -23565,7 +24874,7 @@ index c72723f..63f8a69 100644
                    {publishable && (logged
                      ? <span className="pv-badge pv-badge-ok">已登录</span>
                      : <span className="pv-badge">未登录</span>)}
-@@ -413,7 +313,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
+@@ -413,7 +314,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
                  {isEdit
                    ? <textarea className="field" style={{ minHeight: 120 }} value={text} autoFocus
                        onChange={(e) => setOverrides((o) => ({ ...o, [p.key]: e.target.value }))} />
@@ -25204,6 +26513,54 @@ index 19b0cd8..8699483 100644
    };
  
    return (
+diff --git a/web/frontend/src/components/TrendsPage.tsx b/web/frontend/src/components/TrendsPage.tsx
+index a7e276d..9a34aea 100644
+--- a/web/frontend/src/components/TrendsPage.tsx
++++ b/web/frontend/src/components/TrendsPage.tsx
+@@ -1,6 +1,7 @@
+ import { useState, useEffect, useCallback } from 'react';
+ import { fetchTrends, createIdea } from '../lib/api';
+ import type { TrendGroup } from '../lib/api';
++import { trendStatus } from '../lib/trendStatus';
+ import { IconFire, IconRefresh, IconBookmark, IconCheck } from './icons';
+ 
+ interface TrendsPageProps {
+@@ -21,7 +22,6 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
+   const [groups, setGroups] = useState<TrendGroup[]>([]);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState('');
+-  const [updated, setUpdated] = useState(0);
+   const [saved, setSaved] = useState<Set<string>>(new Set());
+ 
+   const save = async (title: string, source: string) => {
+@@ -37,8 +37,8 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
+     setLoading(true);
+     setError('');
+     fetchTrends(pfs.join(','), 15)
+-      .then((d) => { setGroups(d.trends); setUpdated(d.updated); })
+-      .catch(() => setError('热点拉取失败——请确认已配置外网代理（EASEL_PROXY）。'))
++      .then((d) => { setGroups(d.trends); })
++      .catch(() => setError('热点拉取失败，请检查网络后重试。已有列表不是本次更新。'))
+       .finally(() => setLoading(false));
+   }, []);
+ 
+@@ -54,7 +54,6 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
+           <h1 className="page-title"><IconFire size={22} /> 热点雷达</h1>
+           <p className="page-subtitle">
+             多平台实时热搜，挑值得蹭的选题，一键交给 AI 做成你的内容。
+-            {updated > 0 && <span style={{ color: 'var(--text-tertiary)' }}> · {new Date(updated * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} 更新</span>}
+           </p>
+         </div>
+         <button className="btn btn-sm" onClick={() => load(selected)} disabled={loading}>
+@@ -75,6 +74,8 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
+         {groups.map((g) => (
+           <div key={g.platform} className="card trend-col">
+             <div className="trend-col-head">{g.label}<span className="trend-count">{g.items.length}</span></div>
++            <div className="page-subtitle" title={g.source || undefined}>{trendStatus(g)}</div>
++            {g.error && <div role="status" className="page-subtitle">{g.error}</div>}
+             <div className="trend-list">
+               {g.items.length === 0 && !loading && <div className="trend-empty">暂无数据</div>}
+               {g.items.map((it, i) => (
 diff --git a/web/frontend/src/lib/agent-home-loader.ts b/web/frontend/src/lib/agent-home-loader.ts
 new file mode 100644
 index 0000000..86d2a59
@@ -25250,7 +26607,7 @@ index 0000000..01f4858
 +    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..76fae10 100644
+index 9b3d69f..1fffd01 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -6,20 +6,31 @@ function getBasePath(): string {
@@ -25353,7 +26710,18 @@ index 9b3d69f..76fae10 100644
    });
  }
  
-@@ -263,7 +299,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
+@@ -170,7 +206,9 @@ export function deletePersona(name: string): Promise<{ ok: boolean; deleted: str
+ 
+ // ---- 热点雷达 ----
+ export interface TrendItem { title: string; hot: string; url: string; }
+-export interface TrendGroup { platform: string; label: string; items: TrendItem[]; }
++export interface TrendGroup { platform: string; label: string; items: TrendItem[];
++  status?: 'live' | 'cached' | 'unavailable'; fetchedAt?: number | null;
++  source?: string | null; error?: string; stale?: boolean; }
+ export function fetchTrends(platforms: string, limit = 12): Promise<{ trends: TrendGroup[]; updated: number }> {
+   return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
+ }
+@@ -263,7 +301,7 @@ export function runAgent(message: string, persona?: string): Promise<{ response:
    });
  }
  
@@ -25362,7 +26730,7 @@ index 9b3d69f..76fae10 100644
  export function buildProfile(name: string, form: Record<string, unknown>): Promise<ProfileBuildResponse> {
    return request<ProfileBuildResponse>('/api/profile/build', {
      method: 'POST',
-@@ -364,7 +400,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
+@@ -364,7 +402,17 @@ export function deleteSession(sessionKey: string): Promise<{ deleted: boolean }>
  }
  
  // ---- 账号登录 ----
@@ -25381,7 +26749,7 @@ index 9b3d69f..76fae10 100644
    platform: string;
    name: string;
    backend: string;      // xhs | web | biliup | unsupported
-@@ -428,15 +474,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
+@@ -428,15 +476,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
    return request<AccountItem[]>('/api/accounts');
  }
  
@@ -25400,7 +26768,7 @@ index 9b3d69f..76fae10 100644
  }
  
  /** 退出登录：删该平台持久化登录态。 */
-@@ -494,13 +540,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
+@@ -494,13 +542,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
  }
  
  // ---- 归因层：账号创作数据 ----
@@ -25416,7 +26784,7 @@ index 9b3d69f..76fae10 100644
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +554,17 @@ export interface AccountAnalytics {
+@@ -508,12 +556,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -25661,6 +27029,16 @@ index 0000000..b302a01
 +export async function changeLibrary(targetRoot: string): Promise<void> {
 +  if (!window.desktopLibrary) throw new Error('资料库位置只能在桌面版调整。');
 +  await window.desktopLibrary.call('change', { targetRoot });
++}
+diff --git a/web/frontend/src/lib/localDate.ts b/web/frontend/src/lib/localDate.ts
+new file mode 100644
+index 0000000..412a7dc
+--- /dev/null
++++ b/web/frontend/src/lib/localDate.ts
+@@ -0,0 +1,4 @@
++/** Calendar dates are local civil days, not UTC timestamps. */
++export function localDate(date = new Date()): string {
++  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 +}
 diff --git a/web/frontend/src/lib/outputMetadata.ts b/web/frontend/src/lib/outputMetadata.ts
 new file mode 100644
@@ -25943,6 +27321,19 @@ index 0000000..93596a1
 +    };
 +  }, []);
 +}
+diff --git a/web/frontend/src/lib/trendStatus.ts b/web/frontend/src/lib/trendStatus.ts
+new file mode 100644
+index 0000000..939db8a
+--- /dev/null
++++ b/web/frontend/src/lib/trendStatus.ts
+@@ -0,0 +1,7 @@
++import type { TrendGroup } from './api';
++
++export function trendStatus(group: TrendGroup): string {
++  if (group.status === 'unavailable') return '来源暂时不可用';
++  const time = group.fetchedAt ? new Date(group.fetchedAt * 1000).toLocaleString('zh-CN') : '时间未知';
++  return `${group.status === 'live' ? '本次取得' : group.stale ? '刷新失败，显示缓存' : '缓存'} · ${time}`;
++}
 diff --git a/web/frontend/src/lib/unsaved.ts b/web/frontend/src/lib/unsaved.ts
 new file mode 100644
 index 0000000..7f887d6
@@ -25979,7 +27370,7 @@ index 0000000..e80508e
 +  }, []);
 +}
 diff --git a/web/frontend/src/lib/whoami.ts b/web/frontend/src/lib/whoami.ts
-index dd53a3c..692b6aa 100644
+index dd53a3c..8aeb250 100644
 --- a/web/frontend/src/lib/whoami.ts
 +++ b/web/frontend/src/lib/whoami.ts
 @@ -1,6 +1,7 @@
@@ -26038,17 +27429,39 @@ index dd53a3c..692b6aa 100644
  }
  
  interface VerifyOpts {
-@@ -51,11 +75,13 @@ export function verifyStale(platforms: string[], opts: VerifyOpts = {}): void {
+@@ -39,6 +63,22 @@ interface VerifyOpts {
+  * 调用方负责从 platforms 里剔除 bilibili（走 cookie 判定，无 whoami 浏览器路径也可，但更慢）。
+  */
+ const WHOAMI_CONCURRENCY = 2;
++const requests = new Map<string, number>();
++
++export function invalidateAccountVerification(platform: string): void {
++  requests.set(platform, (requests.get(platform) ?? 0) + 1);
++}
++
++export async function verifyAccount(platform: string, force = false, alive = () => true): Promise<AccountWhoami | null> {
++  invalidateAccountVerification(platform);
++  const generation = requests.get(platform);
++  let result: AccountWhoami;
++  try { result = await accountWhoami(platform, force); }
++  catch (error) { result = unknownVerification(error instanceof Error ? error.message : '暂时无法校验账号，请重试。', getWhoamiCache()[platform]); }
++  if (!alive() || generation !== requests.get(platform)) return null;
++  setWhoamiCache(platform, result);
++  return result;
++}
+ 
+ export function verifyStale(platforms: string[], opts: VerifyOpts = {}): void {
+   const ttlMs = opts.ttlMs ?? WHOAMI_TTL_MS;
+@@ -51,11 +91,11 @@ export function verifyStale(platforms: string[], opts: VerifyOpts = {}): void {
        if (opts.alive && !opts.alive()) return;
        const p = todo[next++];
        try {
 -        const r = await accountWhoami(p);
-+        const r = await accountWhoami(p, opts.force ?? false);
-+        setWhoamiCache(p, r);
-+        if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
+-        setWhoamiCache(p, r);
++        const r = await verifyAccount(p, opts.force ?? false, opts.alive);
++        if (r && (!opts.alive || opts.alive())) opts.onUpdate?.(p, r);
 +      } catch (error) {
 +        const r = unknownVerification(error instanceof Error ? error.message : '暂时无法校验账号，请重试。', cache[p]);
-         setWhoamiCache(p, r);
          if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
 -      } catch {
 -        // 校验失败（超时/网络）：保留既有缓存，跳过该平台

@@ -1,0 +1,14 @@
+{
+  "version": "0.5.10",
+  "passed": true,
+  "syntheticDataOnly": true,
+  "checkedAt": "2026-10-20T11:15:53.576Z",
+  "checks": [
+    "inverse account responses",
+    "closed QR start response",
+    "non-overlapping polls",
+    "QR expiry and refresh",
+    "hotlist status both views",
+    "local dashboard and idea date"
+  ]
+}

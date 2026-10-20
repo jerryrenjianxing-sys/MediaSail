@@ -1,7 +1,7 @@
 // This is a packaging policy, not an agent router. Legacy directory names stay compatible.
 const SHARED = [
  'account_stats.py','bili_login.py','business_browser.py','calendar_ops.py','content_guard.py','human_pace.py','creator_auth.py','profile_lock.py',
- 'login_state.py','manifest.py','output_paths.py','persona_gate.py','platform_readback.py','profile_files.py',
+ 'login_state.py','login_qr.py','manifest.py','output_paths.py','persona_gate.py','platform_readback.py','profile_files.py',
  'social_stats.py','weixin_mp_stats.py','wordcount.py','xhs_comment.py','xhs_publish.py',
  'zhihu_answer.py','zhihu_comments_fetch.py','web_publisher.py','douyin_publish.py'
 ];

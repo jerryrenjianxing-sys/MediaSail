@@ -26,7 +26,7 @@ async function write(file,value){await fs.mkdir(path.dirname(file),{recursive:tr
  app=await electron.launch({executablePath:executable,args:[],env,timeout:60000});const page=await app.firstWindow();await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.locator('.skill-home').waitFor();
  const info=JSON.parse(await fs.readFile(path.join(data,'agent-connection.json'),'utf8'));
  const connect=await(await fetch(info.baseUrl+'/api/platform-skill?format=connect')).text();
- await write(path.join(run,'copy-skill.txt'),connect);await write(path.join(root,'.test-data/agent-acceptance-host.json'),{run,libraryRoot,data,bootstrap,copyFile:path.join(run,'copy-skill.txt'),baseUrl:info.baseUrl,persona,controlFile:path.join(run,'stop')});
+ await write(path.join(run,'MediaSail 接入.md'),connect);await write(path.join(root,'.test-data/agent-acceptance-host.json'),{run,libraryRoot,data,bootstrap,copyFile:path.join(run,'MediaSail 接入.md'),baseUrl:info.baseUrl,persona,controlFile:path.join(run,'stop')});
  console.log('EXTERNAL_AGENT_READY '+path.join(root,'.test-data/agent-acceptance-host.json'));
  const deadline=Date.now()+60*60*1000;while(Date.now()<deadline){try{await fs.access(path.join(run,'stop'));break;}catch{}await sleep(1000);}
  await app.close();app=null;console.log('EXTERNAL_AGENT_CLOSED');

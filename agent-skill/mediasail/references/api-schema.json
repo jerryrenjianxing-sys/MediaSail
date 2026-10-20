@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MediaSail local API",
-    "version": "0.5.9"
+    "version": "0.5.10"
   },
   "paths": {
     "/": {
@@ -1340,7 +1340,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TrendResponse"
+                }
               }
             }
           },
@@ -2083,6 +2085,120 @@
           "code"
         ],
         "title": "SmsCodeRequest"
+      },
+      "TrendGroup": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TrendItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "live",
+              "cached",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "fetchedAt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetchedat"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform",
+          "label",
+          "items",
+          "status",
+          "fetchedAt",
+          "source",
+          "error",
+          "stale"
+        ],
+        "title": "TrendGroup"
+      },
+      "TrendItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "hot": {
+            "type": "string",
+            "title": "Hot"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "hot",
+          "url"
+        ],
+        "title": "TrendItem"
+      },
+      "TrendResponse": {
+        "properties": {
+          "trends": {
+            "items": {
+              "$ref": "#/components/schemas/TrendGroup"
+            },
+            "type": "array",
+            "title": "Trends"
+          },
+          "updated": {
+            "type": "integer",
+            "title": "Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trends",
+          "updated"
+        ],
+        "title": "TrendResponse"
       },
       "ValidationError": {
         "properties": {

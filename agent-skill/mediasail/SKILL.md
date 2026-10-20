@@ -36,7 +36,7 @@ AI 发布是默认浏览器中的 AitoEarn 官网入口。可协助用户整理�
 ## 按需查资料
 
 - 想理解用户、分析表现或积累经验：[画像与分析](references/context.md)。
-- 想查运营方法、镜头结构、平台经验及保留的业务计算：[专业方法索引](references/knowledge.md)。完整方法在工作目录 `skills/KNOWLEDGE.md`，不是固定产线。
+- 想查运营方法、镜头结构、平台经验及保留的业务计算：[专业方法索引](references/knowledge.md)。完整方法在工作目录 `skills/KNOWLEDGE.md`；文风证据、受众研究、竞品、素材对应和经验修订可按任务查阅，不是固定产线。
 - 想找现成工具、调用接口、登录或发布：[工具与接口](references/tools-api.md)。完整的接口参数另见随包的 [接口结构](references/api-schema.json)。
 - 想导入素材、分类检索、登记成品或修改项目信息：[素材与成品](references/outputs.md)。
 - 想找安装目录、修改源码、调整配置、构建或排查问题：[源码与维护](references/development.md)。

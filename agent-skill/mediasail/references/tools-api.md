@@ -83,3 +83,7 @@ POST /api/profile/build 返回最小形状如下；动态值以实际响应为�
 ```
 
 这只代表表单基线就绪；分析社媒、核对事实、标记来源、补充缺口和写入增强画像由外部 Agent 完成。连接 check 分开报告 connected、localToolsReady、found、selectedProfile，离线时 connected:false 不代表画像或计算不可用。读取/写入画像的结果见 context.md，内容库展示结构见 outputs.md，计算脚本输入输出见 [业务脚本示例](script-io.md)。
+
+## 热点数据状态
+
+热点返回仍有 `trends` 与 `updated`；`updated` 只是本次响应时间。每个平台的 `status` 为 `live`（本次取得）、`cached`（缓存）或 `unavailable`；`fetchedAt` 是最近成功取得数据的 Unix 秒，失败且无缓存时为 null，不能将它当成帖子发布时间。`source` 为实际来源，`stale` 表示旧缓存刷新失败，`error` 说明本次问题。有效空榜仍可为 live；没有数据不等于平台没有热点。采集或分析使用时注明来源与实际取得时间。

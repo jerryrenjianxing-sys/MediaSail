@@ -4,13 +4,13 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.9 更新说明](docs/RELEASE-0.5.9.md) · [验证记录](docs/VERIFICATION-0.5.9.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.10 更新说明](docs/RELEASE-0.5.10.md) · [验证记录](docs/VERIFICATION-0.5.10.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
 从 Releases 安装最新 Windows x64 完整安装包。首页左侧进入控制台，右侧复制 Skill，粘贴给同一台电脑上支持本地文件和工具的 Agent。已有首页布局、紫色品牌、Agent 图标和亮暗动画保持一致。
 
-当前版本为 **0.5.9**，源码、文件复制与真实隔离升级验收通过，详见[验证记录](docs/VERIFICATION-0.5.9.md)。首页单击复制固定名称的 MD 接入文件，没有下拉菜单或改名弹窗；接入卡提供完整轻量连接命令，本机 Skill 优先，详细业务资料按需读取。文件粘贴支持以目标 Agent 为准，实际客户端未验证项在发行说明中列出。现有编辑保护、业务能力、默认浏览器 AI 发布与资料库机制沿用，旧项目与历史资料原位保留。
+当前候选为 **0.5.10**，验证进展见[验证记录](docs/VERIFICATION-0.5.10.md)。本版修复发布结果判断、登录响应竞态、热点来源和本地日期，并补充文风、受众、竞品、素材和经验修订方法。新增方法不含发布服务或平台排期执行，发布继续使用默认浏览器 AitoEarn 或现有原生工具。首页只复制固定名称的 `MediaSail 接入.md`；详细知识按需查阅。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
