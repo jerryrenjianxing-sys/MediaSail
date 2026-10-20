@@ -56,5 +56,15 @@ class TrendsApi(unittest.IsolatedAsyncioTestCase):
             item = (await self.client.get('/api/trends?platforms=zhihu')).json()['trends'][0]['items'][0]
         self.assertEqual(item['url'], 'https://www.zhihu.com/question/123')
 
+    async def test_explicit_upstream_error_with_empty_data_does_not_replace_cache(self):
+        with patch('time.time', return_value=1000), patch('urllib.request.urlopen', return_value=self.response({'data':['已取得热点']})):
+            await self.client.get('/api/trends?platforms=douyin')
+        for payload in [{'status':'error','error':'upstream unavailable','data':[]}, {'code':500,'message':'source failed','data':[]}]:
+            with patch('time.time', return_value=1400), patch('urllib.request.urlopen', return_value=self.response(payload)):
+                group = (await self.client.get('/api/trends?platforms=douyin')).json()['trends'][0]
+            self.assertEqual(group['status'], 'cached')
+            self.assertEqual(group['items'][0]['title'], '已取得热点')
+            self.assertEqual(group['fetchedAt'], 1000)
+
 
 if __name__ == '__main__': unittest.main()

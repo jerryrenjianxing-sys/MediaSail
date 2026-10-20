@@ -728,6 +728,22 @@
               "type": "string",
               "title": "Platform"
             }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sessionid"
+            }
           }
         ],
         "responses": {
@@ -934,6 +950,22 @@
             "schema": {
               "type": "string",
               "title": "Platform"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sessionid"
             }
           }
         ],
@@ -2078,6 +2110,17 @@
           "code": {
             "type": "string",
             "title": "Code"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
           }
         },
         "type": "object",

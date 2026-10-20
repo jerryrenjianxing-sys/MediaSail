@@ -342,6 +342,32 @@ index 0c4c5c6..86e572b 100644
 -8. **语言** — 产物文件默认使用中文（除非样本明确为英文）
 -9. **禁用破折号** — 产物文件和草稿中不使用 em dash
 +用真实样本解释风格假设、例外及适用场景。样本来源、原稿和改稿保存在项目，稳定背景回写现有画像；保存时遵循现有 revision 冲突保护，保留用户自定义内容。交付语言、篇幅和形式依据用户目标，不设统一字数或标点限制。完成后说明实际更新位置及尚未验证的判断，不承诺未来对话自动读取任何文件。
+diff --git a/skills/openclaw/skill-voice-builder/references/interview-questions.md b/skills/openclaw/skill-voice-builder/references/interview-questions.md
+index e30c309..ef9bc07 100644
+--- a/skills/openclaw/skill-voice-builder/references/interview-questions.md
++++ b/skills/openclaw/skill-voice-builder/references/interview-questions.md
+@@ -1,10 +1,10 @@
+ # 访谈问题清单
+ 
+-分两批提问，使用 AskUserQuestion 工具（每批最多 4 题）。
++这是按主题组织的提问参考。复用已有画像和样本，按当前任务补问必要信息，表达方式和所用工具由 Agent 自主选择。
+ 
+ 面向中文社媒创作者（个人 IP）。选项为默认预设，用户可自由输入替换。追问时要求把模糊回答具体化（例如"亲切但专业"要追问：亲切到什么程度？举一个"太用力"的反例）。
+ 
+-## Batch 1（4 题，加载后立即发送）
++## 定位、受众、主题和观点
+ 
+ ### Q1: 身份与定位
+ - header: "你是谁"
+@@ -43,7 +43,7 @@
+   - 大家想复杂了 — 其实没那么难，被制造焦虑了
+   - 一个大变化要来了 — 风向要变，多数人还没准备好
+ 
+-## Batch 2（2 题，Batch 1 回答后立即发送，中间不做评论）
++## 承诺和边界
+ 
+ ### Q5: 人设承诺
+ - header: "记住你什么"
 diff --git a/skills/openclaw/skill-wechat-publisher/scripts/api.py b/skills/openclaw/skill-wechat-publisher/scripts/api.py
 index 68014c4..7226fbc 100755
 --- a/skills/openclaw/skill-wechat-publisher/scripts/api.py
@@ -2258,7 +2284,7 @@ index 812ec82..ec55887 100644
      import tempfile
      tmp = Path(tempfile.mkdtemp(prefix="easel-xhs-lock-"))
 diff --git a/skills/shared/scripts/zhihu_answer.py b/skills/shared/scripts/zhihu_answer.py
-index 7bc69ce..846924b 100644
+index 7bc69ce..6237777 100644
 --- a/skills/shared/scripts/zhihu_answer.py
 +++ b/skills/shared/scripts/zhihu_answer.py
 @@ -24,7 +24,10 @@
@@ -2313,7 +2339,7 @@ index 7bc69ce..846924b 100644
              result["error"] = "未登录知乎，请先在「账号」页扫码登录"
              ctx.close()
              return result
-@@ -256,9 +277,12 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+@@ -256,9 +277,16 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
              result["success"] = True
              result["url"] = question_url
              result["dry_run"] = True
@@ -2323,10 +2349,14 @@ index 7bc69ce..846924b 100644
  
 +        previous_urls = [page.url, question_url]
 +        previous_urls += page.evaluate('() => Array.from(document.querySelectorAll(\'a[href*="/answer/"]\'), a => a.href)')
++        if page.evaluate("() => Array.from(document.querySelectorAll('button')).some(b => (b.innerText || '').trim() === '编辑回答')"):
++            result['error'] = '该问题已有回答，不能作为新回答验证；请到平台核对或编辑既有回答。'
++            ctx.close()
++            return result
          # 2. 写入回答内容
          ok = type_into_editor(page, content)
          if not ok:
-@@ -269,6 +293,7 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+@@ -269,6 +297,7 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
          page.wait_for_timeout(1500)
  
          # 3. 发布
@@ -2334,7 +2364,7 @@ index 7bc69ce..846924b 100644
          published = _click_publish_btn(page)
          if not published:
              result["error"] = "未找到或无法点击发布回答按钮"
-@@ -278,7 +303,10 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
+@@ -278,7 +307,10 @@ def publish_answer(question_url: str, content: str, headed: bool = False, dry_ru
          # 4. 验证
          current_url = page.url
          print(f"[INFO] 当前页面 URL: {current_url}", file=sys.stderr)
@@ -2786,7 +2816,7 @@ index 0000000..3134f24
 +
 +声音可以稳定，语气强度会因科普、投诉回应、销售介绍和复盘不同而变化。修改时比较是否清楚、可信、符合当前目标与用户习惯；不把固定字数、标点禁用或单一 CTA 当作跨任务规则。
 diff --git a/web/app.py b/web/app.py
-index 66b3678..c34f961 100644
+index 66b3678..c4b9ad4 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -2864,7 +2894,7 @@ index 66b3678..c34f961 100644
  
  PROFILES_DIR = PROJECT_ROOT / "profiles"
  SKILLS_DIR = PROJECT_ROOT / "skills"
-@@ -74,137 +42,26 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+@@ -74,146 +42,38 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
  
  STATIC_DIR = Path(__file__).resolve().parent / "static"
  REACT_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
@@ -2991,16 +3021,16 @@ index 66b3678..c34f961 100644
 -    except Exception as e:
 -        print(f"[session-heal] 跳过（{e}）", file=sys.stderr, flush=True)
 -
-+        return resolve_browser()
-+    except BrowserUnavailable as error:
-+        raise HTTPException(503, str(error)) from error
- 
+-
 -# 制作层/直接执行层/chat 超时统一走 easel/timeouts.py（CLI/Web/skill 三入口单一真相源）
 -
 -SHARED_SCRIPTS = PROJECT_ROOT / "skills" / "shared" / "scripts"
 -if str(SHARED_SCRIPTS) not in sys.path:
 -    sys.path.insert(0, str(SHARED_SCRIPTS))
--
++        return resolve_browser()
++    except BrowserUnavailable as error:
++        raise HTTPException(503, str(error)) from error
+ 
 -from model_registry import model_group
  
  BROWSER_PROFILES = Path.home() / ".easel-browser-profiles"
@@ -3013,7 +3043,20 @@ index 66b3678..c34f961 100644
  # 非 _ 前缀的历史系统目录（归因层数据），内容库不展示（真产物一律在项目目录内）
  SYSTEM_TOPLEVEL_DIRS = {"analytics"}
  LOGIN_TIMEOUT = 240
-@@ -324,7 +181,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
+ LOGIN_PROCESSES: dict[str, subprocess.Popen] = {}
++LOGIN_SESSIONS: dict[str, str] = {}
++LOGIN_COMPLETED: dict[str, str | None] = {}
+ 
+ # whoami 真校验（起 headless 浏览器，数秒）的进程内缓存：避免账号页 + 工作台重复起浏览器。
+ WHOAMI_TTL = 600  # 秒
+ _WHOAMI_CACHE: dict[str, tuple[float, dict]] = {}
+-_WHOAMI_LOCK = threading.Lock()
++_WHOAMI_LOCK = threading.RLock()
++_WHOAMI_GENERATIONS: dict[str, int] = {}
+ 
+ LOGIN_RUNNERS: dict[str, dict] = {
+     "xiaohongshu": {"name": "小红书", "backend": "xhs", "profile": "XiaohongshuProfile"},
+@@ -324,7 +184,7 @@ def _wechat_verify_token() -> tuple[bool, str]:
      ) % (str(WECHAT_SKILL_SCRIPTS), WECHAT_WEB_ACCOUNT)
      try:
          proc = subprocess.run([sys.executable, "-c", code], cwd=str(WECHAT_SKILL_SCRIPTS),
@@ -3022,7 +3065,7 @@ index 66b3678..c34f961 100644
      except subprocess.TimeoutExpired:
          return False, "验证超时（网络或 IP 白名单问题）"
      out = (proc.stdout or "").strip().splitlines()
-@@ -337,83 +194,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
+@@ -337,83 +197,6 @@ def _wechat_verify_token() -> tuple[bool, str]:
      return False, err[0][:200]
  
  
@@ -3106,7 +3149,7 @@ index 66b3678..c34f961 100644
  TEXT_EXTS = {".txt", ".md", ".json", ".csv", ".log", ".py", ".js", ".ts", ".html", ".htm", ".css", ".xml", ".yaml", ".yml", ".srt", ".vtt"}
  IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"}
  VIDEO_EXTS = {".mp4", ".mov", ".webm", ".m4v"}
-@@ -426,7 +206,7 @@ async def _lifespan(_app: FastAPI):
+@@ -426,7 +209,7 @@ async def _lifespan(_app: FastAPI):
      _stop_mp_login_on_shutdown()
  
  
@@ -3115,7 +3158,7 @@ index 66b3678..c34f961 100644
  
  def _local_ports(env_port: str) -> set[str]:
      """本机写守卫放行的端口集合：固定的 7860/7870/5173，加上 `--port`/EASEL_PORT
-@@ -485,13 +265,8 @@ async def local_write_guard(request: Request, call_next):
+@@ -485,13 +268,8 @@ async def local_write_guard(request: Request, call_next):
      ① 带 Origin（浏览器跨站发起）：Origin 必须在 _LOCAL_ORIGINS 里，否则 403。
      ② 不带 Origin（curl / 本机脚本 / 测试客户端）：要求对端来自回环地址。
  
@@ -3131,7 +3174,7 @@ index 66b3678..c34f961 100644
      """
      origin = request.headers.get('origin')
      if request.url.path == '/api/clipper' and origin and re.fullmatch(r'chrome-extension://[a-p]{32}', origin):
-@@ -518,7 +293,7 @@ def list_personas() -> list[dict]:
+@@ -518,7 +296,7 @@ def list_personas() -> list[dict]:
          return []
      result = []
      for d in sorted(PROFILES_DIR.iterdir()):
@@ -3140,7 +3183,7 @@ index 66b3678..c34f961 100644
              continue
          desc = ''
          identity = d / 'identity.md'
-@@ -590,35 +365,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
+@@ -590,35 +368,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
  
  
  def get_skills() -> list[dict]:
@@ -3178,7 +3221,7 @@ index 66b3678..c34f961 100644
  def _proxy_env() -> dict[str, str]:
      """返回带外网代理的环境变量（保护内网直连）。"""
      env = os.environ.copy()
-@@ -663,259 +425,6 @@ def _wechat_env() -> dict[str, str]:
+@@ -663,259 +428,6 @@ def _wechat_env() -> dict[str, str]:
      return env
  
  
@@ -3438,7 +3481,7 @@ index 66b3678..c34f961 100644
  def _file_kind(name: str) -> str:
      ext = Path(name).suffix.lower()
      if ext in IMAGE_EXTS:
-@@ -961,16 +470,18 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -961,16 +473,18 @@ def _read_project_meta(proj: Path) -> dict:
      只取展示相关字段（不含编排 steps）。cover 解析优先级：
      展示头声明的 cover → 首个成品媒体 → 目录内首张图/视频（兜底）。
      """
@@ -3465,7 +3508,7 @@ index 66b3678..c34f961 100644
      if not meta:
          return {}
  
-@@ -980,17 +491,17 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -980,17 +494,17 @@ def _read_project_meta(proj: Path) -> dict:
      # 封面解析
      cover_rel = ""
      declared = data.get("cover")
@@ -3486,7 +3529,7 @@ index 66b3678..c34f961 100644
                                  if (proj / d).is_file()]
      return meta
  
-@@ -1010,6 +521,15 @@ def get_output_tree() -> list[dict]:
+@@ -1010,6 +524,15 @@ def get_output_tree() -> list[dict]:
          meta = _read_project_meta(e)
          if meta:
              node['meta'] = meta
@@ -3502,7 +3545,7 @@ index 66b3678..c34f961 100644
          items.append(node)
      # 按最后修改时间倒序：最近产物排最前（供工作台「最近产物」与内容库时间排序）
      return sorted(items, key=lambda x: x.get('mtime', 0), reverse=True)
-@@ -1066,7 +586,7 @@ async def static_file(path: str):
+@@ -1066,7 +589,7 @@ async def static_file(path: str):
  
  @app.get("/api/status")
  async def api_status():
@@ -3511,7 +3554,7 @@ index 66b3678..c34f961 100644
  
  
  @app.get("/api/personas")
-@@ -1092,42 +612,76 @@ def _persona_file_path(name: str, filename: str) -> Path:
+@@ -1092,42 +615,76 @@ def _persona_file_path(name: str, filename: str) -> Path:
          raise HTTPException(400, "画像名非法")
      if not filename.endswith(".md") or "/" in filename or "\\" in filename or filename.startswith("."):
          raise HTTPException(400, "文件名非法")
@@ -3568,8 +3611,9 @@ index 66b3678..c34f961 100644
      filename: str
      content: str
 +    revision: str | None = None
-+
-+
+ 
+ 
+-@app.put("/api/persona/{name}/file")
 +def _profile_file_error(error):
 +    if isinstance(error, profile_store.ProfileFileError):
 +        detail = {'code': error.code, 'message': str(error)}
@@ -3577,9 +3621,8 @@ index 66b3678..c34f961 100644
 +            detail['current'] = error.current
 +        return HTTPException(error.status, detail)
 +    return HTTPException(503, {'code': 'profile_io_error', 'message': '画像文件暂时无法读写，原资料已保留。' + str(error)})
- 
- 
--@app.put("/api/persona/{name}/file")
++
++
 +@app.put("/api/persona/{name}/file", response_model=PersonaFileSaveResponse)
  async def api_persona_file_save(name: str, req: PersonaFileRequest):
      """保存画像单个维度文件（原子写）。"""
@@ -3598,7 +3641,7 @@ index 66b3678..c34f961 100644
  
  
  @app.delete("/api/persona/{name}")
-@@ -1155,909 +709,41 @@ async def api_skill_detail(name: str):
+@@ -1155,909 +712,41 @@ async def api_skill_detail(name: str):
      if full is None:
          raise HTTPException(404, f"SKILL '{name}' 不存在")
      desc, layer, body = _parse_skill_md(SKILLS_DIR / "openclaw" / full / "SKILL.md")
@@ -4532,7 +4575,7 @@ index 66b3678..c34f961 100644
  
  
  def _attachment_scope(session_id: str) -> str:
-@@ -2072,1042 +758,6 @@ def _attachment_id(scope: str, path: str) -> str:
+@@ -2072,1042 +761,6 @@ def _attachment_id(scope: str, path: str) -> str:
      return hashlib.sha256(f"{scope}\0{path}".encode("utf-8")).hexdigest()[:24]
  
  
@@ -5575,7 +5618,7 @@ index 66b3678..c34f961 100644
  @app.get("/api/outputs")
  def api_outputs():
      # 产物树是全量递归扫描（文件量大时单次可达数十秒）。必须是同步 handler：
-@@ -3192,6 +842,60 @@ def _is_protected(full: Path) -> bool:
+@@ -3192,6 +845,60 @@ def _is_protected(full: Path) -> bool:
      )
  
  
@@ -5636,7 +5679,7 @@ index 66b3678..c34f961 100644
  @app.delete("/api/output/{path:path}")
  async def api_output_delete(path: str):
      """删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。"""
-@@ -3274,11 +978,12 @@ async def api_upload_local(
+@@ -3274,11 +981,12 @@ async def api_upload_local(
      return {"ok": True, "files": saved}
  
  
@@ -5650,7 +5693,7 @@ index 66b3678..c34f961 100644
      st = LOGIN_DIR / f'{platform}.json'
      tmp = st.with_suffix('.json.tmp')
      try:
-@@ -3291,31 +996,35 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+@@ -3291,41 +999,64 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
              pass
  
  
@@ -5707,10 +5750,31 @@ index 66b3678..c34f961 100644
 -            return False
 -    return False
 +    return _account_state(platform, cfg)['verificationStatus'] == 'verified'
++
++
++def _login_stem(platform: str) -> str:
++    session = LOGIN_SESSIONS.get(platform)
++    return f'{platform}-{session}' if session else platform
++
++
++def _check_login_session(platform: str, session: str | None) -> None:
++    if session and session != LOGIN_SESSIONS.get(platform):
++        raise HTTPException(409, '登录会话已被替代，请重新打开当前登录窗口。')
++
++
++def _complete_login(platform: str, status: dict) -> None:
++    session = status.get('sessionId')
++    if status.get('state') == 'success' and (platform not in LOGIN_COMPLETED or LOGIN_COMPLETED[platform] != session):
++        _invalidate_verification(platform)
++        LOGIN_COMPLETED[platform] = session
  
  
  def _login_status(platform: str) -> dict:
-@@ -3325,7 +1034,8 @@ def _login_status(platform: str) -> dict:
+     """读登录状态文件 + 二维码是否就绪。"""
+-    st = LOGIN_DIR / f'{platform}.json'
++    stem = _login_stem(platform)
++    st = LOGIN_DIR / f'{stem}.json'
+     data = {'state': 'unknown', 'message': ''}
      if st.is_file():
          try:
              d = json.loads(st.read_text(encoding="utf-8"))
@@ -5720,7 +5784,27 @@ index 66b3678..c34f961 100644
          except Exception:
              pass
      # A runner that exits before writing its status must become an actionable error,
-@@ -3351,9 +1061,8 @@ def _login_status(platform: str) -> dict:
+@@ -3335,25 +1066,24 @@ def _login_status(platform: str) -> dict:
+         code = proc.poll()
+         if code is not None:
+             data = {'state': 'error', 'message': f'登录程序异常退出（退出码 {code}），请查看 outputs/_login/{platform}.log'}
+-    qr = LOGIN_DIR / f'{platform}.png'
++    qr = LOGIN_DIR / f'{stem}.png'
+     if qr.is_file():
+-        data['qr'] = f'_login/{platform}.png'
++        data['qr'] = f'_login/{stem}.png'
+         try:
+-            data['qrTs'] = int(qr.stat().st_mtime)   # 二维码 mtime 作缓存键：码每刷新一次就变，前端 img 随之刷新
++            data['qrTs'] = int(qr.stat().st_mtime_ns // 1_000_000)   # 二维码 mtime 作缓存键：码每刷新一次就变，前端 img 随之刷新
+         except OSError:
+             data['qrTs'] = 0
+     else:
+         data['qr'] = ''
+         data['qrTs'] = 0
+-    return data
++    return {**data, 'sessionId': LOGIN_SESSIONS.get(platform)}
+ 
+ 
  @app.get("/api/accounts")
  async def api_accounts():
      return [
@@ -5731,27 +5815,163 @@ index 66b3678..c34f961 100644
           'note': cfg.get('note', '')}
          for pf, cfg in LOGIN_RUNNERS.items()
      ]
-@@ -3372,6 +1081,8 @@ async def api_login_start(platform: str):
+@@ -3372,9 +1102,19 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
 +    if backend != 'biliup':
 +        _require_business_browser()
++    previous = LOGIN_PROCESSES.get(platform)
++    if previous is not None and previous.poll() is None:
++        current = _login_status(platform)
++        if current['state'] in ('expired', 'error'):
++            raise HTTPException(409, '上一轮登录尚在收尾，请稍候重试。')
++        return {'mode': 'qr', **current}
++    LOGIN_SESSIONS[platform] = uuid.uuid4().hex
++    stem = _login_stem(platform)
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
-     qr = LOGIN_DIR / f'{platform}.png'
-     status = LOGIN_DIR / f'{platform}.json'
-@@ -3548,6 +1259,7 @@ async def api_mp_login_start(platform: str):
+-    qr = LOGIN_DIR / f'{platform}.png'
+-    status = LOGIN_DIR / f'{platform}.json'
++    qr = LOGIN_DIR / f'{stem}.png'
++    status = LOGIN_DIR / f'{stem}.json'
+     for f in (qr, status):
+         try:
+             f.unlink()
+@@ -3389,7 +1129,7 @@ async def api_login_start(platform: str):
+                '--qr-out', str(qr), '--status-file', str(status),
+                '--cookie', str(PROJECT_ROOT / 'cookies.json'), '--timeout', str(LOGIN_TIMEOUT)]
+     elif backend == 'douyin':
+-        code_file = LOGIN_DIR / f'{platform}.code'
++        code_file = LOGIN_DIR / f'{stem}.code'
+         try:
+             code_file.unlink()
+         except OSError:
+@@ -3401,10 +1141,11 @@ async def api_login_start(platform: str):
+         cmd = [sys.executable, str(SHARED_SCRIPTS / 'web_publisher.py'), 'login-qr',
+                '--platform', cfg['wp'], '--qr-out', str(qr), '--status-file', str(status),
+                '--timeout', str(LOGIN_TIMEOUT)]
++    _invalidate_verification(platform)
+     # 新登录开始 → 清掉旧的 whoami 缓存（登录前可能缓存了「未登录」），避免登录成功后仍读到旧结果
+     with _WHOAMI_LOCK:
+         _WHOAMI_CACHE.pop(platform, None)
+-    log_path = LOGIN_DIR / f'{platform}.log'
++    log_path = LOGIN_DIR / f'{stem}.log'
+     log_file = log_path.open('a', encoding='utf-8')
+     proc = subprocess.Popen(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
+                             stdout=log_file, stderr=subprocess.STDOUT)
+@@ -3420,21 +1161,18 @@ async def api_login_start(platform: str):
+ 
+ 
+ @app.get("/api/login/{platform}/status")
+-async def api_login_status(platform: str):
++async def api_login_status(platform: str, sessionId: str | None = None):
++    _check_login_session(platform, sessionId)
+     if platform not in LOGIN_RUNNERS:
+         raise HTTPException(404, '未知平台')
+     s = _login_status(platform)
+-    if s.get('state') == 'success':
+-        # 登录刚成功 → 清掉登录前缓存的「未登录」whoami 结果，令下次 whoami 重新真校验；
+-        # 否则卡片会因 WHOAMI_TTL(600s) 内的旧 false 持续显示「未登录」（本次视频号问题的根因）。
+-        # 只清缓存、不改任何登录/检测逻辑。
+-        with _WHOAMI_LOCK:
+-            _WHOAMI_CACHE.pop(platform, None)
++    _complete_login(platform, s)
+     return {'mode': 'qr', **s}
+ 
+ 
+ class SmsCodeRequest(BaseModel):
+     code: str
++    sessionId: str | None = None
+ 
+ 
+ @app.post("/api/login/{platform}/sms")
+@@ -3446,11 +1184,12 @@ async def api_login_sms(platform: str, req: SmsCodeRequest):
+     """
+     if platform not in LOGIN_RUNNERS:
+         raise HTTPException(404, '未知平台')
++    _check_login_session(platform, req.sessionId)
+     code = ''.join(ch for ch in (req.code or '') if ch.isdigit())
+     if not (4 <= len(code) <= 8):
+         raise HTTPException(400, '验证码应为 4-8 位数字')
+     LOGIN_DIR.mkdir(parents=True, exist_ok=True)
+-    (LOGIN_DIR / f'{platform}.code').write_text(code, encoding='utf-8')
++    (LOGIN_DIR / f'{_login_stem(platform)}.code').write_text(code, encoding='utf-8')
+     return {'ok': True}
+ 
+ 
+@@ -3499,29 +1238,7 @@ async def api_save_credentials(platform: str, req: WechatCredentials):
+ 
+ 
+ def _mp_login_status() -> dict:
+-    """读公众号后台(mp)登录状态 + 二维码（文件由 weixin_mp_stats.py login 写）。"""
+-    st = LOGIN_DIR / "wechat-oa-mp.json"
+-    data = {"state": "unknown", "message": ""}
+-    if st.is_file():
+-        try:
+-            d = json.loads(st.read_text(encoding="utf-8"))
+-            data = {"state": d.get("state", "unknown"), "message": d.get("message", "")}
+-        except Exception:
+-            pass
+-    proc = LOGIN_PROCESSES.get("wechat-oa-mp")
+-    if data["state"] in ("unknown", "starting") and proc is not None and proc.poll() is not None:
+-        data = {"state": "error", "message": f"登录程序退出（码 {proc.poll()}），见 outputs/_login/wechat-oa-mp.log"}
+-    qr = LOGIN_DIR / "wechat-oa-mp.png"
+-    if qr.is_file():
+-        data["qr"] = "_login/wechat-oa-mp.png"
+-        try:
+-            data["qrTs"] = int(qr.stat().st_mtime)
+-        except OSError:
+-            data["qrTs"] = 0
+-    else:
+-        data["qr"] = ""
+-        data["qrTs"] = 0
+-    return data
++    return _login_status('wechat-oa-mp')
+ 
+ 
+ def _stop_mp_login_on_shutdown() -> None:
+@@ -3548,17 +1265,21 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
 +    _require_business_browser()
++    _invalidate_verification(platform)
++    LOGIN_SESSIONS["wechat-oa-mp"] = uuid.uuid4().hex
++    stem = _login_stem("wechat-oa-mp")
      LOGIN_DIR.mkdir(parents=True, exist_ok=True)
-     for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
+-    for f in (LOGIN_DIR / "wechat-oa-mp.png", LOGIN_DIR / "wechat-oa-mp.json"):
++    for f in (LOGIN_DIR / f'{stem}.png', LOGIN_DIR / f'{stem}.json'):
          try:
-@@ -3579,26 +1291,57 @@ async def api_mp_login_status(platform: str):
-     return {"mode": "qr", **_mp_login_status()}
+             f.unlink()
+         except OSError:
+             pass
+     wx_proxy = os.environ.get("EASEL_PROXY") or os.environ.get("https_proxy") or ""
+     cmd = [sys.executable, str(SHARED_SCRIPTS / "weixin_mp_stats.py"), "login",
+-           "--proxy", wx_proxy, "--qr-out", str(LOGIN_DIR / "wechat-oa-mp.png"),
+-           "--status-file", str(LOGIN_DIR / "wechat-oa-mp.json"), "--timeout", "240"]
+-    log_file = (LOGIN_DIR / "wechat-oa-mp.log").open("a", encoding="utf-8")
++           "--proxy", wx_proxy, "--qr-out", str(LOGIN_DIR / f'{stem}.png'),
++           "--status-file", str(LOGIN_DIR / f'{stem}.json'), "--timeout", "240"]
++    log_file = (LOGIN_DIR / f'{stem}.log').open("a", encoding="utf-8")
+     proc = subprocess.Popen(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
+                             stdout=log_file, stderr=subprocess.STDOUT)
+     log_file.close()
+@@ -3572,33 +1293,79 @@ async def api_mp_login_start(platform: str):
  
  
+ @app.get("/api/accounts/{platform}/mp-login/status")
+-async def api_mp_login_status(platform: str):
++async def api_mp_login_status(platform: str, sessionId: str | None = None):
++    _check_login_session("wechat-oa-mp", sessionId)
+     cfg = LOGIN_RUNNERS.get(platform)
+     if not cfg or cfg.get("backend") != "wechat-oa":
+         raise HTTPException(404, "该平台不使用公众号后台登录")
+-    return {"mode": "qr", **_mp_login_status()}
++    status = _mp_login_status()
++    _complete_login(platform, status)
++    return {"mode": "qr", **status}
++
++
 +def _verification_result(raw: dict) -> dict:
 +    status = raw.get('verificationStatus')
 +    if status not in ('verified', 'login_required', 'unknown'):
@@ -5770,21 +5990,32 @@ index 66b3678..c34f961 100644
 +                                           '需要重新登录。' if status == 'login_required' else '')}
 +
 +
-+def _save_verification(platform: str, data: dict) -> dict:
-+    previous = _account_state(platform, LOGIN_RUNNERS[platform])
-+    if data['verificationStatus'] == 'unknown':
-+        last = previous if previous.get('verificationStatus') == 'verified' else previous.get('lastKnown')
-+        if last:
-+            data['lastKnown'] = {k: last.get(k) for k in ('accountId', 'name', 'avatar', 'checkedAt')}
-+    else:
-+        marker = 'wechat-oa-mp' if LOGIN_RUNNERS[platform].get('backend') == 'wechat-oa' else platform
-+        fields = {k: data[k] for k in ('verificationStatus', 'accountId', 'checkedAt', 'name', 'avatar', 'errorCode')}
-+        _write_login_marker(marker, 'success' if data['loggedIn'] else 'expired', data['message'], **fields)
++def _invalidate_verification(platform: str) -> int:
 +    with _WHOAMI_LOCK:
-+        _WHOAMI_CACHE[platform] = (time.time(), data)
-+    return data
++        generation = _WHOAMI_GENERATIONS.get(platform, 0) + 1
++        _WHOAMI_GENERATIONS[platform] = generation
++        _WHOAMI_CACHE.pop(platform, None)
++        return generation
 +
 +
++def _save_verification(platform: str, data: dict, generation: int | None = None) -> dict:
++    with _WHOAMI_LOCK:
++        if generation is not None and generation != _WHOAMI_GENERATIONS.get(platform):
++            return {**_account_state(platform, LOGIN_RUNNERS[platform]), 'superseded': True}
++        previous = _account_state(platform, LOGIN_RUNNERS[platform])
++        if data['verificationStatus'] == 'unknown':
++            last = previous if previous.get('verificationStatus') == 'verified' else previous.get('lastKnown')
++            if last:
++                data['lastKnown'] = {k: last.get(k) for k in ('accountId', 'name', 'avatar', 'checkedAt')}
++        else:
++            marker = 'wechat-oa-mp' if LOGIN_RUNNERS[platform].get('backend') == 'wechat-oa' else platform
++            fields = {k: data[k] for k in ('verificationStatus', 'accountId', 'checkedAt', 'name', 'avatar', 'errorCode')}
++            _write_login_marker(marker, 'success' if data['loggedIn'] else 'expired', data['message'], **fields)
++        with _WHOAMI_LOCK:
++            _WHOAMI_CACHE[platform] = (time.time(), data)
++        return data
+ 
+ 
  @app.get("/api/accounts/{platform}/whoami")
 -async def api_account_whoami(platform: str):
 -    """真校验登录态 + 读昵称/头像（起 headless 浏览器，数秒）。前端开页后台调用以自愈假阳性。
@@ -5810,15 +6041,16 @@ index 66b3678..c34f961 100644
 -        return hit[1]
 +    if not force and hit and (time.time() - hit[0]) < WHOAMI_TTL and hit[1]['verificationStatus'] != 'unknown':
 +        return {**hit[1], 'cached': True}
++    generation = _invalidate_verification(platform)
 +    if backend != 'biliup':
 +        try:
 +            _require_business_browser()
 +        except HTTPException as error:
-+            return _save_verification(platform, _verification_result({'errorCode': 'BROWSER_UNAVAILABLE', 'message': str(error.detail)}))
++            return _save_verification(platform, _verification_result({'errorCode': 'BROWSER_UNAVAILABLE', 'message': str(error.detail)}), generation)
      if backend == 'biliup':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
                 '--cookie', str(PROJECT_ROOT / 'cookies.json')]
-@@ -3606,44 +1349,32 @@ async def api_account_whoami(platform: str):
+@@ -3606,44 +1373,32 @@ async def api_account_whoami(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
      elif backend == 'douyin':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
@@ -5835,9 +6067,9 @@ index 66b3678..c34f961 100644
 -        raise HTTPException(504, '校验超时（浏览器起不来或网络慢）')
 -    data = {'loggedIn': False, 'name': '', 'avatar': ''}
 -    confident = False   # 是否拿到「可信」校验结论（子进程正常跑出 JSON 且无 error 字段）
-+        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_TIMEOUT', 'message': '校验超时，请检查网络后重试。'}))
++        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_TIMEOUT', 'message': '校验超时，请检查网络后重试。'}), generation)
 +    except OSError:
-+        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_FAILED', 'message': '账号校验程序未能启动，请查看日志后重试。'}))
++        return _save_verification(platform, _verification_result({'errorCode': 'VERIFY_FAILED', 'message': '账号校验程序未能启动，请查看日志后重试。'}), generation)
 +    raw = {}
      for line in reversed((proc.stdout or '').strip().splitlines()):
          line = line.strip()
@@ -5873,11 +6105,24 @@ index 66b3678..c34f961 100644
 -    return data
 +    if proc.returncode != 0 or not raw:
 +        raw = {'errorCode': 'VERIFY_FAILED', 'message': '账号校验未完成，请查看日志或重试。'}
-+    return _save_verification(platform, _verification_result(raw))
++    return _save_verification(platform, _verification_result(raw), generation)
  
  
  @app.post("/api/logout/{platform}")
-@@ -3715,8 +1446,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+@@ -3652,6 +1407,12 @@ async def api_logout(platform: str):
+     cfg = LOGIN_RUNNERS.get(platform)
+     if not cfg:
+         raise HTTPException(404, '未知平台')
++    _invalidate_verification(platform)
++    login_key = 'wechat-oa-mp' if cfg['backend'] == 'wechat-oa' else platform
++    process = LOGIN_PROCESSES.get(login_key)
++    if process is not None and process.poll() is None:
++        raise HTTPException(409, '登录仍在进行，请完成或等待结束后再退出账号。')
++    LOGIN_SESSIONS.pop(login_key, None)
+     deleted = []
+     if cfg['backend'] == 'wechat-oa':
+         # 1) 清 AppID 凭证（旧配置兜底）
+@@ -3715,8 +1476,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
  async def api_analytics_platforms():
      """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
      return [
@@ -5888,7 +6133,7 @@ index 66b3678..c34f961 100644
          for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
      ]
  
-@@ -3726,6 +1457,8 @@ async def api_analytics(platform: str):
+@@ -3726,6 +1487,8 @@ async def api_analytics(platform: str):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -5897,7 +6142,7 @@ index 66b3678..c34f961 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,14 +1476,19 @@ async def api_analytics(platform: str):
+@@ -3743,14 +1506,19 @@ async def api_analytics(platform: str):
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -5919,7 +6164,7 @@ index 66b3678..c34f961 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1537,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1567,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -5928,7 +6173,7 @@ index 66b3678..c34f961 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1633,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1663,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -5937,7 +6182,7 @@ index 66b3678..c34f961 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1682,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1712,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -5946,7 +6191,7 @@ index 66b3678..c34f961 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1700,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1730,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -5955,7 +6200,7 @@ index 66b3678..c34f961 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1734,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1764,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -5968,7 +6213,7 @@ index 66b3678..c34f961 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1746,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1776,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -6004,7 +6249,7 @@ index 66b3678..c34f961 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1771,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1801,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -6045,7 +6290,7 @@ index 66b3678..c34f961 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1810,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1840,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -6058,7 +6303,7 @@ index 66b3678..c34f961 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,33 +1826,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,33 +1856,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -6095,7 +6340,7 @@ index 66b3678..c34f961 100644
  }
  TREND_LABELS = {
      "weibo": "微博",
-@@ -4150,50 +1846,93 @@ TREND_LABELS = {
+@@ -4150,50 +1876,97 @@ TREND_LABELS = {
      "baidu": "百度",
      "toutiao": "头条",
  }
@@ -6115,6 +6360,10 @@ index 66b3678..c34f961 100644
 -    if isinstance(data, dict):
 -        data = data.get("data") or data.get("list") or []
 +    data = obj
++    if isinstance(obj, dict):
++        code = obj.get('code')
++        if obj.get('success') is False or obj.get('status') in ('error', 'failed') or obj.get('error') or (code is not None and str(code) not in ('0', '200')):
++            raise ValueError('upstream_reported_error')
 +    for _ in range(4):
 +        if isinstance(data, list):
 +            break
@@ -6175,8 +6424,9 @@ index 66b3678..c34f961 100644
 +        except Exception as error:
 +            errors.append(type(error).__name__)
 +    return {'items': [], 'fetchedAt': None, 'source': None, 'error': '来源暂时不可用（' + ', '.join(errors) + '）'}
-+
-+
+ 
+ 
+-@app.get("/api/trends")
 +class TrendItem(BaseModel):
 +    title: str
 +    hot: str
@@ -6192,9 +6442,8 @@ index 66b3678..c34f961 100644
 +    source: str | None
 +    error: str
 +    stale: bool
- 
- 
--@app.get("/api/trends")
++
++
 +class TrendResponse(BaseModel):
 +    trends: list[TrendGroup]
 +    updated: int
@@ -6204,7 +6453,7 @@ index 66b3678..c34f961 100644
  async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      pfs = [p.strip() for p in platforms.split(",") if p.strip() in TREND_SOURCES]
      now = time.time()
-@@ -4201,18 +1940,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+@@ -4201,18 +1974,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      result = []
      for pf in pfs:
          c = _TREND_CACHE.get(pf)
@@ -6234,7 +6483,7 @@ index 66b3678..c34f961 100644
          })
      return {"trends": result, "updated": int(now)}
  
-@@ -4323,7 +2066,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +2100,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -6243,7 +6492,7 @@ index 66b3678..c34f961 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2152,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2186,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -22389,10 +22638,10 @@ index fee8255..80a91db 100644
    );
  }
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..f82def4 100644
+index 42545b5..48cd2ca 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
-@@ -1,11 +1,12 @@
+@@ -1,13 +1,15 @@
  import { useState, useEffect, useCallback, useRef } from 'react';
  import {
    fetchAccounts, startLogin, loginStatus, mediaUrl,
@@ -22406,8 +22655,11 @@ index 42545b5..f82def4 100644
 +import { registerEditing, requestLeave } from '../lib/unsaved';
  
  type QRState = {
++  sessionId?: string;
    platform: string;
-@@ -19,6 +20,7 @@ type QRState = {
+   name: string;
+   state: string;       // starting | qr_ready | success | expired | error | unknown
+@@ -19,6 +21,7 @@ type QRState = {
  const STATE_LABEL: Record<string, string> = {
    starting: '启动中…',
    qr_ready: '请扫码',
@@ -22415,7 +22667,7 @@ index 42545b5..f82def4 100644
    scanned: '扫码成功',
    sms_required: '需短信验证',
    verifying: '验证中…',
-@@ -61,6 +63,16 @@ export default function AccountsPage() {
+@@ -61,6 +64,16 @@ export default function AccountsPage() {
    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
    const aliveRef = useRef(true);
    const qrPlatformRef = useRef('');   // 当前登录中的平台，供 submitSms 稳定引用
@@ -22432,7 +22684,7 @@ index 42545b5..f82def4 100644
  
    useEffect(() => {
      aliveRef.current = true;
-@@ -70,26 +82,25 @@ export default function AccountsPage() {
+@@ -70,26 +83,25 @@ export default function AccountsPage() {
    // 真校验某平台登录态 + 拉昵称/头像（后端起浏览器，数秒）；手动「校验账号」或登录成功后调
    const runWhoami = useCallback((platform: string) => {
      setWhoami((w) => ({ ...w, [platform]: 'loading' }));
@@ -22467,7 +22719,7 @@ index 42545b5..f82def4 100644
            onUpdate: (platform, r) => setWhoami((w) => ({ ...w, [platform]: r })),
          });
        })
-@@ -111,14 +122,16 @@ export default function AccountsPage() {
+@@ -111,14 +123,16 @@ export default function AccountsPage() {
    }, [load]);
  
    const stopPoll = useCallback(() => {
@@ -22486,7 +22738,7 @@ index 42545b5..f82def4 100644
      setSmsCode(''); setSmsErr(''); setSmsBusy(false);
      load();
    }, [stopPoll, load]);
-@@ -126,9 +139,12 @@ export default function AccountsPage() {
+@@ -126,9 +140,12 @@ export default function AccountsPage() {
    const submitSms = useCallback(async () => {
      const code = smsCode.replace(/\D/g, '');
      if (code.length < 4) { setSmsErr('请输入手机收到的验证码'); return; }
@@ -22494,21 +22746,25 @@ index 42545b5..f82def4 100644
      setSmsBusy(true); setSmsErr('');
 +    const request = qrRequest.current;
      try {
-       await submitLoginSms(qrPlatformRef.current, code);
+-      await submitLoginSms(qrPlatformRef.current, code);
++      await submitLoginSms(qrPlatformRef.current, code, qr?.sessionId);
 +      if (!aliveRef.current || request !== qrRequest.current) return;
        setSmsCode('');
        // 乐观切到「验证中」转圈：后端读走码→verifying；成功→success，失败→退回 sms_required 带错误
        setQr((prev) => prev && ({ ...prev, state: 'verifying', message: '正在验证验证码…' }));
-@@ -136,7 +152,7 @@ export default function AccountsPage() {
+@@ -136,9 +153,9 @@ export default function AccountsPage() {
      } catch (e) {
        setSmsErr(e instanceof Error ? e.message : '提交验证码失败');
      } finally {
 -      setSmsBusy(false);
 +      smsSubmitting.current = false; setSmsBusy(false);
      }
-   }, [smsCode]);
+-  }, [smsCode]);
++  }, [smsCode, qr?.sessionId]);
  
-@@ -150,106 +166,83 @@ export default function AccountsPage() {
+   // 凭证式（公众号）：打开 AppID/AppSecret 表单
+   const openCred = useCallback((a: AccountItem) => {
+@@ -150,106 +167,83 @@ export default function AccountsPage() {
        .catch(() => { /* 未配置，忽略 */ });
    }, []);
  
@@ -22574,7 +22830,7 @@ index 42545b5..f82def4 100644
 +      if (!active()) return;
 +      if (response.mode === 'terminal') { setQr(null); setTerminalMsg(response.message || '请在终端登录'); return; }
 +      if (response.mode === 'credentials') { setQr(null); openCred(a); return; }
-+      setQr({platform:a.platform,name,state:response.state || 'starting',message:response.message || '',qr:response.qr || ''});
++      setQr({platform:a.platform,name,sessionId:response.sessionId,state:response.state || 'starting',message:response.message || '',qr:response.qr || ''});
 +      let polling = false;
        pollRef.current = setInterval(async () => {
 +        if (!active() || polling) return;
@@ -22583,7 +22839,7 @@ index 42545b5..f82def4 100644
 -          const s = await loginStatus(a.platform);
 -          setQr((prev) => prev && ({ ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs }));
 -          if (['success', 'expired', 'error'].includes(s.state)) {
-+          const status = mp ? await mpLoginStatus(a.platform) : await loginStatus(a.platform);
++          const status = mp ? await mpLoginStatus(a.platform,response.sessionId) : await loginStatus(a.platform,response.sessionId);
 +          if (!active()) return;
 +          setQr(previous => previous && previous.platform === a.platform ? {...previous,...status,platform:a.platform,name} : previous);
 +          if (['success','expired','error'].includes(status.state)) {
@@ -22658,7 +22914,7 @@ index 42545b5..f82def4 100644
        setWhoami((w) => { const n = { ...w }; delete n[a.platform]; return n; });
        setWhoamiCache(a.platform, null);
        load();
-@@ -260,20 +253,19 @@ export default function AccountsPage() {
+@@ -260,20 +254,19 @@ export default function AccountsPage() {
      }
    }, [load]);
  
@@ -22686,7 +22942,7 @@ index 42545b5..f82def4 100644
    };
  
    return (
-@@ -282,11 +274,11 @@ export default function AccountsPage() {
+@@ -282,11 +275,11 @@ export default function AccountsPage() {
          <div>
            <h1 className="page-title">账号登录 Accounts</h1>
            <p className="page-subtitle">
@@ -22701,7 +22957,7 @@ index 42545b5..f82def4 100644
        </div>
  
        {err && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 12 }}>{err}</div>}
-@@ -299,6 +291,7 @@ export default function AccountsPage() {
+@@ -299,6 +292,7 @@ export default function AccountsPage() {
            const w = whoami[a.platform];
            const info = w && w !== 'loading' ? w : null;
            const logged = effLoggedIn(a);
@@ -22709,7 +22965,7 @@ index 42545b5..f82def4 100644
            return (
              <div key={a.platform} className="card account-card" style={{ opacity: a.supported ? 1 : 0.6 }}>
                <div className="account-card-head">
-@@ -315,6 +308,9 @@ export default function AccountsPage() {
+@@ -315,6 +309,9 @@ export default function AccountsPage() {
                {!logged && (
                  <div className="account-card-note">{a.note ? a.note : `后端：${a.name}`}</div>
                )}
@@ -22719,7 +22975,7 @@ index 42545b5..f82def4 100644
  
                <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
                  {logged ? (
-@@ -332,12 +328,15 @@ export default function AccountsPage() {
+@@ -332,12 +329,15 @@ export default function AccountsPage() {
                    </>
                  ) : (
                    // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
@@ -22736,7 +22992,7 @@ index 42545b5..f82def4 100644
                  )}
                </div>
              </div>
-@@ -349,6 +348,7 @@ export default function AccountsPage() {
+@@ -349,6 +349,7 @@ export default function AccountsPage() {
          <div className="overlay" onClick={closeQr}>
            <div className="modal" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
              onClick={(e) => e.stopPropagation()}>
@@ -22744,7 +23000,7 @@ index 42545b5..f82def4 100644
              <h3 style={{ margin: '0 0 4px' }}>登录 {qr.name}</h3>
              <div style={{ fontSize: 13, marginBottom: 14,
                color: qr.state === 'success' ? 'var(--green)'
-@@ -386,14 +386,19 @@ export default function AccountsPage() {
+@@ -386,14 +387,19 @@ export default function AccountsPage() {
                <div style={{ fontSize: 48, padding: 40 }}>✅</div>
              ) : ['error', 'expired'].includes(qr.state) ? (
                <div style={{ fontSize: 13, color: 'var(--red)', padding: 30 }}>
@@ -22765,7 +23021,7 @@ index 42545b5..f82def4 100644
            </div>
          </div>
        )}
-@@ -401,6 +406,7 @@ export default function AccountsPage() {
+@@ -401,6 +407,7 @@ export default function AccountsPage() {
        {cred && (
          <div className="overlay" onClick={closeCred}>
            <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
@@ -22773,7 +23029,7 @@ index 42545b5..f82def4 100644
              <h3 style={{ margin: '0 0 4px' }}>配置 {cred.name}</h3>
              <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>
                公众号用官方接口发布，需填开发者凭证（公众平台 → 设置与开发 → 开发接口管理）。<br />
-@@ -429,6 +435,7 @@ export default function AccountsPage() {
+@@ -429,6 +436,7 @@ export default function AccountsPage() {
                </button>
                <button className="btn" onClick={closeCred}>关闭</button>
              </div>
@@ -26607,7 +26863,7 @@ index 0000000..01f4858
 +    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..1fffd01 100644
+index 9b3d69f..a058a4d 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -6,20 +6,31 @@ function getBasePath(): string {
@@ -26749,7 +27005,30 @@ index 9b3d69f..1fffd01 100644
    platform: string;
    name: string;
    backend: string;      // xhs | web | biliup | unsupported
-@@ -428,15 +476,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
+@@ -374,6 +422,7 @@ export interface AccountItem {
+ }
+ 
+ export interface LoginStart {
++  sessionId?: string;
+   mode: 'qr' | 'terminal' | 'credentials';   // credentials = 凭证式（公众号 AppID/AppSecret）
+   state?: string;       // starting | qr_ready | success | expired | error | unknown
+   message?: string;
+@@ -412,11 +461,12 @@ export function startMpLogin(platform: string): Promise<LoginStatus> {
+ }
+ 
+ /** 轮询公众号后台扫码登录状态。 */
+-export function mpLoginStatus(platform: string): Promise<LoginStatus> {
+-  return request<LoginStatus>(`/api/accounts/${encodeURIComponent(platform)}/mp-login/status`);
++export function mpLoginStatus(platform: string, sessionId?: string): Promise<LoginStatus> {
++  return request<LoginStatus>(`/api/accounts/${encodeURIComponent(platform)}/mp-login/status${sessionId ? '?sessionId=' + encodeURIComponent(sessionId) : ''}`);
+ }
+ 
+ export interface LoginStatus {
++  sessionId?: string;
+   mode: 'qr';
+   state: string;
+   message: string;
+@@ -428,15 +478,15 @@ export function fetchAccounts(): Promise<AccountItem[]> {
    return request<AccountItem[]>('/api/accounts');
  }
  
@@ -26768,7 +27047,14 @@ index 9b3d69f..1fffd01 100644
  }
  
  /** 退出登录：删该平台持久化登录态。 */
-@@ -494,13 +542,13 @@ export function loginStatus(platform: string): Promise<LoginStatus> {
+@@ -489,18 +539,18 @@ export function startLogin(platform: string): Promise<LoginStart> {
+   return request<LoginStart>(`/api/login/${encodeURIComponent(platform)}`, { method: 'POST' });
+ }
+ 
+-export function loginStatus(platform: string): Promise<LoginStatus> {
+-  return request<LoginStatus>(`/api/login/${encodeURIComponent(platform)}/status`);
++export function loginStatus(platform: string, sessionId?: string): Promise<LoginStatus> {
++  return request<LoginStatus>(`/api/login/${encodeURIComponent(platform)}/status${sessionId ? '?sessionId=' + encodeURIComponent(sessionId) : ''}`);
  }
  
  // ---- 归因层：账号创作数据 ----
@@ -26784,7 +27070,7 @@ index 9b3d69f..1fffd01 100644
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +556,17 @@ export interface AccountAnalytics {
+@@ -508,12 +558,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -26802,6 +27088,20 @@ index 9b3d69f..1fffd01 100644
  }
  
  /** 支持抓数据的平台 + 各自登录态。 */
+@@ -527,11 +582,11 @@ export function fetchAccountAnalytics(platform: string): Promise<AccountAnalytic
+ }
+ 
+ /** 回填短信验证码（登录风控短信墙）：提交后 runner 读走填码继续登录。 */
+-export function submitLoginSms(platform: string, code: string): Promise<{ ok: boolean }> {
++export function submitLoginSms(platform: string, code: string, sessionId?: string): Promise<{ ok: boolean }> {
+   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+-    body: JSON.stringify({ code }),
++    body: JSON.stringify({ code, sessionId }),
+   });
+ }
+ 
 diff --git a/web/frontend/src/lib/appStorage.ts b/web/frontend/src/lib/appStorage.ts
 new file mode 100644
 index 0000000..d6dac43

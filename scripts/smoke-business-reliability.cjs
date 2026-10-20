@@ -104,8 +104,26 @@ let app, release = () => {};
   for(let i=0;i<30&&schedule.length<2;i++)await delay(100);
   assert.equal(schedule[1].date,'2026-10-20');
   console.log('PASS: publish draft scheduling uses local civil date');
+  await app.evaluate(({app})=>{
+    const require=process.getBuiltinModule('node:module').createRequire(app.getAppPath()+'/package.json');
+    require('electron-updater').autoUpdater.emit('update-available',{version:'0.5.11',files:[{size:1}]});
+  });
+  await page.locator('.desktop-update-banner').waitFor();
+  await page.locator('.sidebar-nav').getByRole('button',{name:'连接 Agent',exact:true}).click();
+  await page.locator('.desktop-update-banner').waitFor();
+  await page.screenshot({path:path.join(evidence,'update-banner.png')});
+  await page.getByRole('button',{name:'关闭更新提示，本次运行不再提醒',exact:true}).click();
+  await page.getByRole('button',{name:'控制台',exact:true}).first().click();
+  assert.equal(await page.locator('.desktop-update-banner').count(),0);
+  await app.evaluate(({BrowserWindow})=>{
+    const window=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'));
+    window.close();window.show();
+  });
+  assert.equal(await page.locator('.desktop-update-banner').count(),0);
+  assert.equal((await page.evaluate(()=>window.desktopUpdates.status())).transferred,0);
+  console.log('PASS: SDK update notification shares banner, dismiss and tray state without download');
   await fs.mkdir(path.join(root,'docs/evidence'),{recursive:true});
-  await fs.writeFile(path.join(root,'docs/evidence/business-ui-0.5.10.json'),JSON.stringify({version:pkg.version,passed:true,syntheticDataOnly:true,checkedAt:new Date().toISOString(),checks:['inverse account responses','closed QR start response','non-overlapping polls','QR expiry and refresh','hotlist status both views','local dashboard and idea date']},null,2));
+  await fs.writeFile(path.join(root,'docs/evidence/business-ui-0.5.10.json'),JSON.stringify({version:pkg.version,passed:true,syntheticDataOnly:true,checkedAt:new Date().toISOString(),checks:['inverse account responses','closed QR start response','non-overlapping polls','QR expiry and refresh','hotlist status both views','local dashboard, idea and publish draft date','SDK update notification shared by home/console; dismissal survives tray; no download']},null,2));
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
   release(); if(app){await app.evaluate(({dialog})=>{dialog.showMessageBox=async()=>({response:1});}).catch(()=>{});await app.close();}
 });

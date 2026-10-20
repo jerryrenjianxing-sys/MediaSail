@@ -5,6 +5,9 @@ import io
 import shutil
 import sys
 import tempfile
+import json
+import os
+import subprocess
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,10 +19,12 @@ import zhihu_answer
 
 
 class AnswerOutcome(unittest.TestCase):
-    def publish(self, final_url, *, before='https://www.zhihu.com/question/123', dry=False):
+    def publish(self, final_url, *, before='https://www.zhihu.com/question/123', dry=False, existing=False):
         page = Mock(url=before)
         page.query_selector.side_effect = lambda selector: None if 'SignContainer' in selector else Mock(inner_text=lambda: '测试问题')
         def evaluate(script, *args):
+            if '编辑回答' in script and '.some(' in script:
+                return existing
             if 'const texts' in script:
                 page.url = final_url
                 return '发布回答'
@@ -57,6 +62,11 @@ class AnswerOutcome(unittest.TestCase):
         result = self.publish('https://www.zhihu.com/question/123', dry=True)
         self.assertTrue(result['dry_run'])
         self.assertEqual(result['outcome'], 'dry_run')
+
+    def test_existing_answer_without_rendered_url_cannot_be_verified_as_new(self):
+        result = self.publish('https://www.zhihu.com/question/123/answer/789', existing=True)
+        self.assertFalse(result['success'])
+        self.assertEqual(result['outcome'], 'unverified')
 
 
 class DraftOutcome(unittest.TestCase):
@@ -111,7 +121,45 @@ class DraftOutcome(unittest.TestCase):
             response.json.return_value = {'media_id': 'confirmed'}
             self.assertEqual(self.api.add_draft({'title': '合成'}), 'confirmed')
 
+    def test_real_cli_preserves_recovery_payload_and_exits_without_replay(self):
+        root = Path(self.temp.name)
+        source = SHARED.parent.parent / 'openclaw/skill-wechat-publisher'
+        skill = root / 'skills/openclaw/skill-wechat-publisher'
+        shutil.copytree(source, skill)
+        shared = root / 'skills/shared/scripts'; shared.mkdir(parents=True)
+        shutil.copyfile(SHARED / 'content_guard.py', shared / 'content_guard.py')
+        (skill / 'wechat-publisher.yaml').write_text('default: test\naccounts:\n  test:\n    app_id: synthetic\n    app_secret: synthetic\n', encoding='utf-8')
+        html = root / '原稿.html'; html.write_text('<p>原始测试正文</p>', encoding='utf-8')
+        cover = root / '封面.png'
+        shutil.copyfile(SHARED.parents[4] / 'branding/MediaSail-app-icon.png', cover)
+        shim = '''import sys,runpy,requests
+from unittest.mock import Mock
+count=0
+def response():
+ r=Mock(status_code=200);r.json.return_value={'media_id':'cover','access_token':'synthetic','expires_in':7200};return r
+def request(method,url,**kwargs):
+ global count
+ if '/draft/add?' in url:
+  count+=1;raise requests.Timeout('synthetic')
+ return response()
+requests.get=lambda *a,**k:response()
+requests.request=request
+sys.argv=sys.argv[1:]
+try:runpy.run_path(sys.argv[0],run_name='__main__')
+finally:print('DRAFT_REQUESTS',count)
+'''
+        result = subprocess.run([sys.executable,'-X','utf8','-B','-c',shim,str(skill / 'scripts/publish.py'),
+            '--html',str(html),'--cover',str(cover),'--title','合成草稿','--official-api','--exec'],
+            env={**os.environ,'EASEL_ROOT':str(root)},cwd=root,capture_output=True,text=True,encoding='utf-8')
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn('DRAFT_REQUESTS 1', result.stdout)
+        recovery = list((root / 'outputs/_inbox').glob('wechat-draft-unconfirmed-*.json'))
+        self.assertEqual(len(recovery), 1)
+        saved = json.loads(recovery[0].read_text(encoding='utf-8'))
+        self.assertEqual(saved['payload']['articles'][0]['title'], '合成草稿')
+        self.assertNotIn('access_token', recovery[0].read_text(encoding='utf-8'))
+        self.assertEqual(html.read_text(encoding='utf-8'), '<p>原始测试正文</p>')
+
 
 if __name__ == '__main__':
     unittest.main()
-
