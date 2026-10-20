@@ -1,0 +1,22 @@
+{
+  "version": "0.5.9",
+  "passed": true,
+  "checks": [
+    "homepage has a single MD button with no dropdown, filename editor or text dialog",
+    "real Windows file-drop clipboard points to an exact UTF-8 MD snapshot",
+    "independent Chromium input receives the actual named MD file and full bytes without text fallback",
+    "generated complete command connects using current discovery without ZIP or full self-test",
+    "repeated copies keep the fixed name and independent files despite a legacy custom preference",
+    "clipboard failure preserves the previous file, offers retry only, then copies a new MD without text",
+    "restart still copies the fixed name; old preference and snapshots remain untouched",
+    "the original copied card resolves a different library and port through current discovery"
+  ],
+  "syntheticDataOnly": true,
+  "messagesSent": 0,
+  "targetClients": {
+    "trae": "not verified; native UI helper unavailable",
+    "codex": "not verified; native UI helper unavailable"
+  },
+  "connectionCommandMs": 756,
+  "cacheFile": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\Skill 文件 # % 1792463363928\\中文 空格资料库\\runtime\\cache\\agent-share\\copy-vf4WrL\\MediaSail 接入.md"
+}
