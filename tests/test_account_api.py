@@ -88,8 +88,9 @@ class AccountApi(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(next(a for a in platforms if a['platform'] == 'douyin')['verificationStatus'], 'login_required')
 
     async def test_unknown_preserves_login_material_and_last_identity_without_false_success(self):
-        self.web._save_verification('douyin', self.web._verification_result({
-            'loggedIn': True, 'verificationStatus': 'verified', 'accountId': 'account-a', 'name': '测试账号'}))
+        with patch.object(self.web.subprocess, 'run', return_value=self.response({
+                'loggedIn': True, 'verificationStatus': 'verified', 'accountId': 'account-a', 'name': '测试账号'})):
+            await self.verify(force=True)
         original = self.marker.read_bytes()
         profile = self.root / 'private-browser-profile'
         profile.mkdir()
@@ -111,7 +112,8 @@ class AccountApi(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(original, self.marker.read_bytes(), 'Later genuine success may update the marker')
 
     async def test_unknown_does_not_rewrite_success_marker(self):
-        self.web._save_verification('douyin', self.web._verification_result({'loggedIn': True, 'accountId': 'a'}))
+        with patch.object(self.web.subprocess, 'run', return_value=self.response({'loggedIn': True, 'accountId': 'a'})):
+            await self.verify(force=True)
         original = self.marker.read_bytes()
         with patch.object(self.web.subprocess, 'run', side_effect=subprocess.TimeoutExpired('fixture', 150)):
             result = await self.verify(force=True)
