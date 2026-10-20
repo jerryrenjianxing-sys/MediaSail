@@ -1,6 +1,6 @@
 # MediaSail 0.5.9 验证记录
 
-状态：源码、打包后界面、双轴审查及真实隔离升级通过；待完成正式发布与公开更新检查。仅隔离安装和合成资料，不操作日常安装与资料库。
+状态：源码、打包后界面、双轴审查、真实隔离升级及公开更新检查均通过，0.5.9已正式发布。仅隔离安装和合成资料，不操作日常安装与资料库。
 
 旧0.5.8打包首页的红测确认仍有展开键，调整后的可见界面验证先失败，再移除菜单及改名状态。继续使用已约定的可见首页、真实文件剪贴板和安装器验证边界。
 
@@ -13,9 +13,9 @@
 - [首页](images/0.5.9/skill-file-home.png)、[浅色](images/0.5.9/skill-file-light.png)、[深色](images/0.5.9/skill-file-dark.png)、[窄窗口](images/0.5.9/skill-file-narrow.png)、[失败重试](images/0.5.9/skill-file-retry.png)、[独立接收页](images/0.5.9/skill-file-paste-receiver.png)。
 - [双轴审查](REVIEW-0.5.9.md)Standards与Spec均0项确认发现，实现提交为d39c91c。
 
-## 待完成及边界
+## 兼容边界
 
-正式发布及公开更新核验。完整Skill及业务功能不改，仅同步首页描述；旧名称存储键仍保留兼容，原有安装验证继续核对其数据保留，并不表示改名界面仍存在。独立接收页不代替TRAE、Codex等客户端实际输入框兼容验证，不新增相关兼容声明。
+完整Skill及业务功能不改，仅同步首页描述；旧名称存储键仍保留兼容，原有安装验证继续核对其数据保留，并不表示改名界面仍存在。独立接收页不代替TRAE、Codex等客户端实际输入框兼容验证，不新增相关兼容声明。
 
 ## 候选身份
 
@@ -32,3 +32,9 @@
 - 本次安装观察74787ms（约1分15秒），仅云机实际观察值，不含下载，也不作为安装速度保证。
 
 [安装进度](images/0.5.9/upgrade-progress.png)、[升级后内容库](images/0.5.9/upgraded-content-library.png)、[复制日志](evidence/installer-copy-0.5.9.log)。不使用真实账号公开发布。
+
+## 正式发布与公开更新
+
+[v0.5.9](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.9)于2026-10-20T02:41:11Z正式发布为最新版，tag指向 `b8f327232b5dc3dba71d0d9541801ba13b9c8612`，该提交[源码CI](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/39360146015)通过。最终五个发行文件的服务端SHA-256与本地一致，17个历史Release文件保持不变，见[资产核对](evidence/assets-0.5.9.json)。源码ZIP的报告是发行时快照，最终以同批SHA256SUMS.txt为准，发布后不再替换资产。
+
+原始0.5.8客户端使用原GitHub更新配置发现0.5.9，0.5.9提示已是最新；未请求下载或安装，未替换源。见[旧版检查](evidence/content-update-0.5.8-to-0.5.9.json)、[新版检查](evidence/content-update-0.5.9-to-0.5.9.json)，及[旧版截图](images/0.5.9/update-check-0.5.8.png)、[新版截图](images/0.5.9/update-check-0.5.9.png)。发布后证据补充于主分支。
