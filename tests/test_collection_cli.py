@@ -20,6 +20,7 @@ def cards(count):
 class CollectionCli(unittest.TestCase):
     def collect(self, **overrides):
         arguments = overrides.pop("cliArguments", [])
+        platform = overrides.pop("platform", "douyin")
         with tempfile.TemporaryDirectory(prefix="MediaSail 采集 中文 ") as directory:
             root = Path(directory)
             fixture = root / "浏览器样本.json"
@@ -27,19 +28,19 @@ class CollectionCli(unittest.TestCase):
             env = dict(os.environ, EASEL_ROOT=str(root), EASEL_BROWSER_EXECUTABLE=sys.executable,
                        COLLECTION_FIXTURE=str(fixture), PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1")
             run = subprocess.run([sys.executable, "-X", "utf8", "-B", str(ROOT / "tests/fixtures/collection_cli.py"),
-                                  "fetch", "--platform", "douyin", "--profile-base", str(root / "浏览器资料"), *arguments],
+                                  "fetch", "--platform", platform, "--profile-base", str(root / "浏览器资料"), *arguments],
                                  env=env, capture_output=True, text=True, encoding="utf-8", timeout=20)
             self.assertEqual(run.returncode, 0, run.stderr)
             return json.loads(run.stdout.strip().splitlines()[-1])
 
     def test_delayed_cards_are_collected_and_missing_follower_count_is_explained(self):
         data = self.collect(delayedReads=4)
-        self.assertEqual(data["posts"], 5)
+        self.assertIsNone(data["posts"])
         self.assertEqual(len(data["notes"]), 5)
         self.assertIsNone(data["followers"])
         self.assertEqual(data["followerIndex"], 7)
         self.assertEqual(data["collection"]["status"], "partial")
-        self.assertEqual(data["collection"]["missingFields"], ["followers"])
+        self.assertEqual(data["collection"]["missingFields"], ["followers", "posts"])
         self.assertEqual(data["collection"]["notesCoverage"]["total"], 5)
         self.assertTrue(data["collection"]["suggestions"])
 
@@ -57,7 +58,7 @@ class CollectionCli(unittest.TestCase):
     def test_sample_is_not_described_as_all_and_the_caller_can_request_more(self):
         sample = self.collect(content=cards(9))
         self.assertEqual(len(sample["notes"]), 6)
-        self.assertEqual(sample["posts"], 9)
+        self.assertIsNone(sample["posts"])
         self.assertTrue(sample["collection"]["notesCoverage"]["hasMore"])
         larger = self.collect(content=cards(9), cliArguments=["--notes-limit", "12"])
         self.assertEqual(len(larger["notes"]), 9)
@@ -65,7 +66,8 @@ class CollectionCli(unittest.TestCase):
 
     def test_explicit_zero_is_different_from_a_page_stuck_loading(self):
         empty = self.collect(content="内容管理\n作品 (0)\n暂无作品")
-        self.assertEqual(empty["posts"], 0)
+        self.assertIsNone(empty["posts"])
+        self.assertEqual(empty["collection"]["notesCoverage"]["total"], 0)
         self.assertEqual(empty["collection"]["notesCoverage"]["status"], "empty")
         self.assertNotIn("notes", empty["collection"]["missingFields"])
         loading = self.collect(content="内容管理\n加载中，请稍候…")
@@ -87,6 +89,37 @@ class CollectionCli(unittest.TestCase):
         self.assertEqual(len(data["notes"]), 5)
         self.assertEqual(data["collection"]["status"], "partial")
         self.assertTrue(any(x["code"] == "content_count_conflict" for x in data["collection"]["issues"]))
+
+    def test_management_filter_count_does_not_replace_the_legacy_account_count(self):
+        data = self.collect(home=HOME + "\n作品数\n20")
+        self.assertEqual(data["posts"], 20)
+        self.assertEqual(data["collection"]["notesCoverage"]["total"], 5)
+
+    def test_a_zero_placeholder_waits_for_independent_empty_or_card_evidence(self):
+        data = self.collect(loading="内容管理\n作品 (0)", delayedReads=4)
+        self.assertEqual(len(data["notes"]), 5)
+        self.assertEqual(data["collection"]["notesCoverage"]["total"], 5)
+
+    def test_a_redraw_and_later_read_error_preserve_previously_read_cards(self):
+        partial = cards(1).replace("作品 (1)", "作品 (5)").replace("评论\n1\n", "")
+        data = self.collect(readSequence=[partial, "内容管理\n加载中", {"error": "Page has been closed"}])
+        self.assertEqual(len(data["notes"]), 1)
+        self.assertEqual(data["notes"][0]["title"], "合成作品1")
+        self.assertEqual(data["collection"]["notesCoverage"]["total"], 5)
+        self.assertEqual(data["collection"]["notesCoverage"]["status"], "partial")
+
+    def test_followers_subpage_and_notes_have_their_actual_sources(self):
+        data = self.collect(platform="zhihu", home="合成用户\n赞同总量\n22", notesResult=[{"title": "合成文章", "href": "https://zhuanlan.zhihu.com/p/synthetic", "stat": ""}])
+        self.assertEqual(data["followers"], 123)
+        sources = data["collection"]["sources"]
+        self.assertEqual(next(s for s in sources if "followers" in s["fields"])["url"], "https://www.zhihu.com/creator/followers")
+        self.assertTrue(any("notes" in s["fields"] and "/creator/manage/creation/all" in s["url"] for s in sources))
+
+    def test_browser_start_failure_is_not_reported_as_a_platform_without_metrics(self):
+        data = self.collect(startupError="BrowserType.launch_persistent_context: Timeout 20000ms exceeded.")
+        self.assertEqual(data["collection"]["status"], "failed")
+        self.assertEqual(data["collection"]["issues"][0]["code"], "browser_start_timeout")
+        self.assertIn("启动", data["collection"]["issues"][0]["message"])
 
 
 if __name__ == "__main__":

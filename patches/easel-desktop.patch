@@ -685,19 +685,27 @@ index 123bae2..0f6da95 100755
 +        sys.exit(2)
 diff --git a/skills/shared/scripts/account_collection.py b/skills/shared/scripts/account_collection.py
 new file mode 100644
-index 0000000..b2ecb87
+index 0000000..30312b5
 --- /dev/null
 +++ b/skills/shared/scripts/account_collection.py
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,187 @@
 +"""Read-only collection evidence. A verified login is independent of completeness."""
 +from __future__ import annotations
 +
 +import re
-+from urllib.parse import urlsplit
++from urllib.parse import urlsplit, urlunsplit
 +
 +DOUYIN_CONTENT = "https://creator.douyin.com/creator-micro/content/manage"
 +DATE = re.compile(r"\d{4}(?:年\d{1,2}月\d{1,2}日|[-/]\d{1,2}[-/]\d{1,2})(?:\s+\d{1,2}:\d{2})?")
 +COUNTERS = ("播放", "点赞", "评论", "分享", "收藏", "划走率", "文案展开率", "平均浏览图片数", "吸粉量")
++
++
++def source_url(url: str) -> str:
++    """Keep the observed page, not query credentials or fragments."""
++    parsed = urlsplit(url or "")
++    if parsed.scheme not in ("https", "http") or not parsed.hostname:
++        return ""
++    return urlunsplit((parsed.scheme, parsed.hostname, parsed.path, "", ""))
 +
 +
 +def parse_douyin_content(text: str, limit: int = 6) -> dict:
@@ -705,6 +713,7 @@ index 0000000..b2ecb87
 +    lines = [s.strip() for s in text.splitlines() if s.strip()]
 +    match = re.search(r"(?:^|\n)作品\s*[（(]\s*(\d+)\s*[)）]", text)
 +    total = int(match[1]) if match else None
++    reported_total = total
 +    descriptors = []
 +    for i, line in enumerate(lines):
 +        if not DATE.fullmatch(line) or i + 1 >= len(lines) or lines[i + 1] not in ("已发布", "审核中", "未通过", "待发布", "定时发布"):
@@ -735,12 +744,14 @@ index 0000000..b2ecb87
 +                          "stat": " · ".join(k + v for k, v in values.items()),
 +                          "published_at": lines[i], "metrics": values})
 +    loading = any(re.search(r"加载中|正在加载|加载更多", s) for s in lines)
-+    empty = not descriptors and not loading and (total == 0 or (
-+        "内容管理" in lines and any(s in ("暂无作品", "暂无相关作品", "还没有发布作品") for s in lines)))
++    empty_text = "内容管理" in lines and any(s in ("暂无作品", "暂无相关作品", "还没有发布作品") for s in lines)
++    empty = not descriptors and not loading and total in (0, None) and empty_text
++    if total == 0 and not empty:
++        total = None
 +    if empty and total is None:
 +        total = 0
 +    exhausted = "没有更多作品" in lines
-+    conflict = total is not None and total < len(descriptors)
++    conflict = reported_total is not None and reported_total < len(descriptors)
 +    if conflict:
 +        total = None
 +    enough = total is not None and len(descriptors) >= min(total, limit)
@@ -758,6 +769,7 @@ index 0000000..b2ecb87
 +def collect_douyin_content(page, limit: int = 6) -> dict:
 +    """Wait for actual cards or an explicit empty state; keep partial readable results."""
 +    last = {"notes": [], "total": None, "visible": 0, "empty": False, "exhausted": False}
++    best = last
 +    stage = "navigation"
 +    try:
 +        page.goto(DOUYIN_CONTENT, wait_until="domcontentloaded", timeout=30000)
@@ -766,8 +778,11 @@ index 0000000..b2ecb87
 +        for attempt in range(81):
 +            landed = urlsplit(page.url or "")
 +            if landed.hostname != "creator.douyin.com" or "/content/manage" not in landed.path:
-+                return {**last, "issue": issue("notes", "unexpected_destination", "作品页跳转到其他页面，需核对登录或平台验证。", DOUYIN_CONTENT)}
++                return {**best, "issue": issue("notes", "unexpected_destination", "作品页跳转到其他页面，需核对登录或平台验证。", DOUYIN_CONTENT)}
 +            last = parse_douyin_content(page.inner_text("body"), limit)
++            score = lambda result: (len(result["notes"]), sum(len(n.get("metrics", {})) for n in result["notes"]), result["total"] is not None)
++            if score(last) >= score(best):
++                best = last
 +            signature = (last["total"], repr(last["notes"]), last["visible"], last["empty"])
 +            if last["ready"] and previous == signature:
 +                return {**last, "issue": None}
@@ -777,31 +792,52 @@ index 0000000..b2ecb87
 +                    page.mouse.wheel(0, 1800)
 +                page.wait_for_timeout(250)
 +        if last.get("countConflict"):
-+            return {**last, "issue": issue("notes", "content_count_conflict", "作品页总数与可见作品冲突；总数保留未知，已读取作品仍保留，可重新核对页面。", DOUYIN_CONTENT, True)}
-+        return {**last, "issue": issue("notes", "content_not_ready", "等待作品列表后仍未确认完整样本或明确空态；保留已读取内容，可按任务补查内容管理页。", DOUYIN_CONTENT, True)}
++            return {**best, "total": None, "issue": issue("notes", "content_count_conflict", "作品页总数与可见作品冲突；总数保留未知，已读取作品仍保留，可重新核对页面。", DOUYIN_CONTENT, True)}
++        return {**best, "issue": issue("notes", "content_not_ready", "等待作品列表后仍未确认完整样本或明确空态；保留已读取内容，可按任务补查内容管理页。", DOUYIN_CONTENT, True)}
 +    except Exception as error:
 +        # Browser exceptions may include cookies, URLs or launch arguments. Keep
 +        # the useful class and stage, not arbitrary sensitive browser output.
 +        network = re.search(r"\bERR_[A-Z_]+\b", str(error))
 +        cause = network[0] if network else "等待超时" if "timeout" in (type(error).__name__ + str(error)).lower() else "浏览器会话关闭" if "closed" in str(error).lower() else type(error).__name__
 +        action = "打开作品页" if stage == "navigation" else "读取作品列表"
-+        return {**last, "issue": issue("notes", "content_" + stage + "_failed", f"{action}失败（{cause}）；已取得的其他指标保留，可重试或检查该页面。", DOUYIN_CONTENT, True)}
++        return {**best, "issue": issue("notes", "content_" + stage + "_failed", f"{action}失败（{cause}）；已取得的其他指标保留，可重试或检查该页面。", DOUYIN_CONTENT, True)}
 +
 +
-+def collection_report(data: dict, cfg: dict, content: dict | None = None) -> dict:
++def collection_report(data: dict, cfg: dict, content: dict | None = None, field_urls: dict | None = None, notes_url: str = "") -> dict:
 +    """Small, additive contract shared by CLI, HTTP callers and the UI."""
 +    url = cfg["url"]
 +    fields = [key for key in ("followers", "likes", "following") if cfg.get("overview", {}).get(key)] + ["posts"]
 +    missing = [key for key in fields if data.get(key) is None]
++    if data.get("errorCode") and data.get("verificationStatus") != "verified":
++        message = str(data.get("message") or "")
++        code = str(data["errorCode"])
++        if "launch_persistent_context" in message:
++            code = "browser_start_timeout" if "timeout" in message.lower() else "browser_start_failed"
++            reason = "浏览器启动超时，尚未进入账号数据采集。" if code.endswith("timeout") else "浏览器未能建立持久会话，尚未进入账号数据采集。"
++        elif code == "profile_busy":
++            reason = "平台浏览器资料正被其他任务占用，本次未执行采集。"
++        elif data.get("verificationStatus") == "login_required":
++            reason = "平台明确要求登录，本次未取得账号数据。"
++        else:
++            reason = "本次无法核验账号会话，采集尚未完成；可核对连接或平台验证状态。"
++        return {"status": "failed", "missingFields": list(dict.fromkeys(missing + ["metrics", "notes"])),
++                "issues": [issue("account", code, reason, url, data.get("verificationStatus") != "login_required")],
++                "sources": [], "notesCoverage": {"returned": 0, "total": None, "limit": 6, "status": "unknown", "scope": "本次未确认作品范围", "hasMore": True},
++                "suggestions": [{"fields": fields, "sourceUrl": url, "reason": "按当前任务处理启动、占用或登录问题，或选择其他已授权证据；不反复重放同一失败请求。"}]}
 +    issues = []
 +    sources = []
 +    present = [key for key in fields if data.get(key) is not None]
 +    if data.get("followerIndex") is not None:
 +        present.append("followerIndex")
-+    if present:
-+        sources.append({"fields": present, "url": url, "fetchedAt": data["fetched_at"], "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"})
++    grouped = {}
++    for field in present:
++        grouped.setdefault((field_urls or {}).get(field, url), []).append(field)
++    for location, observed_fields in grouped.items():
++        sources.append({"fields": observed_fields, "url": location, "fetchedAt": data["fetched_at"], "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"})
 +    for key in missing:
 +        message = "本次来源未取得该指标，不代表数值为零或整个平台不提供。"
++        if key == "posts" and content is not None and content["total"] is not None:
++            message = "未取得旧账号概览同口径的作品数；当前管理页总数见 notesCoverage.total，不混用于账号作品增长。"
 +        if key == "followers" and data.get("followerIndex") is not None:
 +            message = "本次首页仅发现粉丝指数，未取得精确粉丝数；可核对其他已授权页面或账号响应。"
 +        issues.append(issue(key, "metric_not_observed", message, url))
@@ -812,7 +848,7 @@ index 0000000..b2ecb87
 +        missing.append("metrics")
 +        issues.append(issue("metrics", "metrics_incomplete", "本次未取得：" + "、".join(absent) + "。可能仍在加载或页面结构变化，不能据此认定平台没有指标。", url, True))
 +    if observed:
-+        sources.append({"fields": ["metrics"], "url": url, "fetchedAt": data["fetched_at"], "scope": data.get("metrics_title", "页面展示统计口径")})
++        sources.append({"fields": ["metrics"], "url": (field_urls or {}).get("metrics", url), "fetchedAt": data["fetched_at"], "scope": data.get("metrics_title", "页面展示统计口径")})
 +    coverage = {"returned": len(data.get("notes", [])), "total": None, "limit": 6, "status": "available" if data.get("notes") else "unknown", "scope": "近期已发布作品样本，非全账号历史"}
 +    if content is not None:
 +        coverage.update({"total": content["total"], "limit": content.get("limit", 6),
@@ -821,14 +857,14 @@ index 0000000..b2ecb87
 +        if content.get("issue"):
 +            issues.append(content["issue"])
 +            missing.append("notes")
-+        sources = [{**s, "fields": [f for f in s["fields"] if f != "posts" or content["total"] is None]} for s in sources]
-+        sources = [s for s in sources if s["fields"]]
 +        if content["total"] is not None or data.get("notes") or content["empty"]:
-+            fields = (["posts"] if content["total"] is not None else []) + ["notes"]
++            fields = (["collection.notesCoverage.total"] if content["total"] is not None else []) + ["notes"]
 +            sources.append({"fields": fields, "url": DOUYIN_CONTENT, "fetchedAt": data["fetched_at"], "scope": coverage["scope"]})
 +    elif not data.get("notes"):
 +        missing.append("notes")
-+        issues.append(issue("notes", "list_unconfirmed", "未取得作品列表，也没有明确空态证据；不能据此判断没有作品。", url, True))
++        issues.append(issue("notes", "list_unconfirmed", "未取得作品列表，也没有明确空态证据；不能据此判断没有作品。", notes_url or url, True))
++    else:
++        sources.append({"fields": ["notes"], "url": notes_url or url, "fetchedAt": data["fetched_at"], "scope": coverage["scope"]})
 +    coverage["hasMore"] = coverage["total"] is None or coverage["returned"] < coverage["total"]
 +    if coverage["hasMore"]:
 +        issues.append(issue("notes", "sample_coverage", "当前结果只是样本或覆盖范围尚未核实；需要更大范围时可自主补查。", DOUYIN_CONTENT if content is not None else url))
@@ -841,7 +877,7 @@ index 0000000..b2ecb87
 +    return {"status": status, "missingFields": list(dict.fromkeys(missing)), "issues": issues,
 +            "sources": sources, "notesCoverage": coverage, "suggestions": suggestions}
 diff --git a/skills/shared/scripts/account_stats.py b/skills/shared/scripts/account_stats.py
-index 8d336d0..f9a489d 100644
+index 8d336d0..727aeb7 100644
 --- a/skills/shared/scripts/account_stats.py
 +++ b/skills/shared/scripts/account_stats.py
 @@ -18,11 +18,15 @@ import re
@@ -851,7 +887,7 @@ index 8d336d0..f9a489d 100644
 +from business_browser import launch_persistent_context, resolve_browser
 +from profile_lock import ProfileLock
 +import creator_auth
-+from account_collection import collect_douyin_content, collection_report
++from account_collection import collect_douyin_content, collection_report, source_url
  
 -PROJECT_ROOT = Path(__file__).resolve().parents[3]
 +PROJECT_ROOT = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
@@ -1008,7 +1044,7 @@ index 8d336d0..f9a489d 100644
                  ov, d = cfg["overview"], cfg.get("overview_dir", "after")
                  mets = cfg.get("metrics", [])
                  manchor = cfg.get("metrics_anchor")
-@@ -403,15 +475,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -403,15 +475,20 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                          pass
                  if clicked:
                      lines = _poll_stable(page, _sig, 6000)   # 点「累计」后重新等稳定
@@ -1024,13 +1060,19 @@ index 8d336d0..f9a489d 100644
 +                    r["followerIndex"] = num_by_label(lines, ["粉丝指数"], "after")
                  r["posts"] = num_by_label(lines, cfg.get("posts_labels", ["笔记数", "作品数", "内容数", "视频数"]), d)
                  r["metrics"] = metrics_with_vs(lines, cfg.get("metrics", []), manchor)[:8]
++                r["_field_urls"] = {key: source_url(page.url) for key in ("followers", "likes", "following", "posts", "metrics", "followerIndex")}
                  r["nickname"] = extract_nickname(lines, ov, cfg.get("uid_anchor", ""))
 +                if platform == "douyin":
 +                    r["nickname"] = verification["name"]
                  # 昵称优先用专用选择器（视频号文本锚点不稳：概览是「关注者1」同行，锚不到昵称）
                  nsel = cfg.get("nickname_selector")
                  if nsel:
-@@ -443,7 +519,15 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -440,10 +517,21 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+                             page, lambda L: (num_by_label(L, flabels, "after"),)
+                             if num_by_label(L, flabels, "after") is not None else None, 8000)
+                         r["followers"] = num_by_label(flines, flabels, "after")
++                        if r["followers"] is not None:
++                            r["_field_urls"]["followers"] = source_url(page.url)
                      except Exception:
                          pass
                  # 最新笔记放最后抓——小红书会跳转到笔记管理页，之后不再读首页
@@ -1039,15 +1081,16 @@ index 8d336d0..f9a489d 100644
 +                    content = collect_douyin_content(page, notes_limit)
 +                    content["limit"] = notes_limit
 +                    r["notes"] = content["notes"]
-+                    if content["total"] is not None:
-+                        r["posts"] = content["total"]
++                    # Management-page filters are not the old account-wide
++                    # counter. Its total belongs in collection.notesCoverage.
 +                    r["_content"] = content
 +                else:
 +                    r["notes"] = _scrape_notes(platform, page, cfg)
++                    r["_notes_url"] = source_url(page.url)
              finally:
                  ctx.close()
      finally:
-@@ -452,6 +536,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -452,6 +540,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      return r
  
  
@@ -1067,7 +1110,7 @@ index 8d336d0..f9a489d 100644
  def _has_body(page) -> bool:
      try:
          return page.query_selector("body") is not None
-@@ -778,9 +875,9 @@ def cmd_check(_a) -> int:
+@@ -778,9 +879,9 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -1079,7 +1122,7 @@ index 8d336d0..f9a489d 100644
              ok = bool(path and Path(path).exists())
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
-@@ -796,29 +893,29 @@ def cmd_fetch(a) -> int:
+@@ -796,29 +897,29 @@ def cmd_fetch(a) -> int:
      except Exception as e:
          _die(f"需要 playwright：{e}", 3)
      disable = True if a.no_proxy else (False if a.proxy else None)
@@ -1113,12 +1156,12 @@ index 8d336d0..f9a489d 100644
      }
 +    if a.platform == "douyin":
 +        out["followerIndex"] = s.get("followerIndex")
-+    out["collection"] = collection_report(out, PLATFORMS[a.platform], s.get("_content"))
++    out["collection"] = collection_report(out, PLATFORMS[a.platform], s.get("_content"), s.get("_field_urls"), s.get("_notes_url", ""))
 +    attach_growth(out, a.platform, source=f"{a.platform}-creator", now=now)
      print(json.dumps(out, ensure_ascii=False))
      return 0
  
-@@ -869,7 +966,9 @@ def cmd_selftest(_a) -> int:
+@@ -869,7 +970,9 @@ def cmd_selftest(_a) -> int:
      hist = [{"ts": now - 40 * 86400, "followers": 10, "likes": 5, "posts": 1},   # >month
              {"ts": now - 5 * 86400, "followers": 20, "likes": 8, "posts": 2},    # >day,>week? 5d: >day, <week
              {"ts": now - 0.5 * 86400, "followers": 28, "likes": 9, "posts": 2}]  # last
@@ -1129,7 +1172,7 @@ index 8d336d0..f9a489d 100644
      g = growth_windows(hist, cur)
      assert g["last"]["followers"] == 2                       # 30-28
      assert g["day"]["followers"] == 10                       # vs 5d 前(<=now-1d 最近) =20 → 10
-@@ -930,6 +1029,7 @@ def main() -> int:
+@@ -930,6 +1033,7 @@ def main() -> int:
      pf.add_argument("--proxy", help="外网代理（默认按平台：xhs 直连、其它走 env）")
      pf.add_argument("--no-proxy", action="store_true", help="强制直连")
      pf.add_argument("--headed", action="store_true", help="有头模式（首次校准）")
@@ -24060,7 +24103,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..6bd5d2b 100644
+index 135c4fc..362fe96 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,4 +1,6 @@
@@ -24136,10 +24179,10 @@ index 135c4fc..6bd5d2b 100644
 -      .then((r) => setAnaData((d) => {
 +      .then((r) => {
 +        setWhoamiMap((m) => ({ ...m, [platform]: { ...r, name: r.nickname || r.name, avatar: '' } }));
-+        const hasData = [r.followers, r.likes, r.posts, r.following].some((v) => v != null) || !!r.metrics?.length || !!r.notes?.length;
++        const hasData = [r.followers, r.likes, r.posts, r.following, r.followerIndex].some((v) => v != null) || !!r.metrics?.length || !!r.notes?.length || r.collection?.notesCoverage.status === 'empty';
 +        if (r.verificationStatus !== 'verified' || !hasData || r.collection?.status === 'failed') {
 +          const problem = r.collection?.status === 'failed'
-+            ? '本次采集失败：' + (r.collection.issues.find((p) => /failed|not_ready/.test(p.code))?.message || r.message || '未取得有效数据，请查看来源或稍后重试。')
++            ? '本次采集失败：' + (r.collection.issues.find((p) => /failed|not_ready/.test(p.code))?.message || r.collection.issues[0]?.message || r.message || '未取得有效数据，请查看来源或稍后重试。')
 +            : r.message || (r.verificationStatus === 'login_required' ? '需要到账号页重新登录。' : '本次未取得可核验数据，请重试。');
 +          setAnaError((d) => ({ ...d, [platform]: problem }));
 +          return;

@@ -28,9 +28,16 @@ class Page:
             raise RuntimeError(case["navigationError"])
 
     def inner_text(self, selector):
+        if "/creator/followers" in self.url:
+            return "关注者总数\n123"
         if "content/manage" not in self.url:
             return case["home"]
         self.reads += 1
+        if case.get("readSequence"):
+            value = case["readSequence"][min(self.reads - 1, len(case["readSequence"]) - 1)]
+            if isinstance(value, dict):
+                raise RuntimeError(value["error"])
+            return value
         return case.get("loading", "加载中，请稍候…") if self.reads <= case.get("delayedReads", 0) else case["content"]
 
     def evaluate(self, script, arg=None):
@@ -38,7 +45,7 @@ class Page:
             return {"httpStatus": 200, "body": {"status_code": 0,
                     "user": {"uid": "synthetic-account", "nickname": "合成测试账号"}}}
         # Old DOM extraction cannot see a renamed card; text remains readable.
-        return []
+        return case.get("notesResult", [])
 
     def wait_for_timeout(self, duration):
         pass
@@ -52,7 +59,11 @@ class Page:
 
 page = Page()
 context = SimpleNamespace(pages=[page], close=lambda: None)
-chromium = SimpleNamespace(launch_persistent_context=lambda *a, **kw: context)
+def launch_fake(*args, **kwargs):
+    if case.get("startupError"):
+        raise RuntimeError(case["startupError"])
+    return context
+chromium = SimpleNamespace(launch_persistent_context=launch_fake)
 
 
 class Browser:
@@ -63,6 +74,7 @@ class Browser:
             original = self.playwright.chromium.launch_persistent_context
 
             def launch(*args, **kwargs):
+                kwargs.setdefault("timeout", 20000)
                 context = original(*args, **kwargs)
 
                 def respond(route):

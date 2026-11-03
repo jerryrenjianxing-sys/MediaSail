@@ -22,6 +22,7 @@ const root=path.resolve(__dirname,'..'),pkg=require('../package.json');let app;
  const images=path.join(root,'docs/images',pkg.version);await fs.mkdir(images,{recursive:true});
  await page.screenshot({path:path.join(images,'collection-light.png'),animations:'disabled'});
  await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});await page.screenshot({path:path.join(images,'collection-dark.png'),animations:'disabled'});
+ response={...base,followerIndex:11,followers:null,likes:null,following:null,posts:null,notes:[],collection};await collect.click();await page.getByText(/粉丝指数：11/).waitFor();
  response={...base,posts:null,notes:[],collection:{...collection,missingFields:['followers','posts','notes'],issues:[{field:'notes',code:'content_navigation_failed',message:'打开作品页失败（ERR_CONNECTION_RESET）；其他指标保留。',sourceUrl:'https://creator.douyin.com',retryable:true}],notesCoverage:{...collection.notesCoverage,returned:0,total:null,status:'partial',hasMore:true}}};
  await collect.click();await page.getByText(/ERR_CONNECTION_RESET/).waitFor();assert.equal(await page.getByText('该账号暂无可读取的已发布笔记',{exact:true}).count(),0);await page.getByText(/本次未取得完整作品列表/).waitFor();
  response={...base,followers:null,likes:null,following:null,posts:null,notes:[],collection:{...response.collection,status:'failed'}};

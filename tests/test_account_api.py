@@ -35,10 +35,11 @@ class AccountApi(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 200, response.text)
         data = response.json()
         self.assertEqual(len(data['notes']), 9)
-        self.assertEqual(data['posts'], 9)
+        self.assertIsNone(data['posts'])
+        self.assertEqual(data['collection']['notesCoverage']['total'], 9)
         self.assertEqual(data['verificationStatus'], 'verified')
         self.assertEqual(data['collection']['status'], 'partial')
-        self.assertEqual(data['collection']['missingFields'], ['followers'])
+        self.assertEqual(data['collection']['missingFields'], ['followers', 'posts'])
         self.assertEqual(data['collection']['notesCoverage']['limit'], 12)
 
     async def asyncSetUp(self):
