@@ -1,0 +1,13 @@
+{
+  "from": "0.5.10",
+  "to": "0.5.11",
+  "firstAttemptPassed": false,
+  "stage": "baseline startup before update UI",
+  "cause": "Two isolated packaged test instances were launched concurrently and both selected port 7860 before either service bound it.",
+  "webLog": "ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 7860): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。",
+  "applicationLog": "2026-11-03T09:11:52.522Z 正在准备本地工作目录…\n2026-11-03T09:11:57.624Z 正在启动 MediaSail 和本地服务…\n2026-11-03T09:12:04.356Z web 服务已停止（3），请查看日志后重试。",
+  "updateCheckReached": false,
+  "fixtureOnly": true,
+  "clientOrDownloadSourceModified": false,
+  "followUp": "Close both isolated instances, then verify each version sequentially."
+}
