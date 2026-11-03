@@ -39,7 +39,7 @@
 | GET /api/accounts/{platform}/whoami | 实际校验账号，可能联网；force=1 手动绕过缓存 |
 | POST /api/logout/{platform} | 退出平台账号 |
 | GET /api/analytics/platforms | 可分析平台与登录标记 |
-| GET /api/analytics/{platform} | 真实采集；只有核验稳定账号与来源才登记快照。growthStatus/growthReason说明增长可比性，缺身份时各窗口null；可能启动浏览器，并非纯缓存 |
+| GET /api/analytics/{platform} | 真实采集；抖音可选 notes_limit=1..100（默认6）。account_stats 结果的 collection 说明完整性、缺项、失败及来源，followerIndex 与粉丝数不同，见 collection-evidence.md。只有核验稳定账号与来源才登记快照；growthStatus/growthReason说明增长可比性。可能启动浏览器，并非纯缓存 |
 | POST /api/publish/{platform} | title、body、media（outputs 相对路径数组）、tags；真实业务操作，公众号分支通常为草稿，其他平台可能直接发布，按响应/平台说明核实 |
 | GET /api/publish/{platform}/status | 查询发布状态 |
 | POST /api/publish/{platform}/sms | code；提供发布验证码 |

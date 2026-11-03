@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MediaSail local API",
-    "version": "0.5.10"
+    "version": "0.5.11"
   },
   "paths": {
     "/": {
@@ -1108,6 +1108,18 @@
               "type": "string",
               "title": "Platform"
             }
+          },
+          {
+            "name": "notes_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 6,
+              "title": "Notes Limit"
+            }
           }
         ],
         "responses": {
@@ -1115,7 +1127,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AccountAnalyticsResponse"
+                }
               }
             }
           },
@@ -1789,6 +1803,34 @@
   },
   "components": {
     "schemas": {
+      "AccountAnalyticsResponse": {
+        "properties": {
+          "collection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CollectionReport"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "followerIndex": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Followerindex"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AccountAnalyticsResponse"
+      },
       "Body_api_upload_api_upload_post": {
         "properties": {
           "files": {
@@ -1833,6 +1875,125 @@
         ],
         "title": "Body_api_upload_local_api_upload_local_post"
       },
+      "CollectionIssue": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "title": "Sourceurl"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "code",
+          "message",
+          "sourceUrl",
+          "retryable"
+        ],
+        "title": "CollectionIssue"
+      },
+      "CollectionReport": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "partial",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "missingFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missingfields"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "notesCoverage": {
+            "$ref": "#/components/schemas/NotesCoverage"
+          },
+          "suggestions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "missingFields",
+          "issues",
+          "sources",
+          "notesCoverage",
+          "suggestions"
+        ],
+        "title": "CollectionReport"
+      },
+      "CollectionSource": {
+        "properties": {
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "fetchedAt": {
+            "type": "integer",
+            "title": "Fetchedat"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fields",
+          "url",
+          "fetchedAt",
+          "scope"
+        ],
+        "title": "CollectionSource"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1873,6 +2034,58 @@
           "title"
         ],
         "title": "IdeaItem"
+      },
+      "NotesCoverage": {
+        "properties": {
+          "returned": {
+            "type": "integer",
+            "title": "Returned"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "partial",
+              "empty",
+              "unknown"
+            ],
+            "title": "Status"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "hasMore": {
+            "type": "boolean",
+            "title": "Hasmore"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "returned",
+          "total",
+          "limit",
+          "status",
+          "scope",
+          "hasMore"
+        ],
+        "title": "NotesCoverage"
       },
       "PersonaFileRequest": {
         "properties": {

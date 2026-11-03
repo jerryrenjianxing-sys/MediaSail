@@ -18,6 +18,29 @@ SOURCE = REPO / 'vendor' / 'easel'
 
 
 class AccountApi(unittest.IsolatedAsyncioTestCase):
+    async def test_collection_http_keeps_partial_evidence_and_accepts_a_larger_sample(self):
+        from test_collection_cli import HOME, cards
+        fixture = self.root / '合成浏览器.json'
+        fixture.write_text(json.dumps({'home': HOME, 'content': cards(9), 'delayedReads': 4}, ensure_ascii=False), encoding='utf8')
+        original = subprocess.run
+
+        def browser_boundary(command, **options):
+            environment = dict(options['env'], EASEL_ROOT=str(self.root), COLLECTION_FIXTURE=str(fixture),
+                               EASEL_BROWSER_EXECUTABLE=sys.executable, PYTHONDONTWRITEBYTECODE='1')
+            return original([sys.executable, '-X', 'utf8', '-B', str(REPO / 'tests/fixtures/collection_cli.py'),
+                             *command[2:]], **{**options, 'env': environment})
+
+        with patch.object(self.web.subprocess, 'run', side_effect=browser_boundary):
+            response = await self.client.get('/api/analytics/douyin?notes_limit=12')
+        self.assertEqual(response.status_code, 200, response.text)
+        data = response.json()
+        self.assertEqual(len(data['notes']), 9)
+        self.assertEqual(data['posts'], 9)
+        self.assertEqual(data['verificationStatus'], 'verified')
+        self.assertEqual(data['collection']['status'], 'partial')
+        self.assertEqual(data['collection']['missingFields'], ['followers'])
+        self.assertEqual(data['collection']['notesCoverage']['limit'], 12)
+
     async def asyncSetUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='MediaSail 账号 测试 ')
         self.addCleanup(self.temp.cleanup)

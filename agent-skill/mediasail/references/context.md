@@ -43,6 +43,8 @@ $saved | Select-Object filename, content, revision
 
 ## 看真实表现
 
+分析账号、数据缺项、空列表或结论需要补证时，查阅[采集缺项与有据分析](collection-evidence.md)：采集状态、可选补查办法、指标区别和事实/推断的写法以该处为准。根据用户当前任务自主继续只读研究，不把一次接口缺项直接交回人工；需要用户交互或更多访问范围时明确说明。
+
 GET /api/analytics/platforms 列出实际支持的平台及最近已知状态。旧成功标记不代表当前后台可用。
 GET /api/analytics/{platform} 会真实访问平台，可能启动浏览器、耗时数秒到三分钟，并更新本地分析快照；它不是纯缓存读取。登录失败和平台改版会报错。
 

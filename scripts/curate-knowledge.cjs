@@ -135,6 +135,7 @@ function curatePayload({payloadRoot,sourceRoot}={}){
   const rel='skills/openclaw/'+name+'/SKILL.md';if(!fs.existsSync(path.join(root,rel)))continue;
   const tools=callable.filter(p=>p.startsWith('skills/openclaw/'+name+'/'));
   if(name==='skill-douyin-upload')tools.push('skills/shared/scripts/douyin_publish.py');
+  if(name==='skill-my-account')tools.push('skills/shared/scripts/account_stats.py');
   if(!tools.length)continue;
   const guidance='\n## Windows 业务脚本入口\n\n$SkillHelper 使用连接资料 skillDir 下 scripts/mediasail.ps1 的绝对路径，$DataDir 使用复制说明中的运行数据目录。辅助脚本每次重读当前资料库并设置 workspace；先查帮助，再按本次任务选择参数。完整离线示例见接入 Skill 的 references/script-io.md。\n\n```powershell\n'+tools.map(helperCommand).join('\n')+'\n```\n';
   put(rel,fs.readFileSync(path.join(root,rel),'utf8')+guidance);

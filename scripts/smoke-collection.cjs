@@ -1,0 +1,34 @@
+// Packaged UI with synthetic HTTP responses; no real platform/account actions.
+'use strict';
+const {_electron:electron}=require('playwright'),fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..'),pkg=require('../package.json');let app;
+(async()=>{
+ const run=path.join(os.homedir(),'Documents/MediaSail 隔离验证','采集完整性 '+Date.now()),bootstrap=path.join(run,'定位'),libraryRoot=path.join(run,'资料库');
+ const executable=process.env.EASEL_TEST_EXE||path.resolve(root,pkg.build.directories.output,'win-unpacked/MediaSail.exe');
+ assert.ok(!executable.toLowerCase().startsWith('d:\\mediasail\\'));
+ const layout=await require('../desktop/library.cjs').chooseLibrary({bootstrapRoot:bootstrap,targetRoot:libraryRoot,installDirectory:path.dirname(executable)});
+ await fs.mkdir(layout.dataRoot,{recursive:true});await fs.writeFile(path.join(layout.dataRoot,'ui-state.json'),JSON.stringify({schema:1,migration:{version:'0.3.3'},values:{easel_onboarding_seen:'1'}}));
+ const env={...process.env,EASEL_LIBRARY_BOOTSTRAP:bootstrap,LOCALAPPDATA:path.join(run,'Local'),APPDATA:path.join(run,'Roaming')};delete env.ELECTRON_RUN_AS_NODE;delete env.EASEL_DESKTOP_DATA;
+ app=await electron.launch({executablePath:executable,env});const page=await app.firstWindow();
+ const account={platform:'douyin',name:'抖音',loggedIn:true,verificationStatus:'verified',accountId:'synthetic-account',checkedAt:Date.now()/1000};
+ await page.route('**/api/accounts',r=>r.fulfill({json:[account]}));await page.route('**/api/accounts/*/whoami*',r=>r.fulfill({json:account}));
+ await page.route('**/api/analytics/platforms',r=>r.fulfill({json:[account]}));await page.route('**/api/trends*',r=>r.fulfill({json:{trends:[],updated:0}}));
+ const base={...account,nickname:'合成测试账号',followers:null,followerIndex:7,likes:74,following:9,posts:5,metrics:[],notes:[{title:'合成作品一',url:'https://example.invalid',stat:'播放501'}],growth:{},growthStatus:'no_history',fetched_at:1700000000};
+ const collection={status:'partial',missingFields:['followers'],issues:[{field:'followers',code:'metric_not_observed',message:'本次首页仅发现粉丝指数，未取得精确粉丝数。',sourceUrl:'https://creator.douyin.com',retryable:false}],sources:[],notesCoverage:{returned:1,total:5,limit:6,status:'available',scope:'合成当前页面',hasMore:true},suggestions:[]};
+ let response={...base,collection};await page.route('**/api/analytics/douyin*',r=>r.fulfill({json:response}));
+ await page.waitForURL('http://127.0.0.1:*/',{timeout:180000});await page.getByRole('button',{name:'控制台',exact:true}).first().click();
+ const collect=page.locator('.ana-plats').getByRole('button',{name:'抖音',exact:true});await collect.click();
+ await page.getByText('本次采集不完整',{exact:true}).waitFor({timeout:8000});await page.getByText(/粉丝指数：7/).waitFor();await page.getByText('查看缺项、原因与来源',{exact:true}).click();await page.getByText(/未取得精确粉丝数/).waitFor();
+ const images=path.join(root,'docs/images',pkg.version);await fs.mkdir(images,{recursive:true});
+ await page.screenshot({path:path.join(images,'collection-light.png'),animations:'disabled'});
+ await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});await page.screenshot({path:path.join(images,'collection-dark.png'),animations:'disabled'});
+ response={...base,posts:null,notes:[],collection:{...collection,missingFields:['followers','posts','notes'],issues:[{field:'notes',code:'content_navigation_failed',message:'打开作品页失败（ERR_CONNECTION_RESET）；其他指标保留。',sourceUrl:'https://creator.douyin.com',retryable:true}],notesCoverage:{...collection.notesCoverage,returned:0,total:null,status:'partial',hasMore:true}}};
+ await collect.click();await page.getByText(/ERR_CONNECTION_RESET/).waitFor();assert.equal(await page.getByText('该账号暂无可读取的已发布笔记',{exact:true}).count(),0);await page.getByText(/本次未取得完整作品列表/).waitFor();
+ response={...base,followers:null,likes:null,following:null,posts:null,notes:[],collection:{...response.collection,status:'failed'}};
+ await collect.click();await page.getByText(/本次采集失败/).waitFor();await page.getByText(/保留上次采集结果/).waitFor();
+ response={...base,followers:0,likes:0,following:0,posts:0,notes:[],collection:{...collection,status:'complete',missingFields:[],issues:[],notesCoverage:{...collection.notesCoverage,returned:0,total:0,status:'empty',hasMore:false}}};
+ await collect.click();await page.getByText(/已确认当前范围暂无已发布作品/).waitFor();
+ response={...base};await collect.click();await page.getByText(/未报告采集完整性/).waitFor();
+ const result={version:pkg.version,passed:true,syntheticDataOnly:true,realAccountsUsed:false,checkedAt:new Date().toISOString(),testedAppAsarSha256:crypto.createHash('sha256').update(await fs.readFile(path.join(path.dirname(executable),'resources/app.asar'))).digest('hex'),checks:['partial collection and follower-index separation','failure keeps available data','no empty-list claim on failure','failed refresh retains old result','explicit empty state','legacy result labels completeness as unknown','light and dark screenshots']};
+ await fs.mkdir(path.join(root,'docs/evidence'),{recursive:true});await fs.writeFile(path.join(root,'docs/evidence','collection-ui-'+pkg.version+'.json'),JSON.stringify(result,null,2));console.log('COLLECTION UI PASSED');
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(app){await app.evaluate(({dialog})=>{dialog.showMessageBox=async()=>({response:1});}).catch(()=>{});await app.close();}});

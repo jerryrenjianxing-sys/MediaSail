@@ -42,6 +42,62 @@ index 491e3e9..5a0edee 100644
  问到"我的账号 / 我的帖子 / 我的粉丝 / 最近发了啥"这类，**先去查已登录账号和站内数据，别回头问他要账号名**。
  真碰到一时不趁手的工具或拿不到的数据，就实话实说卡在哪、再给个能走的替代路子。
  
+diff --git a/skills/openclaw/skill-account-diagnosis/SKILL.md b/skills/openclaw/skill-account-diagnosis/SKILL.md
+index 2cd5cca..e0faee7 100644
+--- a/skills/openclaw/skill-account-diagnosis/SKILL.md
++++ b/skills/openclaw/skill-account-diagnosis/SKILL.md
+@@ -6,17 +6,17 @@ layer: plan
+ 
+ # 账号诊断 / 起号体检
+ 
+-> 对着一个**具体账号**做归因式体检并开处方。读 [profile-builder](../skill-profile-builder/SKILL.md) 生成的画像 + 用户近期内容/数据 → 诊断账号健康 → 给分阶段起号意见与发布建议。**与画像强相关**：没有完善的 Profile 就先去跑 profile-builder。
++> 针对具体账号结合画像、内容和可获得的数据提出诊断与策略。方法标尺是经验参考，按当前任务选择，不把流量池档位、定位或限流判断当成平台官方结论。
+ 
+ ## 前置条件
+ 
+-- 必须有**已完善**的 Profile（`profiles/<名>/` 六维基本填好）。若 Profile 缺失或大面积 `[待补充]`，**先让用户跑 `skill-profile-builder`**，不要在信息不全时硬诊断。
++- 已有画像和历史资料可帮助理解目标；背景不足时仍可做范围明确的初步研究，说明依据和待确认项，按任务补充，而不是固定停止并要求重新建档。
+ 
+ ## 输入
+ 
+ | 项 | 必需 | 说明 |
+ |----|------|------|
+-| 画像名 | 是 | 指向 `profiles/<名>/` |
++| 画像名 | 否 | 已有背景时指向 `profiles/<名>/` |
+ | 近期内容数据 | 否 | 近 10-30 条内容的标题/题材/曝光/互动（有则诊断更准；无则基于 Profile + 追问） |
+ | 具体困惑 | 否 | 如"播放上不去""是不是被限流了" |
+ 
+@@ -29,21 +29,18 @@ layer: plan
+ 2. **病因→证据→处方**：每个问题都要三段式，不给空泛建议。
+ 3. **分阶段起号意见**：按当前所处阶段（0-500 / 500-5k / 5k-1w / 1w+）给这一档该做什么。
+ 4. **发布建议**：内容方向优先级、发布节奏、需要补强的能力（可指向下游 SKILL：选题→content-matrix、脚本→video-script、合规→quality-gate 等）。
+-5. **信息缺口 → Plan**：诊断依赖但缺失的信息（如没有近期数据），**列成 plan 向用户提问**，不要编造数据下结论。
++5. **信息缺口**：先判断能否在当前任务范围内自主只读补查；仍需用户操作、授权范围或不可获得的背景时再澄清。将事实、推断和待验证假设区分，保留来源与时间。
+ 
+-## 执行步骤
++## 可用的判断与研究
+ 
+-1. **读 Profile 六维**（identity/style/audience/platforms/preferences/memory），评估完整度。缺口过大 → 建议先跑 profile-builder 并停止。
+-2. **收集近期数据**：有用户提供则用；没有则说明"缺数据会影响诊断精度"，并在需要处追问（近期几条内容的题材与互动）。
+-3. **逐维诊断**：按 diagnosis-framework.md 的标尺给每一维打现状 + 找证据 + 下结论。限流信号按清单逐项自检。
+-4. **判定流量池阶段**：结合粉丝量级 + 近期互动率，定位当前档位。
+-5. **开处方**：把诊断出的问题按"病因→证据→处方"组织，处方要具体可执行（不是"多互动"这种废话）。
+-6. **给分阶段动作清单**：当前档 + 下一档的关键动作。
+-7. **列信息缺口 plan**：把不确定、需用户确认或补数据的点做成清单，交给用户回答后再细化。
+-8. **回流建议**：诊断中发现的可复用洞察，建议用户确认后写入 `profiles/<名>/memory.md`（本 SKILL 不自动改 Profile，只建议）。
++结合任务选择相关画像、平台账号、近期作品与表现数据。平台角色不同，跨平台画像约定需核对适用范围。现有采集未读全时，候选来源、字段语义及实例参见接入 Skill 的 `references/collection-evidence.md`；Agent 自主选工具补查。
++
++可使用 diagnosis-framework.md 的五个维度组织问题与证据。低播放、少量互动只是观察值，断更、未进推荐池、限流、转化断链需要相应数据支持；缺粉丝或分母时不计算转粉率。样本数量、窗口、账号和口径解释清楚后，再选择能支持的结论与建议。
++
++行动建议可按优先级或阶段组织。研究依据和成果留在当前项目，稳定经验按任务更新六维画像；新证据改变旧判断时说明修订，不建立固定审批或回写流程。
+ 
+ ## Profile 感知
+ 
+ - **有 Profile**：全程以该画像的定位/风格/受众/红线为基准做诊断——垂直度是"离该定位有多远"，而非通用标准。
+-- **Profile 不完整**：先导向 profile-builder，不硬诊断。
+-- 诊断结论只**建议**回写 memory，由用户确认，避免污染画像。
++- **Profile 不完整**：说明受影响的判断，按任务补背景或给有边界的初步结论。
++- 经验回存时保留适用账号、平台、时间条件和依据；后续可结合新证据修订。
 diff --git a/skills/openclaw/skill-audience-profiler/SKILL.md b/skills/openclaw/skill-audience-profiler/SKILL.md
 index ceb34e4..a925cb9 100644
 --- a/skills/openclaw/skill-audience-profiler/SKILL.md
@@ -154,6 +210,132 @@ index 008f4ba..e9deb5d 100644
      metric = args.metric
  
      # 找目标帖子的发布日期与逐日指标
+diff --git a/skills/openclaw/skill-my-account/SKILL.md b/skills/openclaw/skill-my-account/SKILL.md
+index ee952ca..b0164de 100644
+--- a/skills/openclaw/skill-my-account/SKILL.md
++++ b/skills/openclaw/skill-my-account/SKILL.md
+@@ -1,33 +1,30 @@
+ ---
+ name: skill-my-account
+ description: |
+-  查询用户自己在 Easel 已登录的小红书、抖音、快手、知乎和视频号身份、粉丝、获赞、关注及作品列表。
+-  当用户问“我登录了哪些号、我是谁、我的粉丝/获赞、我最近发了什么、我有哪些帖子”时，先用本 SKILL 查本地登录态，不要先向用户索要账号名或链接。
++  查询用户自己在 MediaSail 的平台身份、粉丝、获赞、关注及作品列表，或分析账号时选择相关取数能力。
++  本地登录资料、已有证据和用户目标可帮助确定对象；接口缺项时可自主继续只读补查。
+   某条帖子的评论抓取与分析分别用 skill-xhs-comment-reply 和 skill-comment-insights。
+ layer: general
+ ---
+ 
+ # 我的账号（my-account）
+ 
+-你是"账号自查助手"。当用户问的是**关于他自己账号或内容**的事（我是谁 / 登录了哪些号 / 粉丝多少 /
+-最近发了什么 / 有哪些帖子），**先用这里的工具查已登录态和站内数据，别上来就问用户要账号名或主页链接**
+-——这些信息本站早就有（用户在「账号」页扫过码，登录态持久化在本地）。
++用户要了解自己的账号、内容或运营表现时，可以复用 MediaSail 的已登录资料和采集能力，也可以选择自己的工具。软件保存的登录资料不保证此刻仍有效；以实际核验与当前任务为准。
+ 
+ ## 核心原则
+ 
+-- **先查，别问**：用户说"我的账号/我的帖子/我的粉丝/最近发了啥"，直接跑脚本查当前登录账号。
+-- **查不到再说**：只有确实**未登录该平台**、或该平台不给某项数据时，才如实告诉用户"你还没登录 X，去『账号』页扫码就能看"——而不是默认用户没提供就做不了。
+-- **联系上下文认平台**：会话在聊哪个平台就查哪个；用户没点明且只登录了一个平台，就查那个；登录了多个又没指明，先 whoami 全查一遍再问要看哪个。
++- 用户已提出账号分析任务时，可在该任务范围内继续只读取证；缺项不自动等于必须人工补齐。
++- 登录验证、数据取得、样本覆盖是三个不同事实。明确需要扫码或交互验证时说明；unknown 不直接解释为未登录。
++- 从任务、画像、已知账号选择对象，多对象无法区分时再澄清，不为接入遍历无关平台。
+ 
+ ## 运行方式（Playwright，headless 可用）
+ 
+-统一走确定性脚本（CWD=项目根）。读的是**本地登录态**（`~/.easel-browser-profiles/<平台>Profile`），
+-不是画像；登录一次长期复用，登录/退出在 Web「账号」页操作，本 SKILL 只读不改登录态。
++现成脚本的 CWD 为工作目录；它们使用本地平台资料（`~/.easel-browser-profiles/<平台>Profile`），与运营画像、用户普通浏览器会话不同。Agent 按任务选择工具和补查方式，登录交互仍可使用账号页。
+ 
+ | 依赖 | 说明 |
+ |------|------|
+ | playwright + chromium 内核 | `account_stats.py check` 验证 |
+-| 已扫码登录 | 未登录时脚本返回 `logged_in/loggedIn=false`，据此提示去账号页 |
++| 登录资料 | 核对 verificationStatus，区分 verified、login_required、unknown |
+ | 网络 | 代理**自动按平台**处理（小红书直连、其它走 env），无需手动指定 |
+ 
+ ## 能力范围
+@@ -41,19 +38,13 @@ layer: general
+ whoami：小红书 / 抖音 / 知乎 / 快手 / 视频号。
+ account_stats fetch `--platform`：`xiaohongshu` / `douyin` / `kuaishou` / `zhihu` / `weixin-channels`。
+ 
+-> 各平台数据完整度不同（真机现状）：**小红书**最全（粉丝/获赞/关注/近 7 日环比 + 笔记带链接封面）；
+-> **知乎**（粉丝=关注者、获赞=赞同总量 + 文章列表）；**快手**创作中心不给粉丝/获赞总数，只有近 7 日互动 + 作品列表；
+-> **抖音/视频号**登录后按各自创作页取。拿不到的项如实显示"—"，不编不凑。
++各平台及账号的页面、指标与范围会变化。按本次来源解释，缺失保留 null，并查看 collection 的缺项、原因和覆盖；某个页面没有展示，不能推出整个平台永久不提供。
+ 
+-## 执行流程
++## 按任务判断
+ 
+-```
+-判断用户问的是「身份」还是「数据」
+-  ├ 身份（我是谁/登录了哪些号） → whoami（可多平台各跑一次）
+-  └ 数据（粉丝/帖子/获赞/最近发啥） → account_stats.py fetch --platform <平台>
+-        ├ logged_in=true  → 按用户问题提取对应字段回答（粉丝数 / 最近 N 条作品标题+链接 …）
+-        └ logged_in=false → 提示"你还没登录 X，去『账号』页扫码"
+-```
++身份问题可使用 whoami，数据问题可使用 account_stats；这不是固定执行链。需要的数据缺失时，可扩大近期样本、核对管理页、读取已授权账号响应或采用自己的只读办法。需要用户操作或仍受阻时，说明已经尝试的范围、缺口及其对结论的影响。
++
++详细字段、补查示例和证据判断见连接信息 skillDir 中的 `references/collection-evidence.md`。粉丝指数与粉丝数分别表示，关注数不能充当粉丝数；空列表只有在明确空态证据下才能解释为没有作品。
+ 
+ ## 与其他 SKILL 的分工
+ 
+@@ -64,10 +55,10 @@ account_stats fetch `--platform`：`xiaohongshu` / `douyin` / `kuaishou` / `zhih
+ - **skill-xhs-comment-reply + skill-comment-insights** = 评论抓取与情感/诉求分析。
+ - 需要**深度**时，本 SKILL 的数据可作为它们的输入。
+ 
+-## 约束
++## 使用说明
+ 
+-- 只读登录态、不改；登录/退出让用户去 Web「账号」页。
+-- 未登录不报错收场，明确提示去哪登录。
++- 本方法的采集为只读动作，账号交互按用户任务处理。复用同一平台资料的补抓脚本使用既有 ProfileLock，关闭浏览器后再释放，避免并发占用。
++- 平台明确要求登录时提示账号页；未知错误保留其原因，不让用户无意义地反复扫码。
+ - 作品链接原样给出（小红书 explore 链接、知乎 zhuanlan/p 链接；快手无公开链接则说明）。
+ - 平台改版导致抓取字段为空时，如实说"这项这次没取到"，可 `EASEL_STATS_DEBUG=1` dump 正文排查（见 commands）。
+ 
+diff --git a/skills/openclaw/skill-my-account/references/commands.md b/skills/openclaw/skill-my-account/references/commands.md
+index b9f0074..e4c0a36 100644
+--- a/skills/openclaw/skill-my-account/references/commands.md
++++ b/skills/openclaw/skill-my-account/references/commands.md
+@@ -29,7 +29,7 @@ python skills/shared/scripts/web_publisher.py whoami --platform kuaishou
+ python skills/shared/scripts/web_publisher.py whoami --platform weixin-channels
+ ```
+ 
+-- `loggedIn=false` → 告诉用户"你还没登录 X，去 Web『账号』页扫码"。
++- 核对 verificationStatus：login_required 才说明平台要求登录；unknown 说明当前无法核验，不直接解释为退出。
+ - 用户问"我登录了哪些号"且没指明平台 → 各平台各跑一次 whoami，汇总哪些已登录。
+ 
+ ## 2. 查创作数据 / 帖子 account_stats fetch（回答"我的粉丝 / 最近发了什么 / 有哪些帖子"）
+@@ -39,7 +39,7 @@ python skills/shared/scripts/web_publisher.py whoami --platform weixin-channels
+ 
+ ```json
+ {
+-  "logged_in": true,
++  "loggedIn": true,
+   "nickname": "昵称",
+   "followers": 12345, "likes": 67890, "following": 200, "posts": 42,
+   "notes": [ {"title": "帖子标题", "url": "https://...", "cover": "封面URL", "stat": "赞/评/播放",
+@@ -65,7 +65,8 @@ python skills/shared/scripts/account_stats.py fetch --platform weixin-channels
+ - "我多少粉丝 / 获赞" → `followers` / `likes`（拿不到显示"—"，不编）。
+ - "我最近发了什么 / 最近的帖子是什么" → `notes[0]`（列表通常按时间倒序），给标题 + 链接。
+ - "我有哪些帖子 / 都发过什么" → 遍历 `notes`，列标题 + 链接（+ 每条 `stat`）。
+-- `logged_in=false` → 提示去账号页扫码，别继续硬答。
++- collection 说明采集完整性，与登录三态分开；字段、补查选项和分析证据口径见当前接入 Skill 的 references/collection-evidence.md。
++- 抖音可选 `--notes-limit 20` 扩大近期已发布作品样本；默认6、范围1—100，检查覆盖信息，不按返回条数猜总数。
+ 
+ ## 3. 各平台数据完整度（真机现状，如实告知用户）
+ 
+@@ -73,7 +74,7 @@ python skills/shared/scripts/account_stats.py fetch --platform weixin-channels
+ |------|:-:|:-:|---|
+ | 小红书 | ✓ | ✓ 带链接+封面 | 最全，含近 7 日环比 |
+ | 知乎 | ✓ | ✓ 文章带链接 | 粉丝=关注者、获赞=赞同总量 |
+-| 快手 | ✗ 总数不给 | ✓ 无公开链接 | 创作中心只给近 7 日互动 |
++| 快手 | 以本次可访问页面为准 | 可读作品样本 | 不从一次缺失推断平台整体不提供 |
+ | 抖音 / 视频号 | 登录后取 | 登录后取 | 选择器需真机校准 |
+ 
+ 拿不到的项**如实显示"—"，不编不凑**（诚实呈现数据是硬约束）。
 diff --git a/skills/openclaw/skill-profile-manager/SKILL.md b/skills/openclaw/skill-profile-manager/SKILL.md
 index b217206..cc48f56 100644
 --- a/skills/openclaw/skill-profile-manager/SKILL.md
@@ -501,17 +683,175 @@ index 123bae2..0f6da95 100755
 +            recovery['recoveryError'] = '恢复记录写入失败，原稿未改动，请先在平台核对结果。'
 +        print(json.dumps(recovery, ensure_ascii=False, indent=2))
 +        sys.exit(2)
+diff --git a/skills/shared/scripts/account_collection.py b/skills/shared/scripts/account_collection.py
+new file mode 100644
+index 0000000..b2ecb87
+--- /dev/null
++++ b/skills/shared/scripts/account_collection.py
+@@ -0,0 +1,151 @@
++"""Read-only collection evidence. A verified login is independent of completeness."""
++from __future__ import annotations
++
++import re
++from urllib.parse import urlsplit
++
++DOUYIN_CONTENT = "https://creator.douyin.com/creator-micro/content/manage"
++DATE = re.compile(r"\d{4}(?:年\d{1,2}月\d{1,2}日|[-/]\d{1,2}[-/]\d{1,2})(?:\s+\d{1,2}:\d{2})?")
++COUNTERS = ("播放", "点赞", "评论", "分享", "收藏", "划走率", "文案展开率", "平均浏览图片数", "吸粉量")
++
++
++def parse_douyin_content(text: str, limit: int = 6) -> dict:
++    """Parse visible management-page evidence, without guessing a total from sample size."""
++    lines = [s.strip() for s in text.splitlines() if s.strip()]
++    match = re.search(r"(?:^|\n)作品\s*[（(]\s*(\d+)\s*[)）]", text)
++    total = int(match[1]) if match else None
++    descriptors = []
++    for i, line in enumerate(lines):
++        if not DATE.fullmatch(line) or i + 1 >= len(lines) or lines[i + 1] not in ("已发布", "审核中", "未通过", "待发布", "定时发布"):
++            continue
++        edits = [j for j in range(max(0, i - 20), i) if lines[j] == "编辑作品"]
++        if not edits or edits[-1] == 0:
++            continue
++        edit = edits[-1]
++        start = edit - 1
++        # A multiline caption starts just after its image-count marker.
++        markers = [j for j in range(max(0, edit - 12), edit) if re.fullmatch(r"\d+张", lines[j])]
++        if markers:
++            start = markers[-1] + 1
++        descriptors.append({"start": start, "date": i, "edit": edit})
++    notes = []
++    for n, item in enumerate(descriptors):
++        i = item["date"]
++        if lines[i + 1] != "已发布":
++            continue
++        end = descriptors[n + 1]["start"] if n + 1 < len(descriptors) else len(lines)
++        values = {}
++        for j in range(i + 2, end - 1):
++            if lines[j] in COUNTERS and re.fullmatch(r"[\d.,]+(?:万|亿|%|[wWkK])?|[-—]", lines[j + 1]):
++                values[lines[j]] = lines[j + 1]
++        title = "\n".join(lines[item["start"]:item["edit"]])
++        if title:
++            notes.append({"title": title, "url": DOUYIN_CONTENT, "cover": "",
++                          "stat": " · ".join(k + v for k, v in values.items()),
++                          "published_at": lines[i], "metrics": values})
++    loading = any(re.search(r"加载中|正在加载|加载更多", s) for s in lines)
++    empty = not descriptors and not loading and (total == 0 or (
++        "内容管理" in lines and any(s in ("暂无作品", "暂无相关作品", "还没有发布作品") for s in lines)))
++    if empty and total is None:
++        total = 0
++    exhausted = "没有更多作品" in lines
++    conflict = total is not None and total < len(descriptors)
++    if conflict:
++        total = None
++    enough = total is not None and len(descriptors) >= min(total, limit)
++    ready = not conflict and (empty or bool(descriptors and (enough or exhausted)
++                          and all(set(("播放", "点赞", "评论")) <= set(n["metrics"]) for n in notes[:limit]))
++    )
++    return {"notes": notes[:limit], "total": total, "visible": len(descriptors),
++            "empty": empty, "ready": ready, "exhausted": exhausted, "countConflict": conflict}
++
++
++def issue(field: str, code: str, message: str, url: str, retryable: bool = False) -> dict:
++    return {"field": field, "code": code, "message": message, "sourceUrl": url, "retryable": retryable}
++
++
++def collect_douyin_content(page, limit: int = 6) -> dict:
++    """Wait for actual cards or an explicit empty state; keep partial readable results."""
++    last = {"notes": [], "total": None, "visible": 0, "empty": False, "exhausted": False}
++    stage = "navigation"
++    try:
++        page.goto(DOUYIN_CONTENT, wait_until="domcontentloaded", timeout=30000)
++        stage = "read"
++        previous = None
++        for attempt in range(81):
++            landed = urlsplit(page.url or "")
++            if landed.hostname != "creator.douyin.com" or "/content/manage" not in landed.path:
++                return {**last, "issue": issue("notes", "unexpected_destination", "作品页跳转到其他页面，需核对登录或平台验证。", DOUYIN_CONTENT)}
++            last = parse_douyin_content(page.inner_text("body"), limit)
++            signature = (last["total"], repr(last["notes"]), last["visible"], last["empty"])
++            if last["ready"] and previous == signature:
++                return {**last, "issue": None}
++            previous = signature if last["ready"] else None
++            if attempt < 80:
++                if attempt % 4 == 3:
++                    page.mouse.wheel(0, 1800)
++                page.wait_for_timeout(250)
++        if last.get("countConflict"):
++            return {**last, "issue": issue("notes", "content_count_conflict", "作品页总数与可见作品冲突；总数保留未知，已读取作品仍保留，可重新核对页面。", DOUYIN_CONTENT, True)}
++        return {**last, "issue": issue("notes", "content_not_ready", "等待作品列表后仍未确认完整样本或明确空态；保留已读取内容，可按任务补查内容管理页。", DOUYIN_CONTENT, True)}
++    except Exception as error:
++        # Browser exceptions may include cookies, URLs or launch arguments. Keep
++        # the useful class and stage, not arbitrary sensitive browser output.
++        network = re.search(r"\bERR_[A-Z_]+\b", str(error))
++        cause = network[0] if network else "等待超时" if "timeout" in (type(error).__name__ + str(error)).lower() else "浏览器会话关闭" if "closed" in str(error).lower() else type(error).__name__
++        action = "打开作品页" if stage == "navigation" else "读取作品列表"
++        return {**last, "issue": issue("notes", "content_" + stage + "_failed", f"{action}失败（{cause}）；已取得的其他指标保留，可重试或检查该页面。", DOUYIN_CONTENT, True)}
++
++
++def collection_report(data: dict, cfg: dict, content: dict | None = None) -> dict:
++    """Small, additive contract shared by CLI, HTTP callers and the UI."""
++    url = cfg["url"]
++    fields = [key for key in ("followers", "likes", "following") if cfg.get("overview", {}).get(key)] + ["posts"]
++    missing = [key for key in fields if data.get(key) is None]
++    issues = []
++    sources = []
++    present = [key for key in fields if data.get(key) is not None]
++    if data.get("followerIndex") is not None:
++        present.append("followerIndex")
++    if present:
++        sources.append({"fields": present, "url": url, "fetchedAt": data["fetched_at"], "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"})
++    for key in missing:
++        message = "本次来源未取得该指标，不代表数值为零或整个平台不提供。"
++        if key == "followers" and data.get("followerIndex") is not None:
++            message = "本次首页仅发现粉丝指数，未取得精确粉丝数；可核对其他已授权页面或账号响应。"
++        issues.append(issue(key, "metric_not_observed", message, url))
++    expected = cfg.get("metrics", [])
++    observed = {m["label"] for m in data.get("metrics", [])}
++    absent = [label for label in expected if label not in observed]
++    if absent:
++        missing.append("metrics")
++        issues.append(issue("metrics", "metrics_incomplete", "本次未取得：" + "、".join(absent) + "。可能仍在加载或页面结构变化，不能据此认定平台没有指标。", url, True))
++    if observed:
++        sources.append({"fields": ["metrics"], "url": url, "fetchedAt": data["fetched_at"], "scope": data.get("metrics_title", "页面展示统计口径")})
++    coverage = {"returned": len(data.get("notes", [])), "total": None, "limit": 6, "status": "available" if data.get("notes") else "unknown", "scope": "近期已发布作品样本，非全账号历史"}
++    if content is not None:
++        coverage.update({"total": content["total"], "limit": content.get("limit", 6),
++                         "status": "empty" if content["empty"] else "partial" if content.get("issue") else "available",
++                         "visible": content["visible"], "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品"})
++        if content.get("issue"):
++            issues.append(content["issue"])
++            missing.append("notes")
++        sources = [{**s, "fields": [f for f in s["fields"] if f != "posts" or content["total"] is None]} for s in sources]
++        sources = [s for s in sources if s["fields"]]
++        if content["total"] is not None or data.get("notes") or content["empty"]:
++            fields = (["posts"] if content["total"] is not None else []) + ["notes"]
++            sources.append({"fields": fields, "url": DOUYIN_CONTENT, "fetchedAt": data["fetched_at"], "scope": coverage["scope"]})
++    elif not data.get("notes"):
++        missing.append("notes")
++        issues.append(issue("notes", "list_unconfirmed", "未取得作品列表，也没有明确空态证据；不能据此判断没有作品。", url, True))
++    coverage["hasMore"] = coverage["total"] is None or coverage["returned"] < coverage["total"]
++    if coverage["hasMore"]:
++        issues.append(issue("notes", "sample_coverage", "当前结果只是样本或覆盖范围尚未核实；需要更大范围时可自主补查。", DOUYIN_CONTENT if content is not None else url))
++    useful = bool(present or observed or data.get("notes") or coverage["status"] == "empty")
++    status = "failed" if not useful else "partial" if missing or issues else "complete"
++    suggestions = []
++    if missing or issues:
++        suggestions.append({"fields": list(dict.fromkeys(missing + [p["field"] for p in issues])), "sourceUrl": DOUYIN_CONTENT if content is not None else url,
++                            "reason": "按当前任务选择补查页面、已授权账号响应或已有证据；本次缺项不是必须人工处理的结论。"})
++    return {"status": status, "missingFields": list(dict.fromkeys(missing)), "issues": issues,
++            "sources": sources, "notesCoverage": coverage, "suggestions": suggestions}
 diff --git a/skills/shared/scripts/account_stats.py b/skills/shared/scripts/account_stats.py
-index 8d336d0..2cdfa37 100644
+index 8d336d0..f9a489d 100644
 --- a/skills/shared/scripts/account_stats.py
 +++ b/skills/shared/scripts/account_stats.py
-@@ -18,11 +18,14 @@ import re
+@@ -18,11 +18,15 @@ import re
  import sys
  import time
  from pathlib import Path
 +from business_browser import launch_persistent_context, resolve_browser
 +from profile_lock import ProfileLock
 +import creator_auth
++from account_collection import collect_douyin_content, collection_report
  
 -PROJECT_ROOT = Path(__file__).resolve().parents[3]
 +PROJECT_ROOT = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
@@ -523,7 +863,7 @@ index 8d336d0..2cdfa37 100644
  KEEP_FULL_DAYS = 90
  DAILY_DAYS = 400
  
-@@ -235,6 +238,7 @@ def _delta(cur, base):
+@@ -235,6 +239,7 @@ def _delta(cur, base):
  
  def growth_windows(history: list[dict], current: dict) -> dict:
      """多窗口增长：last=对上一条快照；day/week/month/year=对不晚于(now-窗口)的最近快照。无基线→None。"""
@@ -531,7 +871,7 @@ index 8d336d0..2cdfa37 100644
      now = current["ts"]
      specs = {"last": None, "day": 86400, "week": 7 * 86400, "month": 30 * 86400, "year": 365 * 86400}
      out: dict = {}
-@@ -256,6 +260,57 @@ def growth_windows(history: list[dict], current: dict) -> dict:
+@@ -256,6 +261,57 @@ def growth_windows(history: list[dict], current: dict) -> dict:
      return out
  
  
@@ -589,7 +929,7 @@ index 8d336d0..2cdfa37 100644
  def _history_path(platform: str) -> Path:
      return ANALYTICS_DIR / f"{platform}.jsonl"
  
-@@ -277,8 +332,13 @@ def load_history(platform: str) -> list[dict]:
+@@ -277,8 +333,13 @@ def load_history(platform: str) -> list[dict]:
  
  def append_snapshot(platform: str, snap: dict) -> None:
      ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
@@ -605,7 +945,7 @@ index 8d336d0..2cdfa37 100644
  
  
  def _local_day(ts: int):
-@@ -320,15 +380,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
+@@ -320,15 +381,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
  
  
  def record_snapshot(platform: str, snap: dict) -> None:
@@ -629,16 +969,16 @@ index 8d336d0..2cdfa37 100644
  
  
  # --------------------------------------------------------------------------- #
-@@ -349,7 +410,7 @@ def _proxy(platform: str, explicit: str | None, disable: bool | None) -> str | N
+@@ -349,7 +411,7 @@ def _proxy(platform: str, explicit: str | None, disable: bool | None) -> str | N
      return os.environ.get("https_proxy") or os.environ.get("http_proxy") or os.environ.get("EASEL_PROXY")
  
  
 -def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
-+def _scrape_unlocked(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
++def _scrape_unlocked(platform: str, headed: bool, base: str | None, proxy: str | None, notes_limit: int = 6) -> dict:
      from playwright.sync_api import sync_playwright
      cfg = PLATFORMS[platform]
      r = {"nickname": "", "followers": None, "likes": None, "following": None,
-@@ -368,17 +429,27 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -368,17 +430,27 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      try:
          with sync_playwright() as p:
              if platform == "xiaohongshu":
@@ -668,7 +1008,7 @@ index 8d336d0..2cdfa37 100644
                  ov, d = cfg["overview"], cfg.get("overview_dir", "after")
                  mets = cfg.get("metrics", [])
                  manchor = cfg.get("metrics_anchor")
-@@ -403,8 +474,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -403,15 +475,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                          pass
                  if clicked:
                      lines = _poll_stable(page, _sig, 6000)   # 点「累计」后重新等稳定
@@ -679,7 +1019,9 @@ index 8d336d0..2cdfa37 100644
                      r["logged_in"] = False
                  r["followers"] = num_by_label(lines, ov["followers"], d)
                  r["likes"] = num_by_label(lines, ov["likes"], d)
-@@ -412,6 +483,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+                 r["following"] = num_by_label(lines, ov.get("following", []), d)
++                if platform == "douyin":
++                    r["followerIndex"] = num_by_label(lines, ["粉丝指数"], "after")
                  r["posts"] = num_by_label(lines, cfg.get("posts_labels", ["笔记数", "作品数", "内容数", "视频数"]), d)
                  r["metrics"] = metrics_with_vs(lines, cfg.get("metrics", []), manchor)[:8]
                  r["nickname"] = extract_nickname(lines, ov, cfg.get("uid_anchor", ""))
@@ -688,16 +1030,33 @@ index 8d336d0..2cdfa37 100644
                  # 昵称优先用专用选择器（视频号文本锚点不稳：概览是「关注者1」同行，锚不到昵称）
                  nsel = cfg.get("nickname_selector")
                  if nsel:
-@@ -452,6 +525,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+@@ -443,7 +519,15 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
+                     except Exception:
+                         pass
+                 # 最新笔记放最后抓——小红书会跳转到笔记管理页，之后不再读首页
+-                r["notes"] = _scrape_notes(platform, page, cfg)
++                if platform == "douyin":
++                    content = collect_douyin_content(page, notes_limit)
++                    content["limit"] = notes_limit
++                    r["notes"] = content["notes"]
++                    if content["total"] is not None:
++                        r["posts"] = content["total"]
++                    r["_content"] = content
++                else:
++                    r["notes"] = _scrape_notes(platform, page, cfg)
+             finally:
+                 ctx.close()
+     finally:
+@@ -452,6 +536,19 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
      return r
  
  
-+def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
++def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None, notes_limit: int = 6) -> dict:
 +    if platform != "douyin":
-+        return _scrape_unlocked(platform, headed, base, proxy)
++        return _scrape_unlocked(platform, headed, base, proxy, notes_limit)
 +    try:
 +        with ProfileLock(_profile_dir(platform, base)):
-+            return _scrape_unlocked(platform, headed, base, proxy)
++            return _scrape_unlocked(platform, headed, base, proxy, notes_limit)
 +    except Exception as error:
 +        verification = creator_auth.failure(error)
 +        return {"nickname": "", "followers": None, "likes": None, "following": None,
@@ -708,7 +1067,7 @@ index 8d336d0..2cdfa37 100644
  def _has_body(page) -> bool:
      try:
          return page.query_selector("body") is not None
-@@ -778,9 +864,9 @@ def cmd_check(_a) -> int:
+@@ -778,9 +875,9 @@ def cmd_check(_a) -> int:
          from playwright.sync_api import sync_playwright
          print("✅ playwright 已安装")
          with sync_playwright() as p:
@@ -720,8 +1079,12 @@ index 8d336d0..2cdfa37 100644
              ok = bool(path and Path(path).exists())
      except Exception as e:
          print(f"❌ playwright/内核不可用：{e}"); ok = False
-@@ -799,12 +885,7 @@ def cmd_fetch(a) -> int:
-     s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable))
+@@ -796,29 +893,29 @@ def cmd_fetch(a) -> int:
+     except Exception as e:
+         _die(f"需要 playwright：{e}", 3)
+     disable = True if a.no_proxy else (False if a.proxy else None)
+-    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable))
++    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable), getattr(a, "notes_limit", 6))
  
      now = int(time.time())
 -    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
@@ -734,7 +1097,13 @@ index 8d336d0..2cdfa37 100644
      out = {
          "platform": a.platform, "name": PLATFORMS[a.platform]["name"],
          "nickname": s["nickname"], "loggedIn": s["logged_in"],
-@@ -817,8 +898,10 @@ def cmd_fetch(a) -> int:
+         "followers": s["followers"], "likes": s["likes"],
+         "following": s["following"], "posts": s["posts"],
+         "metrics": s["metrics"], "notes": s["notes"],
+-        "metrics_title": "平台近 7 日（创作中心只给这档）",
++        "metrics_title": "平台近 7 日（以本次页面口径为准）" if a.platform == "douyin" else "平台页面展示指标（时间范围以来源页为准）",
+         "overview": [
+             {"key": "followers", "label": "粉丝", "value": s["followers"]},
              {"key": "likes", "label": "获赞与收藏" if a.platform == "xiaohongshu" else "获赞", "value": s["likes"]},
              {"key": "following", "label": "关注", "value": s["following"]},
          ],
@@ -742,11 +1111,14 @@ index 8d336d0..2cdfa37 100644
 +        "fetched_at": now,
 +        **verification,
      }
++    if a.platform == "douyin":
++        out["followerIndex"] = s.get("followerIndex")
++    out["collection"] = collection_report(out, PLATFORMS[a.platform], s.get("_content"))
 +    attach_growth(out, a.platform, source=f"{a.platform}-creator", now=now)
      print(json.dumps(out, ensure_ascii=False))
      return 0
  
-@@ -869,7 +952,9 @@ def cmd_selftest(_a) -> int:
+@@ -869,7 +966,9 @@ def cmd_selftest(_a) -> int:
      hist = [{"ts": now - 40 * 86400, "followers": 10, "likes": 5, "posts": 1},   # >month
              {"ts": now - 5 * 86400, "followers": 20, "likes": 8, "posts": 2},    # >day,>week? 5d: >day, <week
              {"ts": now - 0.5 * 86400, "followers": 28, "likes": 9, "posts": 2}]  # last
@@ -757,6 +1129,14 @@ index 8d336d0..2cdfa37 100644
      g = growth_windows(hist, cur)
      assert g["last"]["followers"] == 2                       # 30-28
      assert g["day"]["followers"] == 10                       # vs 5d 前(<=now-1d 最近) =20 → 10
+@@ -930,6 +1029,7 @@ def main() -> int:
+     pf.add_argument("--proxy", help="外网代理（默认按平台：xhs 直连、其它走 env）")
+     pf.add_argument("--no-proxy", action="store_true", help="强制直连")
+     pf.add_argument("--headed", action="store_true", help="有头模式（首次校准）")
++    pf.add_argument("--notes-limit", type=int, choices=range(1, 101), default=6, metavar="1..100", help="抖音已发布作品样本上限（默认6），不保证覆盖所有历史")
+     pf.set_defaults(func=cmd_fetch)
+     sub.add_parser("selftest", help="离线自检").set_defaults(func=cmd_selftest)
+     a = ap.parse_args()
 diff --git a/skills/shared/scripts/bili_login.py b/skills/shared/scripts/bili_login.py
 index 8d64019..51e43b2 100644
 --- a/skills/shared/scripts/bili_login.py
@@ -2816,7 +3196,7 @@ index 0000000..3134f24
 +
 +声音可以稳定，语气强度会因科普、投诉回应、销售介绍和复盘不同而变化。修改时比较是否清楚、可信、符合当前目标与用户习惯；不把固定字数、标点禁用或单一 CTA 当作跨任务规则。
 diff --git a/web/app.py b/web/app.py
-index 66b3678..134dfda 100644
+index 66b3678..4d4dbfd 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -2840,7 +3220,7 @@ index 66b3678..134dfda 100644
  import subprocess
  import sys
  import threading
-@@ -21,8 +17,8 @@ import urllib.error
+@@ -21,16 +17,15 @@ import urllib.error
  import urllib.parse
  import urllib.request
  import uuid
@@ -2849,8 +3229,9 @@ index 66b3678..134dfda 100644
 -import ipaddress
  from pathlib import Path
  
- from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
-@@ -30,7 +26,6 @@ from fastapi.middleware.cors import CORSMiddleware
+-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
++from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request, Query
+ from fastapi.middleware.cors import CORSMiddleware
  from starlette.middleware.trustedhost import TrustedHostMiddleware
  from fastapi.responses import FileResponse, JSONResponse
  from pydantic import BaseModel, Field
@@ -3611,9 +3992,8 @@ index 66b3678..134dfda 100644
      filename: str
      content: str
 +    revision: str | None = None
++
  
- 
--@app.put("/api/persona/{name}/file")
 +def _profile_file_error(error):
 +    if isinstance(error, profile_store.ProfileFileError):
 +        detail = {'code': error.code, 'message': str(error)}
@@ -3621,7 +4001,8 @@ index 66b3678..134dfda 100644
 +            detail['current'] = error.current
 +        return HTTPException(error.status, detail)
 +    return HTTPException(503, {'code': 'profile_io_error', 'message': '画像文件暂时无法读写，原资料已保留。' + str(error)})
-+
+ 
+-@app.put("/api/persona/{name}/file")
 +
 +@app.put("/api/persona/{name}/file", response_model=PersonaFileSaveResponse)
  async def api_persona_file_save(name: str, req: PersonaFileRequest):
@@ -6122,7 +6503,7 @@ index 66b3678..134dfda 100644
      deleted = []
      if cfg['backend'] == 'wechat-oa':
          # 1) 清 AppID 凭证（旧配置兜底）
-@@ -3715,8 +1476,8 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
+@@ -3715,17 +1476,61 @@ ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-cha
  async def api_analytics_platforms():
      """列出支持抓数据的平台 + 各自登录态（前端据此渲染平台选择器）。"""
      return [
@@ -6133,7 +6514,51 @@ index 66b3678..134dfda 100644
          for pf in LOGIN_RUNNERS if pf in ANALYTICS_PLATFORMS
      ]
  
-@@ -3726,6 +1487,10 @@ async def api_analytics(platform: str):
+ 
+-@app.get("/api/analytics/{platform}")
+-async def api_analytics(platform: str):
++class CollectionIssue(BaseModel):
++    field: str
++    code: str
++    message: str
++    sourceUrl: str
++    retryable: bool
++
++
++class CollectionSource(BaseModel):
++    fields: list[str]
++    url: str
++    fetchedAt: int
++    scope: str
++
++
++class NotesCoverage(BaseModel):
++    model_config = {"extra": "allow"}
++    returned: int
++    total: int | None
++    limit: int
++    status: Literal['available', 'partial', 'empty', 'unknown']
++    scope: str
++    hasMore: bool
++
++
++class CollectionReport(BaseModel):
++    status: Literal['complete', 'partial', 'failed']
++    missingFields: list[str]
++    issues: list[CollectionIssue]
++    sources: list[CollectionSource]
++    notesCoverage: NotesCoverage
++    suggestions: list[dict]
++
++
++class AccountAnalyticsResponse(BaseModel):
++    model_config = {"extra": "allow"}
++    collection: CollectionReport | None = None
++    followerIndex: int | None = None
++
++
++@app.get("/api/analytics/{platform}", response_model=AccountAnalyticsResponse)
++async def api_analytics(platform: str, notes_limit: int = Query(default=6, ge=1, le=100)):
      """抓取某平台已登录账号的创作数据（粉丝/获赞/作品 + 与上次快照的增长）。起 headless 浏览器，数秒。"""
      if platform not in ANALYTICS_PLATFORMS:
          raise HTTPException(404, "该平台暂不支持数据抓取")
@@ -6144,7 +6569,13 @@ index 66b3678..134dfda 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3743,14 +1508,21 @@ async def api_analytics(platform: str):
+@@ -3739,18 +1544,26 @@ async def api_analytics(platform: str):
+                "--proxy", wx_proxy, "--count", "20"]
+     else:
+         # 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env），后端照常传 _proxy_env
+-        cmd = [sys.executable, str(SHARED_SCRIPTS / "account_stats.py"), "fetch", "--platform", platform]
++        cmd = [sys.executable, str(SHARED_SCRIPTS / "account_stats.py"), "fetch", "--platform", platform,
++               "--notes-limit", str(notes_limit)]
      ana_env = _proxy_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=ana_env,
@@ -6168,7 +6599,7 @@ index 66b3678..134dfda 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1571,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1612,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -6177,7 +6608,7 @@ index 66b3678..134dfda 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1667,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1708,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -6186,7 +6617,7 @@ index 66b3678..134dfda 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1716,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1757,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -6195,7 +6626,7 @@ index 66b3678..134dfda 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1734,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1775,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -6204,7 +6635,7 @@ index 66b3678..134dfda 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1768,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1809,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -6217,7 +6648,7 @@ index 66b3678..134dfda 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1780,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1821,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -6253,7 +6684,7 @@ index 66b3678..134dfda 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1805,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1846,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -6294,7 +6725,7 @@ index 66b3678..134dfda 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1844,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1885,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -6307,7 +6738,7 @@ index 66b3678..134dfda 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,33 +1860,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,33 +1901,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -6344,7 +6775,7 @@ index 66b3678..134dfda 100644
  }
  TREND_LABELS = {
      "weibo": "微博",
-@@ -4150,50 +1880,97 @@ TREND_LABELS = {
+@@ -4150,50 +1921,97 @@ TREND_LABELS = {
      "baidu": "百度",
      "toutiao": "头条",
  }
@@ -6457,7 +6888,7 @@ index 66b3678..134dfda 100644
  async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      pfs = [p.strip() for p in platforms.split(",") if p.strip() in TREND_SOURCES]
      now = time.time()
-@@ -4201,18 +1978,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+@@ -4201,18 +2019,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      result = []
      for pf in pfs:
          c = _TREND_CACHE.get(pf)
@@ -6487,7 +6918,7 @@ index 66b3678..134dfda 100644
          })
      return {"trends": result, "updated": int(now)}
  
-@@ -4323,7 +2104,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +2145,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -6496,7 +6927,7 @@ index 66b3678..134dfda 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2190,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2231,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -23629,7 +24060,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..86469f9 100644
+index 135c4fc..6bd5d2b 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,4 +1,6 @@
@@ -23670,7 +24101,7 @@ index 135c4fc..86469f9 100644
      fetchTrends('weibo,douyin', 6).then((d) => setTrends(d.trends)).catch(() => {});
      fetchSchedule().then(setSchedule).catch(() => {});
      fetchOutputs().then(setOutputs).catch(() => {});
-@@ -63,45 +70,57 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -63,45 +70,60 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
      fetchAnalyticsPlatforms().then((ps) => {
        setAnaPlats(ps);
        const cache = getWhoamiCache();
@@ -23706,8 +24137,11 @@ index 135c4fc..86469f9 100644
 +      .then((r) => {
 +        setWhoamiMap((m) => ({ ...m, [platform]: { ...r, name: r.nickname || r.name, avatar: '' } }));
 +        const hasData = [r.followers, r.likes, r.posts, r.following].some((v) => v != null) || !!r.metrics?.length || !!r.notes?.length;
-+        if (r.verificationStatus !== 'verified' || !hasData) {
-+          setAnaError((d) => ({ ...d, [platform]: r.message || (r.verificationStatus === 'login_required' ? '需要到账号页重新登录。' : '本次未取得可核验数据，请重试。') }));
++        if (r.verificationStatus !== 'verified' || !hasData || r.collection?.status === 'failed') {
++          const problem = r.collection?.status === 'failed'
++            ? '本次采集失败：' + (r.collection.issues.find((p) => /failed|not_ready/.test(p.code))?.message || r.message || '未取得有效数据，请查看来源或稍后重试。')
++            : r.message || (r.verificationStatus === 'login_required' ? '需要到账号页重新登录。' : '本次未取得可核验数据，请重试。');
++          setAnaError((d) => ({ ...d, [platform]: problem }));
 +          return;
 +        }
 +        setAnaData((d) => {
@@ -23741,7 +24175,7 @@ index 135c4fc..86469f9 100644
      { label: '看热点', page: 'trends', Icon: IconFire },
      { label: '拆爆款', page: 'breakdown', Icon: IconSkills },
      { label: '记选题', page: 'ideas', Icon: IconIdea },
-@@ -121,10 +140,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -121,10 +143,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
        <div className="dash-hero">
          <h1 className="page-title" style={{ fontSize: 26 }}>{greet} 👋</h1>
          <p className="page-subtitle">
@@ -23755,7 +24189,7 @@ index 135c4fc..86469f9 100644
          <div className="dash-quick">
            {quick.map((q) => (
              <button key={q.page} className="dash-quick-btn" onClick={() => onNavigate(q.page)}>
-@@ -152,10 +172,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -152,10 +175,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
              <span><IconFire size={16} /> 今日热点</span>
              <button className="dash-more" onClick={() => onNavigate('trends')}>热点雷达 →</button>
            </div>
@@ -23768,7 +24202,7 @@ index 135c4fc..86469f9 100644
                {g.items.slice(0, 3).map((it, i) => (
                  <div key={i} className="dash-trend-item" title={`${it.title}（点击做成内容）`}>
                    <span className="dash-trend-title" onClick={() => onUseTopic(it.title)}>{it.title}</span>
-@@ -202,7 +223,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -202,7 +226,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
              <span><IconOutputs size={16} /> 最近产物</span>
              <button className="dash-more" onClick={() => onNavigate('outputs')}>内容库 →</button>
            </div>
@@ -23777,7 +24211,7 @@ index 135c4fc..86469f9 100644
            {recent.map((g) => (
              <div key={g.name} className="dash-output" onClick={() => onNavigate('outputs')}>
                <span className="dash-output-name">{g.meta?.title || g.name}</span>
-@@ -216,11 +237,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -216,11 +240,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
            <div className="dash-card-head">
              <span><IconAccounts size={16} /> 创作数据</span>
              {anaSel && anaData[anaSel] && anaData[anaSel] !== 'loading' && (
@@ -23791,7 +24225,7 @@ index 135c4fc..86469f9 100644
              if (anaPlats.length === 0) return <div className="dash-empty">加载中 / 需配置代理</div>;
              if (logged.length === 0) {
                return (
-@@ -238,16 +259,24 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -238,16 +262,33 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                  <div className="ana-plats">
                    {logged.map((p) => (
                      <button key={p.platform} className={`chip ${anaSel === p.platform ? 'active' : ''}`}
@@ -23816,10 +24250,19 @@ index 135c4fc..86469f9 100644
 +                  {d.accountId ? ` · 账号 ${d.accountId}` : d.growthStatus ? ' · 账号归属未核验' : ' · 旧缓存账号归属未核验'}
 +                  {currentVerification(whoamiMap[anaSel], anaPlats.find((p) => p.platform === anaSel) || {}).verificationStatus !== 'verified' ? ' · 当前登录尚未通过校验' : ''}
 +                </div>}
++                {d && typeof d === 'object' && <div className="ana-wins-note collection-notice" role="status">
++                  <strong>{!d.collection ? '此结果未报告采集完整性'
++                    : d.collection.status === 'complete' ? '已取得本次采集范围的数据' : '本次采集不完整'}</strong>
++                  {d.collection && d.collection.issues.length > 0 && <details>
++                    <summary>查看缺项、原因与来源</summary>
++                    <ul>{d.collection.issues.map((p, i) => <li key={i}>{p.message}</li>)}</ul>
++                    {d.collection.sources.map((s, i) => <div key={i}>{s.scope} · {s.url} · {new Date(s.fetchedAt * 1000).toLocaleString()}</div>)}
++                  </details>}
++                </div>}
                  {d && d !== 'loading' && d !== 'error' && (!d.loggedIn ? (
                    <div className="dash-empty" onClick={() => onNavigate('accounts')} style={{ cursor: 'pointer' }}>
                      该平台登录态已失效，去账号页重登 →
-@@ -259,7 +288,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -259,7 +300,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                        <div className="ana-id">{d.nickname ? `@${d.nickname}` : d.name}</div>
                        <div className="ana-overview">
                          {([['粉丝', 'followers'], ['获赞', 'likes'], ['关注', 'following']] as const).map(([label, key]) => {
@@ -23828,7 +24271,15 @@ index 135c4fc..86469f9 100644
                            const g = w ? growthInfo(w[key as 'followers' | 'likes']) : null;
                            return (
                              <div key={key} className="ana-stat">
-@@ -278,15 +307,16 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+@@ -271,6 +312,7 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+                           );
+                         })}
+                       </div>
++                      {d.followerIndex != null && <div className="ana-wins-note">粉丝指数：{d.followerIndex}（与粉丝数为不同指标）</div>}
+                       <div className="ana-wins">
+                         {WIN.map(([k, lab]) => (
+                           <button key={k} className={`ana-win ${anaWin === k ? 'on' : ''}`}
+@@ -278,17 +320,18 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
                          ))}
                        </div>
                        <div className="ana-wins-note">
@@ -23846,8 +24297,24 @@ index 135c4fc..86469f9 100644
 -                      <div className="ana-sub">近 7 日 · 环比</div>
 +                      <div className="ana-sub">{d.metrics_title || '平台提供的指标 · 环比'}</div>
                        {(d.metrics ?? []).length === 0 ? (
-                         <div className="dash-empty">该平台未提供近 7 日指标</div>
+-                        <div className="dash-empty">该平台未提供近 7 日指标</div>
++                        <div className="dash-empty">本次未取得平台指标，请查看缺项说明；不能据此判断平台不提供。</div>
                        ) : (
+                         <div className="ana-metrics">
+                           {(d.metrics ?? []).map((m) => {
+@@ -310,8 +353,11 @@ export default function DashboardPage({ persona, gatewayStatus, onNavigate, onUs
+                     {/* 最新笔记（可点进原文） */}
+                     <div className="ana-col ana-col-notes">
+                       <div className="ana-sub">最新笔记</div>
++                      {d.collection && <div className="ana-wins-note">已读取 {d.collection.notesCoverage.returned} 条已发布作品
++                        {d.collection.notesCoverage.total != null ? ` · 作品页总数 ${d.collection.notesCoverage.total}（当前筛选范围）` : ' · 总数尚未核实'}
++                        {d.collection.notesCoverage.hasMore ? ' · 还有未覆盖的范围' : ''}</div>}
+                       {(d.notes ?? []).length === 0 ? (
+-                        <div className="dash-empty">该账号暂无可读取的已发布笔记</div>
++                        <div className="dash-empty">{d.collection?.notesCoverage.status === 'empty' ? '作品页已确认当前范围暂无已发布作品' : '本次未取得完整作品列表，请查看缺项说明。'}</div>
+                       ) : (
+                         <div className="ana-notes">
+                           {(d.notes ?? []).slice(0, 6).map((n, i) => (
 diff --git a/web/frontend/src/components/DesktopUpdates.tsx b/web/frontend/src/components/DesktopUpdates.tsx
 new file mode 100644
 index 0000000..a9603e3
@@ -26867,7 +27334,7 @@ index 0000000..01f4858
 +    : '这份结果尚无可核验的账号与来源对比，请刷新；旧无归属记录不作为增长基线。');
 +}
 diff --git a/web/frontend/src/lib/api.ts b/web/frontend/src/lib/api.ts
-index 9b3d69f..a058a4d 100644
+index 9b3d69f..5b73826 100644
 --- a/web/frontend/src/lib/api.ts
 +++ b/web/frontend/src/lib/api.ts
 @@ -6,20 +6,31 @@ function getBasePath(): string {
@@ -27051,7 +27518,7 @@ index 9b3d69f..a058a4d 100644
  }
  
  /** 退出登录：删该平台持久化登录态。 */
-@@ -489,18 +539,18 @@ export function startLogin(platform: string): Promise<LoginStart> {
+@@ -489,18 +539,27 @@ export function startLogin(platform: string): Promise<LoginStart> {
    return request<LoginStart>(`/api/login/${encodeURIComponent(platform)}`, { method: 'POST' });
  }
  
@@ -27071,10 +27538,19 @@ index 9b3d69f..a058a4d 100644
  
 -export interface AccountAnalytics {
 +export interface AccountAnalytics extends AccountVerification {
++  followerIndex?: number | null;
++  collection?: {
++    status: 'complete' | 'partial' | 'failed';
++    missingFields: string[];
++    issues: { field: string; code: string; message: string; sourceUrl: string; retryable: boolean }[];
++    sources: { fields: string[]; url: string; fetchedAt: number; scope: string }[];
++    notesCoverage: { returned: number; total: number | null; limit: number; status: 'available' | 'partial' | 'empty' | 'unknown'; scope: string; hasMore: boolean };
++    suggestions: { fields: string[]; sourceUrl: string; reason: string }[];
++  } | null;
    platform: string;
    name: string;
    nickname: string;
-@@ -508,12 +558,17 @@ export interface AccountAnalytics {
+@@ -508,12 +567,17 @@ export interface AccountAnalytics {
    followers: number | null;
    likes: number | null;
    following: number | null;
@@ -27092,7 +27568,7 @@ index 9b3d69f..a058a4d 100644
  }
  
  /** 支持抓数据的平台 + 各自登录态。 */
-@@ -527,11 +582,11 @@ export function fetchAccountAnalytics(platform: string): Promise<AccountAnalytic
+@@ -527,11 +591,11 @@ export function fetchAccountAnalytics(platform: string): Promise<AccountAnalytic
  }
  
  /** 回填短信验证码（登录风控短信墙）：提交后 runner 读走填码继续登录。 */
