@@ -4,7 +4,7 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.10 更新说明](docs/RELEASE-0.5.10.md) · [验证记录](docs/VERIFICATION-0.5.10.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.11 更新说明](docs/RELEASE-0.5.11.md) · [验证记录](docs/VERIFICATION-0.5.11.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
@@ -12,7 +12,7 @@
 
 **0.5.10** 修复发布结果判断、登录响应竞态、热点来源和本地日期，并补充文风、受众、竞品、素材和经验修订方法，见[验证记录](docs/VERIFICATION-0.5.10.md)。新增方法不含发布服务或平台排期执行，发布继续使用默认浏览器 AitoEarn 或现有原生工具。首页只复制固定名称的 `MediaSail 接入.md`；详细知识按需查阅。
 
-**0.5.11 候选**补充账号采集完整性、缺项、失败原因、来源及样本范围；修复抖音延迟作品页读取，粉丝指数与粉丝数分开。Agent 可按任务自主补查，Skill 强调结论对应证据，不新增固定执行链。见[更新说明](docs/RELEASE-0.5.11.md)与[验证记录](docs/VERIFICATION-0.5.11.md)。
+**0.5.11** 补充账号采集完整性、缺项、失败原因、来源及样本范围；修复抖音延迟作品页读取，粉丝指数与粉丝数分开，管理页筛选数量不混入旧概览增长。Agent 可按任务自主补查，Skill 强调结论对应证据，不新增固定执行链。见[更新说明](docs/RELEASE-0.5.11.md)与[验证记录](docs/VERIFICATION-0.5.11.md)。
 
 软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
 
@@ -69,7 +69,7 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.6；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.11；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
@@ -77,7 +77,7 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 开发前阅读 [AGENTS.md](AGENTS.md) 与按需的 [开发方法](docs/DEVELOPMENT.md)，使用用户指定的 mattpocock-skills；业务术语见 [词汇表](GLOSSARY.md)。准备锁定依赖后执行 npm run check，统一验证 Node、Python、前端、接口资料和补丁复现。检查不回写接口资料或补丁，需更新时显式运行导出脚本并审查差异。
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.6。包内验收与真实安装升级另行执行。
+业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.11。包内验收与真实安装升级另行执行。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 

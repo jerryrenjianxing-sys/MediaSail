@@ -1,0 +1,110 @@
+{
+  "passed": true,
+  "version": "0.5.11",
+  "checkedAt": "2026-11-03T09:03:59.515Z",
+  "syntheticDataOnly": true,
+  "realPackagedUi": true,
+  "realLocalHttpApi": true,
+  "acceptanceScope": "Independent Agent completed a read-only offline evidence supplement from local synthetic page snapshots, not a live platform collection.",
+  "projectVisible": true,
+  "reportMatchesFileApi": true,
+  "originals": [
+    {
+      "file": "初次采集.json",
+      "sha256": "46d4db438d9749501331efe0f6084887f2694aaf427f911e65357b59af5f552c",
+      "bytes": 6582
+    },
+    {
+      "file": "内容管理页.txt",
+      "sha256": "03bf24da11d6c040d45d613ddec70f565fa3e57280f8f6b21cb775a08dd0bdb7",
+      "bytes": 1546
+    }
+  ],
+  "agent": {
+    "schema": 1,
+    "task": "帮我分析一下抖音",
+    "mode": "离线合成验收",
+    "startedAt": "2026-11-03T08:49:31.0000000+00:00",
+    "completedAt": "2026-11-03T08:57:05.1134071+00:00",
+    "elapsedSeconds": 454.1,
+    "entryRead": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\采集证据 Agent 1793695681375\\MediaSail 接入.md",
+    "connection": {
+      "connected": true,
+      "version": "0.5.11",
+      "libraryRoot": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\采集证据 Agent 1793695681375\\共享资料库",
+      "selectedProfile": null,
+      "profileUsed": "采集证据合成画像",
+      "accountId": "synthetic-account"
+    },
+    "materialsFound": true,
+    "actualSources": [
+      "画像6维Markdown",
+      "抖音合成采集资料/assets/初次采集.json",
+      "抖音合成采集资料/assets/内容管理页.txt",
+      "_analytics/douyin.jsonl"
+    ],
+    "coverage": {
+      "initialReturned": 6,
+      "initialTotal": 9,
+      "initialLimit": 6,
+      "initialHasMore": true,
+      "pageRows": 9,
+      "pageTotal": 9,
+      "pageNoMoreMarker": true,
+      "initialRowsCrossChecked": 6,
+      "additionalRows": 3,
+      "publishedDateRange": "2026-10-24至2026-11-01",
+      "scope": "同账号页面快照当前筛选范围的已发布作品，不证明账号全历史"
+    },
+    "limits": [
+      "精确粉丝数、旧概览posts仍为null；关注9和粉丝指数7不能替代",
+      "只有一条同身份历史，不能计算增长",
+      "近7日起止和比较单位/周期缺失；不和作品累计展示值混算",
+      "没有作品画面正文、流量来源、曝光与留存，不能诊断内容或分发原因"
+    ],
+    "needsUserMoreInstructions": false,
+    "needsUserMoreMaterialsForCurrentReport": false,
+    "optionalMaterialsForStrongerConclusions": [
+      "精确粉丝及同源后续快照",
+      "明确窗口和比较标签",
+      "作品画面正文、评论、曝光及留存"
+    ],
+    "methods": [
+      "随包mediasail.ps1 check",
+      "PowerShell与rg本地读取",
+      "随软件Python标准库解析、前6条交叉核对与计算",
+      "manifest.py meta登记",
+      "本地GET /api/outputs核对deliverablePaths"
+    ],
+    "canSupport": [
+      "当前范围9条作品及样本补齐",
+      "连续9天日更和逐作品展示差异",
+      "样本播放2700、点赞45、评论9、收藏36、分享0、作品吸粉0",
+      "近7日概览原值与缺项"
+    ],
+    "cannotSupport": [
+      "精确粉丝或账号增长",
+      "终身作品总量",
+      "真实账号当前登录状态",
+      "限流、受众错配或转化链断裂的原因",
+      "具体主题优劣或最佳发布时间"
+    ],
+    "boundaries": {
+      "realSocialPlatformsAccessed": false,
+      "loginAttempted": false,
+      "published": false,
+      "softwareSourceModified": false,
+      "globalSkillsOrDependenciesInstalled": false,
+      "dailyLibraryRead": false,
+      "businessWritesOnlyInIsolatedReportProject": true
+    },
+    "result": {
+      "report": "C:\\Users\\jerry\\Documents\\MediaSail 隔离验证\\采集证据 Agent 1793695681375\\共享资料库\\workspace\\outputs\\抖音近期作品分析-20261103\\抖音近期作品分析.md",
+      "category": "analysis",
+      "status": "ready",
+      "registeredInContentLibrary": true,
+      "deliverablePath": "抖音近期作品分析-20261103/抖音近期作品分析.md",
+      "verification": "内容库返回相同deliverablePaths，且成品文件实际存在；原始证据副本和SHA256已回存assets"
+    }
+  }
+}
