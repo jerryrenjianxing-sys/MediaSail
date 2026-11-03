@@ -20,6 +20,7 @@ const root=path.resolve(__dirname,'..'),pkg=require('../package.json');let app;
  const collect=page.locator('.ana-plats').getByRole('button',{name:'抖音',exact:true});await collect.click();
  await page.getByText('本次采集不完整',{exact:true}).waitFor({timeout:8000});await page.getByText(/粉丝指数：7/).waitFor();await page.getByText('查看缺项、原因与来源',{exact:true}).click();await page.getByText(/未取得精确粉丝数/).waitFor();
  const images=path.join(root,'docs/images',pkg.version);await fs.mkdir(images,{recursive:true});
+ await page.locator('.ana-body').scrollIntoViewIfNeeded();
  await page.screenshot({path:path.join(images,'collection-light.png'),animations:'disabled'});
  await page.evaluate(()=>{document.documentElement.dataset.theme='dark';});await page.screenshot({path:path.join(images,'collection-dark.png'),animations:'disabled'});
  response={...base,followerIndex:11,followers:null,likes:null,following:null,posts:null,notes:[],collection};await collect.click();await page.getByText(/粉丝指数：11/).waitFor();

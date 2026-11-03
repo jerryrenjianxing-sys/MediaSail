@@ -1,0 +1,17 @@
+{
+  "version": "0.5.11",
+  "passed": true,
+  "syntheticDataOnly": true,
+  "realAccountsUsed": false,
+  "checkedAt": "2026-11-03T08:51:06.455Z",
+  "testedAppAsarSha256": "2427cbdb15cf9b9797202c05b79156301e917fc1bf524b80785483883384ae89",
+  "checks": [
+    "partial collection and follower-index separation",
+    "failure keeps available data",
+    "no empty-list claim on failure",
+    "failed refresh retains old result",
+    "explicit empty state",
+    "legacy result labels completeness as unknown",
+    "light and dark screenshots"
+  ]
+}

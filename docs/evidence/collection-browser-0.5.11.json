@@ -1,0 +1,246 @@
+{
+  "version": "0.5.11",
+  "passed": true,
+  "syntheticHttpOnly": true,
+  "realPackagedPython": true,
+  "realInstalledBrowser": true,
+  "realAccountsUsed": false,
+  "checkedAt": "2026-11-03T08:47:49.038Z",
+  "results": [
+    {
+      "name": "delayed",
+      "passed": true,
+      "elapsedMs": 8327,
+      "collection": {
+        "status": "partial",
+        "missingFields": [
+          "followers",
+          "posts"
+        ],
+        "issues": [
+          {
+            "field": "followers",
+            "code": "metric_not_observed",
+            "message": "本次首页仅发现粉丝指数，未取得精确粉丝数；可核对其他已授权页面或账号响应。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          },
+          {
+            "field": "posts",
+            "code": "metric_not_observed",
+            "message": "未取得旧账号概览同口径的作品数；当前管理页总数见 notesCoverage.total，不混用于账号作品增长。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          }
+        ],
+        "sources": [
+          {
+            "fields": [
+              "likes",
+              "following",
+              "followerIndex"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695662,
+            "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"
+          },
+          {
+            "fields": [
+              "metrics"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695662,
+            "scope": "平台近 7 日（以本次页面口径为准）"
+          },
+          {
+            "fields": [
+              "collection.notesCoverage.total",
+              "notes"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/content/manage",
+            "fetchedAt": 1793695662,
+            "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品"
+          }
+        ],
+        "notesCoverage": {
+          "returned": 5,
+          "total": 5,
+          "limit": 6,
+          "status": "available",
+          "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品",
+          "visible": 5,
+          "hasMore": false
+        },
+        "suggestions": [
+          {
+            "fields": [
+              "followers",
+              "posts"
+            ],
+            "sourceUrl": "https://creator.douyin.com/creator-micro/content/manage",
+            "reason": "按当前任务选择补查页面、已授权账号响应或已有证据；本次缺项不是必须人工处理的结论。"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty",
+      "passed": true,
+      "elapsedMs": 4414,
+      "collection": {
+        "status": "partial",
+        "missingFields": [
+          "followers",
+          "posts"
+        ],
+        "issues": [
+          {
+            "field": "followers",
+            "code": "metric_not_observed",
+            "message": "本次首页仅发现粉丝指数，未取得精确粉丝数；可核对其他已授权页面或账号响应。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          },
+          {
+            "field": "posts",
+            "code": "metric_not_observed",
+            "message": "未取得旧账号概览同口径的作品数；当前管理页总数见 notesCoverage.total，不混用于账号作品增长。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          }
+        ],
+        "sources": [
+          {
+            "fields": [
+              "likes",
+              "following",
+              "followerIndex"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695666,
+            "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"
+          },
+          {
+            "fields": [
+              "metrics"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695666,
+            "scope": "平台近 7 日（以本次页面口径为准）"
+          },
+          {
+            "fields": [
+              "collection.notesCoverage.total",
+              "notes"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/content/manage",
+            "fetchedAt": 1793695666,
+            "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品"
+          }
+        ],
+        "notesCoverage": {
+          "returned": 0,
+          "total": 0,
+          "limit": 6,
+          "status": "empty",
+          "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品",
+          "visible": 0,
+          "hasMore": false
+        },
+        "suggestions": [
+          {
+            "fields": [
+              "followers",
+              "posts"
+            ],
+            "sourceUrl": "https://creator.douyin.com/creator-micro/content/manage",
+            "reason": "按当前任务选择补查页面、已授权账号响应或已有证据；本次缺项不是必须人工处理的结论。"
+          }
+        ]
+      }
+    },
+    {
+      "name": "connection",
+      "passed": true,
+      "elapsedMs": 2206,
+      "collection": {
+        "status": "partial",
+        "missingFields": [
+          "followers",
+          "posts",
+          "notes"
+        ],
+        "issues": [
+          {
+            "field": "followers",
+            "code": "metric_not_observed",
+            "message": "本次首页仅发现粉丝指数，未取得精确粉丝数；可核对其他已授权页面或账号响应。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          },
+          {
+            "field": "posts",
+            "code": "metric_not_observed",
+            "message": "本次来源未取得该指标，不代表数值为零或整个平台不提供。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/home",
+            "retryable": false
+          },
+          {
+            "field": "notes",
+            "code": "content_navigation_failed",
+            "message": "打开作品页失败（ERR_CONNECTION_RESET）；已取得的其他指标保留，可重试或检查该页面。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/content/manage",
+            "retryable": true
+          },
+          {
+            "field": "notes",
+            "code": "sample_coverage",
+            "message": "当前结果只是样本或覆盖范围尚未核实；需要更大范围时可自主补查。",
+            "sourceUrl": "https://creator.douyin.com/creator-micro/content/manage",
+            "retryable": false
+          }
+        ],
+        "sources": [
+          {
+            "fields": [
+              "likes",
+              "following",
+              "followerIndex"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695669,
+            "scope": "账号页面展示值；粉丝指数与粉丝总数分别表示"
+          },
+          {
+            "fields": [
+              "metrics"
+            ],
+            "url": "https://creator.douyin.com/creator-micro/home",
+            "fetchedAt": 1793695669,
+            "scope": "平台近 7 日（以本次页面口径为准）"
+          }
+        ],
+        "notesCoverage": {
+          "returned": 0,
+          "total": null,
+          "limit": 6,
+          "status": "partial",
+          "scope": "当前作品管理页筛选范围总数；列表为其中已发布作品",
+          "visible": 0,
+          "hasMore": true
+        },
+        "suggestions": [
+          {
+            "fields": [
+              "followers",
+              "posts",
+              "notes"
+            ],
+            "sourceUrl": "https://creator.douyin.com/creator-micro/content/manage",
+            "reason": "按当前任务选择补查页面、已授权账号响应或已有证据；本次缺项不是必须人工处理的结论。"
+          }
+        ]
+      }
+    }
+  ]
+}
