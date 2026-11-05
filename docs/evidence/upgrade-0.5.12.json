@@ -1,0 +1,168 @@
+{
+  "from": "0.5.11",
+  "to": "0.5.12",
+  "passed": true,
+  "startedAt": "2026-11-05T12:16:14.046Z",
+  "environment": "ephemeral GitHub-hosted Windows",
+  "transport": "genuine NSIS /S --updated --force-run, no /D update override",
+  "syntheticDataOnly": true,
+  "publications": 0,
+  "installers": {
+    "baseline": {
+      "name": "MediaSail-0.5.11-win-x64-Setup.exe",
+      "sha256": "b5f6a770e72d830e46319113dc4f7271d7c52f62e186662c1527e17a588c2540",
+      "bytes": 263032260
+    },
+    "candidate": {
+      "name": "MediaSail-0.5.12-win-x64-Setup.exe",
+      "sha256": "e79667d4a02315a1b20068593ec8a62b8de1c82ddf0e17ad89e21b5af7e910a7",
+      "bytes": 469889821
+    }
+  },
+  "phase": "passed",
+  "lastInstallerWindows": [
+    {
+      "children": [
+        {
+          "position": null,
+          "class": "Button",
+          "text": "< &Back"
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "&Next >"
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "Cancel"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "MediaSail 0.5.12 "
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "MediaSail 0.5.12"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "正在安装 MediaSail"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": "正在复制文件，完成后会自动重新打开。"
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "#32770",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Button",
+          "text": "Show &details"
+        },
+        {
+          "position": 20822,
+          "class": "msctls_progress32",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "Static",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "SysListView32",
+          "text": ""
+        },
+        {
+          "position": null,
+          "class": "SysHeader32",
+          "text": ""
+        }
+      ],
+      "title": "MediaSail Setup "
+    }
+  ],
+  "baselineCacheVerified": true,
+  "legacyPartitionFiles": 22,
+  "customFilesSeeded": true,
+  "componentConsent": "explicit versioned component consent in isolated test CLI; /S alone is not agreement",
+  "installMs": 188485,
+  "registrationAfter": [
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-42025583948\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.12",
+      "location": null
+    },
+    {
+      "version": null,
+      "location": "D:\\a\\_temp\\mediasail-content-upgrade-42025583948\\中文 原安装\\MediaSail"
+    },
+    {
+      "version": "0.5.12",
+      "location": null
+    }
+  ],
+  "originalFilesRetained": 34,
+  "librarySelectionRetained": true,
+  "currentInstallerCacheVerified": true,
+  "legacyAitoPartitionByteRetained": true,
+  "embeddedAitoRuntimeAbsent": true,
+  "skillFilePreferenceUpgradeRetained": true,
+  "profileRevisionVerified": true,
+  "projectFolderActionVerified": true,
+  "categoryPatchPreservedOtherMetadata": true,
+  "skillFilePreferenceRetained": true,
+  "managedBrowserCacheAndLiveSessionVerified": true,
+  "normalRestarts": 2,
+  "dataAndSessionRetentionVerified": true,
+  "managedBrowserCleanedUp": true,
+  "finishedAt": "2026-11-05T12:24:52.290Z"
+}

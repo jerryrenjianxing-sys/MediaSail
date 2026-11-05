@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "version": "0.5.12",
+  "browser": "156.0.8078.73-1.1",
+  "browserSkill": "0.4.1 / b8f2d4f-mediasail.1 / x86_64-pc-windows-gnullvm",
+  "bskSha256": "5cd02e7aeb2a8ff2fe1326af41140d84f979a2d80c76597b9276eb02dc559694",
+  "bundleId": "0daa5c09136126a3719fca37bd048fd89879427a21fff64609ab3f7cfa266028",
+  "installerSha256": "e79667d4a02315a1b20068593ec8a62b8de1c82ddf0e17ad89e21b5af7e910a7",
+  "localLoginChecks": {
+    "at": "2026-11-05T12:20:45.2648768+00:00",
+    "ok": true,
+    "normalExit": true,
+    "identityMatched": true,
+    "loginRetained": true
+  },
+  "privateEndpointChecks": {
+    "passed": true,
+    "wrongGroupRejected": true,
+    "wrongExtensionRejected": true,
+    "matchingIdentityAccepted": true
+  },
+  "portRecovery": {
+    "passed": true,
+    "noAutomaticRecoveryDuringRun": true,
+    "foreignPortRejected": true,
+    "originalBrowserAndPortRetained": true,
+    "explicitReconnectPassed": true,
+    "at": "2026-11-05T12:19:27.396Z"
+  },
+  "syntheticBrowser": {
+    "passed": true,
+    "target": "x86_64-pc-windows-gnullvm",
+    "oldCacheContinues": true,
+    "softwareStopped": true,
+    "media": {
+      "error": null,
+      "height": 540,
+      "readyState": 4,
+      "time": 2.324097,
+      "width": 960
+    }
+  },
+  "packagedUi": {
+    "passed": true,
+    "version": "0.5.12",
+    "syntheticOnly": true,
+    "checks": [
+      "packaged-service",
+      "observation-register",
+      "dashboard-readback",
+      "accounts-light-dark",
+      "report-readback"
+    ],
+    "at": "2026-11-05T12:17:39.171Z"
+  },
+  "firstPreparationMs": 6164,
+  "logicalBytes": {
+    "installer": 469889821,
+    "program": 1078364313,
+    "toolCache": 473007063,
+    "exampleLoggedInProfile": 87497257
+  },
+  "scope": "Real account reads only in isolated local acceptance profile. No account identifiers, cookies, nonces or private endpoint records in this evidence. No public posting. Logical sizes exclude source/build inputs and retained historical caches."
+}

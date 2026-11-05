@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "libraryId": "7251aa17-f31f-41b1-9f78-dd680e4898a0",
+  "cache": "D:\\a\\_temp\\mediasail-content-upgrade-42025583948\\共用 中文资料库\\runtime\\cache\\browser-tool\\0daa5c09136126a3719fca37",
+  "bundleId": "0daa5c09136126a3719fca37bd048fd89879427a21fff64609ab3f7cfa266028",
+  "browserPid": 3428,
+  "toolVersion": "0.4.1",
+  "browserVersion": "156.0.8078.73",
+  "checkedWithoutGlobalNodePython": true,
+  "commandOwnership": "test-owned nested BREAKAWAY_OK Job per CLI; outer runner Job unchanged",
+  "stages": [
+    "software-stopped",
+    "same-version-reinstall",
+    "software-exited-after-reinstall"
+  ]
+}
