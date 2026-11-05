@@ -6,8 +6,9 @@ async function startManagedBrowser({info,evidence,env}){
  hosted();
  const source=path.join(info.skillDir,'scripts/browser.ps1'),connection=info.connectionFile;
  const ps=path.join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
+ const commandHost=path.join(__dirname,'run-browser-job-fixture.ps1');
  function invoke(entry,args){
-  const result=cp.spawnSync(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',entry,...args],{env,encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:5e6});
+  const result=cp.spawnSync(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',commandHost,entry,...args],{env:{...env,GITHUB_ACTIONS:process.env.GITHUB_ACTIONS,RUNNER_ENVIRONMENT:process.env.RUNNER_ENVIRONMENT},encoding:'utf8',windowsHide:true,timeout:180000,maxBuffer:5e6});
   if(result.error)throw result.error;
   if(result.status!==0)throw Error('Browser fixture command failed: '+result.stdout+result.stderr);
   return JSON.parse(result.stdout.trim().replace(/^\uFEFF/,''));
@@ -42,13 +43,13 @@ async function startManagedBrowser({info,evidence,env}){
  }
  try{
   // Async CLI: keep the fixture HTTP server responsive while navigation waits.
-  const result=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',source,'connect','--connection',connection,'--name','升级缓存验收','--url',url],{env,encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
+  const result=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',commandHost,source,'connect','--connection',connection,'--name','升级缓存验收','--url',url],{env:{...env,GITHUB_ACTIONS:process.env.GITHUB_ACTIONS,RUNNER_ENVIRONMENT:process.env.RUNNER_ENVIRONMENT},encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
   receipt=result;
   group=JSON.parse(await fs.readFile(receipt.groupConfig,'utf8'));
   assert.equal(receipt.ok,true);assert.equal(receipt.navigationWarning,undefined);
   const first=evaluate('(()=>{localStorage.setItem("mediasail-fixture","retained");return {title:document.title,value:document.querySelector("#proof").value,cookie:document.cookie,marker:localStorage.getItem("mediasail-fixture")}})()');
   assert.equal(first.ok,true);assert.equal(first.value.title,'MediaSail managed browser upgrade fixture');assert.equal(first.value.value,'中文 空格路径');assert.match(first.value.cookie,/mediasail-fixture=retained/);assert.equal(first.value.marker,'retained');
-  const record={passed:false,libraryId:info.libraryId,cache:group.cache,bundleId:group.bundleId,browserPid:group.browserPid,toolVersion:group.toolVersion,browserVersion:group.browserVersion,checkedWithoutGlobalNodePython:true};
+  const record={passed:false,libraryId:info.libraryId,cache:group.cache,bundleId:group.bundleId,browserPid:group.browserPid,toolVersion:group.toolVersion,browserVersion:group.browserVersion,checkedWithoutGlobalNodePython:true,commandOwnership:'test-owned nested BREAKAWAY_OK Job per CLI; outer runner Job unchanged'};
   await fs.writeFile(path.join(evidence,'managed-browser.json'),JSON.stringify(record,null,2));
   return {
    async verify(stage){
