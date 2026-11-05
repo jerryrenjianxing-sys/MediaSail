@@ -32,7 +32,7 @@ async function main(){
  const registry=()=>list(JSON.parse(ps(`$rows=@();foreach($view in @('Registry64','Registry32')){$base=[Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser,[Microsoft.Win32.RegistryView]::$view);try{foreach($name in @('Software\\${identity}','Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${identity}')){$key=$base.OpenSubKey($name);if($key){try{$rows+=@{location=$key.GetValue('InstallLocation');version=$key.GetValue('DisplayVersion')}}finally{$key.Dispose()}}}}finally{$base.Dispose()}};ConvertTo-Json -InputObject @($rows) -Compress`)||'[]'));
  const checkRegistry=version=>{const rows=registry();assert.ok(rows.length>=2);assert.ok(rows.some(row=>row.version===version));for(const row of rows){if(row.location)assert.equal(row.location.toLowerCase(),target.toLowerCase());if(row.version)assert.equal(row.version,version);}return rows;};
  const result={from,to,passed:false,startedAt:new Date().toISOString(),environment:'ephemeral GitHub-hosted Windows',transport:'genuine NSIS /S --updated --force-run, no /D update override',syntheticDataOnly:true,publications:0};
- let inspector,setupChild;
+ let inspector,setupChild,managedBrowser;
  const write=async(file,value)=>{await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,typeof value==='string'?value:JSON.stringify(value,null,2),'utf8');};
  const persist=async()=>{await write(path.join(evidence,'result.json'),result);for(const [base,prefix]of [[bootstrap,'bootstrap'],[path.join(libraryRoot,'runtime'),'runtime']])for(const name of ['desktop.log','desktop-backend.log',`installer-${to}.ini`,`installer-${to}-copy.log`])await fs.copyFile(path.join(base,'logs',name),path.join(evidence,prefix+'-'+name)).catch(()=>{});};
  const phase=async name=>{result.phase=name;console.log('CONTENT UPGRADE '+name);await persist();};
@@ -41,6 +41,11 @@ async function main(){
  const waitConnection=version=>until(async()=>{const info=JSON.parse(await fs.readFile(path.join(bootstrap,'agent-connection.json'),'utf8'));if(info.status!=='ready'||info.version!==version||info.executable?.toLowerCase()!==exe.toLowerCase())return false;if(!owned().some(row=>row.ProcessId===info.pid&&!row.CommandLine?.includes('--type=')))return false;const live=await(await fetch(info.baseUrl+'/api/agent-info',{signal:AbortSignal.timeout(5000)})).json();return live.instanceId===info.instanceId&&live.libraryId===info.libraryId?info:false;},300000,version+' service ready');
  async function quit(){if(inspector){await inspector.evaluate(`(()=>{const {dialog}=process.mainModule.require('electron'),fs=process.mainModule.require('node:fs');if(!globalThis.__contentExitObserver){globalThis.__contentExitObserver=true;const original=dialog.showMessageBox;dialog.showMessageBox=function(...args){const options=args.at(-1);fs.appendFileSync(${JSON.stringify(path.join(evidence,'exit-dialogs.jsonl'))},JSON.stringify({at:new Date().toISOString(),title:options?.title,message:options?.message,buttons:options?.buttons})+'\\n');return original.apply(this,args);};}process.mainModule.require('electron').app.quit();return true;})()`).catch(()=>{});inspector.close();inspector=null;}await until(()=>owned().length===0,60000,'normal exit');}
  async function setup(file,args,observe=false){
+  if(observe&&process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1'){
+   const licenseHash=await hash(path.join(root,'licenses/browser-tools/Microsoft-Windows-SDK-10.0.28000-LICENSE.rtf'));
+   args=[...args,'/ACCEPT_MS_D3D_LICENSE='+licenseHash];
+   result.componentConsent='explicit versioned component consent in isolated test CLI; /S alone is not agreement';
+  }
   let done=false,exit,last=0;setupChild=cp.spawn(file,args,{windowsHide:false,windowsVerbatimArguments:true,stdio:'ignore',env:environment()});assert.ok(setupChild.pid);setupChild.once('exit',code=>{exit=code;done=true;});setupChild.once('error',error=>{exit=error.message;done=true;});
   const began=Date.now();
   await until(async()=>{if(!done&&Date.now()-last>=10000){last=Date.now();const output=cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(root,'scripts/observe-installer.ps1'),'-InstallerPid',String(setupChild.pid),'-Screenshot',path.join(evidence,observe?'upgrade-progress.png':'baseline-progress.png')],{encoding:'utf8',windowsHide:true,timeout:20000});if(output.trim())result.lastInstallerWindows=JSON.parse(output);let installerState='';try{installerState=await fs.readFile(path.join(bootstrap,'logs',`installer-${observe?to:from}.ini`),'utf8');}catch{}console.log('NSIS '+JSON.stringify({elapsedMs:Date.now()-began,windows:result.lastInstallerWindows,installerState}));}return done;},900000,'installer exit');assert.equal(exit,0);
@@ -115,9 +120,21 @@ async function main(){
   result.categoryPatchPreservedOtherMetadata=true;await phase('normal-restarts');await quit();
   for(let i=0;i<2;i++){cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')assert.equal(JSON.parse(await fs.readFile(path.join(live.dataDir,'ui-state.json'),'utf8')).values.mediasail_skill_filename,'升级验收接入.md');}
   if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')result.skillFilePreferenceRetained=true;
+  if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1'){
+   await phase('managed-browser-with-software-stopped');
+   managedBrowser=await require('./verify-managed-browser-ci.cjs').startManagedBrowser({info:current,evidence,env:environment()});
+   await managedBrowser.verify('software-stopped');
+   await phase('same-version-reinstall-with-live-browser');
+   await setup(installers.candidate,['/S','--updated','--force-run'],true);checkRegistry(to);
+   const reinstalled=await waitConnection(to);assert.equal(reinstalled.libraryId,old.libraryId);
+   inspector=await attachTestMain(reinstalled.pid);await managedBrowser.verify('same-version-reinstall');await quit();
+   await managedBrowser.verify('software-exited-after-reinstall');await checkOriginals();
+   result.managedBrowserCacheAndLiveSessionVerified=true;
+  }
   assert.equal(fss.existsSync(path.join(evidence,'exit-dialogs.jsonl')),false,'Idle local-content checks must not trigger a task confirmation');result.normalRestarts=2;result.dataAndSessionRetentionVerified=true;result.passed=true;await phase('passed');
  }catch(error){result.error=error.stack||String(error);await persist();throw error;}
- finally{inspector?.close();if(setupChild?.exitCode===null)cp.spawnSync('taskkill.exe',['/PID',String(setupChild.pid),'/T','/F'],{windowsHide:true});for(const row of owned().filter(row=>!row.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(row.ProcessId),'/T','/F'],{windowsHide:true});result.finishedAt=new Date().toISOString();await persist();}
+ finally{if(managedBrowser)try{await managedBrowser.close();result.managedBrowserCleanedUp=true;}catch(error){result.managedBrowserCleanupError=String(error);result.passed=false;}inspector?.close();if(setupChild?.exitCode===null)cp.spawnSync('taskkill.exe',['/PID',String(setupChild.pid),'/T','/F'],{windowsHide:true});for(const row of owned().filter(row=>!row.CommandLine?.includes('--type=')))cp.spawnSync('taskkill.exe',['/PID',String(row.ProcessId),'/T','/F'],{windowsHide:true});result.finishedAt=new Date().toISOString();await persist();}
+ assert.equal(result.passed,true,'All installation checks and owned resource cleanup must pass');
  console.log('REAL CONTENT UPGRADE PASSED '+JSON.stringify(result));
 }
 if(require.main===module)main().catch(error=>{console.error(error);process.exitCode=1;});

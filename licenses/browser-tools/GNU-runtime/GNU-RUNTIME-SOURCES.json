@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-05",
+  "target": "x86_64-pc-windows-gnullvm",
+  "bsk": {
+    "bytes": 13979136,
+    "sha256": "5cd02e7aeb2a8ff2fe1326af41140d84f979a2d80c76597b9276eb02dc559694"
+  },
+  "link_map": {
+    "file": "bsk-gnullvm.map",
+    "bytes": 20335256,
+    "sha256": "977e7ad3bc378b052533b42580350124895f2815b8227253e449b5b790e4f11b"
+  },
+  "toolchain_asset": {
+    "name": "llvm-mingw-20261104-ucrt-x86_64.zip",
+    "url": "https://github.com/mstorsjo/llvm-mingw/releases/download/20261104/llvm-mingw-20261104-ucrt-x86_64.zip",
+    "bytes": 191037046,
+    "sha256": "552191b5754c49a5a20723276a6fc56541ea1922c4c50b7b669022333fc1b40f"
+  },
+  "source_pins": {
+    "llvm_mingw": "70bc9a60eec2410124a9e3fe1611929705cb6574",
+    "llvm_tag": "llvmorg-23.1.5",
+    "llvm_commit": "392dfff97d29b59d77e5cac6d4b6ef2585fe7117",
+    "mingw_w64": "ee9bd87644156c41072a11ad957d1e11831a72df"
+  },
+  "rust_commit": "58cf8f9c35b355199727627d07ae34a4e2846d67",
+  "scope": "Original notices for actual MinGW startup/helpers, LLVM libunwind, and Rust standard-library code. Windows UCRT/API-set DLLs are OS imports; no Windows DLL, Microsoft SDK static CRT or compiler is distributed by this notice set. No end-user BuildTools/SDK agreement is created for bsk. The browser d3dcompiler_47.dll remains separately covered by its SDK component terms.",
+  "verification": {
+    "mapped_inputs": 349,
+    "mingw_members": 48,
+    "mingw_startup_objects": 3,
+    "llvm_libunwind_members": 5,
+    "system_dll_imports": 21,
+    "ucrt_api_set_imports": 11,
+    "sdk_static_msvc_runtime_inputs": [],
+    "gcc_runtime_inputs": [],
+    "libcxx_libcxxabi_winpthread_mapped_members": 0,
+    "rust_sysroot_crt_objects_used": false
+  },
+  "files": [
+    {
+      "file": "MinGW-w64-runtime-COPYING.txt",
+      "bytes": 12155,
+      "sha256": "1db8da07b436c68833c0673ffee3d9fcb2526047f3820b81661865dfedc79a1f",
+      "purpose": "MinGW runtime and gdtoa contributions",
+      "source_url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/ee9bd87644156c41072a11ad957d1e11831a72df/COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt"
+    },
+    {
+      "file": "MinGW-w64-ZPL-2.1-COPYING.txt",
+      "bytes": 2326,
+      "sha256": "99a69660981156c21336fdb5661f89341b013c94e4bf9e1c7467b4745718397f",
+      "purpose": "Default license for otherwise unmarked MinGW sources",
+      "source_url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/ee9bd87644156c41072a11ad957d1e11831a72df/COPYING"
+    },
+    {
+      "file": "MinGW-w64-DISCLAIMER.PD.txt",
+      "bytes": 454,
+      "sha256": "87f33608570312a0f2a9745edcb2527275df813b13982e8c3b3f893d88a4141a",
+      "purpose": "Disclaimer referenced by actual startup and UCRT compatibility sources",
+      "source_url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/ee9bd87644156c41072a11ad957d1e11831a72df/DISCLAIMER.PD"
+    },
+    {
+      "file": "LLVM-libunwind-LICENSE.TXT",
+      "bytes": 16706,
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d",
+      "purpose": "Five actual linked libunwind archive members; includes Apache/LLVM and legacy text",
+      "source_url": "https://raw.githubusercontent.com/llvm/llvm-project/392dfff97d29b59d77e5cac6d4b6ef2585fe7117/libunwind/LICENSE.TXT"
+    },
+    {
+      "file": "Rust-1.99.1-LICENSE-APACHE",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "purpose": "Rust standard-library and compiler-builtins notices",
+      "source_url": "https://raw.githubusercontent.com/rust-lang/rust/58cf8f9c35b355199727627d07ae34a4e2846d67/LICENSE-APACHE"
+    },
+    {
+      "file": "Rust-1.99.1-LICENSE-MIT",
+      "bytes": 1068,
+      "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1",
+      "purpose": "Rust standard-library and compiler-builtins notices",
+      "source_url": "https://raw.githubusercontent.com/rust-lang/rust/58cf8f9c35b355199727627d07ae34a4e2846d67/LICENSE-MIT"
+    },
+    {
+      "file": "Rust-1.99.1-COPYRIGHT",
+      "bytes": 1571,
+      "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af",
+      "purpose": "Rust standard-library and compiler-builtins notices",
+      "source_url": "https://raw.githubusercontent.com/rust-lang/rust/58cf8f9c35b355199727627d07ae34a4e2846d67/COPYRIGHT"
+    },
+    {
+      "file": "Rust-1.99.1-COPYRIGHT-library.html",
+      "bytes": 1499465,
+      "sha256": "5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27",
+      "purpose": "Unmodified generated Rust release standard-library notice inventory; official COPYRIGHT explains this file",
+      "source_url": "https://github.com/rust-lang/rust/blob/58cf8f9c35b355199727627d07ae34a4e2846d67/COPYRIGHT"
+    }
+  ],
+  "limits": "This notice collection does not replace BrowserSkill, Cargo dependency or browser notices/source assets, which are handled separately."
+}

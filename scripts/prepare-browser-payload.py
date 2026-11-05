@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import shutil
 import stat
 import struct
+import subprocess
 import uuid
 import zipfile
 
@@ -74,9 +75,15 @@ def main():
     if sha(browser) != lock['browser']['sha256']:
         raise ValueError('Pinned browser archive SHA-256 mismatch')
     bsk = plain(args.bsk)
+    if sha(bsk)!=lock['bsk']['binarySha256']:
+        raise ValueError('BrowserSkill binary SHA-256 differs from the reviewed release build')
     dependencies = imports(bsk)
-    if any(name.upper().startswith(('VCRUNTIME', 'MSVCP')) for name in dependencies):
-        raise ValueError('Build BrowserSkill with static CRT before packaging')
+    system={'kernel32.dll','ntdll.dll','advapi32.dll','bcrypt.dll','bcryptprimitives.dll','crypt32.dll','shell32.dll','ole32.dll','ws2_32.dll','userenv.dll','user32.dll','dbghelp.dll','msvcrt.dll','ucrtbase.dll'}
+    if any(name.lower() not in system and not name.lower().startswith(('api-ms-win-','ext-ms-win-')) for name in dependencies):
+        raise ValueError('BrowserSkill requires an unbundled runtime DLL: '+str(dependencies))
+    identity=json.loads(subprocess.check_output([str(bsk),'mediasail-info','--json'],timeout=20,text=True,encoding='utf8'))
+    if identity!={'product':'MediaSailBrowserSkill','version':lock['bsk']['version'],'build':lock['bsk']['build'],'protocol':lock['bsk']['protocol'],'target':lock['bsk']['target'],'managed':True}:
+        raise ValueError('BrowserSkill is not the pinned MediaSail adapted build')
     output = ROOT/'build/browser-tools'
     stage = ROOT/'build'/('browser-tools.staging-'+uuid.uuid4().hex)
     stage.mkdir(parents=True)
@@ -102,6 +109,9 @@ def main():
     manifest = json.loads(manifest_file.read_text('utf8'))
     if manifest['version'] != lock['bsk']['version']:
         raise ValueError('BrowserSkill extension version mismatch')
+    extension_identity=json.loads((extension/'mediasail-build.json').read_text('utf8'))
+    if extension_identity!={'product':'MediaSailBrowserSkill','version':lock['bsk']['version'],'build':lock['bsk']['build'],'managed':True}:
+        raise ValueError('BrowserSkill extension is not the pinned adapted build')
     manifest.update(name='BrowserSkill for MediaSail', version_name='0.4.1 MediaSail build 1', key=(ROOT/'integrations/browserskill/extension-key.txt').read_text('ascii').strip())
     public_key = __import__('base64').b64decode(manifest['key'])
     extension_id = ''.join(chr(ord('a')+int(c,16)) for c in hashlib.sha256(public_key).hexdigest()[:32])
@@ -139,7 +149,7 @@ def main():
     cache_files.append({'path':'bsk.exe','sha256':sha(bsk)})
     payload = {'schema':1,'product':'MediaSailBrowser',
                'browser':{'version':lock['browser']['version'],'archive':'browser.zip','sha256':sha(browser),'executable':'browser/'+lock['browser']['root']+'/chrome.exe'},
-               'bsk':{'version':lock['bsk']['version'],'build':lock['bsk']['build'],'file':'bsk.exe','sha256':sha(bsk),'imports':dependencies},
+               'bsk':{'version':lock['bsk']['version'],'build':lock['bsk']['build'],'protocol':lock['bsk']['protocol'],'identity':identity,'file':'bsk.exe','sha256':sha(bsk),'imports':dependencies},
                'extension':{'archive':'extension.zip','sha256':sha(stage/'extension.zip'),'extensionId':extension_id},
                'runtimeHelpers':helpers,'cacheFiles':cache_files}
     payload['bundleId']=hashlib.sha256(json.dumps(payload,sort_keys=True,separators=(',',':')).encode()).hexdigest()

@@ -88,7 +88,7 @@ Lite SHA-512：`da6b9cf4615cc7872674ea41430d61ae04ce63b0d2e5ef7bde5d86631f4a8e9d
 
 ## 5. Windows DLL 与品牌边界
 
-实际 `d3dcompiler_47.dll` 为 Microsoft 有效签名，版本 `10.0.28000.2705`；固定 CI 安装 Windows SDK `10.0.28000.0`。Microsoft 官方文档明确允许把 Windows SDK 的 D3DCompiler_47 作为应用旁置 DLL 再分发；因此未发现必须删除这个 DLL 的依据。它不是 BSD 代码，不应放进“所有 Chromium 都是 BSD”的说明。发行资料应保留其 Windows SDK 来源与适用条款记录；本次未取得该 SDK 安装目录中的完整 license/redist 文件，不能声称已逐条审完那些文件。[固定 SDK 安装步骤](https://github.com/ungoogled-software/ungoogled-chromium-windows/blob/c8317bab03c9d861781f58f85286076e4a80439c/.github/actions/prepare/action.yml)；[Microsoft D3DCompiler 分发说明](https://learn.microsoft.com/en-us/windows/desktop/directx-sdk--august-2009-)
+实际 `d3dcompiler_47.dll` 为 Microsoft 有效签名，版本 `10.0.28000.2705`；固定 CI 安装 Windows SDK `10.0.28000.0`。Microsoft 官方文档明确允许把 Windows SDK 的 D3DCompiler_47 作为应用旁置 DLL 再分发；未发现必须删除这个 DLL 的依据。它不是 BSD 代码，不应放进“所有 Chromium 都是 BSD”的说明。后续已取得同一 SDK 包的原始许可/第三方声明，以及 EULA 直接引用的明确 REDIST 条目（第 10 节）；原件存在仍不自动证明下游同意等实际分发条件已满足。[固定 SDK 安装步骤](https://github.com/ungoogled-software/ungoogled-chromium-windows/blob/c8317bab03c9d861781f58f85286076e4a80439c/.github/actions/prepare/action.yml)；[Microsoft D3DCompiler 分发说明](https://learn.microsoft.com/en-us/windows/desktop/directx-sdk--august-2009-)
 
 `dxcompiler.dll` 是未签名的 `Microsoft(r) DirectX for Windows(r) - Google Dawn Custom Build`，版本 `1.9.2609.0`，不是上一个 Microsoft SDK DLL 的许可来源；相应固定 DXC 源码与完整第三方许可在 Dawn 依赖链中，需收入上述源基底/清单。[Dawn 固定 DXC README](https://dawn.googlesource.com/dawn/+/0caf3649477f7c3ffbd4b1ca4764a81b469b1582/third_party/directx-shader-compiler/README.chromium)
 
@@ -217,3 +217,116 @@ Windows 固定补丁修改 `third_party/typescript/windows-amd64/src/lib/lib.dom
 只生成实际静态配置与明确的动态参数模板；未提供已安装 Python clang bindings 路径时，不生成会被误当作已准备好的真实 args.gn。实际编译前仍按固定 CI 准备 LLVM/libclang、Python clang 21.1.7、VS/SDK 与其他构建工具。此次没有 GN generation、bindgen、编译、链接或浏览器运行，也没有执行工具的 full 模式。
 
 对应源资料和全补丁适用性证据现已具备本地实物。最终发行仍需携带完整原始基底与所有补件、实际 BrowserSkill 适配源码/声明及离线许可，并验证同一 Release 的接收者下载配套；不得只提供本选择性审查树。
+
+## 10. Microsoft d3dcompiler_47.dll 原始声明与安装呈现
+
+### 已取得准确原件与授权条目
+
+浏览器该 DLL 与 `D:/MediaSail-build-0512/msvc/Windows Kits/10/Redist/D3D/x64/d3dcompiler_47.dll` 逐字节一致，均为 4,753,904 字节，SHA-256 `3e56c1a0867aa04cbca948b3664fcac5d51275865cd044a45a3fd6ce636ee914`，有效 Microsoft 签名，版本 10.0.28000.2705。
+
+本机精简 SDK 没有完整 Licenses 目录，cppwinrt/LICENSE 也不是 SDK 总许可。随后从官方 VS manifest 找到 Win11SDK_10.0.28000、包版本 10.0.28000.5，其 Windows Store Apps Tools MSI 的 SHA-256 与本机已下载 MSI 一致。再取得**同一个官方 SDK 包**中的 EULA MSI 与对应 CAB，核对 manifest SHA-256；只读查询 MSI 表并抽出两个 RTF，没有安装或执行 MSI。
+
+调查目录 `D:/MediaSail-build-0512/source-audit/microsoft-sdk/` 保存 MSI、CAB、文件表、原始来源元数据及原件。可供最终产品复制的原始文件在 `distribution-notices/`：
+
+| 文件 | 字节数 | SHA-256 |
+| --- | ---: | --- |
+| Microsoft-Windows-SDK-10.0.28000-LICENSE.rtf | 248,573 | `0f4a26ac9dc50066f8a1bfeaaf3f092d1b9e4791df5487b9f3c31e7c3dc4d7f5` |
+| Microsoft-Windows-SDK-10.0.28000-THIRD-PARTY-NOTICES.rtf | 22,279 | `ebb6640a8246b39b70322c5cec9aad7a71e86ea7b86c9c604d3a7f3ff1b30e89` |
+| Microsoft-Windows-SDK-REDIST.md | 19,214 | `ff4dc82936ef9e8449927a3d06ee1fca801933c1464ceee60fa14003eb656dd0` |
+| Microsoft-Windows-SDK-SOURCES.json | 见文件 | 记载原始 MSI/CAB 地址与 hash、组件范围和来源链 |
+
+EULA MSI SHA-256 为 `da0754c508eb37b7997d5671e2ea10e240e64f375a4558a2730d3772025de517`，签名有效；CAB SHA-256 为 `e5848d03a5b8f81cf277fc146687888b077354605db672b629f827d04a536f36`。[官方 EULA MSI](https://download.visualstudio.microsoft.com/download/pr/8d861047-d6bf-46c3-895e-2ceca5bd8fee/Win11Sdk/Aug2026Servicing28000/Installers/Windows%20SDK%20EULA-x86_en-us.msi)；[官方原件 CAB](https://download.visualstudio.microsoft.com/download/pr/8d861047-d6bf-46c3-895e-2ceca5bd8fee/Win11Sdk/Aug2026Servicing28000/Installers/598442d9f84639d200d4f3af477da95c.cab)
+
+SDK EULA §2(a)(i) 引用的 fwlink 524842 实际跳转 Microsoft 官方 `legal/windows-sdk/redist`。其条目明确包含 Redist/D3D/x64/d3dcompiler_47.dll，可随 Classic Windows applications 分发，不能按 UWP 分发；该页报告源 commit `5517c932e1189e1d731dc4a24ae8f6b2fdf38bd4`、更新日期 2024-10-21。[官方 REDIST](https://learn.microsoft.com/en-us/legal/windows-sdk/redist)
+
+### 真实的同意条件与升级路径
+
+精确条款位置：原始 sdk_license.rtf §2(a)(ii)，忠实文本转换 `sdk_license.rtf.txt` 第 34 行。它明确要求 distributors 和 external end users 同意至少同等保护该 Distributable Code 的条款。SDK 没有规定必须采用何种 checkbox，但仅附声明文件不能证明已满足此同意条件。§2(a)(ii) 的其他条件还包括主要功能、相应未修改分发、程序版权及 Microsoft indemnity；§2(a)(iii) 包含保留 Microsoft 声明、不冒称背书、Microsoft OS 范围等限制。反编译限制在该原件 **§7**、文本第 88 行，不能误标为 §6。
+
+只读检查当前代码发现实际升级路径需单独处理：`desktop/updates.cjs:70` 调用 quitAndInstall(true,true)；`scripts/installer.nsh` 虽将 force-run 更新 SetSilent normal，当前安装的 app-builder-lib `assistedInstaller.nsh:13–15` 仍在默认 licensePage 前执行 skipPageIfUpdated。因此**只配置 nsis.license 不足以证明升级用户会看到并同意该组件条款**。
+
+最小建议是在复制/替换新 DLL 前，提供一个明确仅适用于 Microsoft d3dcompiler_47.dll 的组件许可页，可查看原始 RTF/REDIST；首次安装及升级都检查同一组件/条款的明确同意，不能被 isUpdated 默认跳过。拒绝则不安装该版含该组件的程序。已有相同条款的同意记录可按组件与许可 hash 复用，没有记录时不推定旧版本已经取得同意。无需把整份 SDK 约束扩展到 MediaSail；分发者仍需核对其他 SDK 条件。具体范围要素及精确行号已保存为 `microsoft-sdk/INSTALLATION-SCOPE-RESEARCH.md`。此次未改安装器。
+
+### LGPL 权利是否存在已验证的实际冲突
+
+LGPL 2.1 §6 对相应链接工作要求保留用户修改及为调试这些修改进行逆向的权利。SDK §7 约束其 Microsoft software，§2(a)(iii) 的 Excluded License 文字针对 Microsoft 代码的源码修改/分发，并不是对所有包含其他开源库的 Windows 应用作一概禁止。
+
+当前技术事实是独立未改动的 Microsoft DLL；固定 ANGLE `HLSLCompiler.cpp` 的非 UWP 分支通过 LoadLibraryA 加载 DLL，再使用公开 D3DCompile/D3DDisassemble 导出。Chromium/Blink/FFmpeg 的对应源码与变更输入另外提供，源码准备步骤已实测，无须修改或逆向该 Microsoft DLL。[固定 ANGLE 调用路径](https://chromium.googlesource.com/angle/angle/+/127e783de33425c27a70a3f48da9d9202d6a0745/src/libANGLE/renderer/d3d/HLSLCompiler.cpp)；[固定 LGPL §6](https://chromium.googlesource.com/chromium/third_party/ffmpeg/+/9db86ce5b5b454dfc96c435f9f0723012980c37f/COPYING.LGPLv2.1)
+
+据此，**当前未发现迫使用户为修改/调试 LGPL 部分而必须修改或逆向 Microsoft DLL 的已成立阻断条件**；组件限定条款与开源权利保留可以避免新增一个明确的合同冲突。这是对已核实结构/源码准备路径的判断，不是宣称已完成修改版浏览器的编译/运行。不得为 Microsoft DLL 擅自增加原文未授予的逆向权；也不得把 Microsoft 的反编译限制扩展到 Chromium、Blink、FFmpeg 或 BrowserSkill。若最终产品统一禁令覆盖这些开源部分，就会直接抵触 LGPL §6，必须修正。
+
+当前具体剩余发行门槛是正确落实该组件的下游同意与限定范围，以及其他已列的源码/许可实际分发配套；不是“root BSD 自动覆盖”，也不是已经确认存在必须弃用此 DLL 的许可证冲突。
+
+
+## 11. bsk 实际静态 CRT：原件、权限边界与明确门槛
+
+研究对象是父任务提供的实际 MSVC 14.51.36231 构建：`D:/MediaSail-build-0512/cargo-target-static/x86_64-pc-windows-msvc/release/bsk.exe`，18,544,128 字节，SHA-256 `2e305f6ed069ec03764e90dd66a8fbb19d1546b4228868be394b7f9f1a9ba7f5`，构建脚本明确使用 `-C target-feature=+crt-static`。独立读取 PE/PDB，先匹配 RSDS GUID/age，再解析 DBI 模块表：574 个总模块中有 libcmt.lib 39、libvcruntime.lib 27、libucrt.lib 197 个，未发现 libcpmt.lib 模块。故这次确实复制了静态 CRT，不能因无 VCRUNTIME/MSVCP imports 就说许可消失。证据及脚本在 `source-audit/microsoft-msvc/bsk-static-crt-evidence.json`、`bsk-pdb-crt-modules.json` 与父目录的 `audit_bsk_static_crt.py`。[LLVM PDB 模块表原理](https://llvm.org/docs/PDB/DbiStream.html)
+
+同一固定官方 VS manifest SHA-256 `417b8d3fee577bdb0e192835692446de51b4626526e4b555162fd9c2fca7dff1` 已保存为 `microsoft-msvc/VisualStudio.vsman`。5 个本地 MSVC VSIX 均与 manifest SHA-256 匹配；libcmt/libvcruntime 另与固定 Desktop VSIX 内文件逐字节一致。文件夹版本 14.51.36231 与包 servicing 版本不同，元数据已分别记录。SDK 的实际 libucrt.lib 为 43,298,182 字节、SHA-256 `9d9c74fc00d0d43b3ded5328d1f197e919236645dfaf80a84ece1f1b99465a1e`，另通过 MSI File 表及对应 CAB 内容证明与同一固定官方 SDK 包逐字节一致；未安装 MSI。
+
+### 组件分别适用何种条款
+
+| 组件/条款 | 已核实结论 |
+| --- | --- |
+| SDK UCRT 静态代码 | SDK 官方 REDIST 的 Static LIB files（已保存 Markdown 第 48–59 行）明确包括 ucrt/x64；SDK §2(a)(ii) 包括 `.lib` 只分发链接结果、下游保护同意等条件。若保留本 MSVC 候选，SDK 呈现范围需同时写清 bsk 内这一 Microsoft UCRT 部分，不能仍声称只含 D3D DLL。[原始清单](https://learn.microsoft.com/en-us/legal/windows-sdk/redist) |
+| Community 工具使用 | Community 2026 原件允许 individual 使用和 OSI 开源应用开发。固定 catalog 的 Community → NativeDesktop → VC.Tools → 同一 CRT Desktop 包链已经验证。可如实记录共享组件、公开 Apache/MIT 项目及适用的 Community 使用依据，不能虚称安装 IDE、持有付费授权或已有未记录的许可同意。[Community 2026 原件](https://visualstudio.microsoft.com/license-terms/vs2026-ga-community/) |
+| 专有 libcmt/VCRuntime | Community 的 Distributable Code 条款引用外部清单；保存的 2026 官方清单列 VC/redist，但没有列实际 libcmt.lib、libvcruntime.lib 或 VC/Tools/MSVC/<version>/lib。固定 VSIX 内未找到补充许可，因此这两项的精确分发授权链尚未建立。[2026 官方清单](https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution) |
+| BuildTools 与 Runtime 原件 | 已分别保存；它们是工具/终端使用条款，不应当作发布者额外分发授权，也不能据此对整个 bsk 增加一份新合同。[BuildTools](https://visualstudio.microsoft.com/license-terms/vs2026-ga-diagnostic-buildtools/)；[Runtime](https://visualstudio.microsoft.com/license-terms/vs2026-ga-visualcpp-v14-redist-runtime/) |
+| STL 的公开许可 | 本机 STL 文件为 Apache-2.0 WITH LLVM-exception；vcruntime、UCRT 文件保留 Microsoft 专有声明，且这次 PDB 没有 libcpmt 模块。不能把 STL 许可套到实际 CRT。 |
+
+Microsoft 的官方部署文章确实明确支持将静态库对象链接入应用后部署，所以这里**不作“所有 MSVC 静态应用不能发行”的判断**。但一般部署说明未补齐当前文件/当前条款的清单授权缺口；在本任务要求的逐组件正面证据门槛下，这个 MSVC bsk 候选的许可项不能标通过。用户同意页也不能替发布者补出缺失的复制分发权。[官方静态部署说明](https://learn.microsoft.com/en-us/cpp/windows/deployment-in-visual-cpp?view=msvc-170)
+
+可执行处理：若不能取得覆盖确切静态 MSVC 组件的许可依据，采用父任务提出的**同一 BrowserSkill 源码及适配的 Windows GNU/MinGW 构建**，重新核对产物与实际运行库许可；无需更换浏览器或产品工具。若新 bsk 未复制 SDK UCRT/MSVC CRT，SDK 组件许可页可以继续只覆盖浏览器的 d3dcompiler_47.dll。此次未修改代码、安装器或编译程序。
+
+### 原件路径、精确位置与源码 kit 边界
+
+完整研究、SHA-256 与原始 URL 在 `D:/MediaSail-build-0512/source-audit/microsoft-msvc/STATIC-CRT-RESEARCH.md`、`originals-manifest.json`、`other-product-terms-manifest.json`、`fixed-msvc-package-metadata.json`。BuildTools DOCX SHA-256 `ff03a242ec131e8353643612cdf58ae3d6cc9b51d7dce929351d140ba24a8b83`；Runtime DOCX `08651651a7602fc7c0e2763de0fde1ff9f868df2780597cd1775ee9d6441c783`；Community DOCX `02ac07637f4a513a807cd3721c7620433fc483bc049d25784b0c10c54b05e1fb`。对应忠实文本中，Community 第 12、14–15 行为使用依据，第 51–64 行为分发段（53 为清单、58 为下游条件）；BuildTools 第 9–13、26–32 行和 Runtime 第 8–19 行分别界定使用/范围，不能移花接木作分发授权。
+
+LGPL 2.1 §6 的 compiler/system-component 源码例外界定对应源码范围，不是 Microsoft 复制分发授权，更不是把专有 CRT 变成 Apache/MIT。调查原件/VSIX 只在本地内部留存，不应把 MSVC 编译器、`.lib`、Source VSIX 或专有 CRT 源码直接塞入公开源码 kit。也不能把 Microsoft 对其组件的限制扩展到 Rust/BrowserSkill 或 Chromium/FFmpeg。当前没有从此 bsk 实物核对得到新的 LGPL 调试修改权冲突；明确未通过的门槛是以上专有静态 MSVC 组件授权链。
+
+截至本项研究，父任务已报告第 10 节的 D3D 组件页及升级/静默行为通过真实 NSIS 小包测试；上节原代码检查描述是研究时的历史快照，不再作为“当前升级路径未修复”的结论。这里没有独立复测安装器。
+
+
+## 12. 正式 gnullvm 候选：运行库实物核验通过
+
+父任务最终使用同一适配 BrowserSkill 的 **Rust x86_64-pc-windows-gnullvm + LLVM-MinGW UCRT** 构建，旧 MSVC bsk 和首次未链接成功的 GNU/MSVCRT 尝试均不发行；未伪造 GCC 兼容库别名。浏览器仍为前述固定 UGC。本节只判断该新 bsk 的运行库来源和声明；产品功能验收及最终打包由父任务执行。
+
+### 固定输入及哈希
+
+官方开发工具为 `llvm-mingw-20261104-ucrt-x86_64.zip`，191,037,046 字节，SHA-256 `552191b5754c49a5a20723276a6fc56541ea1922c4c50b7b669022333fc1b40f`，GitHub API 官方 digest 与本机原件一致。前次 MSVCRT 归档也曾校验，但不是正式输入。两个变体的五份许可原文逐字节相同。[官方发行资产](https://github.com/mstorsjo/llvm-mingw/releases/tag/20261104)
+
+| 输入 | 固定来源 |
+| --- | --- |
+| llvm-mingw 20261104 | `70bc9a60eec2410124a9e3fe1611929705cb6574`，annotated tag 另保存 |
+| LLVM 23.1.5 | `392dfff97d29b59d77e5cac6d4b6ef2585fe7117` |
+| MinGW-w64 | `ee9bd87644156c41072a11ad957d1e11831a72df`，固定构建脚本锁定 |
+| Rust 1.99.1 | `58cf8f9c35b355199727627d07ae34a4e2846d67`，私有 rustc 与 channel manifest 一致 |
+| 实际 bsk.exe | 13,979,136 字节；SHA-256 `5cd02e7aeb2a8ff2fe1326af41140d84f979a2d80c76597b9276eb02dc559694` |
+| 同次构建 link-map | 20,335,256 字节；SHA-256 `977e7ad3bc378b052533b42580350124895f2815b8227253e449b5b790e4f11b` |
+
+原件、GitHub API、固定脚本、项目/MinGW source archives、LLVM 各组件 LICENSE 均在 `D:/MediaSail-build-0512/source-audit/gnu-runtime/`。两个源归档分别有 95、7,027 个 regular files，扫描无绝对路径、.. 或链接，未全量抽取。归档的 MinGW runtime、project、ZPL、winpthreads 原文均与固定上游字节一致。[固定 LLVM 配置](https://github.com/mstorsjo/llvm-mingw/blob/70bc9a60eec2410124a9e3fe1611929705cb6574/build-llvm.sh)；[固定 MinGW 配置](https://github.com/mstorsjo/llvm-mingw/blob/70bc9a60eec2410124a9e3fe1611929705cb6574/build-mingw-w64.sh)
+
+### 确实导入系统 UCRT，没有复制 SDK 静态 CRT
+
+独立解析正式 PE 得到 21 个 Windows 系统 DLL/API-set import，其中 11 个 api-ms-win-crt 集合，delay imports 为 0；没有 MSVC、LLVM、GCC、C++ 或 pthread 独立运行库 DLL。正式输出没有直接导入旧 msvcrt.dll，而是调用 Windows 自带 UCRT API-set。Microsoft 官方确认 UCRT 是 Windows 10 及更新系统的 OS 组件；它的系统导入与复制 SDK libucrt.lib 是不同情形。[官方 UCRT 说明](https://learn.microsoft.com/en-us/cpp/windows/universal-crt-deployment?view=msvc-170)
+
+实际 map 的 349 种输入中，核对到 48 个 MinGW runtime 成员（mingw32 14、mingwex 25、UCRT compatibility 9）、3 个 MinGW startup .o、5 个 LLVM libunwind 成员。startup 文件及所审相关 `.a` 均与官方 UCRT ZIP 对应成员字节一致。没有 SDK/MSVC `.lib` 输入、GCC runtime 或 profiling 输入；libc++、libc++abi、winpthread 的 archive 中没有实际映射成员，也未用之前 Rust GNU sysroot 的 crt2/dllcrt2。
+
+该 UCRT 包的 libmsvcrt.a 与 libucrt.a 为同 SHA-256 的开源 import/compatibility archive：`062960e8846d48e81dcb58057c2bcc4f0c466a3ef8bd94879d8f8061b4f9c5e4`。其中 libucrt_extra 命名不表示 Microsoft SDK 实现；已核对的 __getmainargs、amsg_exit、snprintf、vfprintf 等固定源码明确属于 MinGW Public Domain 实现。全部 51 个 startup/MinGW 对象均找到固定源码候选（52 文件），逐项记录 Public Domain、gdtoa 明确许可、无版权限制许可或根 ZPL 默认许可；没有把根 ZPL 当作所有组件的唯一许可。
+
+完整证据为 `bsk-gnullvm-runtime-verification.json`、`bsk-gnullvm-map-inputs.json`、`linked-mingw-source-license-audit.json`。LLD map 有时只记成员名而不记母 archive，材料保留这一局限，以实际 `.a` 成员及官方归档 hash 交叉验证；父任务提供 EXE/map 为同次构建。本研究未声称存在 PE 与 map 的密码学绑定，也未运行产品。
+
+### 最终应随包的原件
+
+应复制 **`source-audit/gnu-runtime/final-distribution-notices/`**，不是此前更宽的 12 文件准备目录。最终为 8 份未改动原件、共 1,543,468 字节，另附可移植来源 JSON：
+
+- MinGW-w64-runtime-COPYING.txt，完整保留 gdtoa 等贡献者声明。
+- MinGW-w64-ZPL-2.1-COPYING.txt、MinGW-w64-DISCLAIMER.PD.txt。
+- LLVM-libunwind-LICENSE.TXT，覆盖实际 5 个 linked members，保留 Apache/LLVM exception 与 legacy 原文。
+- Rust-1.99.1-LICENSE-APACHE、LICENSE-MIT、COPYRIGHT、COPYRIGHT-library.html（均带 Rust-1.99.1 前缀）。
+
+Rust 标准库未包含在应用 Cargo 清单中，因此另保留官方 COPYRIGHT-library.html，1,499,465 字节、SHA-256 `5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27`。Rust 官方 COPYRIGHT 明确该 HTML 为标准库子集的第三方声明。原始库的多重许可证选择及既有 MPL 源码配套不能因“应用自身 MIT/Apache”被省略。[Rust 固定版权说明](https://github.com/rust-lang/rust/blob/58cf8f9c35b355199727627d07ae34a4e2846d67/COPYRIGHT)；[MinGW 固定运行库声明](https://github.com/mingw-w64/mingw-w64/blob/ee9bd87644156c41072a11ad957d1e11831a72df/COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt)
+
+逐文件 SHA-256、原始 URL、实际适用组件在 `final-distribution-notices-manifest.json` 与随包 GNU-RUNTIME-SOURCES.json 中。亦已制成 `gnu-runtime-notices-gnullvm-1.99.1.zip`，60,803 字节、SHA-256 `5a61de278a7efcc677a9664c45572c2c8ec23615ad4ac5b98ff9f4fc59ead475`；ZIP 通过 CRC/安全路径检查，只有 9 个平面成员，没有编译器、Windows DLL、运行库二进制或本机私人路径。
+
+**本项运行库许可/声明收集门槛通过。** 这些开源运行库条款无需新增安装同意页；当前 bsk 未复制 SDK/MSVC 静态 CRT，Windows 实现留在系统中，SDK 组件页继续只覆盖实际另行分发的浏览器 d3dcompiler_47.dll。不得把 SDK/BuildTools 开发工具约束扩展到 Rust/BrowserSkill。BrowserSkill、Cargo 依赖、浏览器 notices、对应源码同 Release 实际分发及最终打包检查，仍由前述各自材料/父任务完成，本项不替代它们。

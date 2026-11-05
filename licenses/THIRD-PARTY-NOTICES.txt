@@ -1,4 +1,4 @@
-MediaSail 0.5.0 — third-party notices
+MediaSail 0.5.12 — third-party notices
 
 Easel: ZJU-REAL/Easel, revision fb80ae6dd6fc26f5553efcb293ee6d93ef253f02, Apache-2.0.
 Business workflows and professional knowledge are retained. Desktop adaptation,
@@ -21,14 +21,25 @@ https://github.com/astral-sh/python-build-standalone
 Python business packages are fixed in requirements-business.lock (also copied
 as licenses/requirements.lock). Versions and terms: python-packages.json.
 Original distribution notices remain in site-packages and .dist-info folders.
-Playwright includes its private Node driver and driver licenses; account
-browser automation uses separately installed Chrome/Edge, not a bundled browser.
+Playwright includes its private Node driver and driver licenses; the legacy
+native account tools use separately installed Chrome/Edge and their own profiles.
 https://github.com/microsoft/playwright
 
 The business runtime has no standalone OpenClaw, Node distribution, FFmpeg
 executables, media-generation frameworks or creative model weights. Historical
 source/notice references do not imply those old runtimes are shipped.
-All shipped runtime files are recorded in runtime-sha256.json.
+Business runtime files are recorded in runtime-sha256.json; dedicated browser
+resources and their cached files have a separate browser-tools/manifest.json.
+
+The optional dedicated browser is ungoogled-chromium 156.0.8078.73-1.1.
+BrowserSkill 0.4.1 is adapted from Tencent's fixed source under MIT; its exact
+native build uses Rust and LLVM-MinGW with the Windows system UCRT API.
+Original browser, native/extension dependency, MinGW/LLVM/Rust and Microsoft
+D3D DLL notices remain in browser-tools/. These licenses apply independently.
+Browser corresponding source, patches and MPL/dependency source are supplied
+as separate Browser Sources assets in the same Release, not in the installer.
+The Microsoft SDK component agreement only concerns d3dcompiler_47.dll and
+does not restrict the open-source parts' modification or debugging rights.
 
 AitoEarn is opened in the user's default browser; its backend is not redistributed.
 CCL read-only LevelDB/Snappy readers: MIT, Copyright CCL Forensics.

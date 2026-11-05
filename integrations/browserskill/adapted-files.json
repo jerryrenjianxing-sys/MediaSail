@@ -1,14 +1,17 @@
 {
   "upstream": "b8f2d4f0fa35c8c7c866229e1cf3b3329ae39de5",
   "files": {
-    "apps/extension/src/lib/daemon-connection-preference.ts": "74dff4b86ea7c586bf8b00e53fa4d51ba9d20000e20a2b07b94a42cd8c7da244",
-    "apps/extension/wxt.config.ts": "19d1c08c09f03151a5c0d3101c85354ba69914d4507f74fd9d53d4b08122d1b6",
-    "crates/bsk-cli/build.rs": "c9e18b6e6a4d9cfb311dc3e68c06b422937fc9d458ad341c19a02353e7c0f693",
-    "crates/bsk-cli/src/cli/mod.rs": "5a73dbc1535f7cc670a0bd0bfb946f51604ab239a95a67e5ed1f26540da175f0",
+    "apps/extension/src/lib/daemon-connection-preference.ts": "c92ef0432070b492b42ae128ea35f23f9d5e4e990cfce891cc490306089896a4",
+    "apps/extension/wxt.config.ts": "c840a3203d8d790275ca358eb0866f1e01f2bdc718c822866dc69d2eb7f44d00",
+    "crates/bsk-cli/build.rs": "f9f6d524fe240c6cbe6f8827dbf3cf45c644c8dc8aeb4a778054981683b02773",
+    "crates/bsk-cli/src/cli/doctor.rs": "93f679be157f10f16402e87bdf420870cf4c403612106bec272b2e469d5dbf47",
+    "crates/bsk-cli/src/cli/mod.rs": "66b526ec392da25424b4b3d481241ae9b656ae363e2eba478280330ab6b5d197",
+    "crates/bsk-cli/src/cli/session.rs": "0f49b040fcb1225e49ca4d349a55f346b1d90676d0f21ef22e7aea29e1248cb9",
+    "crates/bsk-cli/src/cli/update.rs": "d6dad547f715e388e94a96f049aeb2df3a8725152bcaebea98b9abddae6f7e79",
     "crates/bsk-cli/src/daemon/start.rs": "5dcbe25e737b6f510ec049a00b80a1152804b1e0e61d133b12e670a432c840ae",
     "crates/bsk-cli/src/daemon/start/windows.rs": "604af5f732e797d2c751f2385e55e31e27a480b0da199462aa0bb2bbc8ea8428",
     "crates/bsk-cli/src/daemon/ws.rs": "336975ec13daf26b87420d2b661c2439ec5fdee534bcc2a2d78b2663d8add6d7",
-    "crates/bsk-cli/src/main.rs": "8df8d5110891e6921bcd7e32ce876c223af56132fc08836e18650474270f61ac",
+    "crates/bsk-cli/src/main.rs": "d7287570945b3d400346a68fd876afbf0f09d1bea98abb8926a698361df84005",
     "crates/bsk-cli/src/windows_process.rs": "80d446211c1dafcc6e9d94657b01c6b13a90bcfcf3aaa29d1bf96840b1b0cc84"
   }
 }

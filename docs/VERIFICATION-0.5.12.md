@@ -56,7 +56,7 @@
 
 ## 现行专用浏览器候选：已执行
 
-- 固定 ungoogled-chromium `156.0.8078.73-1.1` 原 ZIP，SHA-256 与 SPEC 一致。BrowserSkill 从固定 0.4.1 源码适配构建，Rust 1.99.1 + 静态 CRT，PE import 检查未依赖独立 VC Runtime；扩展使用固定公开密钥身份、同组 loopback nonce，CLI/扩展构建标识一致。
+- 固定 ungoogled-chromium `156.0.8078.73-1.1` 原 ZIP，SHA-256 与 SPEC 一致。最终 BrowserSkill 为 Rust 1.99.1、`x86_64-pc-windows-gnullvm`、LLVM-MinGW 20261104 UCRT 静态开源运行代码构建，EXE SHA-256 `5cd02e7aeb2a8ff2fe1326af41140d84f979a2d80c76597b9276eb02dc559694`；实际链接输入与 21 个系统 DLL/API 导入核验通过，不复制 SDK/MSVC 静态 CRT、不要求额外 VC Runtime。早期 MSVC 候选不发行。扩展使用固定公开密钥身份、同组 loopback nonce，CLI/扩展构建标识一致。
 - 原候选与适配构建分别自动连接，真实合成页面输入/点击、表格 CSV 导出、截图通过。H.264/AAC CC0 样本实际播放，readyState=4、960×540、播放时间推进、无媒体错误。不是只检查 canPlayType。
 - 正式 PowerShell 5.1 入口在无全局 Node/Python 的子进程环境中完成准备、可见浏览器启动及连接；准备与状态不启动浏览器。中文空格路径通过。最初深路径暴露 Windows PowerShell/.NET 长度限制：缩短临时目录，并在超范围时提前明确报错，保留原库，不声称支持无限路径。
 - 首次真实扫码由用户在新候选配置完成。只读取抖音创作者首页，保存六项有明确统计周期的指标、账号显示编号依据、截图与摘录；累计指标、周期指标及未读作品总数分开。
@@ -65,6 +65,10 @@
 - 已复现 daemon 结束后显式 connect 无法恢复的失败，补成只恢复原组/原端口的 daemon；不启动另一浏览器。run 不自动恢复或重放。其他已完成红绿：helper 参数边界、PowerShell 管道 JSON、发现镜像误报循环；实际启动命令结束后浏览器和 daemon 仍运行。
 - 完整窗口截图确认无 CfT “仅用于测试”横幅，正常“BrowserSkill for MediaSail 已开始调试此浏览器”及取消按钮保留。原生窗口绑定工具对未注册 Chromium 报 owner=Chrome 的绑定错误；截图改由独立 Electron 开发测试的 desktopCapturer 获取任务自建 welcome 窗口，不修改浏览器策略。
 - 许可调查已对实际 credits 与对应源文件、137 个 UGC/Windows 补丁、域名替换及裁剪输入进行核对；没有宣称全量 Chromium GN 或重编译通过。最终许可原件、对应源码资产与发行核验仍须完成，详见[调查记录](research/2026-11-05-browser-candidate-license-audit.md)。
+- 最终 GNU 构建重新自动连接原专用浏览器配置、读取原账号登录保持通过；业务软件退出后仍能使用原回执。实际 WebSocket 连接分别验证错误组 nonce 为 403、错误扩展 Origin 为 403、同组合法握手为 101，未公开 nonce 或调试端点。
+- 隔离 mini-NSIS 覆盖 D3D 组件许可：未同意或错误哈希的 `/S` 在安装前退出 3；明确提供当前原件 SHA 同意参数后成功，相同条款记忆后不重复询问。可见页面默认不勾选、下一步禁用，正常取消退出 1 且未安装。只限制微软 D3D DLL，不改变其他开源部分的修改/调试权利。正式完整安装器另验。
+- 最终源码检查已通过 Node 行为测试、Python 122 项（既有 1 项 Windows 链接权限跳过）、前端构建、45 路径接口资料及两个上游补丁重放。随后源码包输入校验增加 3 个实际 CLI 红绿测试，拒绝缺失、空目录和损坏依赖源码。最终真实输入包逐项核对 226 个 Rust 源归档；正确输入也单独实际执行，不仅运行负向测试。
+- 两轴复审发现的自动 SkillSync、重复 daemon 核验、验收清理失败挂起及源码归档漏项已经修复。Standards 与 Spec 当前无剩余已确认问题；不以审查代替安装升级。
 
 ## 待完成后才能发行
 

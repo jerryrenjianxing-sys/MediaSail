@@ -77,7 +77,9 @@ function Get-Context([string]$Connection) {
     $manifestFile=[IO.Path]::GetFullPath($info.browserTools.manifest);Assert-PlainPath $manifestFile
     $manifest=Read-Json $manifestFile
     if($manifest.schema -ne 1 -or $manifest.product -ne 'MediaSailBrowser' -or $manifest.bundleId -notmatch '^[a-f0-9]{64}$'){throw 'Unsupported browser asset manifest'}
-    return @{info=$info;library=$library;state=(Join-Path $library 'runtime/browser');manifest=$manifest;source=[IO.Path]::GetDirectoryName($manifestFile);cache=(Join-Path $library ('runtime/cache/browser-tool/'+$manifest.bundleId))}
+    # Keep ordinary Documents/OneDrive paths below PS 5.1's native path limit.
+    # The complete fingerprint remains in the verified cache manifest.
+    return @{info=$info;library=$library;state=(Join-Path $library 'runtime/browser');manifest=$manifest;source=[IO.Path]::GetDirectoryName($manifestFile);cache=(Join-Path $library ('runtime/cache/browser-tool/'+$manifest.bundleId.Substring(0,24)))}
 }
 function Check-Cache($Context) {
     foreach($entry in $Context.manifest.cacheFiles){Check-Hash (Inside $Context.cache $entry.path) $entry.sha256}
@@ -87,7 +89,11 @@ function Prepare($Context) {
     foreach($entry in $m.cacheFiles){
         if((Join-Path $Context.cache $entry.path).Length -gt 247){throw 'The browser cache path is too long for Windows PowerShell 5.1. Choose a shorter library location; existing data is unchanged'}
     }
-    if(Test-Path -LiteralPath $Context.cache){Check-Cache $Context;return @{ok=$true;prepared=$true;reused=$true;libraryId=$Context.info.libraryId;cache=$Context.cache;browserVersion=$m.browser.version;toolVersion=$m.bsk.version}}
+    if(Test-Path -LiteralPath $Context.cache){
+        $cached=Read-Json (Join-Path $Context.cache 'manifest.json')
+        if($cached.bundleId -ne $m.bundleId){throw 'Browser cache fingerprint collision; both versions were retained. No browser started'}
+        Check-Cache $Context;return @{ok=$true;prepared=$true;reused=$true;libraryId=$Context.info.libraryId;cache=$Context.cache;browserVersion=$m.browser.version;toolVersion=$m.bsk.version}
+    }
     $archive=Inside $Context.source $m.browser.archive;Check-Hash $archive $m.browser.sha256
     $extension=Inside $Context.source $m.extension.archive;Check-Hash $extension $m.extension.sha256
     $bsk=Inside $Context.source $m.bsk.file;Check-Hash $bsk $m.bsk.sha256
@@ -117,8 +123,9 @@ function Read-Group([string]$File) {
     if([IO.Path]::GetFullPath($File) -ne $expected){throw 'Browser group location does not match its library'}
     $marker=Read-Json (Join-Path $group.libraryRoot '.mediasail-library.json')
     if($marker.product -ne 'MediaSail' -or $marker.schema -ne 1 -or $marker.libraryId -ne $group.libraryId -or $marker.state -ne 'ready'){throw 'The original browser library is unavailable or has changed'}
-    $cache=Inside (Join-Path $group.libraryRoot 'runtime/cache/browser-tool') $group.bundleId
-    if($cache -ne [IO.Path]::GetFullPath($group.cache) -or $group.profile -ne (Join-Path $group.libraryRoot 'runtime/browser/profile')){throw 'Browser group paths do not match their library'}
+    if($group.bundleId -notmatch '^[a-f0-9]{64}$'){throw 'Invalid browser cache fingerprint'}
+    $cache=Inside (Join-Path $group.libraryRoot 'runtime/cache/browser-tool') ([IO.Path]::GetFileName($group.cache))
+    if([IO.Path]::GetFileName($cache) -notin @($group.bundleId,$group.bundleId.Substring(0,24)) -or $cache -ne [IO.Path]::GetFullPath($group.cache) -or $group.profile -ne (Join-Path $group.libraryRoot 'runtime/browser/profile')){throw 'Browser group paths do not match their library'}
     $manifest=Read-Json (Join-Path $cache 'manifest.json')
     if($manifest.bundleId -ne $group.bundleId -or $group.directory -ne [IO.Path]::GetDirectoryName($expected) -or $group.browserExecutable -ne (Inside $cache $manifest.browser.executable) -or $group.token -notmatch '^[a-f0-9]{64}$' -or $group.port -lt 1 -or $group.port -gt 65535){throw 'Browser group assets or private endpoint do not match their recorded version'}
     return $group
@@ -147,16 +154,20 @@ function Tool-Json($Group,[string[]]$NativeArgs) {
     if($response.ExitCode -ne 0){throw ('Browser tool failed: '+$response.Stdout+$response.Stderr).Trim()}
     try {return ($response.Stdout|ConvertFrom-Json)}catch{throw 'Browser tool returned an unreadable response; inspect its private log before retrying'}
 }
-function Ensure-GroupDaemon($Group) {
-    $response=Tool $Group @('status','--json')
-    if($response.ExitCode -ne 0){
+function Ensure-GroupDaemon($Group,[bool]$Start=$false) {
+    $manifest=Read-Json (Join-Path $Group.cache 'manifest.json')
+    $identity=Tool-Json $Group @('mediasail-info','--json')
+    if(!$identity.managed -or $identity.product -ne 'MediaSailBrowserSkill' -or $identity.build -ne $manifest.bsk.build -or $identity.version -ne $manifest.bsk.version -or $identity.protocol -ne $manifest.bsk.protocol -or $identity.target -ne $manifest.bsk.identity.target){throw 'BrowserSkill adapted build identity does not match the verified group'}
+    $response=if($Start){$null}else{Tool $Group @('status','--json')}
+    if($Start -or $response.ExitCode -ne 0){
         # Explicit connect can restore this group's daemon, never a different
         # endpoint or browser. Normal run/status never perform this recovery.
         $started=Tool $Group @('daemon','start','--port',[string]$Group.port,'--session-idle','24h','--daemon-idle','10m','--json')
         if($started.ExitCode -ne 0){throw ('The original private daemon could not reconnect; browser and login data were retained. '+$started.Stdout+$started.Stderr)}
     }
     $status=Tool-Json $Group @('status','--json')
-    if($status.ws_port -ne $Group.port -or $status.daemon_version -ne $Group.toolVersion){throw 'Private browser daemon identity did not match; no other endpoint was adopted'}
+    $daemon=Get-Process -Id $status.pid -ErrorAction Stop
+    if($status.ws_port -ne $Group.port -or $status.daemon_version -ne $Group.toolVersion -or $status.protocol_version -ne $manifest.bsk.protocol -or $daemon.Path -ne (Join-Path $Group.cache 'bsk.exe')){throw 'Private browser daemon identity did not match; no other endpoint was adopted'}
     $Group.daemonPid=$status.pid
     Save-Json (Join-Path $Group.directory 'group.json') $Group
     return $status
@@ -204,13 +215,9 @@ function Start-Group($Context) {
     $token=[BitConverter]::ToString($bytes).Replace('-','').ToLowerInvariant()
     $group=@{schema=1;product='MediaSailBrowserGroup';id=$id;libraryId=$Context.info.libraryId;libraryRoot=$Context.library;directory=$directory;cache=$Context.cache;bundleId=$Context.manifest.bundleId;browserVersion=$Context.manifest.browser.version;toolVersion=$Context.manifest.bsk.version;profile=$profile;browserExecutable=(Inside $Context.cache $Context.manifest.browser.executable);token=$token;port=$port;browserPid=$null;browserStarted=$null;backup=$backup}
     Copy-Tree (Join-Path $Context.cache 'extension') (Join-Path $directory 'extension')
-    Save-Json (Join-Path $directory 'extension/mediasail-bootstrap.json') @{groupId=$token;wsUrl=('ws://127.0.0.1:'+ $port+'/?mediasailGroup='+$token)}
+    Save-Json (Join-Path $directory 'extension/mediasail-bootstrap.json') @{groupId=$token;build=$Context.manifest.bsk.build;wsUrl=('ws://127.0.0.1:'+ $port+'/?mediasailGroup='+$token)}
     Save-Json (Join-Path $directory 'group.json') $group
-    $started=Tool $group @('daemon','start','--port',[string]$port,'--session-idle','24h','--daemon-idle','10m','--json')
-    if($started.ExitCode -ne 0){throw ('The private browser port could not start; no other daemon was adopted. '+$started.Stdout+$started.Stderr)}
-    $status=Tool-Json $group @('status','--json')
-    if($status.ws_port -ne $port -or $status.daemon_version -ne $group.toolVersion){throw 'Private browser daemon identity did not match'}
-    $group.daemonPid=$status.pid
+    $status=Ensure-GroupDaemon $group $true
     $welcome=Join-Path $directory 'welcome.html'
     [IO.File]::Copy((Join-Path $Context.cache 'browser-welcome.html'),$welcome)
     [IO.File]::Copy((Join-Path $Context.cache 'browser-icon.png'),(Join-Path $directory 'browser-icon.png'))
@@ -231,6 +238,7 @@ function Connect($Context,[string]$Name,[string]$Url) {
         $group=Start-Group $Context
     }
     $initialStatus=Ensure-GroupDaemon $group
+    $groupManifest=Read-Json (Join-Path $group.cache 'manifest.json')
     $until=[DateTime]::UtcNow.AddSeconds(45);$status=$null
     do {
         $status=Tool-Json $group @('status','--json')
@@ -241,7 +249,7 @@ function Connect($Context,[string]$Name,[string]$Url) {
         Start-Sleep -Milliseconds 250
     }while([DateTime]::UtcNow -lt $until)
     if($browsers.Count -ne 1){throw 'The dedicated browser is open but its extension did not connect; browser and login data were retained'}
-    if($browsers[0].extension_version -ne $group.toolVersion -or $status.ws_port -ne $group.port){throw 'Browser group versions or endpoint changed'}
+    if($browsers[0].extension_version -ne $group.toolVersion -or $browsers[0].extension_protocol_version -ne $groupManifest.bsk.protocol -or $status.ws_port -ne $group.port){throw 'Browser group versions or endpoint changed'}
     if(!$Name){$Name='MediaSail Agent'}
     $session=Tool-Json $group @('session','start','--browser',$browsers[0].instance_id,'--name',$Name,'--focus','--json')
     if(!$session.session_id){throw 'Browser did not return a task session'}

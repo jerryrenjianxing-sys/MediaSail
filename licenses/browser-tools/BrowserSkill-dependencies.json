@@ -4343,7 +4343,7 @@
       }
     },
     {
-      "name": "windows_x86_64_msvc",
+      "name": "windows_x86_64_gnullvm",
       "version": "0.48.5",
       "license": "MIT OR Apache-2.0",
       "repository": "https://github.com/microsoft/windows-rs",
@@ -4359,12 +4359,12 @@
         }
       ],
       "sourceArchive": {
-        "path": "crates/windows_x86_64_msvc-0.48.5.crate",
-        "sha256": "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
+        "path": "crates/windows_x86_64_gnullvm-0.48.5.crate",
+        "sha256": "0b7b52767868a23d5bab768e390dc5f5c55825b6d30b86c844ff2dc7414044cc"
       }
     },
     {
-      "name": "windows_x86_64_msvc",
+      "name": "windows_x86_64_gnullvm",
       "version": "0.52.6",
       "license": "MIT OR Apache-2.0",
       "repository": "https://github.com/microsoft/windows-rs",
@@ -4380,8 +4380,8 @@
         }
       ],
       "sourceArchive": {
-        "path": "crates/windows_x86_64_msvc-0.52.6.crate",
-        "sha256": "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+        "path": "crates/windows_x86_64_gnullvm-0.52.6.crate",
+        "sha256": "24d5b23dc417412679681396f2b49f3de8c1473deb516bd34410872eff51ed0d"
       }
     },
     {

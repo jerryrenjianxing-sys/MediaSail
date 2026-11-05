@@ -20,10 +20,18 @@
     "sourceCommit": "b8f2d4f0fa35c8c7c866229e1cf3b3329ae39de5",
     "sourceUrl": "https://github.com/Tencent/BrowserSkill/archive/b8f2d4f0fa35c8c7c866229e1cf3b3329ae39de5.zip",
     "sourceSha256": "305c71b5fd9a4c2eb24c428c0c8e3f73df4e60b0e0c242212ee74fae27d6b746",
+    "binarySha256": "5cd02e7aeb2a8ff2fe1326af41140d84f979a2d80c76597b9276eb02dc559694",
     "extensionId": "kaebebbcleedepmhfmmnekncfdmmhlml",
     "rust": "1.99.1",
-    "target": "x86_64-pc-windows-msvc",
-    "rustflags": "-C target-feature=+crt-static",
+    "target": "x86_64-pc-windows-gnullvm",
+    "rustflags": "-C target-feature=+crt-static -C link-arg=-static",
+    "compiler": {
+      "name": "llvm-mingw",
+      "release": "20261104",
+      "sourceCommit": "70bc9a60eec2410124a9e3fe1611929705cb6574",
+      "url": "https://github.com/mstorsjo/llvm-mingw/releases/download/20261104/llvm-mingw-20261104-ucrt-x86_64.zip",
+      "sha256": "552191b5754c49a5a20723276a6fc56541ea1922c4c50b7b669022333fc1b40f"
+    },
     "pnpm": "10.17.0"
   }
 }

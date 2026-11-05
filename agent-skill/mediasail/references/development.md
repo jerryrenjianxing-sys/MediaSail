@@ -35,7 +35,7 @@ dataDir（runtime）下：
 
 源码仓库的 desktop 是 Electron 主进程与更新、持久状态和受限的浏览器打开能力；bridge 适配原后端；agent-skill 是本 Skill；vendor/easel 是固定版本的上游工作副本，patches 保留可复现变更。前端改动需导出补丁，并更新构建产物。不要把打包后的 app.asar 当成源码仓库的替代品。
 
-README、scripts/build.ps1、scripts/export-patches.cjs 和 docs/ 中有构建与验证流程。轻量版只提供核心服务与业务 Python 依赖；Node/OpenClaw、FFmpeg、自动化浏览器与重型创作/推理模型不随安装包分发。账号采集/登录/发布通过 Playwright 使用系统 Chrome/Edge，可用 EASEL_BROWSER_EXECUTABLE 指定浏览器程序位置，仍使用软件自己的平台资料目录。通用创作工具由外部 Agent 按任务准备。
+README、scripts/build.ps1、scripts/export-patches.cjs 和 docs/ 中有构建与验证流程。核心服务使用业务 Python，Node/OpenClaw、FFmpeg 与通用创作/推理模型不随安装包分发。0.5.12 另提供按需使用的专用 Chromium + BrowserSkill，独立缓存、网站配置和连接不依赖业务服务；固定来源及适配构建见 browser-tools.lock.json 与 integrations/browserskill/README.md。使用说明见[浏览器协作](browser-collaboration.md)。旧原生账号采集/登录/发布仍通过 Playwright 使用系统 Chrome/Edge，可用 EASEL_BROWSER_EXECUTABLE 指定位置，仍用旧工具独立平台资料目录。通用创作工具由外部 Agent 按任务准备。
 
 维护源码时先读仓库 AGENTS.md 和按需的 docs/DEVELOPMENT.md，按任务使用用户指定的 mattpocock-skills 插件。准备锁定依赖后运行 npm run check，统一检查 Node、Python、前端、接口资料及补丁复现；该命令不下载依赖，也不替你回写接口资料或补丁。源码检查、打包页面验收和真实安装升级是不同检查，完成情况按实际执行记录。
 

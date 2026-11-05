@@ -1,0 +1,73 @@
+{
+  "applicable_files": [
+    "d3dcompiler_47.dll"
+  ],
+  "dll_sha256": "3e56c1a0867aa04cbca948b3664fcac5d51275865cd044a45a3fd6ce636ee914",
+  "dll_bytes": 4753904,
+  "dll_version": "10.0.28000.2705",
+  "authenticode_signer": "Microsoft Corporation",
+  "authenticode_status": "Valid",
+  "same_bytes_as_sdk_redist_dll": true,
+  "sdk_package_id": "Win11SDK_10.0.28000",
+  "sdk_package_version": "10.0.28000.5",
+  "official_vs_manifest_url": "https://download.visualstudio.microsoft.com/download/pr/5f474104-723f-4007-bf4c-92e42a23dcc6/6feafaf09375b7a7534a79845739c8af4a61041fa2cf4b2d86b56a764c734b7f/VisualStudio.vsman",
+  "official_vs_manifest_sha256": "417b8d3fee577bdb0e192835692446de51b4626526e4b555162fd9c2fca7dff1",
+  "matching_existing_sdk_tools_msi_sha256": "1af5b3638693c999b62c9ac8e745b80afae5a3528967819e717d3b74bc5b1f85",
+  "eula_msi_materials": [
+    {
+      "fileName": "Installers/Windows SDK EULA-x86_en-us.msi",
+      "sha256": "DA0754C508EB37B7997D5671E2EA10E240E64F375A4558A2730D3772025DE517",
+      "size": 450560,
+      "url": "https://download.visualstudio.microsoft.com/download/pr/8d861047-d6bf-46c3-895e-2ceca5bd8fee/Win11Sdk/Aug2026Servicing28000/Installers/Windows%20SDK%20EULA-x86_en-us.msi",
+      "cache": false,
+      "signer": {
+        "$ref": "2"
+      },
+      "sha256_verified": "da0754c508eb37b7997d5671e2ea10e240e64f375a4558a2730d3772025de517"
+    },
+    {
+      "fileName": "Installers/Windows SDK Redistributables-x86_en-us.msi",
+      "sha256": "B9C199631AA8F6F7A96203A8BBD740A9EA7FFECADE481CF58EDF7E5672F291C5",
+      "size": 450560,
+      "url": "https://download.visualstudio.microsoft.com/download/pr/8d861047-d6bf-46c3-895e-2ceca5bd8fee/Win11Sdk/Aug2026Servicing28000/Installers/Windows%20SDK%20Redistributables-x86_en-us.msi",
+      "cache": false,
+      "signer": {
+        "$ref": "2"
+      },
+      "sha256_verified": "b9c199631aa8f6f7a96203a8bbd740a9ea7ffecade481cf58edf7e5672f291c5"
+    }
+  ],
+  "eula_cab_material": {
+    "fileName": "Installers/598442d9f84639d200d4f3af477da95c.cab",
+    "sha256": "E5848D03A5B8F81CF277FC146687888B077354605DB672B629F827D04A536F36",
+    "size": 59353,
+    "url": "https://download.visualstudio.microsoft.com/download/pr/8d861047-d6bf-46c3-895e-2ceca5bd8fee/Win11Sdk/Aug2026Servicing28000/Installers/598442d9f84639d200d4f3af477da95c.cab",
+    "cache": false,
+    "signer": {
+      "$ref": "2"
+    },
+    "sha256_verified": true
+  },
+  "redistribution_list_url": "https://learn.microsoft.com/en-us/legal/windows-sdk/redist",
+  "sdk_eula_list_link": "https://go.microsoft.com/fwlink/?LinkId=524842",
+  "redist_page_reported_source_commit": "5517c932e1189e1d731dc4a24ae8f6b2fdf38bd4",
+  "original_notice_files": [
+    {
+      "file": "Microsoft-Windows-SDK-10.0.28000-LICENSE.rtf",
+      "bytes": 248573,
+      "sha256": "0f4a26ac9dc50066f8a1bfeaaf3f092d1b9e4791df5487b9f3c31e7c3dc4d7f5"
+    },
+    {
+      "file": "Microsoft-Windows-SDK-10.0.28000-THIRD-PARTY-NOTICES.rtf",
+      "bytes": 22279,
+      "sha256": "ebb6640a8246b39b70322c5cec9aad7a71e86ea7b86c9c604d3a7f3ff1b30e89"
+    },
+    {
+      "file": "Microsoft-Windows-SDK-REDIST.md",
+      "bytes": 19214,
+      "sha256": "ff4dc82936ef9e8449927a3d06ee1fca801933c1464ceee60fa14003eb656dd0"
+    }
+  ],
+  "scope_note": "Original SDK materials apply as relevant to the unchanged Microsoft DLL. They do not relicense or restrict independent MediaSail, Chromium or BrowserSkill open-source components.",
+  "consent_condition": "SDK section 2(a)(ii) requires distributors and external end users to agree to protective terms. Original notice files alone do not verify that product consent paths meet this condition."
+}

@@ -10,6 +10,10 @@ on:
         description: Verified draft candidate version
         required: true
         default: '0.5.9'
+      managed_browser:
+        description: Verify managed browser cache and live-session reinstall (0.5.12+)
+        type: boolean
+        default: false
 permissions:
   contents: write
 jobs:
@@ -23,6 +27,7 @@ jobs:
       MEDIASAIL_EXPECT_PROFILE_REVISIONS: '1'
       MEDIASAIL_VERIFY_SKILL_FILENAME: '1'
       MEDIASAIL_VERIFY_SKILL_FILENAME_UPGRADE: '1'
+      MEDIASAIL_VERIFY_MANAGED_BROWSER: ${{ inputs.managed_browser && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -1,5 +1,5 @@
 diff --git a/apps/extension/src/lib/daemon-connection-preference.ts b/apps/extension/src/lib/daemon-connection-preference.ts
-index 00b3ff1..1770868 100644
+index 00b3ff1..95844c9 100644
 --- a/apps/extension/src/lib/daemon-connection-preference.ts
 +++ b/apps/extension/src/lib/daemon-connection-preference.ts
 @@ -1,67 +1,30 @@
@@ -50,10 +50,10 @@ index 00b3ff1..1770868 100644
 -        resolveReady();
 +      const response = await fetch(chrome.runtime.getURL("mediasail-bootstrap.json"), { cache: "no-store" });
 +      if (!response.ok) throw new Error("Missing MediaSail browser configuration");
-+      const managed = await response.json() as { wsUrl?: string; groupId?: string };
++      const managed = await response.json() as { wsUrl?: string; groupId?: string; build?: string };
 +      const endpoint = new URL(managed.wsUrl || "");
 +      if (endpoint.protocol !== "ws:" || endpoint.hostname !== "127.0.0.1" || !endpoint.port ||
-+          !/^[a-f0-9]{64}$/.test(managed.groupId || "") ||
++          managed.build !== __BSK_EXT_BUILD__ || !/^[a-f0-9]{64}$/.test(managed.groupId || "") ||
 +          endpoint.searchParams.get("mediasailGroup") !== managed.groupId) {
 +        throw new Error("Invalid MediaSail browser group");
        }
@@ -87,10 +87,23 @@ index 00b3ff1..1770868 100644
 +  return { ready, dispose: () => { disposed = true; clearTimeout(retry); } };
  }
 diff --git a/apps/extension/wxt.config.ts b/apps/extension/wxt.config.ts
-index 683d932..40b267e 100644
+index 683d932..1454e96 100644
 --- a/apps/extension/wxt.config.ts
 +++ b/apps/extension/wxt.config.ts
-@@ -84,7 +84,7 @@ export default defineConfig({
+@@ -75,6 +75,12 @@ export default defineConfig({
+       {
+         name: "browser-skill-intern-logo-icon",
+         generateBundle() {
++          this.emitFile({
++            type: "asset", fileName: "mediasail-build.json",
++            source: JSON.stringify({product:"MediaSailBrowserSkill",version:EXTENSION_VERSION,
++              build:process.env.MEDIASAIL_BUILD_REVISION || EXTENSION_BUILD,
++              managed:Boolean(process.env.MEDIASAIL_BUILD_REVISION)}),
++          });
+           this.emitFile({
+             type: "asset",
+             fileName: "icon/logo.png",
+@@ -84,7 +90,7 @@ export default defineConfig({
        },
      ],
      define: {
@@ -100,14 +113,15 @@ index 683d932..40b267e 100644
        __BSK_DAEMON_WS_URL__: JSON.stringify(
          process.env.BSK_DAEMON_WS_URL ?? "ws://127.0.0.1:52800",
 diff --git a/crates/bsk-cli/build.rs b/crates/bsk-cli/build.rs
-index 251e826..026e46f 100644
+index 251e826..ee297c6 100644
 --- a/crates/bsk-cli/build.rs
 +++ b/crates/bsk-cli/build.rs
-@@ -28,6 +28,11 @@ fn collect(root: &Path, dir: &Path, files: &mut Vec<String>) {
+@@ -28,6 +28,12 @@ fn collect(root: &Path, dir: &Path, files: &mut Vec<String>) {
  }
  
  fn emit_build_revision() {
 +    println!("cargo:rerun-if-env-changed=MEDIASAIL_BUILD_REVISION");
++    println!("cargo:rustc-env=BSK_BUILD_TARGET={}", env::var("TARGET").expect("Cargo build target"));
 +    if let Ok(revision) = env::var("MEDIASAIL_BUILD_REVISION") {
 +        println!("cargo:rustc-env=BSK_BUILD_REVISION={revision}");
 +        return;
@@ -115,14 +129,31 @@ index 251e826..026e46f 100644
      let revision = std::process::Command::new("git")
          .args(["describe", "--always", "--dirty"])
          .output()
+diff --git a/crates/bsk-cli/src/cli/doctor.rs b/crates/bsk-cli/src/cli/doctor.rs
+index fe408a6..f222773 100644
+--- a/crates/bsk-cli/src/cli/doctor.rs
++++ b/crates/bsk-cli/src/cli/doctor.rs
+@@ -425,6 +425,9 @@ fn check_home_writable() -> CheckResult {
+ 
+ fn check_skill_up_to_date() -> CheckResult {
+     let name = "agent skill matches bundled CLI";
++    if option_env!("MEDIASAIL_BUILD_REVISION").is_some() {
++        return CheckResult::ok(name, "MediaSail managed build: external Agent skills are unchanged");
++    }
+     let home = match crate::skill_install::harness::home_dir() {
+         Ok(home) => home,
+         Err(err) => {
 diff --git a/crates/bsk-cli/src/cli/mod.rs b/crates/bsk-cli/src/cli/mod.rs
-index dadac93..6345a91 100644
+index dadac93..fcbb421 100644
 --- a/crates/bsk-cli/src/cli/mod.rs
 +++ b/crates/bsk-cli/src/cli/mod.rs
-@@ -132,6 +132,16 @@ pub struct Cli {
+@@ -132,6 +132,19 @@ pub struct Cli {
  
  #[derive(Debug, Subcommand)]
  pub enum Command {
++    /// Fixed build identity for MediaSail packaging; never starts a daemon.
++    #[command(name = "mediasail-info", hide = true)]
++    MediaSailInfo,
 +    /// Internal native launcher for MediaSail's independently owned browser.
 +    #[command(hide = true)]
 +    ManagedLaunch {
@@ -136,6 +167,32 @@ index dadac93..6345a91 100644
      /// Decide native JavaScript dialogs (alert, confirm, prompt, beforeunload).
      Dialog(dialog_control::DialogCmd),
      /// Retrieve or cancel the original operation suspended by a native dialog.
+diff --git a/crates/bsk-cli/src/cli/session.rs b/crates/bsk-cli/src/cli/session.rs
+index 2e99582..7cb5174 100644
+--- a/crates/bsk-cli/src/cli/session.rs
++++ b/crates/bsk-cli/src/cli/session.rs
+@@ -643,6 +643,7 @@ where
+ /// In `Format::Json` mode the user-facing `≈ skill updated …` line is
+ /// suppressed to keep stderr machine-quiet for harnesses parsing it.
+ fn run_skill_sync_for_session_start(format: Format) {
++    if option_env!("MEDIASAIL_BUILD_REVISION").is_some() { return; }
+     let home = match crate::skill_install::harness::home_dir() {
+         Ok(home) => home,
+         Err(err) => {
+diff --git a/crates/bsk-cli/src/cli/update.rs b/crates/bsk-cli/src/cli/update.rs
+index 542c29b..82a03ab 100644
+--- a/crates/bsk-cli/src/cli/update.rs
++++ b/crates/bsk-cli/src/cli/update.rs
+@@ -230,6 +230,9 @@ pub struct UpdateArgs {
+ }
+ 
+ pub fn dispatch(args: UpdateArgs, format: Format) -> Result<(), CliError> {
++    if option_env!("MEDIASAIL_BUILD_REVISION").is_some() {
++        return Err(CliError::Local(anyhow::anyhow!("This build is managed by MediaSail; use the application's checked update channel. No tool files were changed.")));
++    }
+     run(args, format).map_err(CliError::Local)
+ }
+ 
 diff --git a/crates/bsk-cli/src/daemon/start.rs b/crates/bsk-cli/src/daemon/start.rs
 index f58df45..d5e5578 100644
 --- a/crates/bsk-cli/src/daemon/start.rs
@@ -272,13 +329,23 @@ index 24945e4..2ef8e5d 100644
              warn!(?origin, "rejecting WS upgrade with disallowed origin");
              let mut err = ErrorResponse::new(Some(
 diff --git a/crates/bsk-cli/src/main.rs b/crates/bsk-cli/src/main.rs
-index 9565b86..429da3f 100644
+index 9565b86..4374933 100644
 --- a/crates/bsk-cli/src/main.rs
 +++ b/crates/bsk-cli/src/main.rs
-@@ -38,6 +38,12 @@ fn dispatch(cli: Cli, format: Format) -> Result<(), CliError> {
+@@ -38,6 +38,22 @@ fn dispatch(cli: Cli, format: Format) -> Result<(), CliError> {
      cli::business_rpc::set_dependencies(cli.flags.depends_on.clone());
      cli::business_rpc::set_action_evidence(cli.flags.observation.clone(), cli.flags.expect.clone());
      match cli.command {
++        Command::MediaSailInfo => {
++            println!("{}", serde_json::json!({
++                "product":"MediaSailBrowserSkill", "version":env!("CARGO_PKG_VERSION"),
++                "build":option_env!("BSK_BUILD_REVISION").unwrap_or("unknown"),
++                "target":env!("BSK_BUILD_TARGET"),
++                "protocol":bsk::daemon::state::PROTOCOL_VERSION,
++                "managed":option_env!("MEDIASAIL_BUILD_REVISION").is_some()
++            }));
++            Ok(())
++        }
 +        Command::ManagedLaunch { executable, log, args } => {
 +            let receipt = bsk::daemon::start::launch_managed(&executable, &args, &log)
 +                .map_err(CliError::Local)?;

@@ -3,3 +3,4 @@
 bridge/third_party/*.py text eol=lf
 *.png binary
 *.ico binary
+licenses/browser-tools/** -text

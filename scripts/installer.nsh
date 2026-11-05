@@ -7,6 +7,7 @@
   Var mediaSailVisibleUpdate
   Var mediaSailCacheResult
   !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-recovery.nsh"
+  !include "${BUILD_RESOURCES_DIR}\..\..\scripts\installer-component-license.nsh"
   !define MUI_INSTFILESPAGE_TEXT "正在安装 MediaSail，请稍候。正在替换旧程序，用户数据将保留。"
 !endif
 
@@ -21,6 +22,7 @@
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "state" "started"
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "directory" "$INSTDIR"
   ${EndIf}
+  !insertmacro MediaSailComponentConsentInit
   Call MediaSailRecoveryProbe
   ${If} $mediaSailRecoveryState == "verified"
     WriteINIStr "$LOCALAPPDATA\ElectronEasel\logs\installer-${VERSION}.ini" "install" "directory" "$INSTDIR"
@@ -43,6 +45,7 @@
 !macroend
 
 !macro customPageAfterChangeDir
+  !insertmacro MediaSailComponentLicensePage
   ; The installer chooses the program directory only. The application owns the
   ; one-time library choice and never migrates old user data.
   Function MediaSailCacheInstaller
