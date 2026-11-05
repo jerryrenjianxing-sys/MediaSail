@@ -878,10 +878,10 @@ index 0000000..30312b5
 +            "sources": sources, "notesCoverage": coverage, "suggestions": suggestions}
 diff --git a/skills/shared/scripts/account_observations.py b/skills/shared/scripts/account_observations.py
 new file mode 100644
-index 0000000..26c83af
+index 0000000..81dfcd1
 --- /dev/null
 +++ b/skills/shared/scripts/account_observations.py
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,317 @@
 +"""Local account observations. Browser access and live authentication are separate.
 +
 +CLI and HTTP callers share ObservationStore; no platform request is made here.
@@ -907,6 +907,8 @@ index 0000000..26c83af
 +          'metricDefinitions', 'evidenceRefs', 'reportPaths', 'extensions')
 +COUNTS = ('followers', 'following', 'likes', 'posts', 'reads', 'followerIndex')
 +IDENTIFIER = re.compile(r'^[A-Za-z0-9_-]{1,100}$')
++DERIVED_FIELDS = {'observationId', 'libraryId', 'producer', 'importedAt', 'contentHash',
++                  'usable', 'growth', 'growthStatus', 'growthReason'}
 +
 +
 +class ObservationError(Exception):
@@ -917,6 +919,22 @@ index 0000000..26c83af
 +
 +def encoded(value):
 +    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf8')
++
++
++def finite_number(value):
++    if isinstance(value, bool) or not isinstance(value, (int, float)):
++        return False
++    try:
++        return math.isfinite(value)
++    except OverflowError:
++        return False
++
++
++def additional_fields(value):
++    extra = {key: item for key, item in value.items() if key not in FIELDS and key not in DERIVED_FIELDS}
++    if 'producer' in value and value['producer'] != 'external-agent':
++        extra['producer'] = value['producer']
++    return extra
 +
 +
 +class ObservationStore:
@@ -943,16 +961,22 @@ index 0000000..26c83af
 +        if value.get('libraryId') is not None and value['libraryId'] != self.library_id:
 +            raise ObservationError('library_mismatch', '观测属于其他资料库，未写入当前库。', 409)
 +        data = {key: value[key] for key in FIELDS if key in value}
++        extra = additional_fields(value)
++        if extra:
++            supplied = data.get('extensions', {})
++            if not isinstance(supplied, dict) or any(key in supplied and supplied[key] != item for key, item in extra.items()):
++                raise ObservationError('invalid_observation', '额外指标与 extensions 冲突，请保留两者来源并明确字段位置。')
++            data['extensions'] = {**supplied, **extra}
 +        if not isinstance(data.get('platform'), str) or not re.fullmatch(r'[a-z][a-z0-9_-]{0,63}', data['platform']):
 +            raise ObservationError('invalid_platform', '请提供平台标识，例如 douyin。')
 +        if not isinstance(data.get('source'), str) or not data['source'].strip():
 +            raise ObservationError('missing_source', '请注明实际业务来源。')
 +        stamp = data.get('fetched_at')
-+        if isinstance(stamp, bool) or not isinstance(stamp, (int, float)) or not math.isfinite(stamp) or stamp <= 0:
++        if not finite_number(stamp) or stamp <= 0:
 +            raise ObservationError('invalid_observed_time', 'fetched_at 必须是实际取得时间的 Unix 秒数。')
 +        for key in COUNTS:
 +            number = data.get(key)
-+            if number is not None and (isinstance(number, bool) or not isinstance(number, (int, float)) or not math.isfinite(number) or number < 0):
++            if number is not None and (not finite_number(number) or number < 0):
 +                raise ObservationError('invalid_metric', f'{key} 请提供非负数或 null；缩写展示保留在原始证据中。')
 +            data[key] = number
 +        account = data.get('accountId')
@@ -1012,8 +1036,7 @@ index 0000000..26c83af
 +                raise ObservationError('invalid_observation', 'collection.notesCoverage 必须是对象。')
 +            for key in ('returned', 'total', 'limit'):
 +                number = coverage.get(key)
-+                if number is not None and (isinstance(number, bool) or not isinstance(number, (int, float))
-+                                           or not math.isfinite(number) or number < 0):
++                if number is not None and (not finite_number(number) or number < 0):
 +                    raise ObservationError('invalid_observation', f'notesCoverage.{key} 必须是非负数或 null。')
 +            if any(coverage.get(key) is not None and not isinstance(coverage[key], str) for key in ('scope', 'status')):
 +                raise ObservationError('invalid_observation', 'notesCoverage 的范围和状态请提供文字。')
@@ -1039,7 +1062,7 @@ index 0000000..26c83af
 +        self.directory.mkdir(parents=True, exist_ok=True)
 +        try:
 +            # Reuse the existing OS advisory lock; CLI and HTTP share this directory.
-+            with ProfileLock(self.directory, timeout=10):
++            with ProfileLock(self.directory):
 +                duplicate = file.exists()
 +                if duplicate:
 +                    current = self._read(observation_id)
@@ -1057,8 +1080,10 @@ index 0000000..26c83af
 +                        Path(temporary).unlink(missing_ok=True)
 +        except ProfileBusyError as error:
 +            raise ObservationError('observation_busy', '其他进程正在登记观测，请保留输入并稍后重试保存。', 503) from error
++        extra = additional_fields(value)
++        warnings = ['额外字段已保存在 extensions，纳入内容校验：' + '、'.join(sorted(extra))] if extra else []
 +        return {'ok': True, 'observationId': observation_id, 'libraryId': self.library_id,
-+                'path': str(file), 'duplicate': duplicate, 'warnings': []}
++                'path': str(file), 'duplicate': duplicate, 'warnings': warnings}
 +
 +    def _read(self, observation_id):
 +        file = self.file(observation_id)
@@ -1071,9 +1096,13 @@ index 0000000..26c83af
 +            normalized = self.normalize(data)
 +            if data.get('contentHash') != hashlib.sha256(encoded(normalized)).hexdigest():
 +                raise ValueError('invalid record content')
-+            if not isinstance(data.get('importedAt'), (int, float)):
++            if data.get('producer') != 'external-agent':
++                raise ValueError('invalid producer')
++            stamp = data.get('importedAt')
++            if not finite_number(stamp) or stamp <= 0:
 +                raise ValueError('invalid imported time')
-+            return data
++            return {**normalized, 'observationId': observation_id,
++                    'contentHash': data['contentHash'], 'importedAt': stamp}
 +        except (OSError, ValueError, ObservationError) as error:
 +            raise ObservationError('observation_unreadable', '观测无法读取，原文件已保留。', 503) from error
 +
@@ -3537,7 +3566,7 @@ index 0000000..3134f24
 +
 +声音可以稳定，语气强度会因科普、投诉回应、销售介绍和复盘不同而变化。修改时比较是否清楚、可信、符合当前目标与用户习惯；不把固定字数、标点禁用或单一 CTA 当作跨任务规则。
 diff --git a/web/app.py b/web/app.py
-index 66b3678..574d1a3 100644
+index 66b3678..da356ac 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -6916,7 +6945,7 @@ index 66b3678..574d1a3 100644
      deleted = []
      if cfg['backend'] == 'wechat-oa':
          # 1) 清 AppID 凭证（旧配置兜底）
-@@ -3711,21 +1473,143 @@ async def api_logout(platform: str):
+@@ -3711,21 +1473,144 @@ async def api_logout(platform: str):
  ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-channels", "bilibili", "wechat-oa"}
  
  
@@ -6940,6 +6969,7 @@ index 66b3678..574d1a3 100644
 +    metricDefinitions: dict[str, ObservationMetricDefinition] = Field(default_factory=dict, description='按指标字段（如 followers）登记标签、单位、时间窗口和范围。')
 +    evidenceRefs: list[str | dict] = Field(default_factory=list, description='项目内证据相对路径、来源 URL 或 {path, url, description} 引用。')
 +    reportPaths: list[str | dict] = Field(default_factory=list, description='outputs/项目/报告.md 或 {path, description}；报告仍需单独登记成品。')
++    extensions: dict = Field(default_factory=dict, description='其他业务字段；未知顶层字段也保存在这里并在回执说明，参与哈希与冲突检查。')
 +
 +
 +class AccountObservationRecord(AccountObservationRequest):
@@ -7064,7 +7094,7 @@ index 66b3678..574d1a3 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3739,18 +1623,26 @@ async def api_analytics(platform: str):
+@@ -3739,18 +1624,26 @@ async def api_analytics(platform: str):
                 "--proxy", wx_proxy, "--count", "20"]
      else:
          # 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env），后端照常传 _proxy_env
@@ -7094,7 +7124,7 @@ index 66b3678..574d1a3 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1691,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1692,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -7103,7 +7133,7 @@ index 66b3678..574d1a3 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1787,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1788,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -7112,7 +7142,7 @@ index 66b3678..574d1a3 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1836,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1837,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -7121,7 +7151,7 @@ index 66b3678..574d1a3 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1854,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1855,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -7130,7 +7160,7 @@ index 66b3678..574d1a3 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1888,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1889,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -7143,7 +7173,7 @@ index 66b3678..574d1a3 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1900,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1901,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -7179,7 +7209,7 @@ index 66b3678..574d1a3 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1925,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1926,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -7220,7 +7250,7 @@ index 66b3678..574d1a3 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1964,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1965,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -7233,7 +7263,7 @@ index 66b3678..574d1a3 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,33 +1980,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,33 +1981,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -7270,7 +7300,7 @@ index 66b3678..574d1a3 100644
  }
  TREND_LABELS = {
      "weibo": "微博",
-@@ -4150,50 +2000,97 @@ TREND_LABELS = {
+@@ -4150,50 +2001,97 @@ TREND_LABELS = {
      "baidu": "百度",
      "toutiao": "头条",
  }
@@ -7383,7 +7413,7 @@ index 66b3678..574d1a3 100644
  async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      pfs = [p.strip() for p in platforms.split(",") if p.strip() in TREND_SOURCES]
      now = time.time()
-@@ -4201,18 +2098,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+@@ -4201,18 +2099,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      result = []
      for pf in pfs:
          c = _TREND_CACHE.get(pf)
@@ -7413,7 +7443,7 @@ index 66b3678..574d1a3 100644
          })
      return {"trends": result, "updated": int(now)}
  
-@@ -4323,7 +2224,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +2225,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -7422,7 +7452,7 @@ index 66b3678..574d1a3 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2310,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2311,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -23569,7 +23599,7 @@ index fee8255..160401b 100644
  }
 diff --git a/web/frontend/src/components/AccountObservations.tsx b/web/frontend/src/components/AccountObservations.tsx
 new file mode 100644
-index 0000000..39ebb89
+index 0000000..74228dd
 --- /dev/null
 +++ b/web/frontend/src/components/AccountObservations.tsx
 @@ -0,0 +1,118 @@
@@ -23587,7 +23617,7 @@ index 0000000..39ebb89
 +const accountKey = (row: AccountObservation) => row.accountId || `unknown:${row.observationId}`;
 +type Selection = {platform: string; account: string; source: string; id: string};
 +const choose = (row: AccountObservation): Selection => ({platform:row.platform, account:accountKey(row), source:row.source, id:row.observationId});
-+const latest = (rows: AccountObservation[]) => rows.find(row => row.usable) || rows[0];
++const newestUsableOrNewest = (rows: AccountObservation[]) => rows.find(row => row.usable) || rows[0];
 +const unique = (values: string[]) => [...new Set(values)];
 +
 +function referenceLink(value: string): string | undefined {
@@ -23631,7 +23661,7 @@ index 0000000..39ebb89
 +      if (request !== generation.current) return;
 +      result.observations.sort((a,b) => b.fetched_at-a.fetched_at || b.observationId.localeCompare(a.observationId));
 +      setData(result); setError(''); onCount?.(result.observations.length);
-+      setSelection(current => current || (latest(result.observations) ? choose(latest(result.observations)) : null));
++      setSelection(current => current || (newestUsableOrNewest(result.observations) ? choose(newestUsableOrNewest(result.observations)) : null));
 +    }).catch(reason => { if (request === generation.current) setError(reason instanceof Error ? reason.message : '读取失败，已保留当前资料。'); })
 +      .finally(() => { if (request === generation.current) setBusy(false); });
 +  }, [onCount]);
@@ -23642,7 +23672,7 @@ index 0000000..39ebb89
 +  const accountRows = platformRows.filter(row => accountKey(row) === selection?.account);
 +  const sourceRows = accountRows.filter(row => row.source === selection?.source);
 +  const selected = sourceRows.find(row => row.observationId === selection?.id);
-+  const selectFrom = (candidates: AccountObservation[]) => { const row = latest(candidates); if (row) setSelection(choose(row)); };
++  const selectFrom = (candidates: AccountObservation[]) => { const row = newestUsableOrNewest(candidates); if (row) setSelection(choose(row)); };
 +  const delta = selected?.growthStatus === 'available' ? selected.growth?.[window] : null;
 +  return <section className="card observation-panel" aria-label="已保存的账号观测">
 +    <div className="observation-heading"><div><h2>账号观测</h2><p className="page-subtitle">已保存 {rows.length} 份 · 刷新只读取资料，不启动采集或验证登录。</p></div>

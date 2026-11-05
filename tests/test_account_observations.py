@@ -241,6 +241,40 @@ class ObservationHttp(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(response.status_code, 422, response.text)
         self.assertEqual((await self.client.get('/api/account-observations')).json()['observations'], [])
 
+    async def test_damaged_server_metadata_is_isolated_instead_of_breaking_http_list(self):
+        corrupt = {'bad-producer':('producer',{'damaged':True}), 'bad-imported-time':('importedAt',float('nan')),
+                   'huge-imported-time':('importedAt',10**400), 'huge-observed-time':('fetched_at',10**400),
+                   'huge-metric':('followers',10**400)}
+        for observation_id in ('good', *corrupt):
+            response = await self.client.post('/api/account-observations', json=observation(observationId=observation_id))
+            self.assertEqual(response.status_code, 200, response.text)
+            if observation_id != 'good':
+                file = Path(response.json()['path'])
+                record = json.loads(file.read_text(encoding='utf8'))
+                field, value = corrupt[observation_id]
+                record[field] = value
+                file.write_text(json.dumps(record), encoding='utf8')  # external editing boundary
+        response = await self.client.get('/api/account-observations')
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual([row['observationId'] for row in response.json()['observations']], ['good'])
+        self.assertEqual({row['file'] for row in response.json()['errors']}, {key+'.json' for key in corrupt})
+        self.assertEqual((await self.client.get('/api/account-observations/bad-producer')).status_code, 503)
+
+    async def test_additional_business_metrics_are_retained_and_participate_in_conflicts(self):
+        value = observation(observationId='extra-metrics', views=123, producer='existing-browser-tool')
+        first = await self.client.post('/api/account-observations', json=value)
+        self.assertEqual(first.status_code, 200, first.text)
+        self.assertIn('views', ' '.join(first.json()['warnings']))
+        saved = (await self.client.get('/api/account-observations/extra-metrics')).json()['observation']
+        self.assertEqual(saved['extensions']['views'], 123)
+        self.assertEqual(saved['extensions']['producer'], 'existing-browser-tool')
+        self.assertEqual(saved['producer'], 'external-agent')
+        conflict = await self.client.post('/api/account-observations', json={**value, 'views':456})
+        self.assertEqual(conflict.status_code, 409, conflict.text)
+        self.assertEqual(conflict.json()['code'], 'observation_conflict')
+        repeat = await self.client.post('/api/account-observations', json=value)
+        self.assertTrue(repeat.json()['duplicate'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2097,6 +2097,12 @@
             "title": "Reportpaths",
             "description": "outputs/项目/报告.md 或 {path, description}；报告仍需单独登记成品。"
           },
+          "extensions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extensions",
+            "description": "其他业务字段；未知顶层字段也保存在这里并在回执说明，参与哈希与冲突检查。"
+          },
           "producer": {
             "type": "string",
             "title": "Producer"
@@ -2241,6 +2247,12 @@
             "type": "array",
             "title": "Reportpaths",
             "description": "outputs/项目/报告.md 或 {path, description}；报告仍需单独登记成品。"
+          },
+          "extensions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extensions",
+            "description": "其他业务字段；未知顶层字段也保存在这里并在回执说明，参与哈希与冲突检查。"
           }
         },
         "additionalProperties": true,

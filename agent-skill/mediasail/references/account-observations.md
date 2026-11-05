@@ -8,6 +8,8 @@
 
 输入至少提供 `platform`、实际业务 `source` 和 `fetched_at`。`accountId`、`profile` 可以未知；昵称不能代替稳定账号。数值缺失为 null，确实为零则保存 0；粉丝指数单独用 followerIndex。保留原 `metrics`、`notes`、`collection` 结构，后者的缺项、问题和范围按实际取得情况填写。来源以具体页面或业务口径区分，例如 douyin-creator-home。
 
+其他业务字段（如顶层 views）会保存在 `extensions` 并在回执 warnings 中列出，仍参与编号哈希和同编号冲突核对。可直接把扩展放在 extensions；同名扩展值矛盾时拒绝保存，不替你选择。页面概览只展示约定字段，其他指标需要展示时放入带 label/value/口径的 metrics。根 producer 记录为 external-agent；另行提交的工具来源保留在 extensions.producer，不作为浏览器登录成功声明。导入时间、哈希与增长结果由软件计算。
+
 建议提供 `libraryId`（当前发现信息中的资料库身份）、`identityEvidence`、`metricDefinitions`、`evidenceRefs` 和 `reportPaths`。账号身份依据可保存实际账号编号出处、可访问的账号链接或项目内摘录；证据和报告引用可用 `outputs/<项目>/...` 相对路径或来源 URL。页面提供内容库内相对路径的报告入口，不会复制任意外部文件。
 
 `identityEvidence`、`evidenceRefs`、`reportPaths` 都是列表，不能提交成单个对象。例如身份依据为 `[{"kind":"platform-id","value":"test-account","sourceUrl":"https://creator.douyin.com/creator-micro/home"}]`；这里的 kind/value/sourceUrl 是一种可读记录形式，也可直接提供有来源的文字摘录。identityEvidence 说明“这个稳定编号从哪里取得”，本身不表示软件在线验证过账号。没有依据时用空列表，仍可回存，但不计算跨记录增长。证据或报告带说明的形式为 `[{"path":"outputs/账号研究/报告.md","description":"本次账号研究报告"}]`。
