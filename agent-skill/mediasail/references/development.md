@@ -15,6 +15,7 @@ agent-connection.json：
 - dataDir：当前资料库 runtime 下的桌面运行数据；兼容旧版数据布局的实例仍以实际字段为准。
 - connectionFile：正式连接文件，位于 dataDir。discoveryFile：AppData 中保留的发现入口，指向正式连接文件。
 - baseUrl、instanceId：当前服务和随机实例编号；重启可变化。
+- browserTools：可选内置浏览器入口、版本和资料。connector 描述本机命名管道，建立新连接需要桌面进程在线；私有凭据另存，不在此公开。已有会话继续使用自己的缓存回执。
 
 资料库 libraryRoot 下：
 - workspace：配置、素材、项目、画像、业务脚本与运营方法，控制台和外部 Agent 共享同一份。
@@ -35,7 +36,7 @@ dataDir（runtime）下：
 
 源码仓库的 desktop 是 Electron 主进程与更新、持久状态和受限的浏览器打开能力；bridge 适配原后端；agent-skill 是本 Skill；vendor/easel 是固定版本的上游工作副本，patches 保留可复现变更。前端改动需导出补丁，并更新构建产物。不要把打包后的 app.asar 当成源码仓库的替代品。
 
-README、scripts/build.ps1、scripts/export-patches.cjs 和 docs/ 中有构建与验证流程。核心服务使用业务 Python，Node/OpenClaw、FFmpeg 与通用创作/推理模型不随安装包分发。0.5.12 另提供按需使用的专用 Chromium + BrowserSkill，独立缓存、网站配置和连接不依赖业务服务；固定来源及适配构建见 browser-tools.lock.json 与 integrations/browserskill/README.md。使用说明见[浏览器协作](browser-collaboration.md)。旧原生账号采集/登录/发布仍通过 Playwright 使用系统 Chrome/Edge，可用 EASEL_BROWSER_EXECUTABLE 指定位置，仍用旧工具独立平台资料目录。通用创作工具由外部 Agent 按任务准备。
+README、scripts/build.ps1、scripts/export-patches.cjs 和 docs/ 中有构建与验证流程。核心服务使用业务 Python，Node/OpenClaw、FFmpeg 与通用创作/推理模型不随安装包分发。0.5.12 另提供按需使用的专用 Chromium + BrowserSkill。0.5.13 的新建连接由 desktop/browser-connector.cjs 提供受限本机命名管道，请求桌面进程启动；已有工具组与会话仍独立于业务服务。固定来源及适配构建见 browser-tools.lock.json 与 integrations/browserskill/README.md，使用说明见[浏览器协作](browser-collaboration.md)。旧采集工具的账号登录、采集与发布仍通过 Playwright 使用系统 Chrome/Edge，可用 EASEL_BROWSER_EXECUTABLE 指定位置，使用独立平台资料目录。通用创作工具由外部 Agent 按任务准备。
 
 维护源码时先读仓库 AGENTS.md 和按需的 docs/DEVELOPMENT.md，按任务使用用户指定的 mattpocock-skills 插件。准备锁定依赖后运行 npm run check，统一检查 Node、Python、前端、接口资料及补丁复现；该命令不下载依赖，也不替你回写接口资料或补丁。源码检查、打包页面验收和真实安装升级是不同检查，完成情况按实际执行记录。
 

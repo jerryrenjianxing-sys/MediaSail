@@ -74,6 +74,13 @@ class BrowserResolution(unittest.TestCase):
 
 
 class LocalBusiness(unittest.IsolatedAsyncioTestCase):
+    async def test_json_responses_declare_utf8_and_roundtrip_chinese(self):
+        saved = await self.client.post('/api/ideas', json={'title': '合成中文选题', 'note': '不产生乱码'})
+        self.assertEqual(saved.status_code, 200)
+        response = await self.client.get('/api/ideas')
+        self.assertIn('charset=utf-8', response.headers['content-type'].lower())
+        self.assertEqual(response.json()[0]['title'], '合成中文选题')
+
     async def asyncSetUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='MediaSail 业务 中文 ')
         self.addCleanup(self.tmp.cleanup)

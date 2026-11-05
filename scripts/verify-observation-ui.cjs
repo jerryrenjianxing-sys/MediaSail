@@ -51,7 +51,7 @@ async function main(){
  assert.match(await page.locator('.observation-panel').innerText(),/未替你切换账号/);
  await page.getByRole('button',{name:'账号与数据',exact:true}).click();
  await page.getByRole('heading',{name:'账号与数据',exact:true}).waitFor();
- await page.getByRole('button',{name:/原生采集工具/}).click();
+ await page.getByRole('button',{name:'打开旧采集工具',exact:true}).click();
  await page.getByText('登录工具会话',{exact:true}).waitFor();
  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await page.waitForTimeout(150);

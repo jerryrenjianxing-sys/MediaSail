@@ -130,7 +130,7 @@ def main():
             archive.writestr(info, content, compress_type=zipfile.ZIP_DEFLATED)
             cache_files.append({'path':'extension/'+name, 'sha256':hashlib.sha256(content).hexdigest()})
     helpers = []
-    inputs = [(ROOT/'agent-skill/mediasail/scripts'/name, name) for name in ('browser.ps1','browser-native.cs','browser-welcome.html')]
+    inputs = [(ROOT/'agent-skill/mediasail/scripts'/name, name) for name in ('browser.ps1','browser-native.cs','browser-connector.ps1','browser-welcome.html')]
     inputs.append((ROOT/'branding/MediaSail-app-icon.png','browser-icon.png'))
     notices = plain(args.notices)
     if not (notices/'BrowserSkill-MIT.txt').is_file() or not (notices/'Chromium-NOTICES.html').is_file():

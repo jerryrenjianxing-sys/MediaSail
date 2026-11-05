@@ -27,6 +27,10 @@ async function main(){
  assert.match(from,/^\d+\.\d+\.\d+$/);assert.match(to,/^\d+\.\d+\.\d+$/);assert.notEqual(from,to);
  const installers={baseline:path.join(root,'release-input','baseline',`MediaSail-${from}-win-x64-Setup.exe`),candidate:path.join(root,'release-input','candidate',`MediaSail-${to}-win-x64-Setup.exe`)};
  const ps=code=>cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command','[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false);'+code],{encoding:'utf8',windowsHide:true,timeout:30000}).trim();
+ const launch=(file,args,verbatim=false)=>{
+  if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1')return cp.spawn('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(root,'scripts/run-desktop-job-fixture.ps1'),file,...args],{windowsHide:true,stdio:'ignore',env:{...environment(),GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted'}});
+  return cp.spawn(file,args,{windowsHide:false,windowsVerbatimArguments:verbatim,stdio:'ignore',env:environment()});
+ };
  const processes=()=>list(JSON.parse(ps("ConvertTo-Json -InputObject @(Get-CimInstance Win32_Process -Filter \"Name='MediaSail.exe'\"|Select-Object ProcessId,ExecutablePath,CommandLine) -Compress")||'[]'));
  const owned=()=>processes().filter(row=>row.ExecutablePath?.toLowerCase()===exe.toLowerCase());
  const registry=()=>list(JSON.parse(ps(`$rows=@();foreach($view in @('Registry64','Registry32')){$base=[Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser,[Microsoft.Win32.RegistryView]::$view);try{foreach($name in @('Software\\${identity}','Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${identity}')){$key=$base.OpenSubKey($name);if($key){try{$rows+=@{location=$key.GetValue('InstallLocation');version=$key.GetValue('DisplayVersion')}}finally{$key.Dispose()}}}}finally{$base.Dispose()}};ConvertTo-Json -InputObject @($rows) -Compress`)||'[]'));
@@ -46,7 +50,7 @@ async function main(){
    args=[...args,'/ACCEPT_MS_D3D_LICENSE='+licenseHash];
    result.componentConsent='explicit versioned component consent in isolated test CLI; /S alone is not agreement';
   }
-  let done=false,exit,last=0;setupChild=cp.spawn(file,args,{windowsHide:false,windowsVerbatimArguments:true,stdio:'ignore',env:environment()});assert.ok(setupChild.pid);setupChild.once('exit',code=>{exit=code;done=true;});setupChild.once('error',error=>{exit=error.message;done=true;});
+  let done=false,exit,last=0;setupChild=launch(file,args,true);assert.ok(setupChild.pid);setupChild.once('exit',code=>{exit=code;done=true;});setupChild.once('error',error=>{exit=error.message;done=true;});
   const began=Date.now();
   await until(async()=>{if(!done&&Date.now()-last>=10000){last=Date.now();const output=cp.execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(root,'scripts/observe-installer.ps1'),'-InstallerPid',String(setupChild.pid),'-Screenshot',path.join(evidence,observe?'upgrade-progress.png':'baseline-progress.png')],{encoding:'utf8',windowsHide:true,timeout:20000});if(output.trim())result.lastInstallerWindows=JSON.parse(output);let installerState='';try{installerState=await fs.readFile(path.join(bootstrap,'logs',`installer-${observe?to:from}.ini`),'utf8');}catch{}console.log('NSIS '+JSON.stringify({elapsedMs:Date.now()-began,windows:result.lastInstallerWindows,installerState}));}return done;},900000,'installer exit');assert.equal(exit,0);
   console.log('ACTUAL NSIS EXIT '+JSON.stringify({name:path.basename(file),exit,observedMs:Date.now()-began}));
@@ -58,7 +62,7 @@ async function main(){
   await fs.mkdir(evidence,{recursive:true});result.installers={};
   for(const [key,file]of Object.entries(installers)){const sha256=await hash(file),name=path.basename(file),bytes=(await fs.stat(file)).size;const lines=(await fs.readFile(path.join(path.dirname(file),'SHA256SUMS.txt'),'utf8')).split(/\r?\n/).filter(line=>line.trim().split(/\s+/).at(-1)===name);assert.equal(lines.length,1);assert.equal(lines[0].split(/\s+/)[0],sha256);if(key==='baseline'&&from==='0.5.4'){assert.equal(sha256,'06e22016e0d4253ea8d81bf78c2b3718b7805a1473b85b48d9f77ecfdba4cb2d');assert.equal(bytes,273973986);}if(key==='baseline'&&from==='0.5.5'){assert.equal(sha256,'67def2e003b3b02b5a5c0f3d0251be2eac320108da52b34d3383a039716392d9');assert.equal(bytes,262990773);}result.installers[key]={name,sha256,bytes};}
   await phase('baseline-install');await setup(installers.baseline,['/S','/D='+target]);checkRegistry(from);
-  cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const initial=await until(()=>owned().find(row=>!row.CommandLine?.includes('--type=')),120000,'baseline app');inspector=await attachTestMain(initial.ProcessId);
+  launch(exe,[]);const initial=await until(()=>owned().find(row=>!row.CommandLine?.includes('--type=')),120000,'baseline app');inspector=await attachTestMain(initial.ProcessId);
   await selectLibraryFixture({inspector,pid:initial.ProcessId,exe,libraryRoot,evidence,cancelFirst:false});inspector.close();inspector=null;
   const old=await waitConnection(from);assert.equal(old.libraryRoot.toLowerCase(),libraryRoot.toLowerCase());inspector=await attachTestMain(old.pid);
   const cache=path.join(old.dataDir,'update-cache','mediasail-updater');assert.equal(await hash(path.join(cache,'installer.exe')),result.installers.baseline.sha256);assert.equal(JSON.parse(await fs.readFile(path.join(cache,'current-installer.json'),'utf8')).version,from);result.baselineCacheVerified=true;
@@ -118,11 +122,13 @@ async function main(){
    await inspector.evaluate(render("window.desktopUiState.call('set',{key:'mediasail_skill_filename',value:'升级验收接入.md'}).then(()=>true)"));
   }
   result.categoryPatchPreservedOtherMetadata=true;await phase('normal-restarts');await quit();
-  for(let i=0;i<2;i++){cp.spawn(exe,[],{windowsHide:false,stdio:'ignore',env:environment()});const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')assert.equal(JSON.parse(await fs.readFile(path.join(live.dataDir,'ui-state.json'),'utf8')).values.mediasail_skill_filename,'升级验收接入.md');}
+  for(let i=0;i<2;i++){launch(exe,[]);const live=await waitConnection(to);assert.equal(live.libraryId,old.libraryId);inspector=await attachTestMain(live.pid);await quit();await checkOriginals();if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')assert.equal(JSON.parse(await fs.readFile(path.join(live.dataDir,'ui-state.json'),'utf8')).values.mediasail_skill_filename,'升级验收接入.md');}
   if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME==='1')result.skillFilePreferenceRetained=true;
   if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1'){
-   await phase('managed-browser-with-software-stopped');
-   managedBrowser=await require('./verify-managed-browser-ci.cjs').startManagedBrowser({info:current,evidence,env:environment()});
+   await phase('managed-browser-through-desktop-connector');
+   launch(exe,[]);const browserOwner=await waitConnection(to);inspector=await attachTestMain(browserOwner.pid);
+   managedBrowser=await require('./verify-managed-browser-ci.cjs').startManagedBrowser({info:browserOwner,evidence,env:environment()});
+   await quit();
    await managedBrowser.verify('software-stopped');
    await phase('same-version-reinstall-with-live-browser');
    await setup(installers.candidate,['/S','--updated','--force-run'],true);checkRegistry(to);

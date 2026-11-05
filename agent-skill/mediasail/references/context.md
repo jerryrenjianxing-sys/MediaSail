@@ -50,6 +50,8 @@ $saved | Select-Object filename, content, revision
 GET /api/analytics/platforms 列出实际支持的平台及最近已知状态。旧成功标记不代表当前后台可用。
 GET /api/analytics/{platform} 会真实访问平台，可能启动浏览器、耗时数秒到三分钟，并更新本地分析快照；它不是纯缓存读取。登录失败和平台改版会报错。
 
+上述 analytics / whoami 属于旧采集工具路线，使用旧工具自己的浏览器资料。外部 Agent 可直接使用已有浏览器能力，或按浏览器协作资料连接专用浏览器，取数后登记外部观测；不必先调用这些旧接口。下面的登录标记、强制校验及增长快照语义只说明旧工具的兼容行为。
+
 已有快照与相关资料可查 outputs/_analytics/ 和项目成品；字段依平台而异。把采集时间、平台、样本范围和统计口径一起看，区分实际指标、推测和创作假设，不把缺失数据当作零。
 
 抖音登录指创作者后台，软件使用独立的浏览器资料；用户默认浏览器里能看本人主页，不等于这份后台会话已验证。同一抖音账号可用于两个入口，不需要新增两套账号配置。`verificationStatus` 为 `verified`（后台确认账号）、`login_required`（平台明确未登录）、`unknown`（网络、占用或响应变化，暂时无法核验）；`accountId` 是已验证账号编号，`checkedAt` 为 Unix 秒。unknown 不等于退出，也不能当作在线成功。手动校验可调用 `GET /api/accounts/douyin/whoami?force=1`。

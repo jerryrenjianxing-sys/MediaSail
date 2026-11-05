@@ -7,7 +7,8 @@
 - **本地业务脚本**：workspace/skills/shared/scripts/ 和对应方法的 scripts/。准确名单见 workspace/skills/business-tools.md。用内置业务 Python 或兼容的自有 Python 执行；本地计算不依赖桌面服务在线。通用创作引擎不随包提供。
 - **业务 API**：调用下表接口。参数见 api-schema.json（由当前后端与连接桥实际注册的 OpenAPI 生成），运行中也可读 /openapi.json。部分旧处理函数未声明细化响应模型，不能把空 schema 误当没有结果；实际数据以当前响应为准。
 - **外部 Agent 的智能工作**：研究、语义分析、画像增强、策划、创作和开发由你完成；不再使用旧 /api/chat 或 /api/skill 交回软件内模型。
-- **AI 发布官网**：侧栏“AI 发布”用默认浏览器打开固定地址 https://aitoearn.cn/zh-CN。用户或 Agent 从项目成品文件读取、复制正文；用户在官网选择项目媒体、检查顺序、登录、安装所需扩展、选择账号和最终发布。官网不会自动读取本地资料库。软件不再内嵌、自动上传或创建 AitoEarn 草稿，不提供对应 HTTP API。网页发布结果不自动回写，按实际结果登记本地记录。下表的原生 `/api/publish/{platform}` 及其平台资料是独立能力，继续保留。
+- **浏览器操作**：复用自己的工具，或按[浏览器协作](browser-collaboration.md)直接 connect；内置连接由桌面软件启动，run 使用原回执，不依赖业务 HTTP。旧采集工具的登录接口是独立兼容能力，不是浏览器取数的前置步骤。
+- **AI 发布官网**：侧栏“AI 发布”用默认浏览器打开固定地址 https://aitoearn.cn/zh-CN。用户或 Agent 可从项目读取正文与媒体，并按当次授权及网页实际能力操作官网；需要本人登录、安装扩展或确认时再请用户参与。没有软件上传 API 不等于 Agent 不能操作网页。网站不会仅因知道资料库位置就获得文件读取权限；选择文件使用实际文件选择工具。网页结果不自动回写，核对后登记本地记录。下表旧 `/api/publish/{platform}` 及其平台资料是独立能力。
 
 ## 常用入口
 
@@ -68,14 +69,16 @@ $SkillHelper = '<skillDir>\scripts\mediasail.ps1'
 & $SkillHelper check --data-dir $DataDir
 $info = Get-Content -LiteralPath (Join-Path $DataDir 'agent-connection.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($info.connectionFile) { $info = Get-Content -LiteralPath $info.connectionFile -Raw -Encoding UTF8 | ConvertFrom-Json }
-Invoke-RestMethod ($info.baseUrl + '/api/personas')
+$read = Invoke-WebRequest ($info.baseUrl + '/api/personas') -UseBasicParsing
+[Text.Encoding]::UTF8.GetString($read.RawContentStream.ToArray()) | ConvertFrom-Json
 $payload = @{title='春季选题';note='结合受众反馈对比两个角度';source='external-agent'} | ConvertTo-Json
-Invoke-RestMethod ($info.baseUrl + '/api/ideas') -Method Post -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($payload))
+$saved = Invoke-WebRequest ($info.baseUrl + '/api/ideas') -UseBasicParsing -Method Post -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($payload))
+[Text.Encoding]::UTF8.GetString($saved.RawContentStream.ToArray()) | ConvertFrom-Json
 ```
 
 辅助脚本为子进程设置工作目录和隔离运行环境，不修改外部 Agent 的全局配置。脚本每次读取最新连接文件；check 连接失败时仍报告找到的本地路径，python 命令仍可运行本地计算。Node 命令只寻找可选系统 Node，不是软件必要依赖，不自动安装。
 
-抖音 whoami 和采集响应保留 `loggedIn`，同时提供 `verificationStatus`（verified/login_required/unknown）、`accountId`、`checkedAt`（Unix 秒）、`errorCode` 和 `message`。以三态和检查时间理解结果；unknown 时界面可显示明确标注的 lastKnown 历史身份，不能把它当本次校验成功。平台正在登录/发布时 `profile_busy` 表示资料占用，稍后重试，不另开同资料浏览器。登录收尾会关闭扫码浏览器、重开核验持久会话后才报告 success。
+旧采集工具的抖音 whoami 和采集响应保留 `loggedIn`，同时提供 `verificationStatus`（verified/login_required/unknown）、`accountId`、`checkedAt`（Unix 秒）、`errorCode` 和 `message`。以三态和检查时间理解结果；unknown 时界面可显示明确标注的 lastKnown 历史身份，不能把它当本次校验成功。旧工具登录/发布时 `profile_busy` 表示其资料占用；该登录收尾会关闭扫码浏览器、重开核验后才报告 success。这套流程只适用于旧工具，不适用于专用浏览器或 Agent 自己的浏览器。
 
 ## 基线响应
 

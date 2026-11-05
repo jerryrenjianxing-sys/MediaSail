@@ -96,7 +96,7 @@ function curatePayload({payloadRoot,sourceRoot}={}){
     next=next.replace(/^\| 生成配图[^\n]+$/gm,'| 配图创作 | 由外部 Agent 自主完成 | 通用图像执行器不随软件提供 |');
    }
    if(name==='skill-douyin-upload'){
-    next=next.replace(/## 短信验证码处理[^\n]*[\s\S]*?(?=## 发布前人设检查)/,'## 登录与短信验证\n\n登录入口是抖音创作者后台，不是普通视频主页。软件与外部 Agent 共用当前资料库的 DouyinProfile；用户默认浏览器的已登录状态不等于此后台会话已核验。登录完成会关闭扫码浏览器，再重开同一资料核对账号编号后才报告 success。\n\n遇到 sms_required 时，可由用户在账号/发布页面输入验证码，或通过现有 /api/login/douyin/sms、/api/publish/douyin/sms 接口回填。验证中保持已有操作继续，不重复启动发布；验证码错误时根据状态提示重试。未知或超时的发布结果先查询状态及创作者作品列表，不能重发来代替核对。外部 Agent 不需要旧 OpenClaw 卡片、Linux setsid 或固定跨对话轮协议。\n\n');
+    next=next.replace(/## 短信验证码处理[^\n]*[\s\S]*?(?=## 发布前人设检查)/,'## 登录与短信验证\n\n登录入口是抖音创作者后台，不是普通视频主页。本节仅描述旧采集工具的 DouyinProfile，与专用 Chromium 和 Agent 自有浏览器的登录资料独立。旧工具登录完成会关闭扫码窗口，再重开同一资料核对账号编号后才报告 success；专用浏览器按真实页面核对登录，无需套用本节流程。\n\n遇到 sms_required 时，可由用户在账号/发布页面输入验证码，或通过现有 /api/login/douyin/sms、/api/publish/douyin/sms 接口回填。验证中保持已有操作继续，不重复启动发布；验证码错误时根据状态提示重试。未知或超时的发布结果先查询状态及创作者作品列表，不能重发来代替核对。外部 Agent 不需要旧 OpenClaw 卡片、Linux setsid 或固定跨对话轮协议。\n\n');
     next=next.replace(/## 发布前人设检查[^\n]*[\s\S]*?(?=## 发布后留痕)/,'## 发布前内容检查\n\n可参考当前画像比较定位、受众和表达方式；分值属于可选诊断，具体修改和发布依据当前用户任务。媒体路径、标题限制和平台真实校验由脚本处理。\n\n');
     next=next.replace(/本环境已装/g,'需按当前环境检测').replace(/本环境跑不了，已删除/g,'当前不需要此依赖').replace(/## 必做约束/g,'## 发布校验与排错');
    }

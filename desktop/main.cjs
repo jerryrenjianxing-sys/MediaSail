@@ -11,6 +11,7 @@ const {createSkillShareHandler,validateSkillFileName}=require('./skill-share.cjs
 const {Updates}=require('./updates.cjs');
 const {AgentConnection,writeDisconnectedDiscovery}=require('./agent-connection.cjs');
 const {describeBrowserTools}=require('./browser-tools.cjs');
+const {BrowserConnector}=require('./browser-connector.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
 const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
 const {migrateUiState}=require('./ui-migration.cjs');
@@ -35,7 +36,7 @@ const selectionMode=Boolean(layout.needsSelection||bootError);
 fs.mkdirSync(bootstrapRoot,{recursive:true});app.setPath('userData',bootstrapRoot);
 const locked=app.requestSingleInstanceLock();
 if(!locked){app.quit();} else {
-  let window,tray,supervisor,updates,updatesWindow,starting=false,quitting=false,exitPending=false,ready=false,baseUrl='',options;
+  let window,tray,supervisor,updates,updatesWindow,browserHost,starting=false,quitting=false,exitPending=false,ready=false,baseUrl='',options;
   let startup={message:selectionMode?'请选择资料库。这次选择一次，以后沿用。':'正在准备本地工作目录…',error:Boolean(bootError)};
   if(bootError)startup.message='资料库位置暂不可用，请重新选择一个空目录或有效资料库。\n'+bootError.message;
   const data=selectionMode?path.join(bootstrapRoot,'selection-ui'):layout.dataRoot;
@@ -90,6 +91,7 @@ if(!locked){app.quit();} else {
       if(libraryChanging)throw Error('资料库操作正在准备，请稍候。');libraryChanging=true;
       try{
         if(updates?.busy()||starting)throw Error('请等待更新或启动完成后再更改资料库。');
+        if(browserHost?.busy())throw Error('浏览器连接正在准备，请完成后再更换资料库。');
         if((await state(baseUrl,options.env.EASEL_DESKTOP_TOKEN)).active!==0)throw Error('还有采集、登录或发布任务，请等任务结束再更改资料库。');
         if(await window.webContents.executeJavaScript('Boolean(window.mediaSailHasUnsavedEdits?.())'))throw Error('还有未保存的编辑或表单，请先保存或取消编辑，再更改资料库。');
         if(!await flushUiState())throw Error('资料库更换已取消，请先保存或取消归档编辑。');
@@ -101,7 +103,7 @@ if(!locked){app.quit();} else {
   async function restartLibrary(){
     try{
       if(uiState.state)await uiState.flush();
-      agentConnection.stop();writeDisconnectedDiscovery({file:path.join(bootstrapRoot,'agent-connection.json'),version:app.getVersion(),executable:app.getPath('exe'),reason:'library_restarting'});await stopSupervisor(supervisor);supervisor=null;
+      await browserHost?.close();browserHost=null;agentConnection.stop();writeDisconnectedDiscovery({file:path.join(bootstrapRoot,'agent-connection.json'),version:app.getVersion(),executable:app.getPath('exe'),reason:'library_restarting'});await stopSupervisor(supervisor);supervisor=null;
       await updates?.shutdown();quitting=true;app.relaunch();app.quit();
     }catch(e){quitting=false;ready=false;throw e;}
   }
@@ -121,6 +123,7 @@ if(!locked){app.quit();} else {
   async function start(){
     if(selectionMode||starting||quitting)return;starting=true;ready=false;
     try{
+      await browserHost?.close();browserHost=null;
       report('正在准备本地工作目录…');agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;
       await uiState.open(()=>migrateUiState({data,resources,bridgeResources,report}));
       await archiveHistory(data,uiState.snapshot());
@@ -135,6 +138,13 @@ if(!locked){app.quit();} else {
       const port=await freePort(7860);
       options=environment(resources,data,work,port);baseUrl=`http://127.0.0.1:${port}`;
       agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir,executable:app.getPath('exe'),selectedProfile:uiState.snapshot().values.mediasail_selected_profile||null,libraryRoot:layout.libraryRoot,libraryId:layout.libraryId,discoveryFile:path.join(bootstrapRoot,'agent-connection.json'),browserTools:describeBrowserTools(resources,skillDir)});
+      if(agentConnection.info.browserTools){
+        try{
+          browserHost=new BrowserConnector({info:agentConnection.info,bootstrap:bootstrapRoot,data,entry:path.join(skillDir,'scripts/browser.ps1'),available:()=>ready&&!quitting&&!exitPending&&!libraryChanging});
+          agentConnection.browserConnector(await browserHost.start());
+        }catch(error){await browserHost?.close().catch(()=>{});browserHost=null;agentConnection.browserConnector({schema:1,transport:'unavailable',error:'浏览器连接入口未能准备，请查看本机日志。'});report('浏览器连接入口未能准备：'+error.message);}
+        options.env.EASEL_AGENT_CONNECTION_JSON=JSON.stringify(agentConnection.info);
+      }
       report('正在启动 MediaSail 和本地服务…');
       let failure='';
       supervisor=startSupervisor(bridgeResources,options,event=>{if(event.event==='error'){failure=event.message;if(ready&&!quitting)void fail(event.message);}});
@@ -159,6 +169,7 @@ if(!locked){app.quit();} else {
     finally{starting=false;}
   }
   async function confirmStop(forUpdate=false){
+      if(browserHost?.busy()){show();await dialog.showMessageBox(window,{type:'info',title:'浏览器连接正在准备',message:'请等待浏览器连接准备完成后再退出或安装更新。',buttons:['继续运行']});return false;}
       let active=0;
       if(ready){try{active=(await state(baseUrl,options.env.EASEL_DESKTOP_TOKEN)).active;}catch{active=-1;}}
       else if(starting)active=-1;
@@ -174,7 +185,7 @@ if(!locked){app.quit();} else {
     try{
       if(!await confirmStop(true))return false;
       if(!await flushUiState())return false;
-      quitting=true;agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
+      quitting=true;await browserHost?.close();browserHost=null;agentConnection.stop();await stopSupervisor(supervisor);supervisor=null;await flushUiState();return true;
     }catch(e){if(quitting)await recoverInstall();else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('window.mediaSailResetClose?.();document.body.inert=false').catch(()=>{});throw e;}finally{exitPending=false;}
   }
   async function recoverInstall(){quitting=false;ready=false;if(selectionMode){report('更新安装未能启动。可以重试检查更新，或选择资料库后继续使用。',true);return;}report('更新安装未启动，正在恢复本地服务…');await start();}
@@ -188,7 +199,7 @@ if(!locked){app.quit();} else {
     try{
       if(!await confirmStop())return;
       if(!await flushUiState())return;
-      quitting=true;agentConnection.stop();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
+      quitting=true;await browserHost?.close();browserHost=null;agentConnection.stop();await stopSupervisor(supervisor);await flushUiState();await updates?.shutdown();tray?.destroy();app.quit();
     }catch(e){
       if(quitting){quitting=false;ready=false;await start();}
       else if(window&&!window.isDestroyed())await window.webContents.executeJavaScript('window.mediaSailResetClose?.();document.body.inert=false').catch(()=>{});

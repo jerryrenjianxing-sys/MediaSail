@@ -3566,7 +3566,7 @@ index 0000000..3134f24
 +
 +声音可以稳定，语气强度会因科普、投诉回应、销售介绍和复盘不同而变化。修改时比较是否清楚、可信、符合当前目标与用户习惯；不把固定字数、标点禁用或单一 CTA 当作跨任务规则。
 diff --git a/web/app.py b/web/app.py
-index 66b3678..da356ac 100644
+index 66b3678..6e5ef5c 100644
 --- a/web/app.py
 +++ b/web/app.py
 @@ -1,18 +1,14 @@
@@ -3926,7 +3926,21 @@ index 66b3678..da356ac 100644
      """
      origin = request.headers.get('origin')
      if request.url.path == '/api/clipper' and origin and re.fullmatch(r'chrome-extension://[a-p]{32}', origin):
-@@ -518,7 +297,7 @@ def list_personas() -> list[dict]:
+@@ -513,12 +292,21 @@ async def local_write_guard(request: Request, call_next):
+     return await call_next(request)
+ 
+ 
++@app.middleware('http')
++async def json_utf8_compatibility(request: Request, call_next):
++    response = await call_next(request)
++    content_type = response.headers.get('content-type', '').split(';', 1)[0].strip()
++    if content_type == 'application/json' or content_type.endswith('+json'):
++        response.headers['content-type'] = content_type + '; charset=utf-8'
++    return response
++
++
+ def list_personas() -> list[dict]:
+     if not PROFILES_DIR.is_dir():
          return []
      result = []
      for d in sorted(PROFILES_DIR.iterdir()):
@@ -3935,7 +3949,7 @@ index 66b3678..da356ac 100644
              continue
          desc = ''
          identity = d / 'identity.md'
-@@ -590,35 +369,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
+@@ -590,35 +378,22 @@ def _parse_skill_md(path: Path) -> tuple[str, str, str]:
  
  
  def get_skills() -> list[dict]:
@@ -3973,7 +3987,7 @@ index 66b3678..da356ac 100644
  def _proxy_env() -> dict[str, str]:
      """返回带外网代理的环境变量（保护内网直连）。"""
      env = os.environ.copy()
-@@ -663,259 +429,6 @@ def _wechat_env() -> dict[str, str]:
+@@ -663,259 +438,6 @@ def _wechat_env() -> dict[str, str]:
      return env
  
  
@@ -4233,7 +4247,7 @@ index 66b3678..da356ac 100644
  def _file_kind(name: str) -> str:
      ext = Path(name).suffix.lower()
      if ext in IMAGE_EXTS:
-@@ -961,16 +474,18 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -961,16 +483,18 @@ def _read_project_meta(proj: Path) -> dict:
      只取展示相关字段（不含编排 steps）。cover 解析优先级：
      展示头声明的 cover → 首个成品媒体 → 目录内首张图/视频（兜底）。
      """
@@ -4260,7 +4274,7 @@ index 66b3678..da356ac 100644
      if not meta:
          return {}
  
-@@ -980,17 +495,17 @@ def _read_project_meta(proj: Path) -> dict:
+@@ -980,17 +504,17 @@ def _read_project_meta(proj: Path) -> dict:
      # 封面解析
      cover_rel = ""
      declared = data.get("cover")
@@ -4281,7 +4295,7 @@ index 66b3678..da356ac 100644
                                  if (proj / d).is_file()]
      return meta
  
-@@ -1010,6 +525,15 @@ def get_output_tree() -> list[dict]:
+@@ -1010,6 +534,15 @@ def get_output_tree() -> list[dict]:
          meta = _read_project_meta(e)
          if meta:
              node['meta'] = meta
@@ -4297,7 +4311,7 @@ index 66b3678..da356ac 100644
          items.append(node)
      # 按最后修改时间倒序：最近产物排最前（供工作台「最近产物」与内容库时间排序）
      return sorted(items, key=lambda x: x.get('mtime', 0), reverse=True)
-@@ -1066,7 +590,7 @@ async def static_file(path: str):
+@@ -1066,7 +599,7 @@ async def static_file(path: str):
  
  @app.get("/api/status")
  async def api_status():
@@ -4306,7 +4320,7 @@ index 66b3678..da356ac 100644
  
  
  @app.get("/api/personas")
-@@ -1092,2020 +616,150 @@ def _persona_file_path(name: str, filename: str) -> Path:
+@@ -1092,2020 +625,150 @@ def _persona_file_path(name: str, filename: str) -> Path:
          raise HTTPException(400, "画像名非法")
      if not filename.endswith(".md") or "/" in filename or "\\" in filename or filename.startswith("."):
          raise HTTPException(400, "文件名非法")
@@ -6441,7 +6455,7 @@ index 66b3678..da356ac 100644
  
  
  @app.get("/api/outputs")
-@@ -3192,6 +846,60 @@ def _is_protected(full: Path) -> bool:
+@@ -3192,6 +855,60 @@ def _is_protected(full: Path) -> bool:
      )
  
  
@@ -6502,7 +6516,7 @@ index 66b3678..da356ac 100644
  @app.delete("/api/output/{path:path}")
  async def api_output_delete(path: str):
      """删除内容库里的单个文件或整个项目目录。系统数据（_login/_analytics/日历/发布记录）受保护。"""
-@@ -3274,11 +982,12 @@ async def api_upload_local(
+@@ -3274,11 +991,12 @@ async def api_upload_local(
      return {"ok": True, "files": saved}
  
  
@@ -6516,7 +6530,7 @@ index 66b3678..da356ac 100644
      st = LOGIN_DIR / f'{platform}.json'
      tmp = st.with_suffix('.json.tmp')
      try:
-@@ -3291,41 +1000,64 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
+@@ -3291,41 +1009,64 @@ def _write_login_marker(platform: str, state: str, message: str = '') -> None:
              pass
  
  
@@ -6607,7 +6621,7 @@ index 66b3678..da356ac 100644
          except Exception:
              pass
      # A runner that exits before writing its status must become an actionable error,
-@@ -3335,25 +1067,24 @@ def _login_status(platform: str) -> dict:
+@@ -3335,25 +1076,24 @@ def _login_status(platform: str) -> dict:
          code = proc.poll()
          if code is not None:
              data = {'state': 'error', 'message': f'登录程序异常退出（退出码 {code}），请查看 outputs/_login/{platform}.log'}
@@ -6638,7 +6652,7 @@ index 66b3678..da356ac 100644
           'note': cfg.get('note', '')}
          for pf, cfg in LOGIN_RUNNERS.items()
      ]
-@@ -3372,9 +1103,19 @@ async def api_login_start(platform: str):
+@@ -3372,9 +1112,19 @@ async def api_login_start(platform: str):
          # 公众号不走扫码：前端应改用凭证表单提交到 /api/accounts/{platform}/credentials。
          return {'mode': 'credentials', 'configured': _wechat_has_credentials(),
                  'message': '微信公众号请填写 AppID / AppSecret'}
@@ -6660,7 +6674,7 @@ index 66b3678..da356ac 100644
      for f in (qr, status):
          try:
              f.unlink()
-@@ -3389,7 +1130,7 @@ async def api_login_start(platform: str):
+@@ -3389,7 +1139,7 @@ async def api_login_start(platform: str):
                 '--qr-out', str(qr), '--status-file', str(status),
                 '--cookie', str(PROJECT_ROOT / 'cookies.json'), '--timeout', str(LOGIN_TIMEOUT)]
      elif backend == 'douyin':
@@ -6669,7 +6683,7 @@ index 66b3678..da356ac 100644
          try:
              code_file.unlink()
          except OSError:
-@@ -3401,10 +1142,11 @@ async def api_login_start(platform: str):
+@@ -3401,10 +1151,11 @@ async def api_login_start(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'web_publisher.py'), 'login-qr',
                 '--platform', cfg['wp'], '--qr-out', str(qr), '--status-file', str(status),
                 '--timeout', str(LOGIN_TIMEOUT)]
@@ -6682,7 +6696,7 @@ index 66b3678..da356ac 100644
      log_file = log_path.open('a', encoding='utf-8')
      proc = subprocess.Popen(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
                              stdout=log_file, stderr=subprocess.STDOUT)
-@@ -3420,21 +1162,18 @@ async def api_login_start(platform: str):
+@@ -3420,21 +1171,18 @@ async def api_login_start(platform: str):
  
  
  @app.get("/api/login/{platform}/status")
@@ -6708,7 +6722,7 @@ index 66b3678..da356ac 100644
  
  
  @app.post("/api/login/{platform}/sms")
-@@ -3446,11 +1185,12 @@ async def api_login_sms(platform: str, req: SmsCodeRequest):
+@@ -3446,11 +1194,12 @@ async def api_login_sms(platform: str, req: SmsCodeRequest):
      """
      if platform not in LOGIN_RUNNERS:
          raise HTTPException(404, '未知平台')
@@ -6722,7 +6736,7 @@ index 66b3678..da356ac 100644
      return {'ok': True}
  
  
-@@ -3499,29 +1239,7 @@ async def api_save_credentials(platform: str, req: WechatCredentials):
+@@ -3499,29 +1248,7 @@ async def api_save_credentials(platform: str, req: WechatCredentials):
  
  
  def _mp_login_status() -> dict:
@@ -6753,7 +6767,7 @@ index 66b3678..da356ac 100644
  
  
  def _stop_mp_login_on_shutdown() -> None:
-@@ -3548,17 +1266,21 @@ async def api_mp_login_start(platform: str):
+@@ -3548,17 +1275,21 @@ async def api_mp_login_start(platform: str):
      proc = LOGIN_PROCESSES.get("wechat-oa-mp")
      if proc is not None and proc.poll() is None:
          return {"mode": "qr", **_mp_login_status()}
@@ -6779,7 +6793,7 @@ index 66b3678..da356ac 100644
      proc = subprocess.Popen(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
                              stdout=log_file, stderr=subprocess.STDOUT)
      log_file.close()
-@@ -3572,33 +1294,79 @@ async def api_mp_login_start(platform: str):
+@@ -3572,33 +1303,79 @@ async def api_mp_login_start(platform: str):
  
  
  @app.get("/api/accounts/{platform}/mp-login/status")
@@ -6873,7 +6887,7 @@ index 66b3678..da356ac 100644
      if backend == 'biliup':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'bili_login.py'), 'whoami',
                 '--cookie', str(PROJECT_ROOT / 'cookies.json')]
-@@ -3606,44 +1374,32 @@ async def api_account_whoami(platform: str):
+@@ -3606,44 +1383,32 @@ async def api_account_whoami(platform: str):
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'xhs_publish.py'), 'whoami', '--no-proxy']
      elif backend == 'douyin':
          cmd = [sys.executable, str(SHARED_SCRIPTS / 'douyin_publish.py'), 'whoami']
@@ -6932,7 +6946,7 @@ index 66b3678..da356ac 100644
  
  
  @app.post("/api/logout/{platform}")
-@@ -3652,6 +1408,12 @@ async def api_logout(platform: str):
+@@ -3652,6 +1417,12 @@ async def api_logout(platform: str):
      cfg = LOGIN_RUNNERS.get(platform)
      if not cfg:
          raise HTTPException(404, '未知平台')
@@ -6945,7 +6959,7 @@ index 66b3678..da356ac 100644
      deleted = []
      if cfg['backend'] == 'wechat-oa':
          # 1) 清 AppID 凭证（旧配置兜底）
-@@ -3711,21 +1473,144 @@ async def api_logout(platform: str):
+@@ -3711,21 +1482,144 @@ async def api_logout(platform: str):
  ANALYTICS_PLATFORMS = {"xiaohongshu", "douyin", "kuaishou", "zhihu", "weixin-channels", "bilibili", "wechat-oa"}
  
  
@@ -7094,7 +7108,7 @@ index 66b3678..da356ac 100644
      # B站用 cookie 调 API（无浏览器 profile）、公众号走 mp 后台会话（Playwright 拦截数据 XHR，见下），单独分支；其余走 account_stats（Playwright）
      if platform == "bilibili":
          cmd = [sys.executable, str(SHARED_SCRIPTS / "bili_login.py"), "stats",
-@@ -3739,18 +1624,26 @@ async def api_analytics(platform: str):
+@@ -3739,18 +1633,26 @@ async def api_analytics(platform: str):
                 "--proxy", wx_proxy, "--count", "20"]
      else:
          # 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env），后端照常传 _proxy_env
@@ -7124,7 +7138,7 @@ index 66b3678..da356ac 100644
              except Exception:
                  continue
      detail = (proc.stderr or "").strip().splitlines()[-1:] or ["未取到数据"]
-@@ -3799,7 +1692,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
+@@ -3799,7 +1701,7 @@ def _run_publish_bg(platform: str, cmd: list, title: str, body: str, cfg: dict,
      out = err = ''
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_publish_env(),
@@ -7133,7 +7147,7 @@ index 66b3678..da356ac 100644
          ok = proc.returncode == 0
          out, err = proc.stdout or '', proc.stderr or ''
      except subprocess.TimeoutExpired:
-@@ -3895,6 +1788,8 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3895,6 +1797,8 @@ async def api_publish(platform: str, req: PublishRequest):
          raise HTTPException(400, '同一条内容不能同时发图片和视频，请二选一')
      if platform in VIDEO_ONLY_PUBLISH and not vids:
          raise HTTPException(400, f"{cfg['name']} 只能发视频，请附带一个视频文件")
@@ -7142,7 +7156,7 @@ index 66b3678..da356ac 100644
      title = req.title.strip() or req.body.strip()[:20]
      tags = req.tags or ''
      py = sys.executable
-@@ -3942,7 +1837,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3942,7 +1846,7 @@ async def api_publish(platform: str, req: PublishRequest):
          conv = subprocess.run([py, str(WECHAT_SKILL_SCRIPTS / 'html_converter.py'),
                                 str(md_path), '-o', str(html_path)],
                                cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -7151,7 +7165,7 @@ index 66b3678..da356ac 100644
          if conv.returncode != 0 or not html_path.is_file():
              raise HTTPException(500, f"排版失败：{(conv.stderr or conv.stdout or '')[-200:]}")
          wx_proxy = os.environ.get('EASEL_PROXY') or os.environ.get('https_proxy') or ''
-@@ -3960,7 +1855,7 @@ async def api_publish(platform: str, req: PublishRequest):
+@@ -3960,7 +1864,7 @@ async def api_publish(platform: str, req: PublishRequest):
      pub_env = _proxy_env() if platform == 'wechat-oa' else _publish_env()
      try:
          proc = await asyncio.to_thread(subprocess.run, cmd, cwd=str(PROJECT_ROOT), env=pub_env,
@@ -7160,7 +7174,7 @@ index 66b3678..da356ac 100644
      except subprocess.TimeoutExpired:
          raise HTTPException(504, '发布超时（媒体处理慢或流程卡住）')
      ok = proc.returncode == 0
-@@ -3994,11 +1889,7 @@ class ProfileBuildRequest(BaseModel):
+@@ -3994,11 +1898,7 @@ class ProfileBuildRequest(BaseModel):
  
  @app.post("/api/profile/build")
  async def api_profile_build(req: ProfileBuildRequest):
@@ -7173,7 +7187,7 @@ index 66b3678..da356ac 100644
      name = (req.name or '').strip()  # 自动去掉首尾空格
      if not name:
          raise HTTPException(400, '画像名不能为空（去掉首尾空格后为空，请输入有效名称）')
-@@ -4010,30 +1901,18 @@ async def api_profile_build(req: ProfileBuildRequest):
+@@ -4010,30 +1910,18 @@ async def api_profile_build(req: ProfileBuildRequest):
      if pd.exists():
          raise HTTPException(409, f'画像「{name}」已存在，请换一个名字')
      _write_baseline_profile(name, req.form or {})
@@ -7209,7 +7223,7 @@ index 66b3678..da356ac 100644
      try:
          PROFILE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
          f = _profile_status_file(name)
-@@ -4047,34 +1926,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
+@@ -4047,34 +1935,22 @@ def _write_profile_status(name: str, state: str, log: str = '') -> None:
  
  @app.get("/api/profile/build/status/{name}")
  async def api_profile_build_status(name: str):
@@ -7250,7 +7264,7 @@ index 66b3678..da356ac 100644
      pd = PROFILES_DIR / name
      pd.mkdir(parents=True, exist_ok=True)
  
-@@ -4098,10 +1965,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4098,10 +1974,10 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"{'运营目标：' + goal if goal else ''}\n",
          encoding='utf-8')
      (pd / 'style.md').write_text(
@@ -7263,7 +7277,7 @@ index 66b3678..da356ac 100644
          encoding='utf-8')
      plat_lines = []
      for p in platforms:
-@@ -4114,33 +1981,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
+@@ -4114,33 +1990,17 @@ def _write_baseline_profile(name: str, form: dict) -> None:
          f"# 偏好与红线\n\n## 要做的\n\n{direction}\n\n## 不做的\n\n{avoid or '[待补充]'}\n\n## 合规底线\n\n{avoid or '[待补充]'}\n",
          encoding='utf-8')
      (pd / 'memory.md').write_text(
@@ -7300,7 +7314,7 @@ index 66b3678..da356ac 100644
  }
  TREND_LABELS = {
      "weibo": "微博",
-@@ -4150,50 +2001,97 @@ TREND_LABELS = {
+@@ -4150,50 +2010,97 @@ TREND_LABELS = {
      "baidu": "百度",
      "toutiao": "头条",
  }
@@ -7413,7 +7427,7 @@ index 66b3678..da356ac 100644
  async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      pfs = [p.strip() for p in platforms.split(",") if p.strip() in TREND_SOURCES]
      now = time.time()
-@@ -4201,18 +2099,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
+@@ -4201,18 +2108,22 @@ async def api_trends(platforms: str = "weibo,douyin,zhihu", limit: int = 12):
      result = []
      for pf in pfs:
          c = _TREND_CACHE.get(pf)
@@ -7443,7 +7457,7 @@ index 66b3678..da356ac 100644
          })
      return {"trends": result, "updated": int(now)}
  
-@@ -4323,7 +2225,7 @@ async def api_schedule_context(days: int = 14):
+@@ -4323,7 +2234,7 @@ async def api_schedule_context(days: int = 14):
             "--data", str(SCHEDULE_FILE), "context", "--days", str(max(1, min(days, 90)))]
      try:
          proc = subprocess.run(cmd, cwd=str(PROJECT_ROOT), env=_proxy_env(),
@@ -7452,7 +7466,7 @@ index 66b3678..da356ac 100644
          return json.loads(proc.stdout) if proc.returncode == 0 and proc.stdout.strip() else {}
      except Exception:
          return {}
-@@ -4409,11 +2311,10 @@ if __name__ == "__main__":
+@@ -4409,11 +2320,10 @@ if __name__ == "__main__":
      import uvicorn
      port = int(os.environ.get("EASEL_PORT", "7860"))
      proxy_url = os.environ.get("VSCODE_PROXY_URI", "").replace("{{port}}", str(port))
@@ -23599,12 +23613,13 @@ index fee8255..160401b 100644
  }
 diff --git a/web/frontend/src/components/AccountObservations.tsx b/web/frontend/src/components/AccountObservations.tsx
 new file mode 100644
-index 0000000..74228dd
+index 0000000..a908950
 --- /dev/null
 +++ b/web/frontend/src/components/AccountObservations.tsx
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,145 @@
 +import { useCallback, useEffect, useRef, useState } from 'react';
 +import type { ReactNode } from 'react';
++import { createPortal } from 'react-dom';
 +import { fetchAccountObservations } from '../lib/api';
 +import type { AccountObservation, ObservationList } from '../lib/api';
 +import { useRefreshOnFocus } from '../lib/useRefreshOnFocus';
@@ -23638,14 +23653,40 @@ index 0000000..74228dd
 +
 +export function NativeCollectionTools({children}: {children: ReactNode}) {
 +  const [open, setOpen] = useState(false);
-+  async function toggle() {
-+    if (open && !await requestLeave({reason:'收起原生采集工具', scope:['account-credentials','account-sms']})) return;
-+    setOpen(value => !value);
++  const opener = useRef<HTMLButtonElement>(null), overlay = useRef<HTMLDivElement>(null), panel = useRef<HTMLElement>(null), deciding = useRef(false);
++  async function close() {
++    if (deciding.current) return;
++    deciding.current = true;
++    try { if (await requestLeave({reason:'关闭旧采集工具', scope:['account-credentials','account-sms']})) setOpen(false); }
++    finally { deciding.current = false; }
 +  }
++  useEffect(() => {
++    if (!open) return;
++    const background = Array.from(document.body.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlay.current);
++    const previous = background.map(element => [element, element.inert] as const);
++    background.forEach(element => { element.inert = true; });
++    panel.current?.querySelector<HTMLButtonElement>('button')?.focus({preventScroll:true});
++    const keydown = (event: KeyboardEvent) => {
++      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); void close(); }
++      if (event.key !== 'Tab') return;
++      const nested = Array.from(panel.current?.querySelectorAll<HTMLElement>('.modal') || []).at(-1) || panel.current;
++      const focusable = Array.from(nested?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])') || []).filter(element => element.getClientRects().length);
++      if (!focusable.length) { event.preventDefault(); panel.current?.focus(); return; }
++      if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1)?.focus(); }
++      else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
++    };
++    document.addEventListener('keydown', keydown, true);
++    return () => { document.removeEventListener('keydown', keydown, true); previous.forEach(([element, inert]) => { element.inert = inert; }); opener.current?.focus({preventScroll:true}); };
++  }, [open]);
 +  return <section className="card observation-native">
-+    <button className="btn" aria-expanded={open} onClick={() => void toggle()}>原生采集工具 · {open ? '收起' : '展开'}</button>
-+    <p className="page-subtitle">可选工具，使用它时需要独立的工具登录。真实浏览器取得并回存的数据可直接查看。</p>
-+    {open && children}
++    <button ref={opener} className="btn" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>打开旧采集工具</button>
++    <p className="page-subtitle">保留原有登录与采集功能，使用独立的工具登录资料。Agent 回存的数据可直接查看。</p>
++    {open && createPortal(<div ref={overlay} className="drawer-overlay legacy-tools-overlay" onClick={event => { if (event.target === event.currentTarget) void close(); }}>
++      <section ref={panel} className="drawer legacy-tools-drawer" role="dialog" aria-modal="true" aria-label="旧采集工具" tabIndex={-1}>
++        <div className="drawer-header legacy-tools-header"><h2>旧采集工具</h2><button className="icon-btn" aria-label="关闭旧采集工具" onClick={() => void close()}>×</button></div>
++        <div className="legacy-tools-body">{children}</div>
++      </section>
++    </div>, document.body)}
 +  </section>;
 +}
 +
@@ -23722,7 +23763,7 @@ index 0000000..74228dd
 +  </section>;
 +}
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..4505562 100644
+index 42545b5..15e6f9c 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
 @@ -1,13 +1,16 @@
@@ -24053,7 +24094,7 @@ index 42545b5..4505562 100644
        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
          <div>
 -          <h1 className="page-title">账号登录 Accounts</h1>
-+          <h2 className="page-title">原生工具登录</h2>
++          <h2 className="page-title">旧采集工具登录</h2>
            <p className="page-subtitle">
 -            用手机 App 扫码登录，登录态本地持久化，之后发布免登。<br />
 -            ⚠️ 平台可能对机房/代理 IP 判风险导致二维码弹不出，需干净/家宽 IP，或在正常网络登录后拷贝登录态目录。
@@ -24747,7 +24788,7 @@ index 0f5c8ed..1a6ae7b 100644
            <h1 className="chat-hero-title">{greeting()}</h1>
            <p className="chat-hero-sub">从选题到发布，一站式帮你把想法做成能发的内容。</p>
 diff --git a/web/frontend/src/components/DashboardPage.tsx b/web/frontend/src/components/DashboardPage.tsx
-index 135c4fc..281fef8 100644
+index 135c4fc..7b0dd6b 100644
 --- a/web/frontend/src/components/DashboardPage.tsx
 +++ b/web/frontend/src/components/DashboardPage.tsx
 @@ -1,14 +1,20 @@
@@ -24935,7 +24976,7 @@ index 135c4fc..281fef8 100644
 -            <span><IconAccounts size={16} /> 创作数据</span>
 -            {anaSel && anaData[anaSel] && anaData[anaSel] !== 'loading' && (
 -              <button className="dash-more" onClick={() => runAna(anaSel)}>刷新 →</button>
-+            <span><IconAccounts size={16} /> 原生工具数据 · 旧结果</span>
++            <span><IconAccounts size={16} /> 旧采集工具数据 · 旧结果</span>
 +            {anaSel && (
 +              <button className="dash-more" disabled={anaLoading[anaSel]} onClick={() => runAna(anaSel)}>{anaLoading[anaSel] ? '读取中…' : '使用工具采集'}</button>
              )}
@@ -29595,10 +29636,10 @@ index 0000000..9d359fd
 +@media(max-width:680px) { .metadata-fields { grid-template-columns:1fr; } .library-facets label { flex-basis:calc(50% - 12px); } .metadata-editor { max-width:calc(100vw - 20px); } }
 diff --git a/web/frontend/src/styles/observations.css b/web/frontend/src/styles/observations.css
 new file mode 100644
-index 0000000..7559fbc
+index 0000000..804c780
 --- /dev/null
 +++ b/web/frontend/src/styles/observations.css
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,23 @@
 +.observation-panel,.observation-native{padding:22px;margin:20px 0;min-width:0}
 +.observation-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 +.observation-heading h2{margin:0 0 8px;font-size:20px}
@@ -29613,6 +29654,13 @@ index 0000000..7559fbc
 +.observation-links{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
 +.observation-references>div{margin:8px 0;font-size:13px;overflow-wrap:anywhere}
 +.observation-native>.accounts-page{padding:18px 0 0}
++.accounts-page{scrollbar-gutter:stable}
++.legacy-tools-drawer{width:1000px;max-width:94vw;display:flex;flex-direction:column;overflow:hidden}
++.legacy-tools-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
++.legacy-tools-header h2{font-size:20px;margin:0}
++.legacy-tools-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:20px 24px 40px}
++.legacy-tools-body>.accounts-page{height:auto;overflow:visible;padding:0}
++.legacy-tools-body .overlay{z-index:2}
 +@media(max-width:1000px){.observation-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 +@media(max-width:650px){.observation-filters,.observation-links{grid-template-columns:1fr}.observation-panel,.observation-native{padding:15px}}
 diff --git a/web/frontend/src/styles/update-banner.css b/web/frontend/src/styles/update-banner.css

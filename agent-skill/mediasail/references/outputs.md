@@ -70,9 +70,11 @@ GET /api/outputs 或刷新内容库可看到项目。复查 deliverablePaths 指
 ```powershell
 $project = [Uri]::EscapeDataString('春季内容')
 $uri = $info.baseUrl + '/api/projects/' + $project + '/metadata'
-$before = Invoke-RestMethod $uri
+$read = Invoke-WebRequest $uri -UseBasicParsing
+$before = [Text.Encoding]::UTF8.GetString($read.RawContentStream.ToArray()) | ConvertFrom-Json
 $payload = @{revision=$before.revision;changes=@{category='creation';summary='整理完成的春季内容方案'}} | ConvertTo-Json -Depth 6
-Invoke-RestMethod $uri -Method Patch -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($payload))
+$saved = Invoke-WebRequest $uri -UseBasicParsing -Method Patch -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($payload))
+[Text.Encoding]::UTF8.GetString($saved.RawContentStream.ToArray()) | ConvertFrom-Json
 ```
 
 `$info` 来自[工具与接口](tools-api.md)的当前连接示例。PATCH 是增量修改，没提交的字段保持原值，不把旧版整份元数据覆盖回去；分类和展示信息的保存不应改写步骤记录、封面或成品清单。保存时会核对 revision，检测到文件在读取后已变化则返回 HTTP 409，不覆盖这份新内容。保留自己的待改内容，重新读取并核对差异，再决定如何合并；不换一个新 revision 就盲目重发原来的覆盖请求。界面也会保留未保存的编辑，方便核对。
@@ -90,7 +92,7 @@ $before = & $SkillHelper python --data-dir $DataDir 'skills/shared/scripts/manif
 
 导入接口 /api/upload 和 /api/upload/local 使用 multipart files + sessionId，返回 id/name/path。sessionId 在这里是收件目录标签，不需要启动旧聊天。把项目成果直接放进 outputs 不需要调用模型；也可以使用外部 Agent 的文件操作准备项目材料。
 
-AI 发布用默认浏览器打开 https://aitoearn.cn/zh-CN。把正文、图片、视频及封面保存到当前项目，并在 `.easel.json` 登记实际成品；可使用现有文件工具整理有序媒体、保留清晰的文件名和发布说明，不规定创作工具。用户在内容库打开项目文件夹；用户或 Agent 用现有文件工具读取项目成品文件并复制正文，再由用户到官网选择媒体，检查顺序、账号、平台和排期。网站不能直接读取资料库或自动选中文件，软件不再上传素材或创建 AitoEarn 草稿。
+AI 发布用默认浏览器打开 https://aitoearn.cn/zh-CN。把正文、图片、视频及封面保存到当前项目，并在 `.easel.json` 登记实际成品；可用现有文件工具整理有序媒体和发布说明。用户可在内容库打开项目文件夹；Agent 也可按授权用浏览器及文件选择能力完成官网操作，核对媒体顺序、账号、平台和排期。用户要求交付待发布页面时，停在准备好的页面。网站无法自行读取整个资料库，软件不提供上传或云端草稿 API；实际网页结果另行核对和记录。
 
 默认浏览器与旧内嵌页面使用不同登录状态，可能需要重新登录，并按官网要求安装浏览器扩展。旧 Cookie 不迁移；官网现有草稿仍属于原云端账号。网页发布结果不自动回写 MediaSail，按实际结果、平台、账号、时间和 URL 补充本地发布记录，不仅将项目状态改为 published 就当作成功。MediaSail 原生平台工具的登录、采集和发布流程保持独立。
 

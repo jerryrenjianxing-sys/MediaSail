@@ -21,6 +21,7 @@ class AgentConnection{
     this.write('starting');
   }
   selectProfile(value){if(!this.info)return;this.info.selectedProfile=typeof value==='string'&&value?value:null;this.write(this.status||'starting');}
+  browserConnector(value){if(this.info?.browserTools){this.info.browserTools.connector=value;this.write(this.status||'starting');}}
   write(status){
     if(!this.info)return;
     this.status=status;

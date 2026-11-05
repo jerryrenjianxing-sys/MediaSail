@@ -6,14 +6,14 @@
 
 软件提供可见的专用 Chromium 与 BrowserSkill 0.4.1 MediaSail 适配构建。浏览器、扩展、私有 daemon 和连接自动配置，无需商店安装或调试设置。它使用当前资料库的独立网站配置，首次网站登录由用户扫码等正常完成，后续沿用；平台要求重新验证时再提示。不导入个人 Edge/Chrome 或其他库的 Cookie。
 
-发现文件中的 `browserTools` 提供可选入口、工具/浏览器版本、发行清单及本页位置。未提供时说明该安装没有此组件；不要把工具缺失当成软件业务连接失败。入口兼容 Windows PowerShell 5.1，无需全局 Node/Python，软件关闭也能使用。
+发现文件中的 `browserTools` 提供可选入口、工具/浏览器版本、发行清单、桌面连接描述及本页位置。入口兼容 Windows PowerShell 5.1，无需全局 Node/Python。新建连接由运行中的 MediaSail 桌面进程准备浏览器和 daemon；Agent 不需要启动后台任务、清除代理或更改宿主设置。软件关闭时可查询/准备本地组件，已有会话按原缓存回执继续操作；新建连接则先打开 MediaSail。
 
 ```powershell
-# <数据目录> 来自最新发现资料。查询与准备均不会启动浏览器。
+# <数据目录> 来自最新发现资料。这两条是按需诊断，不是连接前的必跑链。
 & '<Skill目录>\scripts\mediasail.ps1' browser status --data-dir '<数据目录>'
 & '<Skill目录>\scripts\mediasail.ps1' browser prepare --data-dir '<数据目录>'
 
-# 按任务需要连接；--url 可省略，只允许 HTTP(S)。保存完整回执供本任务使用。
+# 按任务直接连接即可，内部自动准备。--url 可省略，只允许 HTTP(S)。
 $connection = & '<Skill目录>\scripts\mediasail.ps1' browser connect --data-dir '<数据目录>' --name '账号研究' --url 'https://creator.douyin.com/creator-micro/home' | ConvertFrom-Json
 if (!$connection.ok) { throw $connection.error }
 
@@ -26,6 +26,14 @@ if (!$connection.ok) { throw $connection.error }
 `disconnect` 只结束本任务连接，保留浏览器和登录配置。`run` 转交 BrowserSkill 原生命令，自动带本会话编号；命令参数见 `--help` 或子命令 `--help`。CLI 输出 JSON，失败退出非零。工具内的协作上下文、页面引用和动作校验按其当前回执使用：人操作后先 `cooperate sync` 阅读现场；需要 context/observation 时使用本次回执，不沿用旧页面引用。结果不明先检查现场，不重放操作。
 
 固定组配置含本地连接信息，只供该任务使用，不放进 MD、报告或公开附件。公开发现文件不包含这些凭据。新连接从最新发现资料定位库；旧 `sessionRef` 继续属于原库，不自动改账号或资料库。
+
+连接失败返回 requestId 时，可用 `browser status --request-id '<编号>'` 查询原结果。pending/unknown 表示结果尚未确认，先核对原请求和已有窗口，不另建请求碰运气。相同 requestId 的重复 connect 复用原回执；更改目标应使用新的请求。
+
+## 网站登录与任务推进
+
+根据用户要做的工作决定是否需要登录。只接入而没有具体任务时，介绍可帮其打开网站登录即可；已经要求账号分析时，直接准备对应后台，不先让用户挑选登录技术路线。可参考现有业务工具使用的入口：抖音 `https://creator.douyin.com/creator-micro/home`，小红书 `https://creator.xiaohongshu.com/new/home`，快手 `https://cp.kuaishou.com/profile`，知乎 `https://www.zhihu.com/creator/analytics`，视频号 `https://channels.weixin.qq.com/platform`；其他平台按实际网站导航。研究公开内容时可使用主站，不将后台权限当作所有任务前提。
+
+看到扫码、验证码或授权页时，先把用户需要操作的窗口和具体动作准备好，再请其完成必要的一步；完成后重新读取页面，核对后台账号身份与可访问范围，再继续取数及回存。连接成功不表示网站已登录；旧工具的登录标记也不表示专用浏览器已登录。专用浏览器沿用自身 profile，扫码后无需照搬旧工具的“关窗口重开核验”流程。
 
 ## 连接状态与恢复
 
@@ -44,4 +52,4 @@ if (!$connection.ok) { throw $connection.error }
 
 软件暂停、更新或 HTTP 暂不可用时，保留原库证据、输入与成果；恢复后核对原库身份，再补登记。刷新软件只重读保存内容，不校验浏览器在线。
 
-旧原生采集工具仍是可选入口，使用自己独立的登录资料，主动使用时才需要它的登录。专用 Chromium 或个人浏览器的 Cookie 不自动复制给它；外部观测不会把旧 whoami 改为已验证。
+旧采集工具仍是可选入口，使用自己独立的登录资料，主动使用时才需要它的登录。专用 Chromium 或个人浏览器的 Cookie 不自动复制给它；外部观测不会把旧 whoami 改为已验证。

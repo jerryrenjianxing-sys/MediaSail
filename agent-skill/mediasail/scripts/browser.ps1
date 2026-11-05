@@ -232,6 +232,7 @@ function Start-Group($Context) {
     return $group
 }
 function Connect($Context,[string]$Name,[string]$Url) {
+    $null=Prepare $Context
     $group=Active-Group $Context
     if(!(Owned-Browser $group)){
         if($group){$stopped=Tool $group @('daemon','stop','--json');if($stopped.ExitCode -ne 0){throw 'The previous private daemon could not stop; its files and profile were retained'}}
@@ -253,7 +254,7 @@ function Connect($Context,[string]$Name,[string]$Url) {
     if(!$Name){$Name='MediaSail Agent'}
     $session=Tool-Json $group @('session','start','--browser',$browsers[0].instance_id,'--name',$Name,'--focus','--json')
     if(!$session.session_id){throw 'Browser did not return a task session'}
-    $reference=[guid]::NewGuid().ToString();$entry=Join-Path $group.cache 'browser.ps1'
+    $reference=[guid]::NewGuid().ToString();$entry=Join-Path $Context.cache 'browser.ps1'
     $record=@{schema=1;libraryId=$group.libraryId;sessionRef=$reference;sessionId=$session.session_id;groupFile=(Join-Path $group.directory 'group.json');state='connected'}
     Save-Json (Inside $Context.state ('sessions/'+$reference+'.json')) $record
     $receipt=@{ok=$true;libraryId=$group.libraryId;sessionRef=$reference;sessionId=$session.session_id;toolGroupId=$group.id;entry=$entry;groupConfig=$record.groupFile;browserVersion=$group.browserVersion;toolVersion=$group.toolVersion;pendingUpdate=($group.bundleId -ne $Context.manifest.bundleId)}
@@ -273,13 +274,15 @@ function Session-Record($Context,[string]$Reference) {
 }
 try {
     $action=if($Arguments.Count){$Arguments[0]}else{'status'}
-    $connection=$null;$groupFile=$null;$reference=$null;$name=$null;$url=$null;$native=@()
+    $connection=$null;$groupFile=$null;$reference=$null;$name=$null;$url=$null;$native=@();$desktopOwned=$false;$requestId=$null
     for($i=1;$i -lt $Arguments.Count;$i++){
         if($Arguments[$i] -eq '--connection' -and $i+1 -lt $Arguments.Count){$i++;$connection=$Arguments[$i]}
         elseif($Arguments[$i] -eq '--group-config' -and $i+1 -lt $Arguments.Count){$i++;$groupFile=$Arguments[$i]}
         elseif($Arguments[$i] -eq '--session-ref' -and $i+1 -lt $Arguments.Count){$i++;$reference=$Arguments[$i]}
         elseif($Arguments[$i] -eq '--name' -and $i+1 -lt $Arguments.Count){$i++;$name=$Arguments[$i]}
         elseif($Arguments[$i] -eq '--url' -and $i+1 -lt $Arguments.Count){$i++;$url=$Arguments[$i]}
+        elseif($Arguments[$i] -eq '--request-id' -and $i+1 -lt $Arguments.Count){$i++;$requestId=$Arguments[$i]}
+        elseif($Arguments[$i] -eq '--desktop-owned'){$desktopOwned=$true}
         elseif($Arguments[$i] -eq '--'){$native=@($Arguments|Select-Object -Skip ($i+1));break}
         else {throw ('Unknown browser argument: '+$Arguments[$i])}
     }
@@ -290,15 +293,21 @@ try {
     [IO.Directory]::CreateDirectory($context.state)|Out-Null
     $lockFile=Join-Path $context.state 'prepare.lock'
     $lock=$null
-    if($action -in @('prepare','connect')){
+    if($action -eq 'prepare' -or ($action -eq 'connect' -and $desktopOwned)){
         $until=[DateTime]::UtcNow.AddSeconds(30)
         do {try{$lock=[IO.File]::Open($lockFile,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)}catch [IO.IOException]{if([DateTime]::UtcNow -ge $until){throw 'Another browser preparation is still running'};Start-Sleep -Milliseconds 100}}while(!$lock)
     }
     try {
         switch($action){
             'prepare' {$result=Prepare $context}
-            'status' {$active=Active-Group $context;$result=@{ok=$true;prepared=(Test-Path -LiteralPath (Join-Path $context.cache 'manifest.json'));running=(Owned-Browser $active);libraryId=$context.info.libraryId;browserVersion=$context.manifest.browser.version;toolVersion=$context.manifest.bsk.version}}
-            'connect' {$result=Connect $context $name $url}
+            'status' {if($requestId){. (Join-Path $PSScriptRoot 'browser-connector.ps1');$result=Request-BrowserConnection $context $null $null $requestId $true}else{$active=Active-Group $context;$result=@{ok=$true;prepared=(Test-Path -LiteralPath (Join-Path $context.cache 'manifest.json'));running=(Owned-Browser $active);libraryId=$context.info.libraryId;browserVersion=$context.manifest.browser.version;toolVersion=$context.manifest.bsk.version}}}
+            'connect' {
+                if($desktopOwned){
+                    $credential=Read-Json $context.info.browserTools.connector.credentialFile
+                    if(!$env:MEDIASAIL_BROWSER_HOST_TOKEN -or $env:MEDIASAIL_BROWSER_HOST_TOKEN -ne $credential.token -or $credential.instanceId -ne $context.info.instanceId -or $credential.libraryId -ne $context.info.libraryId){throw 'Desktop-owned browser startup was not authorized'}
+                    $result=Connect $context $name $url
+                }else{. (Join-Path $PSScriptRoot 'browser-connector.ps1');$result=Request-BrowserConnection $context $name $url $requestId}
+            }
             'run' {
                 $record=Session-Record $context $reference;$group=Read-Group $record.groupFile
                 if(!(Owned-Browser $group)){throw 'The original browser connection ended; inspect or explicitly reconnect. No browser was started'}
@@ -326,7 +335,7 @@ try {
     } finally {if($lock){$lock.Dispose()}}
     if($null -ne $nativeExit){exit $nativeExit}
     $result|ConvertTo-Json -Depth 20 -Compress
-    exit 0
+    if($result.ok -eq $false){exit 1};exit 0
 } catch {
     @{ok=$false;error=$_.Exception.Message;action=$action}|ConvertTo-Json -Compress
     exit 1
