@@ -23,6 +23,7 @@ try {
   requireFile(tsc, 'Prepare the pinned frontend and run npm ci in vendor/easel/web/frontend first.');
   requireFile(vite, 'Frontend dependencies are incomplete; run npm ci in vendor/easel/web/frontend.');
   run('pinned upstream patch replay', process.execPath, ['scripts/verify-source-patch.cjs']);
+  run('pinned BrowserSkill adaptation replay', python, ['-X','utf8','-B','scripts/verify-browser-source.py']);
   run('Node behavior checks', process.execPath, ['--test', ...fs.readdirSync(path.join(root, 'tests')).filter(name => name.endsWith('.test.cjs')).sort().map(name => 'tests/' + name)]);
   run('Python behavior checks', python, ['-X', 'utf8', '-B', '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py', '-v']);
   run('frontend types', process.execPath, [tsc, '-b'], frontend);

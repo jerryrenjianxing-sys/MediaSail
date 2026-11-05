@@ -1,0 +1,338 @@
+diff --git a/apps/extension/src/lib/daemon-connection-preference.ts b/apps/extension/src/lib/daemon-connection-preference.ts
+index 00b3ff1..1770868 100644
+--- a/apps/extension/src/lib/daemon-connection-preference.ts
++++ b/apps/extension/src/lib/daemon-connection-preference.ts
+@@ -1,67 +1,30 @@
+-import { normalizeDaemonPort, resolveDaemonWsUrl } from "@/transport/daemon-endpoint";
+ import type { RemoteEndpoint } from "@/transport/remote-endpoint";
+-import {
+-  REMOTE_CONNECTION_MODE,
+-  REMOTE_CONNECTION_REVISION,
+-  readRemoteConnection,
+-} from "@/transport/remote-storage";
+-import { STORAGE_KEYS } from "./instance-id";
+ 
+-/** Keep the port and remote credential in one snapshot. Invalid remote state never falls back locally. */
++/** MediaSail's immutable per-group launch file; no default endpoint fallback. */
+ export function watchDaemonConnection(
+   onChange: (url: string, remote: RemoteEndpoint | null) => void,
+-  onError: () => void = () => console.error("[connection] invalid connection preference"),
++  onError: () => void = () => console.error("[connection] invalid MediaSail launch configuration"),
+ ) {
+   let disposed = false;
+-  let revision = 0;
+   let retry: ReturnType<typeof setTimeout> | undefined;
+   let resolveReady!: () => void;
+-  // Settle after the first current read, including failure, so the controller
+-  // can report a blocked connection. Only onChange may enable socket creation.
+-  const ready = new Promise<void>((resolve) => {
+-    resolveReady = resolve;
+-  });
++  const ready = new Promise<void>((resolve) => { resolveReady = resolve; });
+   const read = async () => {
+-    clearTimeout(retry);
+-    const current = ++revision;
+     try {
+-      const [values, remote] = await Promise.all([
+-        chrome.storage.local.get(STORAGE_KEYS.DAEMON_PORT),
+-        readRemoteConnection(),
+-      ]);
+-      if (disposed || revision !== current) return;
+-      onChange(
+-        remote?.url ?? resolveDaemonWsUrl(normalizeDaemonPort(values[STORAGE_KEYS.DAEMON_PORT])),
+-        remote,
+-      );
+-      resolveReady();
+-    } catch {
+-      if (!disposed && revision === current) {
+-        onError();
+-        retry = setTimeout(() => void read(), 30_000);
+-        resolveReady();
++      const response = await fetch(chrome.runtime.getURL("mediasail-bootstrap.json"), { cache: "no-store" });
++      if (!response.ok) throw new Error("Missing MediaSail browser configuration");
++      const managed = await response.json() as { wsUrl?: string; groupId?: string };
++      const endpoint = new URL(managed.wsUrl || "");
++      if (endpoint.protocol !== "ws:" || endpoint.hostname !== "127.0.0.1" || !endpoint.port ||
++          !/^[a-f0-9]{64}$/.test(managed.groupId || "") ||
++          endpoint.searchParams.get("mediasailGroup") !== managed.groupId) {
++        throw new Error("Invalid MediaSail browser group");
+       }
+-    }
+-  };
+-  const changed = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+-    if (
+-      area === "local" &&
+-      (changes[STORAGE_KEYS.DAEMON_PORT] ||
+-        changes[REMOTE_CONNECTION_REVISION] ||
+-        changes[REMOTE_CONNECTION_MODE])
+-    ) {
+-      // Invalid writes are not supported; do not redirect the active connection to localhost.
+-      void read();
+-    }
++      if (!disposed) onChange(managed.wsUrl!, null);
++    } catch {
++      if (!disposed) { onError(); retry = setTimeout(() => void read(), 30_000); }
++    } finally { resolveReady(); }
+   };
+-  chrome.storage.onChanged.addListener(changed);
+   void read();
+-  return {
+-    ready,
+-    dispose: () => {
+-      disposed = true;
+-      clearTimeout(retry);
+-      chrome.storage.onChanged.removeListener(changed);
+-    },
+-  };
++  return { ready, dispose: () => { disposed = true; clearTimeout(retry); } };
+ }
+diff --git a/apps/extension/wxt.config.ts b/apps/extension/wxt.config.ts
+index 683d932..40b267e 100644
+--- a/apps/extension/wxt.config.ts
++++ b/apps/extension/wxt.config.ts
+@@ -84,7 +84,7 @@ export default defineConfig({
+       },
+     ],
+     define: {
+-      __BSK_EXT_BUILD__: JSON.stringify(EXTENSION_BUILD),
++      __BSK_EXT_BUILD__: JSON.stringify(process.env.MEDIASAIL_BUILD_REVISION || EXTENSION_BUILD),
+       __BSK_EXT_VERSION__: JSON.stringify(EXTENSION_VERSION),
+       __BSK_DAEMON_WS_URL__: JSON.stringify(
+         process.env.BSK_DAEMON_WS_URL ?? "ws://127.0.0.1:52800",
+diff --git a/crates/bsk-cli/build.rs b/crates/bsk-cli/build.rs
+index 251e826..026e46f 100644
+--- a/crates/bsk-cli/build.rs
++++ b/crates/bsk-cli/build.rs
+@@ -28,6 +28,11 @@ fn collect(root: &Path, dir: &Path, files: &mut Vec<String>) {
+ }
+ 
+ fn emit_build_revision() {
++    println!("cargo:rerun-if-env-changed=MEDIASAIL_BUILD_REVISION");
++    if let Ok(revision) = env::var("MEDIASAIL_BUILD_REVISION") {
++        println!("cargo:rustc-env=BSK_BUILD_REVISION={revision}");
++        return;
++    }
+     let revision = std::process::Command::new("git")
+         .args(["describe", "--always", "--dirty"])
+         .output()
+diff --git a/crates/bsk-cli/src/cli/mod.rs b/crates/bsk-cli/src/cli/mod.rs
+index dadac93..6345a91 100644
+--- a/crates/bsk-cli/src/cli/mod.rs
++++ b/crates/bsk-cli/src/cli/mod.rs
+@@ -132,6 +132,16 @@ pub struct Cli {
+ 
+ #[derive(Debug, Subcommand)]
+ pub enum Command {
++    /// Internal native launcher for MediaSail's independently owned browser.
++    #[command(hide = true)]
++    ManagedLaunch {
++        #[arg(long)]
++        executable: std::path::PathBuf,
++        #[arg(long)]
++        log: std::path::PathBuf,
++        #[arg(last = true)]
++        args: Vec<std::ffi::OsString>,
++    },
+     /// Decide native JavaScript dialogs (alert, confirm, prompt, beforeunload).
+     Dialog(dialog_control::DialogCmd),
+     /// Retrieve or cancel the original operation suspended by a native dialog.
+diff --git a/crates/bsk-cli/src/daemon/start.rs b/crates/bsk-cli/src/daemon/start.rs
+index f58df45..d5e5578 100644
+--- a/crates/bsk-cli/src/daemon/start.rs
++++ b/crates/bsk-cli/src/daemon/start.rs
+@@ -46,6 +46,14 @@ type DaemonChild = std::process::Child;
+ /// to indicate "you are the daemon, detach yourself and run".
+ pub(crate) const DAEMONIZED_ENV: &str = "BSK_DAEMONIZED";
+ 
++/// Launch only the explicitly requested native executable, outside caller Jobs.
++pub fn launch_managed(exe: &Path, args: &[std::ffi::OsString], log: &Path) -> anyhow::Result<serde_json::Value> {
++    #[cfg(windows)]
++    { windows::launch_managed(exe, args, log) }
++    #[cfg(not(windows))]
++    { let _ = (exe, args, log); anyhow::bail!("MediaSail managed browser requires Windows") }
++}
++
+ /// Internal env-var contract for daemon self-restart after an
+ /// auto-update: the outgoing daemon spawns its replacement with this set
+ /// to its own pid; the child waits for that pid to exit — releasing the
+@@ -598,44 +606,7 @@ fn serve(cfg: &DaemonConfig, resumed: Option<&mut UpdateRecord>) -> Result<Stopp
+         }
+         remove_update_leftovers_after(cfg.replaces);
+ 
+-        // Best-effort: keep installed agent skills in step with this
+-        // daemon's bundled SKILL.md. Spawned so a slow/failing fs
+-        // never blocks the daemon ready signal.
+-        tokio::spawn(async move {
+-            let result = tokio::task::spawn_blocking(|| {
+-                let home = match crate::skill_install::harness::home_dir() {
+-                    Ok(home) => home,
+-                    Err(err) => {
+-                        warn!(error = %err, "skill sync skipped: cannot resolve $HOME");
+-                        return None;
+-                    }
+-                };
+-                Some(crate::skill_install::sync::sync_installed_skills(&home))
+-            })
+-            .await;
+-
+-            match result {
+-                Ok(Some(report)) => {
+-                    for harness in &report.updated {
+-                        info!(harness = harness.cli_name(), "skill synced");
+-                    }
+-                    for (harness, reason) in &report.paused {
+-                        warn!(harness = harness.cli_name(), reason = reason.description(),
+-                            "skill auto-update paused; content preserved; run `bsk doctor` for options");
+-                    }
+-                    for (harness, msg) in &report.errors {
+-                        warn!(harness = harness.cli_name(), error = %msg, "skill sync failed");
+-                    }
+-                    if !report.up_to_date.is_empty() {
+-                        debug!(count = report.up_to_date.len(), "skill already up to date");
+-                    }
+-                }
+-                Ok(None) => { /* home_dir() already warned inside the closure */ }
+-                Err(join_err) => {
+-                    warn!(error = %join_err, "skill sync task panicked");
+-                }
+-            }
+-        });
++        // MediaSail never synchronizes another Agent's installed Skill on startup.
+ 
+         let started_at = Instant::now();
+         let activity = Arc::new(Mutex::new(IpcActivityState::new(started_at)));
+@@ -949,7 +920,7 @@ fn spawn_update_check_task(
+     tokio::spawn(async move {
+         // Server processes are supervised by the deployment. Do not replace
+         // them with an automatically spawned local-mode daemon.
+-        if state.config.server.is_some() {
++        if state.config.server.is_some() || option_env!("MEDIASAIL_BUILD_REVISION").is_some() {
+             return;
+         }
+         let cache_path = match paths::update_check_path() {
+diff --git a/crates/bsk-cli/src/daemon/start/windows.rs b/crates/bsk-cli/src/daemon/start/windows.rs
+index fc0accd..8cc18a3 100644
+--- a/crates/bsk-cli/src/daemon/start/windows.rs
++++ b/crates/bsk-cli/src/daemon/start/windows.rs
+@@ -17,6 +17,27 @@ use super::{DAEMON_REPLACEMENT_WAIT_ENV, DAEMONIZED_ENV, StartArgs, apply_start_
+ use crate::daemon::start_error::DaemonStartFailure;
+ use crate::windows_process::{self, JobBreakaway, Process};
+ 
++pub(super) fn launch_managed(exe: &Path, args: &[OsString], log: &Path) -> Result<serde_json::Value> {
++    let command = command_line(std::iter::once(exe.as_os_str()).chain(args.iter().map(|a| a.as_os_str())));
++    let environment: Vec<_> = std::env::vars_os().collect();
++    let input = File::open("NUL")?;
++    let output = File::options().append(true).create(true).open(log)?;
++    let mut child = windows_process::spawn(
++        exe.as_os_str(), &command, &environment, [&input, &output, &output],
++        DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_BREAKAWAY_FROM_JOB | CREATE_SUSPENDED,
++    ).map_err(|error| spawn_failure(error, exe))?;
++    let verified = child.outside_job();
++    if !matches!(verified, Ok(true)) {
++        let _ = child.kill(); let _ = child.wait();
++        anyhow::bail!("MediaSail browser could not leave the caller's Job; no browser was started");
++    }
++    if let Err(error) = child.resume() {
++        let _ = child.kill(); let _ = child.wait();
++        return Err(error.into());
++    }
++    Ok(serde_json::json!({"ok":true,"pid":child.id(),"independent":true}))
++}
++
+ pub(super) fn spawn(exe: &Path, args: &StartArgs, predecessor_pid: Option<u32>) -> Result<Process> {
+     let mut command = std::process::Command::new(exe);
+     apply_start_args(&mut command, args);
+diff --git a/crates/bsk-cli/src/daemon/ws.rs b/crates/bsk-cli/src/daemon/ws.rs
+index 24945e4..2ef8e5d 100644
+--- a/crates/bsk-cli/src/daemon/ws.rs
++++ b/crates/bsk-cli/src/daemon/ws.rs
+@@ -151,6 +151,9 @@ async fn handle_connection(
+     let captured_origin: std::sync::Arc<std::sync::Mutex<Option<String>>> =
+         std::sync::Arc::new(std::sync::Mutex::new(None));
+     let captured_origin_for_cb = std::sync::Arc::clone(&captured_origin);
++    // MediaSail binds one extension and private launch token to each library group.
++    let managed_group = std::env::var("MEDIASAIL_BROWSER_GROUP").ok();
++    let managed_extension = std::env::var("MEDIASAIL_EXTENSION_ID").ok();
+     #[allow(clippy::result_large_err)]
+     let callback = move |req: &Request, response: Response| {
+         let origin = req
+@@ -159,6 +162,14 @@ async fn handle_connection(
+             .and_then(|v| v.to_str().ok())
+             .unwrap_or_default()
+             .to_string();
++        if let Some(group) = &managed_group {
++            let expected_origin = format!("chrome-extension://{}", managed_extension.as_deref().unwrap_or(""));
++            if origin != expected_origin || req.uri().query() != Some(format!("mediasailGroup={group}").as_str()) {
++                let mut error = ErrorResponse::new(Some("MediaSail browser group mismatch".into()));
++                *error.status_mut() = StatusCode::FORBIDDEN;
++                return Err(error);
++            }
++        }
+         if !origin_allowed(&origin, allow_any) {
+             warn!(?origin, "rejecting WS upgrade with disallowed origin");
+             let mut err = ErrorResponse::new(Some(
+diff --git a/crates/bsk-cli/src/main.rs b/crates/bsk-cli/src/main.rs
+index 9565b86..429da3f 100644
+--- a/crates/bsk-cli/src/main.rs
++++ b/crates/bsk-cli/src/main.rs
+@@ -38,6 +38,12 @@ fn dispatch(cli: Cli, format: Format) -> Result<(), CliError> {
+     cli::business_rpc::set_dependencies(cli.flags.depends_on.clone());
+     cli::business_rpc::set_action_evidence(cli.flags.observation.clone(), cli.flags.expect.clone());
+     match cli.command {
++        Command::ManagedLaunch { executable, log, args } => {
++            let receipt = bsk::daemon::start::launch_managed(&executable, &args, &log)
++                .map_err(CliError::Local)?;
++            println!("{receipt}");
++            Ok(())
++        }
+         Command::Cooperate(args) => cli::cooperate::dispatch(args, format),
+         Command::Step(args) => cli::step::dispatch(args, format),
+         Command::View(args) => cli::observation_view::dispatch(args, format),
+diff --git a/crates/bsk-cli/src/windows_process.rs b/crates/bsk-cli/src/windows_process.rs
+index dfe02dd..c770dd9 100644
+--- a/crates/bsk-cli/src/windows_process.rs
++++ b/crates/bsk-cli/src/windows_process.rs
+@@ -72,9 +72,41 @@ impl Process {
+         Ok(())
+     }
+ 
+-    /// Whether the process belongs to no Job, including outer ones.
++    /// Whether the child left the caller's immediate ownership Job. Windows
++    /// can retain a desktop-wide outer Job even after a successful breakaway;
++    /// requiring absence from every Job incorrectly rejects detached children.
+     pub(crate) fn outside_job(&self) -> io::Result<bool> {
+-        Ok(!process_in_job(self.handle.as_raw_handle())?)
++        if !process_in_job(self.handle.as_raw_handle())? || !current_process_in_job()? {
++            return Ok(true);
++        }
++        use windows_sys::Win32::System::JobObjects::JobObjectBasicProcessIdList;
++        let mut storage = vec![0usize; 1024];
++        loop {
++            let mut returned = 0;
++            // Null Job refers to this caller's immediate Job, not the child's.
++            let ok = unsafe { QueryInformationJobObject(
++                std::ptr::null_mut(), JobObjectBasicProcessIdList,
++                storage.as_mut_ptr().cast(), std::mem::size_of_val(storage.as_slice()) as u32,
++                &mut returned,
++            ) };
++            if ok != 0 {
++                let bytes = storage.as_ptr().cast::<u8>();
++                let count = unsafe { bytes.add(4).cast::<u32>().read_unaligned() } as usize;
++                if 8 + count * std::mem::size_of::<usize>() > std::mem::size_of_val(storage.as_slice()) {
++                    return Err(io::Error::other("Invalid Job process list"));
++                }
++                let mut caller_found = false;
++                for index in 0..count {
++                    let pid = unsafe { bytes.add(8 + index * std::mem::size_of::<usize>()).cast::<usize>().read_unaligned() };
++                    if pid == self.id() as usize { return Ok(false); }
++                    if pid == std::process::id() as usize { caller_found = true; }
++                }
++                return Ok(caller_found);
++            }
++            let error = io::Error::last_os_error();
++            if error.raw_os_error() != Some(234) || storage.len() >= 131072 { return Err(error); }
++            storage.resize(storage.len() * 2, 0);
++        }
+     }
+ 
+     /// Called only for a child created suspended.

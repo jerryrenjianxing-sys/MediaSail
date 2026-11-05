@@ -4,17 +4,17 @@ const PATH_ENV=['PATH','HOME','USERPROFILE','HOMEDRIVE','HOMEPATH','APPDATA','LO
 function writeDisconnectedDiscovery({file,version,executable,reason='library_not_selected'}){
   const value={schema:1,product:'MediaSail',version,status:'needs-library',reason,needsLibrarySelection:reason==='library_not_selected',
     instanceId:crypto.randomUUID(),pid:process.pid,executable,baseUrl:null,connectionFile:file,discoveryFile:file,
-    libraryRoot:null,libraryId:null,dataDir:null,workspace:null,skillDir:null,python:null,node:null,profiles:null,outputs:null,tools:null,selectedProfile:null,environment:{},updatedAt:new Date().toISOString()};
+      libraryRoot:null,libraryId:null,dataDir:null,workspace:null,skillDir:null,python:null,node:null,profiles:null,outputs:null,tools:null,selectedProfile:null,browserTools:null,environment:{},updatedAt:new Date().toISOString()};
   fs.mkdirSync(path.dirname(file),{recursive:true});const temporary=file+'.'+process.pid+'.tmp';fs.writeFileSync(temporary,JSON.stringify(value,null,2)+'\n','utf8');fs.renameSync(temporary,file);return value;
 }
 class AgentConnection{
   constructor(data){this.file=path.join(data,'agent-connection.json');this.data=data;this.info=null;}
-  begin({version,baseUrl,options,skillDir,executable,selectedProfile=null,libraryRoot=null,libraryId=null,discoveryFile=null}){
+  begin({version,baseUrl,options,skillDir,executable,selectedProfile=null,libraryRoot=null,libraryId=null,discoveryFile=null,browserTools=null}){
     const work=options.env.EASEL_DESKTOP_WORKSPACE;
     this.discoveryFile=discoveryFile;
     this.info={schema:1,product:'MediaSail',version,instanceId:crypto.randomUUID(),pid:process.pid,
       baseUrl,dataDir:this.data,connectionFile:this.file,discoveryFile:discoveryFile||this.file,libraryRoot,libraryId,workspace:work,skillDir,executable,
-      python:options.python,node:null,selectedProfile,
+      python:options.python,node:null,selectedProfile,browserTools,
       profiles:path.join(work,'profiles'),outputs:path.join(work,'outputs'),tools:path.join(work,'skills'),
       environment:Object.fromEntries(PATH_ENV.filter(k=>options.env[k]!==undefined).map(k=>[k,options.env[k]]))};
     options.env.EASEL_AGENT_CONNECTION_JSON=JSON.stringify(this.info);

@@ -64,6 +64,7 @@ def check(info):
     result = {"product": "MediaSail", "version": info["version"], "connected": connected,
               "paths": {k: info.get(k) for k in found}, "found": found, "baseUrl": info.get("baseUrl"),
               "selectedProfile": info.get("selectedProfile"),
+              "browserTools": info.get("browserTools"),
               "localToolsReady": all(found.values()),
               "optional": {"node": shutil.which("node"), "ffmpeg": shutil.which("ffmpeg")}}
     for key in ("libraryRoot", "libraryId", "connectionFile", "discoveryFile", "dataDir"):

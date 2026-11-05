@@ -23,6 +23,8 @@ Checked { & build/runtime/node/npm.cmd ci --no-audit --no-fund --ignore-scripts 
 if (-not (Test-Path node_modules/electron/dist/electron.exe)) { Checked { & $BusinessPython scripts/prepare.py electron } }
 Checked { & $BusinessPython scripts/prepare.py assets }
 Checked { & $BusinessPython scripts/launchers.py }
+Checked { & $BusinessPython scripts/verify-browser-source.py --download }
+if (-not (Test-Path build/browser-tools/manifest.json)) { throw 'Prepare the locked browser payload first; see integrations/browserskill/README.md. No browser dependencies are silently skipped.' }
 Checked { & build/runtime/node/npm.cmd --prefix vendor/easel/web/frontend ci --ignore-scripts --no-audit --no-fund }
 Checked { & build/runtime/node/npm.cmd run check }
 Checked { & build/runtime/node/node.exe scripts/stage.cjs }

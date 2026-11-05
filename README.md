@@ -4,7 +4,7 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.11 更新说明](docs/RELEASE-0.5.11.md) · [验证记录](docs/VERIFICATION-0.5.11.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.12 更新说明](docs/RELEASE-0.5.12.md) · [验证记录](docs/VERIFICATION-0.5.12.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
@@ -14,7 +14,9 @@
 
 **0.5.11** 补充账号采集完整性、缺项、失败原因、来源及样本范围；修复抖音延迟作品页读取，粉丝指数与粉丝数分开，管理页筛选数量不混入旧概览增长。Agent 可按任务自主补查，Skill 强调结论对应证据，不新增固定执行链。见[更新说明](docs/RELEASE-0.5.11.md)与[验证记录](docs/VERIFICATION-0.5.11.md)。
 
-软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg、专用浏览器或通用创作模型。账号网页操作使用已配置浏览器，或检测本机 Chrome、Edge；缺浏览器只影响对应操作，不阻止软件启动。
+**0.5.12** 增加账号观测回存、工作台已保存数据视图，以及按需使用的专用 Chromium + BrowserSkill。浏览器、扩展和连接自动配置，只需按网站流程登录；登录资料保存在当前资料库。已有外部浏览器工具可直接复用，不要求换工具，也不增加固定业务链。原生工具继续独立保留。详见[浏览器协作](agent-skill/mediasail/references/browser-collaboration.md)。
+
+软件内置精简 Python 与业务依赖，不需要配置聊天模型；不再内置 OpenClaw、聊天、独立 Node、FFmpeg 或通用创作模型。备用专用浏览器按需准备，日常打开 MediaSail 不自动启动它；原生账号工具仍检测已配置浏览器、本机 Chrome 或 Edge。外部观测无需旧工具登录即可进入工作台，打开页面和刷新只重读已保存资料。
 
 画像建档、编辑、账号数据回写、采集、统计、内容库、选题、日历、平台登录和发布继续提供。画像增强、深度解释及策略创作由外部 Agent 根据完整专业方法完成。Skill 介绍真实资料、路径和工具，不规定 Agent 用什么创作工具，不要求每轮执行固定流程，也不自动安装进其他 Agent 的全局配置。
 
@@ -54,6 +56,8 @@ AitoEarn 的登录、浏览器扩展、额度及平台支持由官方服务负�
       agent-skill/mediasail/   可写 Skill、参考资料与连接辅助脚本
       runtime/                平台浏览器资料、界面状态、历史存档、日志与更新缓存
         agent-connection.json 当前实例及全部真实路径，无密钥
+        browser/              专用浏览器登录配置、工具组、任务连接与私有日志
+        cache/browser-tool/   校验后部署的浏览器、BrowserSkill及许可证，不覆盖在用版本
 
 软件与 Agent 直接使用同一份 workspace。用户修改的方法、脚本与 Skill 保持生效；新版也有修改时保存两份并提示合并。`%LOCALAPPDATA%/ElectronEasel` 保留为兼容旧版的定位入口，发现镜像里的 `connectionFile` 指向当前资料库的正式连接文件。移动位置或端口变化后，辅助脚本会重读并核对实例，不需要另建一套 Agent 工作副本。
 
@@ -69,15 +73,17 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.11；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.12；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
 | 构建用Node | 24.21.0 |
+| 备用浏览器 | ungoogled-chromium 156.0.8078.73-1.1 |
+| BrowserSkill | 0.4.1 MediaSail 适配构建 |
 
 开发前阅读 [AGENTS.md](AGENTS.md) 与按需的 [开发方法](docs/DEVELOPMENT.md)，使用用户指定的 mattpocock-skills；业务术语见 [词汇表](GLOSSARY.md)。准备锁定依赖后执行 npm run check，统一验证 Node、Python、前端、接口资料和补丁复现。检查不回写接口资料或补丁，需更新时显式运行导出脚本并审查差异。
 
-业务依赖固定于 requirements-business.lock，实际组件及许可证见 licenses。npm run dist生成安装包、blockmap和latest.yml；scripts/source-bundle.py创建匹配源码包，scripts/verify-release.cjs核对校验并生成SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.11。包内验收与真实安装升级另行执行。
+业务依赖固定于 requirements-business.lock；浏览器及工具固定于 browser-tools.lock.json，适配构建与源码准备见 [BrowserSkill 集成](integrations/browserskill/README.md)。实际组件及许可证见 licenses。npm run dist 生成安装包、blockmap 和 latest.yml；scripts/source-bundle.py 创建匹配源码包，scripts/verify-release.cjs 核对校验并生成 SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.12。包内验收与真实安装升级另行执行。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 
@@ -86,3 +92,5 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 发布前使用隔离测试数据与临时Windows环境，不覆盖本机日常安装。真实平台登录和公开发布由用户验收，测试不代表已在真实账号成功发布。当前发行包未配置Windows代码签名证书。
 
 桌面适配使用Apache-2.0；Easel及各组件保留原许可证、作者署名和NOTICE。Electron/Chromium、Python、Playwright及其依赖各自条款不因根许可证改变。MediaSail为独立维护的发行版，不代表Easel或AitoEarn官方产品。见[NOTICE](NOTICE)、[LICENSE](LICENSE)及[第三方清单](licenses/THIRD-PARTY-NOTICES.txt)。
+
+专用浏览器的实际离线声明位于 `licenses/browser-tools`。对应 Chromium 完整源码分卷、UGC 构建材料、BrowserSkill 原始源码/适配补丁及相关依赖源码在同一 Release 的 Browser Sources 资产中，供需要研究或重建的开发者单独取得；普通用户只安装 Setup，无需下载这些源码资产。源码准备验证与全量浏览器重编译是不同验收，具体执行范围见验证记录。

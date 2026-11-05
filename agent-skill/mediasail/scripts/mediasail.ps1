@@ -3,8 +3,10 @@ $ErrorActionPreference = 'Stop'
 $taskArgs = @($args)
 $dataDir = if ($env:EASEL_DESKTOP_DATA) { $env:EASEL_DESKTOP_DATA } else { Join-Path $env:LOCALAPPDATA 'ElectronEasel' }
 $forward = New-Object System.Collections.Generic.List[string]
+$nativeTail = $false
 for ($i=0; $i -lt $taskArgs.Count; $i++) {
-    if ($taskArgs[$i] -eq '--data-dir') {
+    if ($taskArgs[$i] -eq '--') { $nativeTail = $true }
+    if (-not $nativeTail -and $taskArgs[$i] -eq '--data-dir') {
         if ($i+1 -ge $taskArgs.Count) { throw '--data-dir requires a directory' }
         $i++; $dataDir = $taskArgs[$i]
     } else { $forward.Add([string]$taskArgs[$i]) }
@@ -30,6 +32,11 @@ try {
     }
     if ($canonical -ne $file -or $attempt -ge 8) { throw 'Too many connection redirects; reopen MediaSail' }
     if ($info.status -eq 'needs-library' -or -not $info.workspace) { throw 'Choose a library in MediaSail first, then read the current connection. No old directory will be used.' }
+    if ($forward.Count -gt 0 -and $forward[0] -eq 'browser') {
+        $browserArgs=@($forward[1],'--connection',$file)+@($forward.ToArray() | Select-Object -Skip 2)
+        & (Join-Path $PSScriptRoot 'browser.ps1') @browserArgs
+        exit $LASTEXITCODE
+    }
     if (-not (Test-Path -LiteralPath $info.python)) { throw 'Bundled Python is missing; restart or repair MediaSail' }
     $env:PYTHONUTF8 = '1'; $env:PYTHONIOENCODING = 'utf-8'
     & $info.python (Join-Path $PSScriptRoot 'mediasail.py') --connection $file @forward

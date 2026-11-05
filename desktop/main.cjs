@@ -10,6 +10,7 @@ const {createActionsHandler}=require('./actions.cjs');
 const {createSkillShareHandler,validateSkillFileName}=require('./skill-share.cjs');
 const {Updates}=require('./updates.cjs');
 const {AgentConnection,writeDisconnectedDiscovery}=require('./agent-connection.cjs');
+const {describeBrowserTools}=require('./browser-tools.cjs');
 const {UpdatesWindow}=require('./updates-window.cjs');
 const {UiStateStore,trustedStateSender}=require('./ui-state.cjs');
 const {migrateUiState}=require('./ui-migration.cjs');
@@ -133,7 +134,7 @@ if(!locked){app.quit();} else {
       if(quitting)return;
       const port=await freePort(7860);
       options=environment(resources,data,work,port);baseUrl=`http://127.0.0.1:${port}`;
-      agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir,executable:app.getPath('exe'),selectedProfile:uiState.snapshot().values.mediasail_selected_profile||null,libraryRoot:layout.libraryRoot,libraryId:layout.libraryId,discoveryFile:path.join(bootstrapRoot,'agent-connection.json')});
+      agentConnection.begin({version:app.getVersion(),baseUrl,options,skillDir,executable:app.getPath('exe'),selectedProfile:uiState.snapshot().values.mediasail_selected_profile||null,libraryRoot:layout.libraryRoot,libraryId:layout.libraryId,discoveryFile:path.join(bootstrapRoot,'agent-connection.json'),browserTools:describeBrowserTools(resources,skillDir)});
       report('正在启动 MediaSail 和本地服务…');
       let failure='';
       supervisor=startSupervisor(bridgeResources,options,event=>{if(event.event==='error'){failure=event.message;if(ready&&!quitting)void fail(event.message);}});

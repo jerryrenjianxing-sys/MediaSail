@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "browser": {
+    "name": "ungoogled-chromium",
+    "version": "156.0.8078.73",
+    "release": "156.0.8078.73-1.1",
+    "root": "ungoogled-chromium_156.0.8078.73-1.1_windows_x64",
+    "url": "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/156.0.8078.73-1.1/ungoogled-chromium_156.0.8078.73-1.1_windows_x64.zip",
+    "sha256": "360406931fb55b04ac276bcf409511bd86e4e67e6950029fc45ca5ca63443090",
+    "packagingCommit": "c8317bab03c9d861781f58f85286076e4a80439c",
+    "ungoogledCommit": "6d3e3de2f9d404649842f7457cd3b5ac04dc952f",
+    "chromiumCommit": "2f9a11097447f226133bc1a31c787291a5eeab98",
+    "sourceUrl": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-156.0.8078.73.tar.xz",
+    "sourceSha256": "4dc3cfd4b4839988ab4dac215da80d508f64897d214235e00bea8fc0c249af8c"
+  },
+  "bsk": {
+    "version": "0.4.1",
+    "build": "b8f2d4f-mediasail.1",
+    "protocol": "1.8",
+    "sourceCommit": "b8f2d4f0fa35c8c7c866229e1cf3b3329ae39de5",
+    "sourceUrl": "https://github.com/Tencent/BrowserSkill/archive/b8f2d4f0fa35c8c7c866229e1cf3b3329ae39de5.zip",
+    "sourceSha256": "305c71b5fd9a4c2eb24c428c0c8e3f73df4e60b0e0c242212ee74fae27d6b746",
+    "extensionId": "kaebebbcleedepmhfmmnekncfdmmhlml",
+    "rust": "1.99.1",
+    "target": "x86_64-pc-windows-msvc",
+    "rustflags": "-C target-feature=+crt-static",
+    "pnpm": "10.17.0"
+  }
+}

@@ -1,5 +1,16 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {AgentConnection,writeDisconnectedDiscovery}=require('../desktop/agent-connection.cjs');
+test('optional browser tools stay discoverable offline without entering the business environment',()=>{
+ const data=fs.mkdtempSync(path.join(os.tmpdir(),'MediaSail browser discovery '));
+ try{
+  const connection=new AgentConnection(data),options={python:'python.exe',env:{EASEL_DESKTOP_WORKSPACE:path.join(data,'workspace')}};
+  const browserTools={entry:'C:/library/browser.ps1',manifest:'C:/program/browser-tools/manifest.json',version:'0.4.1',browserVersion:'156.0.8078.73',docs:'C:/library/browser.md'};
+  connection.begin({version:'0.5.12',baseUrl:'http://127.0.0.1:56789',options,skillDir:'skill',executable:'MediaSail.exe',browserTools});
+  connection.stop();const info=JSON.parse(fs.readFileSync(connection.file,'utf8'));
+  assert.deepEqual(info.browserTools,browserTools);assert.equal(info.baseUrl,null);
+  assert.equal(info.environment.MEDIASAIL_BROWSER_GROUP,undefined);
+ }finally{assert.equal(path.dirname(data),os.tmpdir());fs.rmSync(data,{recursive:true,force:true});}
+});
 test('discovery is atomic, secret-free, changes instance/port, and cannot stop a newer owner',()=>{
  const data=fs.mkdtempSync(path.join(os.tmpdir(),'MediaSail 中文 '));
  try{

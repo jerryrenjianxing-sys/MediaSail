@@ -36,5 +36,7 @@ jobs:
           & build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/launchers.py
       - name: Prepare locked frontend dependencies
         run: npm --prefix vendor/easel/web/frontend ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare pinned BrowserSkill source fixture
+        run: build/runtime-business/python/cpython-3.11.15-windows-x86_64-none/python.exe scripts/verify-browser-source.py --download
       - name: Shared source verification
         run: npm run check
