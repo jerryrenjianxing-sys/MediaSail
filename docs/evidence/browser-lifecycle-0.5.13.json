@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "at": "2026-11-05T15:55:25.569Z",
+  "version": "0.5.13",
+  "steps": [
+    "original-receipt-after-command-and-desktop-exit",
+    "new-cache-entry-retains-original-group",
+    "codex-report-link-opens-preview",
+    "workbuddy-report-visible-in-library",
+    "original-receipt-after-new-desktop-exit",
+    "original-receipt-after-explicit-library-switch",
+    "original-receipt-with-all-desktops-stopped"
+  ],
+  "librarySwitchBoundary": "library selection Module between normal isolated desktop launches",
+  "privateEvidenceNotPublished": true
+}
