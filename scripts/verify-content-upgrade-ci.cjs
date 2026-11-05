@@ -38,7 +38,7 @@ async function main(){
  const result={from,to,passed:false,startedAt:new Date().toISOString(),environment:'ephemeral GitHub-hosted Windows',transport:'genuine NSIS /S --updated --force-run, no /D update override',syntheticDataOnly:true,publications:0};
  let inspector,setupChild,managedBrowser;
  const write=async(file,value)=>{await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,typeof value==='string'?value:JSON.stringify(value,null,2),'utf8');};
- const persist=async()=>{await write(path.join(evidence,'result.json'),result);for(const [base,prefix]of [[bootstrap,'bootstrap'],[path.join(libraryRoot,'runtime'),'runtime']])for(const name of ['desktop.log','desktop-backend.log',`installer-${to}.ini`,`installer-${to}-copy.log`])await fs.copyFile(path.join(base,'logs',name),path.join(evidence,prefix+'-'+name)).catch(()=>{});};
+ const persist=async()=>{await write(path.join(evidence,'result.json'),result);for(const [base,prefix]of [[bootstrap,'bootstrap'],[path.join(libraryRoot,'runtime'),'runtime']])for(const name of ['desktop.log','desktop-backend.log',`installer-${from}.ini`,`installer-${from}-copy.log`,`installer-${to}.ini`,`installer-${to}-copy.log`])await fs.copyFile(path.join(base,'logs',name),path.join(evidence,prefix+'-'+name)).catch(()=>{});};
  const phase=async name=>{result.phase=name;console.log('CONTENT UPGRADE '+name);await persist();};
  const localWindow="process.mainModule.require('electron').BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('http://127.0.0.1:'))";
  const render=code=>`(()=>{const w=${localWindow};return w.webContents.executeJavaScript(${JSON.stringify(code)});})()`;
@@ -47,7 +47,8 @@ async function main(){
  async function setup(file,args,observe=false){
   if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1'){
    const licenseHash=await hash(path.join(root,'licenses/browser-tools/Microsoft-Windows-SDK-10.0.28000-LICENSE.rtf'));
-   args=[...args,'/ACCEPT_MS_D3D_LICENSE='+licenseHash];
+   // NSIS consumes /D= and everything after it; it must remain the last argument.
+   args=['/ACCEPT_MS_D3D_LICENSE='+licenseHash,...args];
    result.componentConsent='explicit versioned component consent in isolated test CLI; /S alone is not agreement';
   }
   let done=false,exit,last=0;setupChild=launch(file,args,true);assert.ok(setupChild.pid);setupChild.once('exit',code=>{exit=code;done=true;});setupChild.once('error',error=>{exit=error.message;done=true;});
