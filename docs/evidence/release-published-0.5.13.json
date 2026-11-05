@@ -1,0 +1,68 @@
+{
+  "tagName": "v0.5.13",
+  "publishedAt": "2026-11-05T16:26:39Z",
+  "url": "https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.13",
+  "targetCommitish": "f7b49435fc31a1ad6747d3c6333d1c9e29d4d2b6",
+  "passed": true,
+  "sourceCheckRun": 42060312100,
+  "upgradeRun": 42061893816,
+  "oldClientUpdateDiscovered": true,
+  "newClientIsCurrent": true,
+  "assets": [
+    {
+      "name": "browser-source-kit.json",
+      "size": 311,
+      "digest": "sha256:eaa9ff20857ddd92e1f6e30cee26b66f3ca4357966d81e266ed9e14013167754"
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.001",
+      "size": 1572864000,
+      "digest": "sha256:55737a665d82a49480e67651800616717d7fc738d41dae89c4d5f72c6b4e25c5"
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.002",
+      "size": 1572864000,
+      "digest": "sha256:45c02fbb6420262de389d3681b39910301981707716fc62871944851f828eeea"
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.003",
+      "size": 1277046264,
+      "digest": "sha256:b77818eb1dd3afb203e4739ba5921b6d4b014447531ec67a2f028f556882cab3"
+    },
+    {
+      "name": "chromium-source-parts.json",
+      "size": 751,
+      "digest": "sha256:b7dc7b7dd116364f363e8fd72f774e63f107247eec8529e562b9c275e0c809bf"
+    },
+    {
+      "name": "latest.yml",
+      "size": 366,
+      "digest": "sha256:becc18811e3da50499f91550d060a891f02f000c965e4c684d6ecb47901b524e"
+    },
+    {
+      "name": "MediaSail-0.5.13-browser-sources.zip",
+      "size": 233903074,
+      "digest": "sha256:08f09642958983d853b94c839d6b4f3954f00ff965a19457f65aab4662a2d634"
+    },
+    {
+      "name": "MediaSail-0.5.13-source.zip",
+      "size": 113526789,
+      "digest": "sha256:6eda16227322c1da1497129685acba3d140d6d9623f45ab9285b0eb9199912ab"
+    },
+    {
+      "name": "MediaSail-0.5.13-win-x64-Setup.exe",
+      "size": 469903666,
+      "digest": "sha256:a9fe4c8af68830967f6401109c2a5ffe396ef07d4ea01aa81d7de89d40b960db"
+    },
+    {
+      "name": "MediaSail-0.5.13-win-x64-Setup.exe.blockmap",
+      "size": 488512,
+      "digest": "sha256:cad06a9a5d3aaccccf8c6df485a614957c5db38be99a96ddd9d92170ddb748af"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 989,
+      "digest": "sha256:73ff96284bdd35a3fe1b3b46c7719ec3afb956e53b3b62a558884e1c1c5bfddf"
+    }
+  ]
+}
