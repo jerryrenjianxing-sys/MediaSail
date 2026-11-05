@@ -34,7 +34,7 @@ async function startManagedBrowser({info,evidence,env,legacyConnect=false}){
     }catch(error){errors.push(error);}
     try{
      const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
-     const code=`$ErrorActionPreference='Stop';$p=Get-Process -Id ${group.browserPid} -ErrorAction SilentlyContinue;if($p){if($p.Path -ne ${quote(group.browserExecutable)} -or $p.StartTime.ToUniversalTime().Ticks.ToString() -ne ${quote(group.browserStarted)}){throw 'Fixture browser identity changed'};if(!$p.CloseMainWindow()){throw 'Normal fixture close failed'};if(!$p.WaitForExit(20000)){throw 'Fixture browser did not close normally'}}`;
+     const code=`$ErrorActionPreference='Stop';$p=Get-Process -Id ${group.browserPid} -ErrorAction SilentlyContinue;if($p){if($p.Path -ne ${quote(group.browserExecutable)} -or $p.StartTime.ToUniversalTime().Ticks.ToString() -ne ${quote(group.browserStarted)}){throw 'Fixture browser identity changed'};$end=[DateTime]::UtcNow.AddSeconds(20);while(!$p.HasExited -and [DateTime]::UtcNow -lt $end){$p.Refresh();[void]$p.CloseMainWindow();[void]$p.WaitForExit(1000)};if(!$p.HasExited){throw 'Fixture browser windows did not close normally'}}`;
      cp.execFileSync(ps,['-NoProfile','-NonInteractive','-Command',code],{env,windowsHide:true,timeout:30000});
     }catch(error){errors.push(error);}
    }
@@ -55,8 +55,8 @@ async function startManagedBrowser({info,evidence,env,legacyConnect=false}){
   await fs.writeFile(path.join(evidence,'managed-browser.json'),JSON.stringify(record,null,2));
   return {
    async connectCurrent(current){
-    const updated=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(current.skillDir,'scripts/browser.ps1'),'connect','--connection',current.connectionFile,'--name','新版客户端复用旧工具组'],{env,encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
-    assert.equal(updated.ok,true);assert.equal(updated.toolGroupId,receipt.toolGroupId);assert.equal(updated.groupConfig,receipt.groupConfig);assert.notEqual(path.dirname(updated.entry).toLowerCase(),group.cache.toLowerCase(),'A new client must use repaired helper cache while retaining the old group');receipts.push(updated);
+    const updated=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(current.skillDir,'scripts/browser.ps1'),'connect','--connection',current.connectionFile,'--name','新版客户端复用旧工具组','--url',url],{env,encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
+    assert.equal(updated.ok,true);assert.equal(updated.navigationWarning,undefined);assert.equal(updated.toolGroupId,receipt.toolGroupId);assert.equal(updated.groupConfig,receipt.groupConfig);assert.notEqual(path.dirname(updated.entry).toLowerCase(),group.cache.toLowerCase(),'A new client must use repaired helper cache while retaining the old group');receipts.push(updated);
     record.newReceiptUsesRepairedCache=true;record.sameOriginalGroup=true;
    },
    async verify(stage){

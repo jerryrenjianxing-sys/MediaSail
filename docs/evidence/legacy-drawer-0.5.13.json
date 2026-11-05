@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "at": "2026-11-05T15:19:44.320Z",
+  "version": "0.5.13",
+  "boundary": "actual packaged Electron + synthetic accounts HTTP response",
+  "cases": [
+    {
+      "width": 1280,
+      "height": 800,
+      "zoom": 1,
+      "stable": true
+    },
+    {
+      "width": 1440,
+      "height": 980,
+      "zoom": 1.25,
+      "stable": true
+    },
+    {
+      "width": 1600,
+      "height": 1000,
+      "zoom": 1.5,
+      "stable": true
+    }
+  ],
+  "windowsSystemScaleUnchanged": true,
+  "platformAccountUsed": false
+}
