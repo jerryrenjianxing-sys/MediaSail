@@ -31,5 +31,29 @@
     "editorCount": 1,
     "confirmationCount": 1,
     "previewCount": 0
+  },
+  {
+    "repetition": 2,
+    "scenario": "navigation-away-during-report-fetch",
+    "previewCount": 0
+  },
+  {
+    "repetition": 3,
+    "scenario": "focus-refresh-during-report-fetch",
+    "previewCount": 1,
+    "errorText": []
+  },
+  {
+    "repetition": 3,
+    "scenario": "metadata-edit-after-fetch-finishes",
+    "dirty": true,
+    "editorCount": 1,
+    "confirmationCount": 1,
+    "previewCount": 0
+  },
+  {
+    "repetition": 3,
+    "scenario": "navigation-away-during-report-fetch",
+    "previewCount": 0
   }
 ]

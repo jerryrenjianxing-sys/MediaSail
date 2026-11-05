@@ -31,6 +31,7 @@ async function main(){
  });
  await page.goto(url);await page.getByRole('button',{name:'控制台',exact:true}).click();
  await page.getByRole('heading',{name:'账号观测',exact:true}).waitFor({timeout:8000});
+ await page.getByRole('heading',{name:/合成账号 A/}).waitFor({timeout:8000});
  assert.match(await page.locator('body').innerText(),/合成账号 A/);
  assert.match(await page.locator('body').innerText(),/尚未读取作品页/);
  assert(!calls.some(call=>/\/whoami$|\/api\/analytics\/douyin|\/api\/login\//.test(call)),'Saved data must not verify or collect');
