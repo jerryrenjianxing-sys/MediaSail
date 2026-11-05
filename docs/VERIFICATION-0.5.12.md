@@ -118,4 +118,14 @@
 
 ![报告预览深色](images/0.5.12/report-dark.png)
 
-发布后再使用隔离的 0.5.11 和 0.5.12 核对 GitHub 更新发现。本记录不覆盖所有社交平台的实时状态；网站权限、重新登录及其他 Agent 自带浏览器工具仍以实际情况为准。
+## 正式发布后核对
+
+[v0.5.12](https://github.com/jerryrenjianxing-sys/MediaSail/releases/tag/v0.5.12) 已发布为正式最新版，标签对应源码提交 `c4b12d6c6b3b1d45288c5d574f259abdfc9235a7`。11 个草稿资产经最终逐项云端 digest/大小核对后发布；原安装包与真实升级验收哈希相同。历史 Release 及 0.5.1 草稿保留。最终主分支 [源码检查](https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/42027572418) 全部通过。
+
+隔离的原版 0.5.11 使用原 electron-updater GitHub 源，从设置实际检查得到 `available / 0.5.12`；本版得到 `current / 0.5.12`。两边 transferred=0，未请求下载或安装，没有更换数据源。[旧版回执](evidence/content-update-0.5.11-to-0.5.12.json) · [新版回执](evidence/content-update-0.5.12-to-0.5.12.json) · [发行资产核验](evidence/release-0.5.12.json)。
+
+![旧版发现更新](images/0.5.12/update-check-0.5.11.png)
+
+![新版已是最新](images/0.5.12/update-check-0.5.12.png)
+
+这些是发布后补充的审计记录，已验收安装包和标签源码归档保持原样。本记录不覆盖所有社交平台的实时状态；网站权限、重新登录及其他 Agent 自带浏览器工具仍以实际情况为准。

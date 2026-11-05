@@ -1,0 +1,72 @@
+{
+  "verified": true,
+  "draft": true,
+  "sourceCommit": "c4b12d6c6b3b1d45288c5d574f259abdfc9235a7",
+  "assets": [
+    {
+      "name": "MediaSail-0.5.12-win-x64-Setup.exe",
+      "sha256": "e79667d4a02315a1b20068593ec8a62b8de1c82ddf0e17ad89e21b5af7e910a7",
+      "bytes": 469889821
+    },
+    {
+      "name": "MediaSail-0.5.12-win-x64-Setup.exe.blockmap",
+      "sha256": "923f22398dde8e9807446500c3957f23b917ba998a4d2cf1f2656ad9c81585d0",
+      "bytes": 488361
+    },
+    {
+      "name": "latest.yml",
+      "sha256": "b9f70b00ea6ecabb2bdb89011aa0066ec8f592fbcd474e076f7e9e0d0edd2029",
+      "bytes": 366
+    },
+    {
+      "name": "MediaSail-0.5.12-source.zip",
+      "sha256": "332ac9c61905cdbd15914ef8d0b8bcdd3953f9c2717b6b93959342ec04323085",
+      "bytes": 112855674
+    },
+    {
+      "name": "MediaSail-0.5.12-browser-sources.zip",
+      "sha256": "afa6280933db1b35db86cc502f60cc017631f72a74b143553ce706f8097508d3",
+      "bytes": 233899482
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.001",
+      "sha256": "55737a665d82a49480e67651800616717d7fc738d41dae89c4d5f72c6b4e25c5",
+      "bytes": 1572864000
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.002",
+      "sha256": "45c02fbb6420262de389d3681b39910301981707716fc62871944851f828eeea",
+      "bytes": 1572864000
+    },
+    {
+      "name": "chromium-156.0.8078.73-source.tar.xz.003",
+      "sha256": "b77818eb1dd3afb203e4739ba5921b6d4b014447531ec67a2f028f556882cab3",
+      "bytes": 1277046264
+    },
+    {
+      "name": "browser-source-kit.json",
+      "sha256": "c53be463ac73f7d10d5f14634da9aba70479457396f669ac1ccfce12941827dc",
+      "bytes": 311
+    },
+    {
+      "name": "chromium-source-parts.json",
+      "sha256": "b7dc7b7dd116364f363e8fd72f774e63f107247eec8529e562b9c275e0c809bf",
+      "bytes": 751
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "sha256": "51699d5d397a8afa2197b185ba6ff4080d1b6efda109ac9ae02cd6ef2a2383b2",
+      "bytes": 989
+    }
+  ],
+  "at": "2026-11-05T12:32:30.067Z",
+  "published": true,
+  "latestVerified": true,
+  "tag": "v0.5.12",
+  "mainSourceCheckRun": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/42027572418",
+  "realUpgradeRun": "https://github.com/jerryrenjianxing-sys/MediaSail/actions/runs/42025583948",
+  "updateDiscoveryChecks": [
+    "content-update-0.5.11-to-0.5.12.json",
+    "content-update-0.5.12-to-0.5.12.json"
+  ]
+}
