@@ -1,0 +1,40 @@
+{
+  "version": "0.5.13",
+  "passed": true,
+  "hosts": [
+    {
+      "host": "WorkBuddy",
+      "version": "5.9.3",
+      "mdFilePasted": true,
+      "originalProxyAndJobUnchanged": true,
+      "browserConnected": true,
+      "existingWebsiteLoginRetained": true,
+      "readOnlyPlatformData": true,
+      "evidenceSaved": true,
+      "observationRegistered": true,
+      "observationReadBack": true,
+      "reportRegistered": true,
+      "completedAt": "2026-11-05T22:21:00+08:00"
+    },
+    {
+      "host": "Codex independent external Agent",
+      "mdOnlyDiscovery": true,
+      "originalProxyAndJobUnchanged": true,
+      "browserConnected": true,
+      "readOnlyPlatformData": true,
+      "evidenceSaved": true,
+      "observationRegistered": true,
+      "observationReadBack": true,
+      "reportRegistered": true,
+      "completedAt": "2026-11-05T23:24:21+08:00"
+    }
+  ],
+  "recoveredCases": [
+    "cooperation_sync_required with effect_state none: read tool receipt and synchronize context",
+    "notes field is a list of work objects: reject plain strings, retain input and save corrected fields without recollecting"
+  ],
+  "guidanceUpdated": true,
+  "publications": 0,
+  "realAccountMaterialsInPublicEvidence": false,
+  "dailyInstallOrLibraryChanged": false
+}

@@ -1,0 +1,9 @@
+{
+  "commit": "7a0f667",
+  "method": "Original stdin Playwright probe; held /api/outputs response, then used window focus event or rendered metadata editor before releasing it.",
+  "observations": [
+    {"scenario":"focus-refresh-during-report-fetch","previewCount":0,"errorText":[]},
+    {"scenario":"metadata-edit-before-fetch-finishes","dirty":true,"editorCount":1},
+    {"scenario":"metadata-edit-after-fetch-finishes","dirty":false,"editorCount":0,"confirmationCount":0,"previewCount":1}
+  ]
+}
