@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "at": "2026-11-05T15:19:44.320Z",
+  "at": "2026-11-05T15:23:36.645Z",
   "version": "0.5.13",
   "boundary": "actual packaged Electron + synthetic accounts HTTP response",
   "cases": [

@@ -1,12 +1,14 @@
 # 账号观测：登记、查询与回存
 
-用于已经从真实浏览器、已有工具或可靠材料取得数据，想让 MediaSail 工作台读取的任务。原生采集接口仍是可选的联网动作；本页接口只操作本地观测。
+用于已经从真实浏览器、已有工具或可靠材料取得数据，想让 MediaSail 工作台读取的任务。旧采集工具接口仍是可选的联网动作；本页接口只操作本地观测。
 
 ## 记录的位置和含义
 
 当前工作区 `outputs/_analytics/observations/<observationId>.json` 每条一份记录。`GET /api/account-observations` 可用 `platform`、`accountId`、`source` 查询；`GET /api/account-observations/{observation_id}` 读取完整记录。`fetched_at` 是实际取得时间的 Unix 秒，`importedAt` 是登记时间，晚导入的旧材料不会成为最新取得结果。
 
 输入至少提供 `platform`、实际业务 `source` 和 `fetched_at`。`accountId`、`profile` 可以未知；昵称不能代替稳定账号。数值缺失为 null，确实为零则保存 0；粉丝指数单独用 followerIndex。保留原 `metrics`、`notes`、`collection` 结构，后者的缺项、问题和范围按实际取得情况填写。来源以具体页面或业务口径区分，例如 douyin-creator-home。
+
+`notes` 指作品列表，不是文字备注。每项为作品对象，例如 `{"title":"示例作品","url":"https://example.invalid/work/1","stat":"播放 12"}`；title、url、cover、stat 若提供需为文字。未读取作品时用 `notes: []`。普通采集说明可放 `extensions.acquisitionNotes` 字符串列表，缺项和异常放 collection；不要为备注编造作品。422 会指出无效字段，保留输入、修正后只补保存即可。
 
 其他业务字段（如顶层 views）会保存在 `extensions` 并在回执 warnings 中列出，仍参与编号哈希和同编号冲突核对。可直接把扩展放在 extensions；同名扩展值矛盾时拒绝保存，不替你选择。页面概览只展示约定字段，其他指标需要展示时放入带 label/value/口径的 metrics。根 producer 记录为 external-agent；另行提交的工具来源保留在 extensions.producer，不作为浏览器登录成功声明。导入时间、哈希与增长结果由软件计算。
 

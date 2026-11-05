@@ -25475,7 +25475,7 @@ index ed070bd..6d47ac2 100644
              </button>
              {step < STEPS.length - 1 ? (
 diff --git a/web/frontend/src/components/OutputsPage.tsx b/web/frontend/src/components/OutputsPage.tsx
-index 043dc91..41cb7b9 100644
+index 043dc91..d2905c9 100644
 --- a/web/frontend/src/components/OutputsPage.tsx
 +++ b/web/frontend/src/components/OutputsPage.tsx
 @@ -1,7 +1,14 @@
@@ -25505,7 +25505,16 @@ index 043dc91..41cb7b9 100644
  const STATUS_COLOR: Record<string, string> = { draft: 'var(--text-tertiary)', ready: 'var(--amber)', published: 'var(--green)' };
  
  const badge: CSSProperties = {
-@@ -84,38 +86,50 @@ interface OutputsPageProps {
+@@ -76,7 +78,7 @@ function Thumb({ f, big }: { f: OutputNode | null; big?: boolean }) {
+ }
+ 
+ interface OutputsPageProps {
+-  /** 从对话跳转进来的目录（outputs 相对路径，不含 outputs/ 前缀）；消费后由父层清空 */
++  /** 项目、目录或文件的 outputs 相对路径；消费后由父层清空。 */
+   jumpPath?: string;
+   onJumpHandled?: () => void;
+ }
+@@ -84,38 +86,38 @@ interface OutputsPageProps {
  export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProps) {
    const [roots, setRoots] = useState<OutputNode[]>([]);
    const [treeError, setTreeError] = useState('');
@@ -25529,22 +25538,15 @@ index 043dc91..41cb7b9 100644
 +    fetchOutputs().then(value => { if (seq === treeSeq.current) setRoots(value); }).catch(() => { if (seq === treeSeq.current) setTreeError('加载内容库失败，现有列表已保留。'); });
    }, []);
    useEffect(() => { load(); }, [load]);
-+  useRefreshOnFocus(load);
- 
-   // 对话里的目录路径跳转：展开到对应层级（路径失效时 resolvePath 自动停在能到的层）
-   useEffect(() => {
-     if (!jumpPath) return;
+-
+-  // 对话里的目录路径跳转：展开到对应层级（路径失效时 resolvePath 自动停在能到的层）
+-  useEffect(() => {
+-    if (!jumpPath) return;
 -    setStack(jumpPath.split('/').filter(Boolean));
 -    setFilter('all');
 -    onJumpHandled?.();
-+    let alive = true;
-+    void requestLeave({ reason: '打开指定项目', scope: ['project-metadata'] }).then(allowed => {
-+      if (!alive) return;
-+      if (allowed) { setEditorProject(null); setStack(jumpPath.split('/').filter(Boolean)); setFileFilter('all'); }
-+      onJumpHandled?.();
-+    });
-+    return () => { alive = false; };
-   }, [jumpPath, onJumpHandled]);
+-  }, [jumpPath, onJumpHandled]);
++  useRefreshOnFocus(load);
  
    const currentNodes = useMemo(() => resolvePath(roots, stack), [roots, stack]);
 +  const atTop = stack.length === 0;
@@ -25568,7 +25570,7 @@ index 043dc91..41cb7b9 100644
    // 当前项目的展示头（进入项目后才有），用于「成品/素材」分区
    const projectMeta = useMemo(
      () => (stack.length >= 1 ? roots.find((r) => r.name === stack[0])?.meta : undefined),
-@@ -131,8 +145,30 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -131,8 +133,30 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
      () => (hasSplit ? files.filter((f) => !deliverableSet.has(f.path)) : files),
      [files, deliverableSet, hasSplit]);
  
@@ -25601,7 +25603,42 @@ index 043dc91..41cb7b9 100644
  
    const remove = useCallback(async (node: OutputNode, e: React.MouseEvent) => {
      e.stopPropagation();
-@@ -188,9 +224,9 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -160,6 +184,34 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+     }
+   }, []);
+ 
++  useEffect(() => {
++    if (!jumpPath) return;
++    let alive = true;
++    void (async () => {
++      if (!await requestLeave({ reason: '打开指定项目', scope: ['project-metadata'] }) || !alive) return;
++      const seq = ++treeSeq.current;
++      try {
++        // A reference can name a file, including one just saved by an Agent.
++        // Resolve its real node after loading; never treat a filename as a folder.
++        const tree = await fetchOutputs();
++        if (!alive || seq !== treeSeq.current) return;
++        setRoots(tree); setTreeError(''); setFolderError('');
++        let nodes = tree, target: OutputNode | undefined;
++        const directories: string[] = [], parts = jumpPath.split('/').filter(Boolean);
++        for (let i = 0; i < parts.length; i++) {
++          target = nodes.find(node => node.name === parts[i]);
++          if (!target || (target.type === 'file' && i !== parts.length - 1)) { target = undefined; break; }
++          if (target.type === 'dir') { directories.push(target.name); nodes = target.children || []; }
++        }
++        setEditorProject(null); setStack(directories); setFileFilter('all');
++        reqSeq.current++; setSelected(null); setContent('');
++        if (!target) setFolderError('引用的文件或目录已不存在，已打开仍可读取的上级目录。');
++        else if (target.type === 'file') await open(target);
++      } catch { if (alive) setFolderError('引用内容暂时无法读取，请刷新后重试；原文件没有改动。'); }
++    })().finally(() => { if (alive) onJumpHandled?.(); });
++    return () => { alive = false; };
++  }, [jumpPath, onJumpHandled, open]);
++
+   const preview = () => {
+     if (!selected) return null;
+     const url = mediaUrl(selected.path);
+@@ -188,9 +240,9 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
      const m = d.meta;
      const cover = coverNode(m) || firstMedia(d);
      return (
@@ -25613,7 +25650,7 @@ index 043dc91..41cb7b9 100644
            <button className="gcard-del" title="删除" onClick={(e) => remove(d, e)}><IconTrash size={14} /></button>
            {cover ? <Thumb f={cover} big /> : <div className="gcard-ph"><IconFolder size={38} /></div>}
          </div>
-@@ -198,11 +234,18 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -198,11 +250,18 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            <div className="gcard-name" title={m?.title || d.name}>
              {!m && <IconFolder size={13} />} {m?.title || d.name}
            </div>
@@ -25633,7 +25670,7 @@ index 043dc91..41cb7b9 100644
          </div>
        </div>
      );
-@@ -224,7 +267,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -224,7 +283,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
    const empty = dirs.length === 0 && files.length === 0;
  
    return (
@@ -25642,7 +25679,7 @@ index 043dc91..41cb7b9 100644
        <div className="gallery-head">
          <div>
            <h1 className="page-title">
-@@ -241,14 +284,39 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -241,14 +300,39 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            </h1>
            <p className="page-subtitle">
              {atTop
@@ -25684,7 +25721,7 @@ index 043dc91..41cb7b9 100644
  
        {/* 项目主题标签（进入项目根时展示） */}
        {atProjectRoot && projectMeta?.tags && projectMeta.tags.length > 0 && (
-@@ -263,8 +331,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -263,8 +347,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
            <button className="btn btn-sm" onClick={() => goTo(stack.length - 1)}>
              <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><IconChevron size={13} /></span> 返回上级
            </button>
@@ -25695,7 +25732,7 @@ index 043dc91..41cb7b9 100644
            ))}
          </div>
        )}
-@@ -272,7 +340,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -272,7 +356,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
        {empty && !treeError ? (
          <div className="empty-state" style={{ height: 300 }}>
            <div className="empty-icon"><IconOutputs size={44} /></div>
@@ -25704,7 +25741,7 @@ index 043dc91..41cb7b9 100644
          </div>
        ) : hasSplit ? (
          <>
-@@ -305,6 +373,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
+@@ -305,6 +389,8 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
          </div>
        )}
  

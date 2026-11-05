@@ -25,6 +25,8 @@ if (!$connection.ok) { throw $connection.error }
 
 `disconnect` 只结束本任务连接，保留浏览器和登录配置。`run` 转交 BrowserSkill 原生命令，自动带本会话编号；命令参数见 `--help` 或子命令 `--help`。CLI 输出 JSON，失败退出非零。工具内的协作上下文、页面引用和动作校验按其当前回执使用：人操作后先 `cooperate sync` 阅读现场；需要 context/observation 时使用本次回执，不沿用旧页面引用。结果不明先检查现场，不重放操作。
 
+首次截图、evaluate 等动作也可能要求协作上下文；按工具回执取得最新 `context_id`、`observation_id` 后调用。`cooperation_sync_required` 且 `effect_state: none` 表示动作未执行，可以按回执的 wait/sync 入口恢复，无需另开终端或切换旧工具；这不是网站登录失败。
+
 固定组配置含本地连接信息，只供该任务使用，不放进 MD、报告或公开附件。公开发现文件不包含这些凭据。新连接从最新发现资料定位库；旧 `sessionRef` 继续属于原库，不自动改账号或资料库。
 
 连接失败返回 requestId 时，可用 `browser status --request-id '<编号>'` 查询原结果。pending/unknown 表示结果尚未确认，先核对原请求和已有窗口，不另建请求碰运气。相同 requestId 的重复 connect 复用原回执；更改目标应使用新的请求。

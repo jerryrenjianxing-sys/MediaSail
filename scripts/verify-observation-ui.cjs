@@ -23,9 +23,10 @@ async function main(){
    const endpoint=new URL(route.request().url()).pathname;calls.push(endpoint);
    if(endpoint==='/api/account-observations'&&readFailure){await route.fulfill({status:503,json:{ok:false,code:'observation_io_error',error:'合成资料库暂不可用'}});return;}
    const responses={ '/api/status':{serviceReady:true},'/api/personas':[],'/api/account-observations':{ok:true,observations,errors:[]},
-     '/api/outputs':[], '/api/ideas':[], '/api/schedule':[], '/api/trends':{trends:[],updated:0},
+     '/api/outputs':[{name:'合成报告',path:'合成报告',type:'dir',children:[{name:'report.md',path:'合成报告/report.md',type:'file',kind:'text'}]}], '/api/ideas':[], '/api/schedule':[], '/api/trends':{trends:[],updated:0},
      '/api/analytics/platforms':[{platform:'douyin',name:'抖音',loggedIn:false,verificationStatus:'login_required'}],
      '/api/accounts':[{platform:'douyin',name:'抖音',supported:true,loggedIn:false,verificationStatus:'login_required'}]};
+   if(endpoint.startsWith('/api/output/')){await route.fulfill({json:{path:'合成报告/report.md',content:'# 合成报告预览\nreport-body-proof',kind:'text',isBinary:false}});return;}
    await route.fulfill({json:responses[endpoint]??{}});
  });
  await page.goto(url);await page.getByRole('button',{name:'控制台',exact:true}).click();
@@ -60,6 +61,15 @@ async function main(){
  await page.screenshot({path:path.join(evidence,'accounts-light.png'),fullPage:true});
  await page.evaluate(()=>{document.documentElement.dataset.theme='dark';document.documentElement.style.colorScheme='dark';});
  await page.screenshot({path:path.join(evidence,'accounts-dark.png'),fullPage:true});
+ await page.keyboard.press('Escape');
+ await page.getByRole('link',{name:'outputs/合成报告/report.md',exact:true}).click();
+ await page.locator('.outputs-viewer-content').getByText('report-body-proof',{exact:true}).waitFor({timeout:4000});
+ await page.locator('.drawer-header .icon-btn').click();
+ await page.evaluate(()=>location.hash='#/outputs/'+encodeURIComponent('合成报告'));
+ await page.locator('.gcard-name').getByText('report.md',{exact:true}).waitFor();
+ await page.evaluate(()=>location.hash='#/outputs/'+encodeURIComponent('合成报告')+'/deleted.md');
+ await page.getByRole('alert').filter({hasText:'引用的文件或目录已不存在'}).waitFor();
+ assert.equal(await page.locator('.gcard-name').getByText('report.md',{exact:true}).count(),1);
  console.log('Observation UI accepted: saved data, account selection, native isolation, focus, light/dark.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)server.kill();});

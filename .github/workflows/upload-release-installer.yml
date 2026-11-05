@@ -10,10 +10,16 @@ on:
         required: true
         type: string
         default: '0.3.3'
+      mode:
+        description: Transfer a reconstructed installer or identical browser source parts
+        type: choice
+        options: [installer, browser-sources]
+        default: installer
 permissions:
   contents: write
 jobs:
   upload:
+    if: inputs.mode != 'browser-sources'
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -49,3 +55,49 @@ jobs:
           if($asset.Count -ne 1 -or $asset[0].digest -ne ('sha256:'+$localHash)){throw 'Server digest mismatch'}
           gh release delete-asset $tag upload-courier.json.gz --yes
           if($LASTEXITCODE -ne 0){throw 'Temporary courier cleanup failed'}
+  browser_sources:
+    if: inputs.mode == 'browser-sources'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and transfer unchanged corresponding sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          BASE_VERSION: ${{ inputs.base_version }}
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,re,subprocess
+          from pathlib import Path
+          def gh(*args):
+              return subprocess.check_output(['gh',*args],text=True)
+          current=os.environ['RELEASE_VERSION'];base=os.environ['BASE_VERSION']
+          assert all(re.fullmatch(r'\d+\.\d+\.\d+',v) for v in (current,base))
+          target=json.loads(gh('release','view','v'+current,'--json','isDraft,assets'))
+          previous=json.loads(gh('release','view','v'+base,'--json','isDraft,assets'))
+          assert target['isDraft'] and not previous['isDraft']
+          Path('source-transfer').mkdir()
+          for version,directory in [(current,'candidate'),(base,'baseline')]:
+              subprocess.run(['gh','release','download','v'+version,'--pattern','chromium-source-parts.json','--dir','source-transfer/'+directory],check=True)
+          manifest=json.loads(Path('source-transfer/candidate/chromium-source-parts.json').read_text())
+          assert manifest==json.loads(Path('source-transfer/baseline/chromium-source-parts.json').read_text())
+          assert manifest['sha256']==json.loads(Path('browser-tools.lock.json').read_text())['browser']['sourceSha256']
+          assert len(manifest['parts'])==3
+          files=[]
+          for part in manifest['parts']:
+              name=part['file'];assert re.fullmatch(r'chromium-[\d.]+-source\.tar\.xz\.00[123]',name)
+              asset=next(a for a in previous['assets'] if a['name']==name)
+              assert asset['digest']=='sha256:'+part['sha256'] and asset['size']==part['bytes']
+              subprocess.run(['gh','release','download','v'+base,'--pattern',name,'--dir','source-transfer'],check=True)
+              file=Path('source-transfer')/name
+              with file.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+              assert file.stat().st_size==part['bytes'] and digest==part['sha256']
+              files.append(str(file))
+          subprocess.run(['gh','release','upload','v'+current,*files,'--clobber'],check=True)
+          published=json.loads(gh('release','view','v'+current,'--json','assets'))
+          for part in manifest['parts']:
+              asset=next(a for a in published['assets'] if a['name']==part['file'])
+              assert asset['digest']=='sha256:'+part['sha256'] and asset['size']==part['bytes']
+          print('Verified identical browser sources in candidate draft')
+          PY
