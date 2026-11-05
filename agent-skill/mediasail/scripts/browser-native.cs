@@ -8,6 +8,8 @@ using System.Text;
 using Microsoft.Win32.SafeHandles;
 public sealed class MediaSailBrowserResult {public int ExitCode;public string Stdout;public string Stderr;}
 public static class MediaSailBrowserProcess {
+    const uint StartWithStandardHandles=0x100, CreateNoWindow=0x08000000, ExtendedStartupInfoPresent=0x00080000, CreateUnicodeEnvironment=0x00000400;
+    static readonly IntPtr InheritedHandleList=new IntPtr(0x20002);
     [StructLayout(LayoutKind.Sequential)] struct Security {public int size;public IntPtr descriptor;[MarshalAs(UnmanagedType.Bool)] public bool inherit;}
     [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Unicode)] struct Startup {
         public uint cb;public string reserved,desktop,title;public uint x,y,cols,rows,charsX,charsY,fill,flags;
@@ -63,11 +65,11 @@ public static class MediaSailBrowserProcess {
             IntPtr size=IntPtr.Zero;InitializeProcThreadAttributeList(IntPtr.Zero,1,0,ref size);
             attributes=Marshal.AllocHGlobal(size);if(!InitializeProcThreadAttributeList(attributes,1,0,ref size))throw new Win32Exception();initialized=true;
             handles=Marshal.AllocHGlobal(IntPtr.Size*3);Marshal.Copy(new IntPtr[]{input,writeOut,writeError},0,handles,3);
-            if(!UpdateProcThreadAttribute(attributes,0,new IntPtr(0x20002),handles,new IntPtr(IntPtr.Size*3),IntPtr.Zero,IntPtr.Zero))throw new Win32Exception();
-            ExtendedStartup startup=new ExtendedStartup();startup.startup.cb=(uint)Marshal.SizeOf(typeof(ExtendedStartup));startup.startup.flags=0x100;startup.startup.input=input;startup.startup.output=writeOut;startup.startup.error=writeError;startup.attributes=attributes;
+            if(!UpdateProcThreadAttribute(attributes,0,InheritedHandleList,handles,new IntPtr(IntPtr.Size*3),IntPtr.Zero,IntPtr.Zero))throw new Win32Exception();
+            ExtendedStartup startup=new ExtendedStartup();startup.startup.cb=(uint)Marshal.SizeOf(typeof(ExtendedStartup));startup.startup.flags=StartWithStandardHandles;startup.startup.input=input;startup.startup.output=writeOut;startup.startup.error=writeError;startup.attributes=attributes;
             var command=new StringBuilder(Quote(executable));foreach(string argument in arguments)command.Append(' ').Append(Quote(argument));
             environment=Marshal.StringToHGlobalUni(EnvironmentBlock(home,group,extension));
-            if(!CreateProcessW(executable,command,IntPtr.Zero,IntPtr.Zero,true,0x08080400u,environment,null,ref startup,out process))throw new Win32Exception();
+            if(!CreateProcessW(executable,command,IntPtr.Zero,IntPtr.Zero,true,CreateNoWindow|ExtendedStartupInfoPresent|CreateUnicodeEnvironment,environment,null,ref startup,out process))throw new Win32Exception();
             Close(ref input);Close(ref writeOut);Close(ref writeError);
             using(var output=new StreamReader(new FileStream(new SafeFileHandle(readOut,true),FileAccess.Read),new UTF8Encoding(false)))
             using(var error=new StreamReader(new FileStream(new SafeFileHandle(readError,true),FileAccess.Read),new UTF8Encoding(false))){

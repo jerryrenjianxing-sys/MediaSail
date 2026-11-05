@@ -6,3 +6,6 @@ test('content upgrade fixture refuses user PCs and unsafe locations before insta
  assert.throws(()=>fixtureScope(base,'linux'));const scope=fixtureScope(base,'win32');assert.notEqual(scope.target,scope.libraryRoot);
  const child=cp.spawnSync(process.execPath,[path.join(root,'scripts/verify-content-upgrade-ci.cjs')],{env:{...process.env,GITHUB_ACTIONS:'false'},encoding:'utf8',windowsHide:true});assert.equal(child.status,1);assert.match(child.stderr,/never run on a user PC/);
 });
+test('hosted desktop lifetime fixture refuses the local computer before launching a process',{skip:process.platform!=='win32'},()=>{
+ const child=cp.spawnSync(path.join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe'),['-NoProfile','-File',path.join(root,'scripts/run-desktop-job-fixture.ps1'),'not-a-real-program.exe'],{env:{...process.env,GITHUB_ACTIONS:'false'},encoding:'utf8',windowsHide:true});assert.equal(child.status,1);assert.match(child.stderr,/Disposable hosted Windows fixture only/);
+});

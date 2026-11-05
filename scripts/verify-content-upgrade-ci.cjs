@@ -69,7 +69,9 @@ async function main(){
   await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'baseline home');
   await inspector.evaluate(render("(async()=>{await window.desktopUiState.call('set',{key:'mediasail_selected_profile',value:'合成画像'});await window.desktopUiState.call('set',{key:'easel_onboarding_seen',value:'1'});await window.desktopUiState.call('set',{key:'easel_theme',value:'dark'});await window.desktopUiState.call('flush');return true;})()"));
   if(process.env.MEDIASAIL_VERIFY_SKILL_FILENAME_UPGRADE==='1')await inspector.evaluate(render("(async()=>{await window.desktopUiState.call('set',{key:'mediasail_skill_filename',value:'旧版中文接入.md'});await window.desktopUiState.call('flush');return true;})()"));
-  const oldPartition=await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'content-upgrade-fixture',value:'synthetic-session',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return s.storagePath;})()");await quit();
+  const oldPartition=await inspector.evaluate("(async()=>{const s=process.mainModule.require('electron').session.fromPartition('persist:aitoearn-cn');await s.cookies.set({url:'https://aitoearn.cn',name:'content-upgrade-fixture',value:'synthetic-session',expirationDate:Math.floor(Date.now()/1000)+86400});await s.cookies.flushStore();return s.storagePath;})()");
+  if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1')managedBrowser=await require('./verify-managed-browser-ci.cjs').startManagedBrowser({info:old,evidence,env:environment(),legacyConnect:true});
+  await quit();if(managedBrowser)await managedBrowser.verify('baseline-receipt-after-baseline-exit');
   assert.ok(oldPartition&&oldPartition.toLowerCase().startsWith(old.dataDir.toLowerCase()+path.sep));
   let partitionFiles=0;async function rememberPartition(directory){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const file=path.join(directory,entry.name);if(entry.isDirectory())await rememberPartition(file);else if(entry.isFile()){originalFiles.set(file,await fs.readFile(file));partitionFiles++;}else throw Error('Unexpected linked legacy partition');}}
   await rememberPartition(oldPartition);assert.ok(partitionFiles>0);result.legacyPartitionFiles=partitionFiles;
@@ -90,6 +92,7 @@ async function main(){
   const current=await waitConnection(to);assert.equal(current.libraryId,old.libraryId);assert.equal(current.libraryRoot.toLowerCase(),old.libraryRoot.toLowerCase());assert.equal(current.workspace.toLowerCase(),old.workspace.toLowerCase());await checkOriginals();result.originalFilesRetained=originalFiles.size;result.librarySelectionRetained=true;
   assert.equal(await hash(path.join(cache,'installer.exe')),result.installers.candidate.sha256);const cacheReceipt=JSON.parse(await fs.readFile(path.join(cache,'current-installer.json'),'utf8'));assert.equal(cacheReceipt.version,to);assert.equal(cacheReceipt.sha256,result.installers.candidate.sha256);assert.equal(cacheReceipt.bytes,result.installers.candidate.bytes);result.currentInstallerCacheVerified=true;
   inspector=await attachTestMain(current.pid);await until(()=>inspector.evaluate(render("Boolean(document.querySelector('.skill-home'))")),60000,'updated home');
+  if(managedBrowser)await managedBrowser.verify('baseline-receipt-after-version-upgrade');
   assert.equal(await inspector.evaluate("process.mainModule.require('electron').BrowserWindow.getAllWindows().some(w=>w.webContents.getURL().includes('startup.html'))"),false,'No repeat library selection');
   // Never create/read an AitoEarn session in the new app. Compare the closed
   // baseline partition bytes instead, including the real synthetic cookie DB.
@@ -127,7 +130,7 @@ async function main(){
   if(process.env.MEDIASAIL_VERIFY_MANAGED_BROWSER==='1'){
    await phase('managed-browser-through-desktop-connector');
    launch(exe,[]);const browserOwner=await waitConnection(to);inspector=await attachTestMain(browserOwner.pid);
-   managedBrowser=await require('./verify-managed-browser-ci.cjs').startManagedBrowser({info:browserOwner,evidence,env:environment()});
+   await managedBrowser.connectCurrent(browserOwner);
    await quit();
    await managedBrowser.verify('software-stopped');
    await phase('same-version-reinstall-with-live-browser');

@@ -23613,7 +23613,7 @@ index fee8255..160401b 100644
  }
 diff --git a/web/frontend/src/components/AccountObservations.tsx b/web/frontend/src/components/AccountObservations.tsx
 new file mode 100644
-index 0000000..a908950
+index 0000000..2113ba6
 --- /dev/null
 +++ b/web/frontend/src/components/AccountObservations.tsx
 @@ -0,0 +1,145 @@
@@ -23669,7 +23669,7 @@ index 0000000..a908950
 +    const keydown = (event: KeyboardEvent) => {
 +      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); void close(); }
 +      if (event.key !== 'Tab') return;
-+      const nested = Array.from(panel.current?.querySelectorAll<HTMLElement>('.modal') || []).at(-1) || panel.current;
++      const nested = Array.from(panel.current?.querySelectorAll<HTMLElement>('[role="dialog"]') || []).at(-1) || panel.current;
 +      const focusable = Array.from(nested?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])') || []).filter(element => element.getClientRects().length);
 +      if (!focusable.length) { event.preventDefault(); panel.current?.focus(); return; }
 +      if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1)?.focus(); }
@@ -23763,7 +23763,7 @@ index 0000000..a908950
 +  </section>;
 +}
 diff --git a/web/frontend/src/components/AccountsPage.tsx b/web/frontend/src/components/AccountsPage.tsx
-index 42545b5..15e6f9c 100644
+index 42545b5..49cc0a4 100644
 --- a/web/frontend/src/components/AccountsPage.tsx
 +++ b/web/frontend/src/components/AccountsPage.tsx
 @@ -1,13 +1,16 @@
@@ -24155,15 +24155,18 @@ index 42545b5..15e6f9c 100644
                  )}
                </div>
              </div>
-@@ -349,6 +357,7 @@ export default function AccountsPage() {
+@@ -347,8 +355,9 @@ export default function AccountsPage() {
+ 
+       {qr && (
          <div className="overlay" onClick={closeQr}>
-           <div className="modal" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
+-          <div className="modal" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
++          <div className="modal" role="dialog" aria-label="登录平台账号" style={{ width: 360, maxWidth: '100%', textAlign: 'center' }}
              onClick={(e) => e.stopPropagation()}>
 +            <fieldset disabled={smsBusy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
              <h3 style={{ margin: '0 0 4px' }}>登录 {qr.name}</h3>
              <div style={{ fontSize: 13, marginBottom: 14,
                color: qr.state === 'success' ? 'var(--green)'
-@@ -386,14 +395,19 @@ export default function AccountsPage() {
+@@ -386,21 +395,27 @@ export default function AccountsPage() {
                <div style={{ fontSize: 48, padding: 40 }}>✅</div>
              ) : ['error', 'expired'].includes(qr.state) ? (
                <div style={{ fontSize: 13, color: 'var(--red)', padding: 30 }}>
@@ -24184,10 +24187,11 @@ index 42545b5..15e6f9c 100644
            </div>
          </div>
        )}
-@@ -401,6 +415,7 @@ export default function AccountsPage() {
+ 
        {cred && (
          <div className="overlay" onClick={closeCred}>
-           <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
+-          <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
++          <div className="modal" role="dialog" aria-label="配置平台凭证" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
 +            <fieldset disabled={credBusy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
              <h3 style={{ margin: '0 0 4px' }}>配置 {cred.name}</h3>
              <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>

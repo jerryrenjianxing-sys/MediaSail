@@ -2,7 +2,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),cp=require('node:child_process'),http=require('node:http');
 function hosted(){assert.equal(process.platform,'win32');assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted','Never run this installer fixture on a user PC');}
-async function startManagedBrowser({info,evidence,env}){
+async function startManagedBrowser({info,evidence,env,legacyConnect=false}){
  hosted();
  const source=path.join(info.skillDir,'scripts/browser.ps1'),connection=info.connectionFile;
  const ps=path.join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
@@ -18,6 +18,7 @@ async function startManagedBrowser({info,evidence,env}){
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const url='http://127.0.0.1:'+server.address().port+'/';
  let receipt,group;
+ const receipts=[];
  let closed=false;
  const raw=(...args)=>invoke(receipt.entry,['run','--group-config',receipt.groupConfig,'--session-ref',receipt.sessionRef,'--',...args]);
  const evaluate=expression=>{const sync=raw('cooperate','sync');return raw('evaluate',expression,'--context',sync.context_id,'--observation',sync.observation_id)};
@@ -25,7 +26,7 @@ async function startManagedBrowser({info,evidence,env}){
   if(closed)return;closed=true;
   const errors=[];
   try{
-   if(receipt)try{invoke(receipt.entry,['disconnect','--group-config',receipt.groupConfig,'--session-ref',receipt.sessionRef]);}catch(error){errors.push(error);}
+   for(const item of receipts)try{invoke(item.entry,['disconnect','--group-config',item.groupConfig,'--session-ref',item.sessionRef]);}catch(error){errors.push(error);}
    if(group){
     try{
      const stopped=cp.spawnSync(path.join(group.cache,'bsk.exe'),['daemon','stop','--json'],{env:{...env,BSK_HOME:path.join(group.directory,'bsk-home'),BSK_AUTO_START:'0',BSK_AUTO_UPDATE:'off'},windowsHide:true,timeout:30000});
@@ -42,20 +43,31 @@ async function startManagedBrowser({info,evidence,env}){
  }
  try{
   // Async CLI: keep the fixture HTTP server responsive while navigation waits.
-  const result=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',source,'connect','--connection',connection,'--name','升级缓存验收','--url',url],{env,encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
+  const command=legacyConnect?[path.join(__dirname,'run-browser-job-fixture.ps1'),source]:[source];
+  const result=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',...command,'connect','--connection',connection,'--name','升级缓存验收','--url',url],{env:{...env,...(legacyConnect?{GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted'}:{})},encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
   receipt=result;
+  receipts.push(receipt);
   group=JSON.parse(await fs.readFile(receipt.groupConfig,'utf8'));
   assert.equal(receipt.ok,true);assert.equal(receipt.navigationWarning,undefined);
   const first=evaluate('(()=>{localStorage.setItem("mediasail-fixture","retained");return {title:document.title,value:document.querySelector("#proof").value,cookie:document.cookie,marker:localStorage.getItem("mediasail-fixture")}})()');
   assert.equal(first.ok,true);assert.equal(first.value.title,'MediaSail managed browser upgrade fixture');assert.equal(first.value.value,'中文 空格路径');assert.match(first.value.cookie,/mediasail-fixture=retained/);assert.equal(first.value.marker,'retained');
-  const record={passed:false,libraryId:info.libraryId,cache:group.cache,bundleId:group.bundleId,browserPid:group.browserPid,toolVersion:group.toolVersion,browserVersion:group.browserVersion,checkedWithoutGlobalNodePython:true,commandOwnership:'CLI stays in the original restricted runner Job; only the desktop launcher uses an owned lifetime fixture; outer runner Job unchanged'};
+  const record={passed:false,libraryId:info.libraryId,cache:group.cache,bundleId:group.bundleId,browserPid:group.browserPid,toolVersion:group.toolVersion,browserVersion:group.browserVersion,checkedWithoutGlobalNodePython:true,commandOwnership:'0.5.12 baseline startup only uses historical owned CLI Job. 0.5.13 CLI stays in original restricted runner Job; desktop has owned lifetime fixture. Outer runner Job unchanged.',legacyBaselineConnection:legacyConnect};
   await fs.writeFile(path.join(evidence,'managed-browser.json'),JSON.stringify(record,null,2));
   return {
+   async connectCurrent(current){
+    const updated=await new Promise((resolve,reject)=>cp.execFile(ps,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',path.join(current.skillDir,'scripts/browser.ps1'),'connect','--connection',current.connectionFile,'--name','新版客户端复用旧工具组'],{env,encoding:'utf8',windowsHide:true,timeout:180000},(error,stdout,stderr)=>error?reject(Error(stdout+stderr)):resolve(JSON.parse(stdout.trim()))));
+    assert.equal(updated.ok,true);assert.equal(updated.toolGroupId,receipt.toolGroupId);assert.equal(updated.groupConfig,receipt.groupConfig);assert.notEqual(path.dirname(updated.entry).toLowerCase(),group.cache.toLowerCase(),'A new client must use repaired helper cache while retaining the old group');receipts.push(updated);
+    record.newReceiptUsesRepairedCache=true;record.sameOriginalGroup=true;
+   },
    async verify(stage){
+    const active=receipt;
+    for(const item of receipts){receipt=item;
     const observation=raw('observe');assert.match(observation.text,/专用浏览器升级验收/);
     const current=JSON.parse(await fs.readFile(receipt.groupConfig,'utf8'));assert.equal(current.browserPid,group.browserPid);assert.equal(current.cache,group.cache);
     const read=evaluate('({cookie:document.cookie,marker:localStorage.getItem("mediasail-fixture"),value:document.querySelector("#proof").value})');
     assert.equal(read.ok,true);assert.equal(read.value.marker,'retained');assert.match(read.value.cookie,/mediasail-fixture=retained/);assert.equal(read.value.value,'中文 空格路径');
+    }
+    receipt=active;record.receiptsVerified=receipts.length;
     record.stages??=[];record.stages.push(stage);record.passed=true;await fs.writeFile(path.join(evidence,'managed-browser.json'),JSON.stringify(record,null,2));
    },
    close

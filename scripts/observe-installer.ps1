@@ -19,9 +19,14 @@ public class InstallerWindow {
 }
 '@
 $windows=[System.Collections.Generic.List[object]]::new()
+# A hosted desktop-lifetime fixture can be the installer's parent. Observe only
+# that known process tree, including the real NSIS/uninstaller child windows.
+$owners=[Collections.Generic.HashSet[uint32]]::new();[void]$owners.Add([uint32]$InstallerPid)
+$processes=@(Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId)
+do{$changed=$false;foreach($process in $processes){if($owners.Contains([uint32]$process.ParentProcessId) -and $owners.Add([uint32]$process.ProcessId)){$changed=$true}}}while($changed)
 $callback=[InstallerWindow+EnumProc]{param($handle,$unused)
  [uint32]$owner=0; [void][InstallerWindow]::GetWindowThreadProcessId($handle,[ref]$owner)
- if ($owner -eq $InstallerPid -and [InstallerWindow]::IsWindowVisible($handle)) {
+ if ($owners.Contains($owner) -and [InstallerWindow]::IsWindowVisible($handle)) {
   $title=[Text.StringBuilder]::new(2048);[void][InstallerWindow]::GetWindowText($handle,$title,2048)
   $children=[System.Collections.Generic.List[object]]::new()
   $childCallback=[InstallerWindow+EnumProc]{param($child,$unused2)
