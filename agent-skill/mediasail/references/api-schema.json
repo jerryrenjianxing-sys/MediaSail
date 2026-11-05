@@ -1077,6 +1077,159 @@
         }
       }
     },
+    "/api/account-observations": {
+      "post": {
+        "summary": "Api Observation Register",
+        "operationId": "api_observation_register_api_account_observations_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountObservationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObservationReceipt"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Api Observation List",
+        "operationId": "api_observation_list_api_account_observations_get",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "accountId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Accountid"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObservationListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account-observations/{observation_id}": {
+      "get": {
+        "summary": "Api Observation Show",
+        "operationId": "api_observation_show_api_account_observations__observation_id__get",
+        "parameters": [
+          {
+            "name": "observation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Observation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObservationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/analytics/platforms": {
       "get": {
         "summary": "Api Analytics Platforms",
@@ -1831,6 +1984,274 @@
         "type": "object",
         "title": "AccountAnalyticsResponse"
       },
+      "AccountObservationRecord": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "accountId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountid"
+          },
+          "observationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observationid"
+          },
+          "libraryId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Libraryid"
+          },
+          "identityEvidence": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Identityevidence",
+            "description": "账号身份依据列表；可用摘录文字或 {kind, value, sourceUrl} 对象，不是单个对象。"
+          },
+          "metricDefinitions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ObservationMetricDefinition"
+            },
+            "type": "object",
+            "title": "Metricdefinitions",
+            "description": "按指标字段（如 followers）登记标签、单位、时间窗口和范围。"
+          },
+          "evidenceRefs": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Evidencerefs",
+            "description": "项目内证据相对路径、来源 URL 或 {path, url, description} 引用。"
+          },
+          "reportPaths": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Reportpaths",
+            "description": "outputs/项目/报告.md 或 {path, description}；报告仍需单独登记成品。"
+          },
+          "producer": {
+            "type": "string",
+            "title": "Producer"
+          },
+          "contentHash": {
+            "type": "string",
+            "title": "Contenthash"
+          },
+          "importedAt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Importedat"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "platform",
+          "source",
+          "fetched_at",
+          "producer",
+          "contentHash",
+          "importedAt"
+        ],
+        "title": "AccountObservationRecord"
+      },
+      "AccountObservationRequest": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "accountId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountid"
+          },
+          "observationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observationid"
+          },
+          "libraryId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Libraryid"
+          },
+          "identityEvidence": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Identityevidence",
+            "description": "账号身份依据列表；可用摘录文字或 {kind, value, sourceUrl} 对象，不是单个对象。"
+          },
+          "metricDefinitions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ObservationMetricDefinition"
+            },
+            "type": "object",
+            "title": "Metricdefinitions",
+            "description": "按指标字段（如 followers）登记标签、单位、时间窗口和范围。"
+          },
+          "evidenceRefs": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Evidencerefs",
+            "description": "项目内证据相对路径、来源 URL 或 {path, url, description} 引用。"
+          },
+          "reportPaths": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Reportpaths",
+            "description": "outputs/项目/报告.md 或 {path, description}；报告仍需单独登记成品。"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "platform",
+          "source",
+          "fetched_at"
+        ],
+        "title": "AccountObservationRequest"
+      },
       "Body_api_upload_api_upload_post": {
         "properties": {
           "files": {
@@ -2086,6 +2507,164 @@
           "hasMore"
         ],
         "title": "NotesCoverage"
+      },
+      "ObservationListResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "libraryId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Libraryid"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/AccountObservationRecord"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "libraryId",
+          "observations",
+          "errors"
+        ],
+        "title": "ObservationListResponse"
+      },
+      "ObservationMetricDefinition": {
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "window": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "ObservationMetricDefinition"
+      },
+      "ObservationReceipt": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "observationId": {
+            "type": "string",
+            "title": "Observationid"
+          },
+          "libraryId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Libraryid"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "duplicate": {
+            "type": "boolean",
+            "title": "Duplicate"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "observationId",
+          "libraryId",
+          "path",
+          "duplicate",
+          "warnings"
+        ],
+        "title": "ObservationReceipt"
+      },
+      "ObservationResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "observation": {
+            "$ref": "#/components/schemas/AccountObservationRecord"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "observation"
+        ],
+        "title": "ObservationResponse"
       },
       "PersonaFileRequest": {
         "properties": {

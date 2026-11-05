@@ -84,9 +84,9 @@ def check(info):
     return result
 
 def main():
-    parser = argparse.ArgumentParser(description="MediaSail: check | python <args> | node <args> (optional system Node)")
+    parser = argparse.ArgumentParser(description="MediaSail: check | observations register/list/show | python <args> | node <args>")
     parser.add_argument("--connection", required=True)
-    parser.add_argument("command", choices=("check", "python", "node"), nargs="?", default="check")
+    parser.add_argument("command", choices=("check", "observations", "python", "node"), nargs="?", default="check")
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     info = connection_info(args.connection)
@@ -110,10 +110,16 @@ def main():
     env["PYTHONIOENCODING"] = "utf-8"
     # Local business calculations remain usable while the desktop service is stopped.
     # Only HTTP operations need a live identity check. Node is an optional agent tool.
-    executable = info.get("python") if args.command == "python" else shutil.which("node")
+    executable = info.get("python") if args.command in ("python", "observations") else shutil.which("node")
     if not executable:
         raise ValueError("当前环境未找到可选 Node.js；MediaSail 业务 Python 不依赖 Node.js")
-    return subprocess.call([executable, *args.arguments], cwd=info["workspace"], env=env)
+    arguments = args.arguments
+    if args.command == 'observations':
+        script = Path(info['workspace']) / 'skills/shared/scripts/account_observations.py'
+        if not script.is_file():
+            raise ValueError('当前资料库缺少账号观测工具，请打开新版 MediaSail 后重试。')
+        arguments = ['-X', 'utf8', '-B', str(script), *arguments]
+    return subprocess.call([executable, *arguments], cwd=info["workspace"], env=env)
 
 if __name__ == "__main__":
     try:

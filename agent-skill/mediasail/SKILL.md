@@ -36,6 +36,8 @@ AI 发布是默认浏览器中的 AitoEarn 官网入口。可协助用户整理�
 ## 按需查资料
 
 - 想理解用户、分析表现或积累经验：[画像与分析](references/context.md)。
+- 需要使用已登录的真实浏览器、准备浏览器连接或理解旧工具登录区别：[浏览器协作](references/browser-collaboration.md)。已有工具直接复用，用户只处理浏览器要求的原生确认或平台登录。
+- 已取得账号数据，想回存、查历史或显示到工作台：[账号观测](references/account-observations.md)。可以保存缺项、证据和报告指向，回存不依赖旧工具登录；失败只补保存。
 - 分析本人账号、采集缺项或需要核对结论依据：[采集缺项与有据分析](references/collection-evidence.md)。取数范围不等于工具能力上限，按任务自主选择补查来源并说明证据边界。
 - 想查运营方法、镜头结构、平台经验及保留的业务计算：[专业方法索引](references/knowledge.md)。完整方法在工作目录 `skills/KNOWLEDGE.md`；文风证据、受众研究、竞品、素材对应和经验修订可按任务查阅，不是固定产线。
 - 想找现成工具、调用接口、登录或发布：[工具与接口](references/tools-api.md)。完整的接口参数另见随包的 [接口结构](references/api-schema.json)。

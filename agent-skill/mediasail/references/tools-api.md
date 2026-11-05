@@ -17,6 +17,9 @@
 | GET /api/platform-skill?format=connect | 简短接入说明；format=markdown 为完整可读 Skill |
 | GET /api/v1/skill | 下载完整 Skill ZIP |
 | GET /api/status | serviceReady、gateway:false、skills、personas；不要求网关 |
+| POST /api/account-observations | 登记外部观测，保留缺项；同编号同内容复用，不同内容 409。详见[账号观测](account-observations.md) |
+| GET /api/account-observations | 只读取已保存观测；可按 platform、accountId、source 查询，按实际取得时间排序，不启动旧采集器 |
+| GET /api/account-observations/{observation_id} | 读取一份完整记录及当前可比性；损坏时报告错误并保留原件 |
 | GET /api/personas | 画像列表 |
 | GET /api/persona/{name}、/files | 合并正文 / 分文件正文及 revision；缺少的维度 revision 为 missing |
 | PUT /api/persona/{name}/file | filename、content、读取的 revision；替换一个画像文件，返回保存内容及新版本。409/revision_conflict 保留草稿并核对 detail.current；省略 revision 的旧调用不提供过期检测 |

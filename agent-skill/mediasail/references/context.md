@@ -43,6 +43,8 @@ $saved | Select-Object filename, content, revision
 
 ## 看真实表现
 
+默认可从 `GET /api/account-observations` 读取已保存的外部观测；它不访问平台、不校验浏览器登录。账号与数据页、工作台使用这些记录，取得时间与导入时间分开。真实浏览器取数与本地回存的说明见[浏览器协作](browser-collaboration.md)和[账号观测](account-observations.md)。
+
 分析账号、数据缺项、空列表或结论需要补证时，查阅[采集缺项与有据分析](collection-evidence.md)：采集状态、可选补查办法、指标区别和事实/推断的写法以该处为准。根据用户当前任务自主继续只读研究，不把一次接口缺项直接交回人工；需要用户交互或更多访问范围时明确说明。
 
 GET /api/analytics/platforms 列出实际支持的平台及最近已知状态。旧成功标记不代表当前后台可用。
@@ -60,6 +62,7 @@ GET /api/analytics/{platform} 会真实访问平台，可能启动浏览器、�
 
 | 资料 | 作用与边界 |
 | --- | --- |
+| outputs/_analytics/observations/<id>.json | 外部 Agent 登记的带来源、账号、口径与证据引用的观测；与旧采集历史分别保存、分别比较，不代表浏览器当前在线 |
 | outputs/_analytics/ 下平台账号快照及历史 JSONL | 账号接口采集的原始平台结果；字段含义以来源为准 |
 | outputs/_analytics/snapshots/<profile>/<platform>/<date>.json | data-tracker 的按画像、平台、日期快照，供粉丝趋势与生命周期分析 |
 | outputs/_analytics/publish-log.json | 实际发布事件与可用归因信息；已有历史记录不一定完整 |
