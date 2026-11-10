@@ -23,6 +23,14 @@
 
 完成接手的标准：能定位当前实现、复现相关检查、明确缺失环境及新任务范围。只有读完本文，不等于构建环境、平台登录或发布权限已经就绪。
 
+### 换机前仍需落实的构建与发行准备
+
+- **环境清单**：完整发行使用 Windows x64；准备 Git、uv、引导用 Python 和构建用 Node，版本读取锁文件及 CI。产品连接入口须兼容 Windows PowerShell 5.1，开发脚本的 PowerShell 环境按各入口要求准备。重编 BrowserSkill 还需集成说明中的 Rust、LLVM-MinGW、CMake/Ninja、pnpm；普通源码检查不等于已准备这些工具。matt 插件和 GitHub 身份也需在新环境确认可用。
+- **恢复程度**：已完成 GitHub Windows 源码检查及真实安装验收；未完成“全新电脑仅凭此交接，从零准备所有依赖并构建全部发行资产”的演练。当前 GitHub Actions 也不是完整的一键编译发布流水线。新机成功打包及核验前，保留旧开发机的构建材料和私有备份。
+- **源码材料组装**：`scripts/browser-source-kit.py` 仍接受本地 `--audit-root`、`--crate-sources`，并读取不随发行公开的本机路径映射 `audit-local-input-map.json`。新机需根据 Release 的相对材料清单、实际文件位置和校验值重新建立输入布局/映射；不能直接照抄旧机绝对路径，也不能把旧验证结论冒充新机执行结果。详细材料说明见 `docs/research/2026-11-05-browser-candidate-license-audit.md` 及 Browser Sources ZIP 内的 README。此项目前仍需准备工作，不是交接文档已自动解决的能力。
+- **验收与发行参数**：`.github/workflows/verify-maintenance-upgrade.yml` 保留历史默认版本；执行时明确传入真实基线、候选版本，以及需要时的 `managed_browser=true`。候选验收要求 Release 仍为草稿；先核验资产、再验收、再正式发布。后续核对发布后更新发现。流程与既往结果从上面的验证记录进入。
+- **签名与材料版本**：当前安装包没有 Windows 代码签名，换机时不存在可直接继承的签名证书。正式 Release 的源码 ZIP 是该次发行快照，本交接等后续文档在 GitHub `main`；不能把旧 ZIP 当作当前分支全部内容。构建输出位置读取 `package.json`，不依赖旧机器目录布局。
+
 ### 在新电脑使用软件或继续个人业务
 
 - 仅使用软件：安装 Release 中的 Windows x64 Setup，无需下载巨大浏览器源码分卷。首次启动选择资料库；从首页重新复制 MD，让 Agent 得到新电脑的发现入口。
