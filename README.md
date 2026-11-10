@@ -4,7 +4,7 @@
 
 面向外部 Agent 的运营知识与内容工作台。MediaSail 保存画像、历史表现、运营经验、素材与成品，提供账号采集、业务统计和发布能力；由你熟悉的 Agent 自主研究、解读、策划、创作与回存。
 
-**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [0.5.13 更新说明](docs/RELEASE-0.5.13.md) · [验证记录](docs/VERIFICATION-0.5.13.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
+**[下载 Windows x64 正式安装包](https://github.com/jerryrenjianxing-sys/MediaSail/releases/latest)** · [新电脑开发交接](docs/HANDOFF.md) · [0.5.13 更新说明](docs/RELEASE-0.5.13.md) · [验证记录](docs/VERIFICATION-0.5.13.md) · [本机真实升级记录](docs/LOCAL-UPGRADE-2026-10-15.md) · [更新机制](docs/UPDATES.md)
 
 ## 使用与连接 Agent
 
@@ -75,7 +75,7 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 | 部件 | 版本 |
 |---|---|
-| MediaSail 当前源码 | 0.5.12；0.5.1 历史草稿保留 |
+| MediaSail 当前源码 | 0.5.13；0.5.1 历史草稿保留 |
 | Electron / electron-builder | 44.7.0 / 26.15.3 |
 | electron-updater | 6.8.9 |
 | Python | 3.11.15 |
@@ -85,7 +85,7 @@ Windows构建机需要 Git、uv、PowerShell 和用于引导的Python。执行 s
 
 开发前阅读 [AGENTS.md](AGENTS.md) 与按需的 [开发方法](docs/DEVELOPMENT.md)，使用用户指定的 mattpocock-skills；业务术语见 [词汇表](GLOSSARY.md)。准备锁定依赖后执行 npm run check，统一验证 Node、Python、前端、接口资料和补丁复现。检查不回写接口资料或补丁，需更新时显式运行导出脚本并审查差异。
 
-业务依赖固定于 requirements-business.lock；浏览器及工具固定于 browser-tools.lock.json，适配构建与源码准备见 [BrowserSkill 集成](integrations/browserskill/README.md)。实际组件及许可证见 licenses。npm run dist 生成安装包、blockmap 和 latest.yml；scripts/source-bundle.py 创建匹配源码包，scripts/verify-release.cjs 核对校验并生成 SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.12。包内验收与真实安装升级另行执行。
+业务依赖固定于 requirements-business.lock；浏览器及工具固定于 browser-tools.lock.json，适配构建与源码准备见 [BrowserSkill 集成](integrations/browserskill/README.md)。实际组件及许可证见 licenses。npm run dist 生成安装包、blockmap 和 latest.yml；scripts/source-bundle.py 创建匹配源码包，scripts/verify-release.cjs 核对校验并生成 SHA256SUMS.txt。产物在仓库外 ../../outputs/MediaSail/release-0.5.13。包内验收与真实安装升级另行执行。
 
 运行打包版UI验收时使用main分支最新测试脚本，同时隔离`EASEL_DESKTOP_DATA`与`LOCALAPPDATA`；测试统一资料库时另用专用定位目录和资料库路径，避免读写日常安装。更新缓存使用当前库的 runtime；安装器独立暂存本次新安装包，在选库后核验领用，不导入旧库缓存。真实安装结果见对应版本验证记录，单元测试不代替安装验收。
 
